@@ -1,0 +1,2 @@
+# cheetah
+Day trading system
