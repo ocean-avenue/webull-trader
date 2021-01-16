@@ -1,11 +1,12 @@
 import time
+import threading
 import schedule
 import yfsdk
-# import fmpsdk
+import fmpsdk
 from datetime import datetime
 
 
-def day_trading_job():
+def most_gainers_job():
     now = datetime.now()
     most_gainers = yfsdk.get_most_gainers()
     if len(most_gainers) > 3:
@@ -31,15 +32,29 @@ def day_trading_job():
         return schedule.CancelJob
 
 
+def day_trading_job():
+    now = datetime.now()
+    print("[{}] day trading...".format(now))
+
+    if now.hour == 13:
+        return schedule.CancelJob
+
+
+def run_threaded(job_func):
+    job_thread = threading.Thread(target=job_func)
+    job_thread.start()
+
+
 def start_trading_job():
-    schedule.every(60).seconds.do(day_trading_job)
+    schedule.every(5).seconds.do(run_threaded, day_trading_job)
+    schedule.every(60).seconds.do(run_threaded, most_gainers_job)
 
 
 schedule.every().monday.at("06:30").do(start_trading_job)
 schedule.every().tuesday.at("06:30").do(start_trading_job)
 schedule.every().wednesday.at("06:30").do(start_trading_job)
 schedule.every().thursday.at("06:30").do(start_trading_job)
-schedule.every().friday.at("20:53").do(start_trading_job)
+schedule.every().friday.at("06:30").do(start_trading_job)
 
 
 while True:
