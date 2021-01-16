@@ -24,4 +24,12 @@ def _get_jsonparsed_data(url):
 
 
 def get_most_gainers():
-    return _get_jsonparsed_data("{}/gainers?apikey={}".format(FMP_API_BASE, FMP_API_KEY))
+    return _get_jsonparsed_data(
+        "{}/gainers?apikey={}".format(FMP_API_BASE, FMP_API_KEY)
+    )
+
+
+def get_quotes(symbol_list):
+    return _get_jsonparsed_data(
+        "{}/quote/{}?apikey={}".format(FMP_API_BASE, ",".join(symbol_list), FMP_API_KEY)
+    )

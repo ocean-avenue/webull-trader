@@ -23,11 +23,13 @@ def get_most_gainers():
         symbol = tr.find("a").contents[0]
         all_span = tr.findAll("span")
         change_percentage = all_span[2].contents[0]
+        volume = all_span[3].contents[0]
         market_cap = all_span[4].contents[0]
         most_gainers.append(
             {
                 "symbol": symbol,
                 "change_percentage": change_percentage,
+                "volume": volume,
                 "market_cap": market_cap,
             }
         )

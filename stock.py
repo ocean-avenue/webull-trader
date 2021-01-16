@@ -6,25 +6,30 @@ import fmpsdk
 from datetime import datetime
 
 
-def most_gainers_job():
+def screening_job():
     now = datetime.now()
     most_gainers = yfsdk.get_most_gainers()
-    if len(most_gainers) > 3:
-        gainer_1 = most_gainers[0]
-        gainer_2 = most_gainers[1]
-        gainer_3 = most_gainers[2]
+    # pick highest acceleration
+    symbol_list = []
+    for most_gainer in most_gainers:
+        symbol = most_gainer["symbol"]
+        symbol_list.append(symbol)
+    quotes = fmpsdk.get_quotes(symbol_list)
+    # fill quote acceleration
+    for quote in quotes:
+        price = quote["price"]
+        open_price = quote["open"]
+        quote["acceleration"] = (price - open_price) / open_price
+    # sort quote based on price acceleration
+    quotes.sort(key=lambda x: x["acceleration"], reverse=True)
+    top_quotes = quotes[:3]
+    for top_quote in top_quotes:
         print(
-            "[{}] {} ({}, {}), {} ({}, {}), {} ({}, {})".format(
+            "[{}] {}, ${} ({}%)".format(
                 now,
-                gainer_1["symbol"],
-                gainer_1["change_percentage"],
-                gainer_1["market_cap"],
-                gainer_2["symbol"],
-                gainer_2["change_percentage"],
-                gainer_2["market_cap"],
-                gainer_3["symbol"],
-                gainer_3["change_percentage"],
-                gainer_3["market_cap"],
+                top_quote["symbol"],
+                top_quote["price"],
+                top_quote["changesPercentage"],
             )
         )
 
@@ -32,7 +37,7 @@ def most_gainers_job():
         return schedule.CancelJob
 
 
-def day_trading_job():
+def transaction_job():
     now = datetime.now()
     print("[{}] day trading...".format(now))
 
@@ -46,8 +51,8 @@ def run_threaded(job_func):
 
 
 def start_trading_job():
-    schedule.every(5).seconds.do(run_threaded, day_trading_job)
-    schedule.every(60).seconds.do(run_threaded, most_gainers_job)
+    schedule.every(5).seconds.do(run_threaded, transaction_job)
+    schedule.every(60).seconds.do(run_threaded, screening_job)
 
 
 schedule.every().monday.at("06:30").do(start_trading_job)
