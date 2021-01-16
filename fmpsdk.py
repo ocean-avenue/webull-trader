@@ -23,5 +23,5 @@ def _get_jsonparsed_data(url):
     return json.loads(data)
 
 
-def get_most_gainer_stock_companies():
+def get_most_gainers():
     return _get_jsonparsed_data("{}/gainers?apikey={}".format(FMP_API_BASE, FMP_API_KEY))
