@@ -8,6 +8,7 @@ from datetime import datetime
 
 JOB_MAXIMUM = 100
 JOB_INTERVAL = 60  # in second
+INTRADAY_PERIOD = 50
 
 watchlist = []
 positions = []
@@ -48,16 +49,39 @@ def screening_job():
 
 def transaction_job(job_id):
     now = datetime.now()
-
-    print("[{}] run job {}".format(now, job_id))
+    ny_tz = pytz.timezone("America/New_York")
+    ny_now = now.astimezone(ny_tz)
 
     if job_id < len(watchlist):
         symbol = watchlist[job_id]
-        intraday_sma = fmpsdk.get_intraday_sma(symbol, "1min")
+        intraday_sma = fmpsdk.get_intraday_sma(symbol, "1min", INTRADAY_PERIOD)
+        # has enouth data
         if len(intraday_sma) >= 2:
             cur_sma = intraday_sma[0]
-            pre_sma = intraday_sma[1]
-            # TODO
+            cur_dt = datetime.strptime(cur_sma["date"], "%Y-%m-%d %H:%M:%S")
+            # time not delayed
+            if (
+                ny_now.year == cur_dt.year
+                and ny_now.day == cur_dt.day
+                and ny_now.hour == cur_dt.hour
+                and (ny_now.minute - cur_dt.minute) <= 1
+            ):
+                cur_price = cur_sma["close"]
+                cur_smaval = cur_sma["sma"]
+
+                pre_sma = intraday_sma[1]
+                pre_price = pre_sma["close"]
+                pre_smaval = pre_sma["sma"]
+
+                if cur_price > cur_smaval and pre_price <= pre_sma:
+                    quote_short = fmpsdk.get_quote_short(symbol)
+                    real_price = quote_short["price"]
+                    print("[{}] buy {}, ${}".format(now, symbol, real_price))
+
+                if cur_price < cur_smaval and pre_price >= pre_sma:
+                    quote_short = fmpsdk.get_quote_short(symbol)
+                    real_price = quote_short["price"]
+                    print("[{}] sell {}, ${}".format(now, symbol, real_price))
 
     if now.hour == 13:
         return schedule.CancelJob

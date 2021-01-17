@@ -35,9 +35,15 @@ def get_quotes(symbol_list):
     )
 
 
-def get_intraday_sma(symbol, interval):
+def get_quote_short(symbol):
     return _get_jsonparsed_data(
-        "{}/technical_indicator/{}/{}?apikey={}".format(
-            FMP_API_BASE, interval, symbol, FMP_API_KEY
+        "{}/quote-short/{}?apikey={}".format(FMP_API_BASE, symbol, FMP_API_KEY)
+    )
+
+
+def get_intraday_sma(symbol, interval, period):
+    return _get_jsonparsed_data(
+        "{}/technical_indicator/{}/{}?period={}&type=sma&apikey={}".format(
+            FMP_API_BASE, interval, symbol, period, FMP_API_KEY
         )
     )
