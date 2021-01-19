@@ -6,7 +6,7 @@ import yfsdk
 import fmpsdk
 from datetime import datetime
 
-JOB_MAXIMUM = 100
+JOB_MAXIMUM = 20
 JOB_INTERVAL = 60  # in second
 INTRADAY_PERIOD = 50
 
@@ -31,17 +31,21 @@ def screening_job():
     # sort quote based on price acceleration
     quotes.sort(key=lambda x: x["acceleration"], reverse=True)
     top_quotes = quotes[:3]
+    output_log = ""
     for top_quote in top_quotes:
-        print(
-            "[{}] {}, ${} ({}%)".format(
-                now,
-                top_quote["symbol"],
-                top_quote["price"],
-                top_quote["changesPercentage"],
-            )
+        output_log += " {}, ${} ({} %).".format(
+            top_quote["symbol"],
+            top_quote["price"],
+            top_quote["changesPercentage"],
         )
         if top_quote["symbol"] not in watchlist:
             watchlist.append(top_quote["symbol"])
+    print(
+        "[{}] {}".format(
+            now,
+            output_log,
+        )
+    )
 
     if now.hour == 13:
         return schedule.CancelJob
@@ -73,12 +77,12 @@ def transaction_job(job_id):
                 pre_price = pre_sma["close"]
                 pre_smaval = pre_sma["sma"]
 
-                if cur_price > cur_smaval and pre_price <= pre_sma:
+                if cur_price > cur_smaval and pre_price <= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
                     print("[{}] buy {}, ${}".format(now, symbol, real_price))
 
-                if cur_price < cur_smaval and pre_price >= pre_sma:
+                if cur_price < cur_smaval and pre_price >= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
                     print("[{}] sell {}, ${}".format(now, symbol, real_price))
@@ -108,7 +112,6 @@ schedule.every().tuesday.at("06:30").do(start_trading_job)
 schedule.every().wednesday.at("06:30").do(start_trading_job)
 schedule.every().thursday.at("06:30").do(start_trading_job)
 schedule.every().friday.at("06:30").do(start_trading_job)
-
 
 while True:
     schedule.run_pending()
