@@ -33,7 +33,7 @@ def screening_job():
     top_quotes = quotes[:3]
     output_log = ""
     for top_quote in top_quotes:
-        output_log += " {}, ${} ({} %).".format(
+        output_log += "{}, ${} ({} %). ".format(
             top_quote["symbol"],
             top_quote["price"],
             top_quote["changesPercentage"],
@@ -41,7 +41,7 @@ def screening_job():
         if top_quote["symbol"] not in watchlist:
             watchlist.append(top_quote["symbol"])
     print(
-        "[{}] {} | {}".format(
+        "[{}] {} ({})".format(
             now,
             output_log,
             len(watchlist),
@@ -81,12 +81,12 @@ def transaction_job(job_id):
                 if cur_price > cur_smaval and pre_price <= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
-                    print("[{}] buy {}, ${}".format(now, symbol, real_price))
+                    print("[{}] * buy {}, ${} *".format(now, symbol, real_price))
 
                 if cur_price < cur_smaval and pre_price >= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
-                    print("[{}] sell {}, ${}".format(now, symbol, real_price))
+                    print("[{}] * sell {}, ${} *".format(now, symbol, real_price))
 
     if now.hour == 13:
         return schedule.CancelJob
