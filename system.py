@@ -41,9 +41,10 @@ def screening_job():
         if top_quote["symbol"] not in watchlist:
             watchlist.append(top_quote["symbol"])
     print(
-        "[{}] {}".format(
+        "[{}] {} | {}".format(
             now,
             output_log,
+            len(watchlist),
         )
     )
 
