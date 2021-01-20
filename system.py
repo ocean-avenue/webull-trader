@@ -44,7 +44,7 @@ def screening_job():
         if top_quote["symbol"] not in watchlist:
             watchlist.append(top_quote["symbol"])
     print(
-        "[{}] {} ({})".format(
+        "[{}] {} ({} total)".format(
             ny_now,
             output_log,
             len(watchlist),
@@ -81,15 +81,23 @@ def transaction_job(job_id):
                 pre_price = pre_sma["close"]
                 pre_smaval = pre_sma["sma"]
 
+                # buy signal
                 if cur_price > cur_smaval and pre_price <= pre_smaval:
-                    quote_short = fmpsdk.get_quote_short(symbol)
-                    real_price = quote_short["price"]
-                    print("[{}] * buy {}, ${} *".format(ny_now, symbol, real_price))
+                    if symbol not in positions:
+                        quote_short = fmpsdk.get_quote_short(symbol)
+                        real_price = quote_short["price"]
+                        print("[{}] * buy {}, ${} *".format(ny_now, symbol, real_price))
+                        positions.append(symbol)
 
+                # sell signal
                 if cur_price < cur_smaval and pre_price >= pre_smaval:
-                    quote_short = fmpsdk.get_quote_short(symbol)
-                    real_price = quote_short["price"]
-                    print("[{}] * sell {}, ${} *".format(ny_now, symbol, real_price))
+                    if symbol in positions:
+                        quote_short = fmpsdk.get_quote_short(symbol)
+                        real_price = quote_short["price"]
+                        print(
+                            "[{}] * sell {}, ${} *".format(ny_now, symbol, real_price)
+                        )
+                        positions.remove(symbol)
 
     if now.hour == 13:
         return schedule.CancelJob
