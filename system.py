@@ -16,6 +16,9 @@ positions = []
 
 def screening_job():
     now = datetime.now()
+    ny_tz = pytz.timezone("America/New_York")
+    ny_now = now.astimezone(ny_tz)
+
     most_gainers = yfsdk.get_most_gainers()
     # pick highest acceleration
     symbol_list = []
@@ -42,7 +45,7 @@ def screening_job():
             watchlist.append(top_quote["symbol"])
     print(
         "[{}] {} ({})".format(
-            now,
+            ny_now,
             output_log,
             len(watchlist),
         )
@@ -81,12 +84,12 @@ def transaction_job(job_id):
                 if cur_price > cur_smaval and pre_price <= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
-                    print("[{}] * buy {}, ${} *".format(now, symbol, real_price))
+                    print("[{}] * buy {}, ${} *".format(ny_now, symbol, real_price))
 
                 if cur_price < cur_smaval and pre_price >= pre_smaval:
                     quote_short = fmpsdk.get_quote_short(symbol)
                     real_price = quote_short["price"]
-                    print("[{}] * sell {}, ${} *".format(now, symbol, real_price))
+                    print("[{}] * sell {}, ${} *".format(ny_now, symbol, real_price))
 
     if now.hour == 13:
         return schedule.CancelJob
