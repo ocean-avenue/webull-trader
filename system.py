@@ -14,6 +14,10 @@ watchlist = []
 positions = []
 
 
+def print_log(now, msg):
+    print("[{}] {}".format(now.strftime("%Y-%m-%d %H:%M:%S"), msg))
+
+
 def screening_job():
     now = datetime.now()
     ny_tz = pytz.timezone("America/New_York")
@@ -23,9 +27,12 @@ def screening_job():
         most_gainers = yfsdk.get_most_gainers()
         # pick highest acceleration
         symbol_list = []
+        gainers_log = ""
         for most_gainer in most_gainers:
             symbol = most_gainer["symbol"]
+            change_percentage = most_gainer["change_percentage"]
             symbol_list.append(symbol)
+            gainers_log += "{} {}. ".format(symbol, change_percentage)
         quotes = fmpsdk.get_quotes(symbol_list)
         # fill quote acceleration
         for quote in quotes:
@@ -35,24 +42,14 @@ def screening_job():
         # sort quote based on price acceleration
         quotes.sort(key=lambda x: x["acceleration"], reverse=True)
         top_quotes = quotes[:3]
-        output_log = ""
         for top_quote in top_quotes:
-            output_log += "{}, ${} (+{}%). ".format(
-                top_quote["symbol"],
-                round(top_quote["price"], 2),
-                top_quote["changesPercentage"],
-            )
             if top_quote["symbol"] not in watchlist:
                 watchlist.append(top_quote["symbol"])
-        print(
-            "[{}] {} ({} total)".format(
-                ny_now,
-                output_log,
-                len(watchlist),
-            )
-        )
+        print_log(ny_now, "watchlist: {}".format(watchlist))
+        # print most gainers
+        print_log(ny_now, gainers_log)
     except:
-        print("[{}] screen job failed".format(ny_now))
+        print_log(ny_now, "screen job failed")
 
     if now.hour == 13:
         return schedule.CancelJob
@@ -91,13 +88,13 @@ def transaction_job(job_id):
                         if symbol not in position_symbols:
                             quote_short = fmpsdk.get_quote_short(symbol)
                             rt_price = quote_short["price"]
-                            output_log = "* buy {} at ${} *".format(symbol, rt_price)
-                            output_line = ""
-                            for i in range(0, len(output_log)):
-                                output_line += "*"
-                            print("[{}] {}".format(ny_now, output_line))
-                            print("[{}] {}".format(ny_now, output_log))
-                            print("[{}] {}".format(ny_now, output_line))
+                            trans_log = "* buy {} at ${} *".format(symbol, rt_price)
+                            trans_line = ""
+                            for i in range(0, len(trans_log)):
+                                trans_line += "*"
+                            print_log(ny_now, trans_line)
+                            print_log(ny_now, trans_log)
+                            print_log(ny_now, trans_line)
                             positions.append(
                                 {
                                     "symbol": symbol,
@@ -112,23 +109,21 @@ def transaction_job(job_id):
                                 cost_price = positions[i]["cost"]
                                 quote_short = fmpsdk.get_quote_short(symbol)
                                 rt_price = quote_short["price"]
-                                output_log = (
-                                    "* sell {} at ${}, cost ${} ({}%) *".format(
-                                        symbol,
-                                        rt_price,
-                                        cost_price,
-                                        round(
-                                            (rt_price - cost_price) / cost_price * 100,
-                                            2,
-                                        ),
-                                    )
+                                trans_log = "* sell {} at ${}, cost ${} ({}%) *".format(
+                                    symbol,
+                                    rt_price,
+                                    cost_price,
+                                    round(
+                                        (rt_price - cost_price) / cost_price * 100,
+                                        2,
+                                    ),
                                 )
-                                output_line = ""
-                                for i in range(0, len(output_log)):
-                                    output_line += "*"
-                                print("[{}] {}".format(ny_now, output_line))
-                                print("[{}] {}".format(ny_now, output_log))
-                                print("[{}] {}".format(ny_now, output_line))
+                                trans_line = ""
+                                for i in range(0, len(trans_log)):
+                                    trans_line += "*"
+                                print_log(ny_now, trans_line)
+                                print_log(ny_now, trans_log)
+                                print_log(ny_now, trans_line)
                                 del positions[i]
                                 break
     except:
