@@ -36,9 +36,9 @@ def screening_job():
     top_quotes = quotes[:3]
     output_log = ""
     for top_quote in top_quotes:
-        output_log += "{}, ${} ({} %). ".format(
+        output_log += "{}, ${} (+{}%). ".format(
             top_quote["symbol"],
-            top_quote["price"],
+            round(top_quote["price"], 2),
             top_quote["changesPercentage"],
         )
         if top_quote["symbol"] not in watchlist:
@@ -83,21 +83,38 @@ def transaction_job(job_id):
 
                 # buy signal
                 if cur_price > cur_smaval and pre_price <= pre_smaval:
-                    if symbol not in positions:
+                    position_symbols = [p["symbol"] for p in positions]
+                    if symbol not in position_symbols:
                         quote_short = fmpsdk.get_quote_short(symbol)
-                        real_price = quote_short["price"]
-                        print("[{}] * buy {}, ${} *".format(ny_now, symbol, real_price))
-                        positions.append(symbol)
+                        rt_price = quote_short["price"]
+                        print("[{}] * buy {} at ${} *".format(ny_now, symbol, rt_price))
+                        positions.append(
+                            {
+                                "symbol": symbol,
+                                "cost": rt_price,
+                            }
+                        )
 
                 # sell signal
                 if cur_price < cur_smaval and pre_price >= pre_smaval:
-                    if symbol in positions:
-                        quote_short = fmpsdk.get_quote_short(symbol)
-                        real_price = quote_short["price"]
-                        print(
-                            "[{}] * sell {}, ${} *".format(ny_now, symbol, real_price)
-                        )
-                        positions.remove(symbol)
+                    for i in range(0, len(positions)):
+                        if symbol == positions[i]["symbol"]:
+                            cost_price = positions[i]["cost"]
+                            quote_short = fmpsdk.get_quote_short(symbol)
+                            rt_price = quote_short["price"]
+                            print(
+                                "[{}] * sell {} at ${}, cost ${} ({}%) *".format(
+                                    ny_now,
+                                    symbol,
+                                    rt_price,
+                                    cost_price,
+                                    round(
+                                        (rt_price - cost_price) / cost_price * 100, 2
+                                    ),
+                                )
+                            )
+                            del positions[i]
+                            break
 
     if now.hour == 13:
         return schedule.CancelJob
