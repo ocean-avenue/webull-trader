@@ -1,6 +1,7 @@
 import time
 import threading
 import schedule
+import logging
 import pytz
 import yfsdk
 import fmpsdk
@@ -32,7 +33,7 @@ def screening_job():
             symbol = most_gainer["symbol"]
             change_percentage = most_gainer["change_percentage"]
             symbol_list.append(symbol)
-            gainers_log += "{} {}. ".format(symbol, change_percentage)
+            gainers_log += "{} {}, ".format(symbol, change_percentage)
         quotes = fmpsdk.get_quotes(symbol_list)
         # fill quote acceleration
         for quote in quotes:
@@ -46,8 +47,8 @@ def screening_job():
             if top_quote["symbol"] not in watchlist:
                 watchlist.append(top_quote["symbol"])
         print_log(ny_now, "watchlist: {}".format(watchlist))
-        # print most gainers
-        print_log(ny_now, gainers_log)
+        # write most gainers log
+        logging.info(gainers_log)
     except:
         print_log(ny_now, "screen job failed")
 
@@ -145,6 +146,16 @@ def run_transaction_thread():
 
 
 def start_trading_job():
+
+    now = datetime.now()
+    # prepare log files
+    logging.basicConfig(
+        filename="logs/gainers-{}.txt".format(now.strftime("%Y-%m-%d")),
+        level=logging.INFO,
+        format="%(asctime)s, %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     schedule.every(JOB_INTERVAL).seconds.do(run_screening_thread)
     schedule.every(JOB_INTERVAL).seconds.do(run_transaction_thread)
 
