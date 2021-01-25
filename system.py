@@ -228,14 +228,14 @@ def run_transaction_thread2():
 
 def start_trading_job():
 
-    now = datetime.now()
-    # prepare log files
-    logging.basicConfig(
-        filename="logs/gainers-{}.txt".format(now.strftime("%Y-%m-%d")),
-        level=logging.INFO,
-        format="%(asctime)s, %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    # now = datetime.now()
+    # # prepare log files
+    # logging.basicConfig(
+    #     filename="logs/gainers-{}.txt".format(now.strftime("%Y-%m-%d")),
+    #     level=logging.INFO,
+    #     format="%(asctime)s, %(message)s",
+    #     datefmt="%Y-%m-%d %H:%M:%S",
+    # )
 
     # schedule.every(JOB_INTERVAL).seconds.do(run_screening_thread)
     # schedule.every(JOB_INTERVAL).seconds.do(run_transaction_thread)
