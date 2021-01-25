@@ -24,6 +24,8 @@ def screening_job():
     ny_tz = pytz.timezone("America/New_York")
     ny_now = now.astimezone(ny_tz)
 
+    global watchlist
+
     try:
         most_gainers = yfsdk.get_most_gainers()
         # pick highest acceleration
@@ -49,8 +51,8 @@ def screening_job():
         print_log(ny_now, "watchlist: {}".format(watchlist))
         # write most gainers log
         logging.info(gainers_log)
-    except:
-        print_log(ny_now, "screen job failed")
+    except Exception as e:
+        print_log(ny_now, "screen job failed: {}".format(str(e)))
 
     if now.hour == 13:
         return schedule.CancelJob
@@ -60,6 +62,9 @@ def transaction_job(job_id):
     now = datetime.now()
     ny_tz = pytz.timezone("America/New_York")
     ny_now = now.astimezone(ny_tz)
+
+    global watchlist
+    global positions
 
     try:
         if job_id < len(watchlist):
@@ -90,9 +95,7 @@ def transaction_job(job_id):
                             quote_short = fmpsdk.get_quote_short(symbol)
                             rt_price = quote_short["price"]
                             trans_log = "* buy {} at ${} *".format(symbol, rt_price)
-                            trans_line = ""
-                            for i in range(0, len(trans_log)):
-                                trans_line += "*"
+                            trans_line = "*" * len(trans_log)
                             print_log(ny_now, trans_line)
                             print_log(ny_now, trans_log)
                             print_log(ny_now, trans_line)
@@ -119,16 +122,89 @@ def transaction_job(job_id):
                                         2,
                                     ),
                                 )
-                                trans_line = ""
-                                for i in range(0, len(trans_log)):
-                                    trans_line += "*"
+                                trans_line = "*" * len(trans_log)
                                 print_log(ny_now, trans_line)
                                 print_log(ny_now, trans_log)
                                 print_log(ny_now, trans_line)
                                 del positions[i]
                                 break
-    except:
-        print("[{}] transaction job failed".format(ny_now))
+    except Exception as e:
+        print_log(ny_now, "transaction job failed: {}".format(str(e)))
+
+    if now.hour == 13:
+        return schedule.CancelJob
+
+
+def transaction_job2():
+    now = datetime.now()
+    ny_tz = pytz.timezone("America/New_York")
+    ny_now = now.astimezone(ny_tz)
+
+    global positions
+
+    try:
+        # only buy before 7
+        if now.hour == 6:
+            most_gainers = yfsdk.get_most_gainers()
+            # pick highest acceleration
+            symbol_list = []
+            # gainers_log = ""
+            for most_gainer in most_gainers:
+                symbol = most_gainer["symbol"]
+                # change_percentage = most_gainer["change_percentage"]
+                symbol_list.append(symbol)
+                # gainers_log += "{} {}, ".format(symbol, change_percentage)
+            quotes = fmpsdk.get_quotes(symbol_list)
+            position_symbols = [p["symbol"] for p in positions]
+            for quote in quotes:
+                symbol = quote["symbol"]
+                if symbol not in position_symbols:
+                    # buy position
+                    price = quote["price"]
+                    trans_log = "* buy {} at ${} *".format(symbol, price)
+                    trans_line = "*" * len(trans_log)
+                    print_log(ny_now, trans_line)
+                    print_log(ny_now, trans_log)
+                    print_log(ny_now, trans_line)
+                    positions.append(
+                        {
+                            "symbol": symbol,
+                            "cost": price,
+                        }
+                    )
+            # write most gainers log
+            # logging.info(gainers_log)
+
+        # only sell at 12
+        if now.hour == 12:
+            position_symbols = [p["symbol"] for p in positions]
+            if len(position_symbols) > 0:
+                position_quotes = fmpsdk.get_quotes(position_symbols)
+
+                for position_quote in position_quotes:
+                    symbol = position_quote["symbol"]
+                    price = position_quote["price"]
+                    cost = 0
+                    for position in positions:
+                        if symbol == position["symbol"]:
+                            cost = position["cost"]
+                            break
+                    if cost > 0:
+                        trans_log = "* sell {} at ${}, cost ${} ({}%) *".format(
+                            symbol, price, cost, round((price - cost) / cost * 100, 2)
+                        )
+                        trans_line = "*" * len(trans_log)
+                        print_log(ny_now, trans_line)
+                        print_log(ny_now, trans_log)
+                        print_log(ny_now, trans_line)
+
+                # clear positions
+                positions = []
+
+            return schedule.CancelJob
+
+    except Exception as e:
+        print_log(ny_now, "transaction job 2 failed: {}".format(str(e)))
 
     if now.hour == 13:
         return schedule.CancelJob
@@ -145,6 +221,11 @@ def run_transaction_thread():
         job_thread.start()
 
 
+def run_transaction_thread2():
+    job_thread = threading.Thread(target=transaction_job2)
+    job_thread.start()
+
+
 def start_trading_job():
 
     now = datetime.now()
@@ -156,15 +237,16 @@ def start_trading_job():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    schedule.every(JOB_INTERVAL).seconds.do(run_screening_thread)
-    schedule.every(JOB_INTERVAL).seconds.do(run_transaction_thread)
+    # schedule.every(JOB_INTERVAL).seconds.do(run_screening_thread)
+    # schedule.every(JOB_INTERVAL).seconds.do(run_transaction_thread)
+    schedule.every(JOB_INTERVAL).seconds.do(run_transaction_thread2)
 
 
-schedule.every().monday.at("06:30").do(start_trading_job)
-schedule.every().tuesday.at("06:30").do(start_trading_job)
-schedule.every().wednesday.at("06:30").do(start_trading_job)
-schedule.every().thursday.at("06:30").do(start_trading_job)
-schedule.every().friday.at("06:30").do(start_trading_job)
+schedule.every().monday.at("06:35").do(start_trading_job)
+schedule.every().tuesday.at("06:35").do(start_trading_job)
+schedule.every().wednesday.at("06:35").do(start_trading_job)
+schedule.every().thursday.at("06:35").do(start_trading_job)
+schedule.every().friday.at("06:35").do(start_trading_job)
 
 while True:
     schedule.run_pending()
