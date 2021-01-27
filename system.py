@@ -1,3 +1,4 @@
+import os
 import time
 import threading
 import schedule
@@ -30,18 +31,17 @@ def screening_job():
         most_gainers = yfsdk.get_most_gainers()
         # pick highest acceleration
         symbol_list = []
-        gainers_log = ""
         for most_gainer in most_gainers:
             symbol = most_gainer["symbol"]
-            change_percentage = most_gainer["change_percentage"]
             symbol_list.append(symbol)
-            gainers_log += "{} {}, ".format(symbol, change_percentage)
         quotes = fmpsdk.get_quotes(symbol_list)
+        gainers_log = ""
         # fill quote acceleration
         for quote in quotes:
             price = quote["price"]
             open_price = quote["open"]
             quote["acceleration"] = (price - open_price) / open_price
+            gainers_log += "{} {}, ".format(quote["symbol"], quote["changesPercentage"])
         # sort quote based on price acceleration
         quotes.sort(key=lambda x: x["acceleration"], reverse=True)
         top_quotes = quotes[:3]
@@ -95,10 +95,7 @@ def transaction_job(job_id):
                             quote_short = fmpsdk.get_quote_short(symbol)
                             rt_price = quote_short["price"]
                             trans_log = "* buy {} at ${} *".format(symbol, rt_price)
-                            trans_line = "*" * len(trans_log)
-                            print_log(ny_now, trans_line)
                             print_log(ny_now, trans_log)
-                            print_log(ny_now, trans_line)
                             positions.append(
                                 {
                                     "symbol": symbol,
@@ -122,10 +119,7 @@ def transaction_job(job_id):
                                         2,
                                     ),
                                 )
-                                trans_line = "*" * len(trans_log)
-                                print_log(ny_now, trans_line)
                                 print_log(ny_now, trans_log)
-                                print_log(ny_now, trans_line)
                                 del positions[i]
                                 break
     except Exception as e:
@@ -162,14 +156,12 @@ def transaction_job2():
                     # buy position
                     price = quote["price"]
                     trans_log = "* buy {} at ${} *".format(symbol, price)
-                    trans_line = "*" * len(trans_log)
-                    print_log(ny_now, trans_line)
                     print_log(ny_now, trans_log)
-                    print_log(ny_now, trans_line)
                     positions.append(
                         {
                             "symbol": symbol,
                             "cost": price,
+                            "time": ny_now.strftime("%Y-%m-%d %H:%M:00"),
                         }
                     )
             # write most gainers log
@@ -177,6 +169,15 @@ def transaction_job2():
 
         # only sell at 12
         if now.hour == 12:
+            # print all positions
+            print("*" * 60)
+            for position in positions:
+                print(
+                    "{},{},{}".format(
+                        position["symbol"], position["cost"], position["time"]
+                    )
+                )
+            print("*" * 60)
             position_symbols = [p["symbol"] for p in positions]
             if len(position_symbols) > 0:
                 position_quotes = fmpsdk.get_quotes(position_symbols)
@@ -193,10 +194,7 @@ def transaction_job2():
                         trans_log = "* sell {} at ${}, cost ${} ({}%) *".format(
                             symbol, price, cost, round((price - cost) / cost * 100, 2)
                         )
-                        trans_line = "*" * len(trans_log)
-                        print_log(ny_now, trans_line)
                         print_log(ny_now, trans_log)
-                        print_log(ny_now, trans_line)
 
                 # clear positions
                 positions = []
@@ -229,6 +227,9 @@ def run_transaction_thread2():
 def start_trading_job():
 
     # now = datetime.now()
+    # # check log folder
+    # if not os.path.isdir("logs"):
+    #     os.mkdir("logs")
     # # prepare log files
     # logging.basicConfig(
     #     filename="logs/gainers-{}.txt".format(now.strftime("%Y-%m-%d")),
