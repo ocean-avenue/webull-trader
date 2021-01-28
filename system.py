@@ -170,14 +170,15 @@ def transaction_job2():
         # only sell at 12
         if now.hour == 12:
             # print all positions
-            print("*" * 60)
-            for position in positions:
-                print(
-                    "{},{},{}".format(
-                        position["symbol"], position["cost"], position["time"]
+            if len(positions) > 0:
+                print("*" * 60)
+                for position in positions:
+                    print(
+                        "{},{},{}".format(
+                            position["time"], position["symbol"], position["cost"]
+                        )
                     )
-                )
-            print("*" * 60)
+                print("*" * 60)
             position_symbols = [p["symbol"] for p in positions]
             if len(position_symbols) > 0:
                 position_quotes = fmpsdk.get_quotes(position_symbols)
