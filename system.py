@@ -129,65 +129,95 @@ def transaction_job(job_id):
         return schedule.CancelJob
 
 
+yf_positions = []
+fmp_positions = []
+
+
 def transaction_job2():
     now = datetime.now()
     ny_tz = pytz.timezone("America/New_York")
     ny_now = now.astimezone(ny_tz)
 
-    global positions
+    global yf_positions
+    global fmp_positions
 
     try:
-        # only buy before 7
+        # only buy before 7:00, ny time 10:00
         if now.hour == 6:
-            most_gainers = yfsdk.get_most_gainers()
-            # pick highest acceleration
-            symbol_list = []
-            # gainers_log = ""
-            for most_gainer in most_gainers:
+            # yahoo finance
+            yf_most_gainers = yfsdk.get_most_gainers()
+            yf_symbol_list = []
+            for most_gainer in yf_most_gainers:
                 symbol = most_gainer["symbol"]
-                # change_percentage = most_gainer["change_percentage"]
-                symbol_list.append(symbol)
-                # gainers_log += "{} {}, ".format(symbol, change_percentage)
-            quotes = fmpsdk.get_quotes(symbol_list)
-            position_symbols = [p["symbol"] for p in positions]
-            for quote in quotes:
+                yf_symbol_list.append(symbol)
+            yf_quotes = fmpsdk.get_quotes(yf_symbol_list)
+            yf_position_symbols = [p["symbol"] for p in yf_positions]
+            for quote in yf_quotes:
                 symbol = quote["symbol"]
-                if symbol not in position_symbols:
+                if symbol not in yf_position_symbols:
                     # buy position
                     price = quote["price"]
                     trans_log = "* buy {} at ${} *".format(symbol, price)
                     print_log(ny_now, trans_log)
-                    positions.append(
+                    yf_positions.append(
                         {
                             "symbol": symbol,
                             "cost": price,
                             "time": ny_now.strftime("%Y-%m-%d %H:%M:00"),
                         }
                     )
-            # write most gainers log
-            # logging.info(gainers_log)
+            # financial modeling prep
+            fmp_most_gainers = fmpsdk.get_most_gainers()
+            fmp_symbol_list = []
+            for most_gainer in fmp_most_gainers:
+                symbol = most_gainer["ticker"]
+                fmp_symbol_list.append(symbol)
+            fmp_quotes = fmpsdk.get_quotes(fmp_symbol_list)
+            fmp_position_symbols = [p["symbol"] for p in fmp_positions]
+            for quote in fmp_quotes:
+                symbol = quote["symbol"]
+                if symbol not in fmp_position_symbols:
+                    # buy position
+                    price = quote["price"]
+                    trans_log = "* buy {} at ${} *".format(symbol, price)
+                    print_log(ny_now, trans_log)
+                    fmp_positions.append(
+                        {
+                            "symbol": symbol,
+                            "cost": price,
+                            "time": ny_now.strftime("%Y-%m-%d %H:%M:00"),
+                        }
+                    )
 
-        # only sell at 12
+        # only sell at 12:00, ny time 15:00
         if now.hour == 12:
             # print all positions
-            if len(positions) > 0:
+            if len(yf_positions) > 0:
                 print("*" * 60)
-                for position in positions:
+                print("[yahoo finance most gainers]:")
+                for position in yf_positions:
+                    print(
+                        "{},{},{}".format(
+                            position["time"], position["symbol"], position["cost"]
+                        )
+                    )
+                print("[financial modeling prep most gainers]:")
+                for position in fmp_positions:
                     print(
                         "{},{},{}".format(
                             position["time"], position["symbol"], position["cost"]
                         )
                     )
                 print("*" * 60)
-            position_symbols = [p["symbol"] for p in positions]
-            if len(position_symbols) > 0:
-                position_quotes = fmpsdk.get_quotes(position_symbols)
+            yf_position_symbols = [p["symbol"] for p in yf_positions]
+            if len(yf_position_symbols) > 0:
+                position_quotes = fmpsdk.get_quotes(yf_position_symbols)
 
                 for position_quote in position_quotes:
                     symbol = position_quote["symbol"]
                     price = position_quote["price"]
                     cost = 0
-                    for position in positions:
+                    for position in yf_positions:
                         if symbol == position["symbol"]:
                             cost = position["cost"]
                             break
@@ -198,7 +228,7 @@ def transaction_job2():
                         print_log(ny_now, trans_log)
 
                 # clear positions
-                positions = []
+                yf_positions = []
 
             return schedule.CancelJob
 
