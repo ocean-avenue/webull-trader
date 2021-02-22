@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-
-YF_GAINERS_URL = "https://finance.yahoo.com/gainers?count=100"
+from config import YF_GAINERS_URL
 
 
 def _get_browser_headers():
