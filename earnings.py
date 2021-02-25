@@ -1,4 +1,6 @@
+import time
 import logging
+import schedule
 import fmpsdk
 import pandas as pd
 import alpaca_trade_api as tradeapi
@@ -9,6 +11,7 @@ from config import (
     APCA_PAPER_API_KEY,
     APCA_PAPER_API_SECRET,
 )
+from datetime import datetime
 
 NY_TZ = "America/New_York"
 
@@ -51,4 +54,26 @@ async def on_trades(conn, channel, trade):
     print("trade", trade)
 
 
-conn.run(["alpacadatav1/T.TSLA", "alpacadatav1/Q.TSLA", "alpacadatav1/AM.TSLA"])
+# conn.run(["alpacadatav1/T.TSLA", "alpacadatav1/Q.TSLA", "alpacadatav1/AM.TSLA"])
+
+watchlist = []
+
+
+def fetch_earnings_job():
+
+    global watchlist
+
+    today = datetime.today().strftime("%Y-%m-%d")
+    watchlist = fmpsdk.get_earning_calendar(today)
+
+
+schedule.every().monday.at("12:05").do(fetch_earnings_job)
+schedule.every().tuesday.at("12:05").do(fetch_earnings_job)
+schedule.every().wednesday.at("12:05").do(fetch_earnings_job)
+schedule.every().thursday.at("12:05").do(fetch_earnings_job)
+schedule.every().friday.at("12:05").do(fetch_earnings_job)
+
+
+while True:
+    schedule.run_pending()
+    time.sleep(1)
