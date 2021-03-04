@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+from datetime import datetime
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.common import URL
 
@@ -8,7 +9,7 @@ APCA_PAPER_API_BASE_URL = "https://paper-api.alpaca.markets"
 APCA_PAPER_API_KEY = "PKXWBBJ7M52WIZUJGVNL"
 APCA_PAPER_API_SECRET = "uBIZAHUqflUVx0qwaJ6wsghxpyfORFLSMpdmuSHI"
 
-NY_TZ = "America/New_York"
+# NY_TZ = "America/New_York"
 
 logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 conn = tradeapi.StreamConn(
@@ -22,7 +23,7 @@ conn = tradeapi.StreamConn(
 
 @conn.on(r"^AM\..+$")
 async def on_minute_bars(conn, channel, bar):
-    print("bars", bar)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "bars", bar)
 
 
 quote_count = 0  # don't print too much quotes
@@ -32,13 +33,13 @@ quote_count = 0  # don't print too much quotes
 async def on_quotes(conn, channel, quote):
     global quote_count
     if quote_count % 10 == 0:
-        print("quote", quote)
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "quote", quote)
     quote_count += 1
 
 
 @conn.on(r"T\..+")
 async def on_trades(conn, channel, trade):
-    print("trade", trade)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "trade", trade)
 
 
 conn.run(["alpacadatav1/T.SQ", "alpacadatav1/Q.TSLA", "alpacadatav1/AM.PLUG"])
