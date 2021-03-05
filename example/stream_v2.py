@@ -21,6 +21,10 @@ async def print_quote(q):
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "quote", q)
 
 
+async def print_bar(b):
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "bar", b)
+
+
 async def print_trade_update(tu):
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "trade update", tu)
 
@@ -35,13 +39,14 @@ def main():
         data_feed=feed,
         raw_data=True,
     )
-    stream.subscribe_trade_updates(print_trade_update)
+    # stream.subscribe_trade_updates(print_trade_update)
     stream.subscribe_trades(print_trade, "SQ")
-    stream.subscribe_quotes(print_quote, "PLUG")
+    # stream.subscribe_quotes(print_quote, "PLUG")
+    # stream.subscribe_bars(print_bar, "TSLA")
 
-    @stream.on_bar("TSLA")
-    async def _(bar):
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "bar", bar)
+    # @stream.on_bar("TSLA")
+    # async def _(bar):
+    #     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "bar", bar)
 
     stream.run()
 
