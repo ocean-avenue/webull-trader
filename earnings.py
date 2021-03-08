@@ -22,11 +22,13 @@ def fetch_earnings_job():
 
 
 # fetch earning at every midnight
-schedule.every().monday.at("00:05").do(fetch_earnings_job)
-schedule.every().tuesday.at("00:05").do(fetch_earnings_job)
-schedule.every().wednesday.at("00:05").do(fetch_earnings_job)
-schedule.every().thursday.at("00:05").do(fetch_earnings_job)
-schedule.every().friday.at("00:05").do(fetch_earnings_job)
+# FETCH_EARNINGS_TIME = "00:05"  # local time (sf)
+FETCH_EARNINGS_TIME = "08:05"  # utc time (aws ec2)
+schedule.every().monday.at(FETCH_EARNINGS_TIME).do(fetch_earnings_job)
+schedule.every().tuesday.at(FETCH_EARNINGS_TIME).do(fetch_earnings_job)
+schedule.every().wednesday.at(FETCH_EARNINGS_TIME).do(fetch_earnings_job)
+schedule.every().thursday.at(FETCH_EARNINGS_TIME).do(fetch_earnings_job)
+schedule.every().friday.at(FETCH_EARNINGS_TIME).do(fetch_earnings_job)
 
 
 def start_trade_job():
@@ -60,11 +62,13 @@ def start_trade_job():
 
 
 # start trade job at every morning
-schedule.every().monday.at("06:35").do(start_trade_job)
-schedule.every().tuesday.at("06:35").do(start_trade_job)
-schedule.every().wednesday.at("06:35").do(start_trade_job)
-schedule.every().thursday.at("06:35").do(start_trade_job)
-schedule.every().friday.at("06:35").do(start_trade_job)
+# START_TRADE_TIME = "06:35"  # local time (sf)
+START_TRADE_TIME = "14:35"  # utc time (aws ec2)
+schedule.every().monday.at(START_TRADE_TIME).do(start_trade_job)
+schedule.every().tuesday.at(START_TRADE_TIME).do(start_trade_job)
+schedule.every().wednesday.at(START_TRADE_TIME).do(start_trade_job)
+schedule.every().thursday.at(START_TRADE_TIME).do(start_trade_job)
+schedule.every().friday.at(START_TRADE_TIME).do(start_trade_job)
 
 
 while True:
