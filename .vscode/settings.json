@@ -1,4 +1,5 @@
 {
     "python.formatting.provider": "black",
-    "python.pythonPath": "env/bin/python"
+    "python.pythonPath": "env/bin/python",
+    "editor.fontSize": 16
 }
