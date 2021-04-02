@@ -4,9 +4,8 @@ import threading
 import schedule
 import logging
 import pytz
-import yfsdk
-import fmpsdk
 from datetime import datetime
+from sdk import yfsdk, fmpsdk
 
 JOB_MAXIMUM = 20
 JOB_INTERVAL = 60  # in second

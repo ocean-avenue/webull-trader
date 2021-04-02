@@ -1,8 +1,8 @@
 import time
 
 import schedule
-import fmpsdk
 from datetime import datetime, timedelta
+from sdk import fmpsdk
 
 # NY_TZ = "America/New_York"
 CHANGE_THRESHOLD = 0.04

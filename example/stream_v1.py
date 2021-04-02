@@ -4,10 +4,12 @@ from datetime import datetime
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.common import URL
 
-APCA_DATA_URL = "https://data.alpaca.markets"
-APCA_PAPER_API_BASE_URL = "https://paper-api.alpaca.markets"
-APCA_PAPER_API_KEY = "PKXWBBJ7M52WIZUJGVNL"
-APCA_PAPER_API_SECRET = "uBIZAHUqflUVx0qwaJ6wsghxpyfORFLSMpdmuSHI"
+from sdk.config import (
+    APCA_DATA_URL,
+    APCA_PAPER_API_BASE_URL,
+    APCA_PAPER_API_KEY,
+    APCA_PAPER_API_SECRET,
+)
 
 # NY_TZ = "America/New_York"
 

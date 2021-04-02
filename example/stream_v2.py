@@ -4,13 +4,15 @@ from datetime import datetime
 from alpaca_trade_api.common import URL
 from alpaca_trade_api.stream import Stream
 
+from sdk.config import (
+    APCA_DATA_URL,
+    APCA_PAPER_API_BASE_URL,
+    APCA_PAPER_API_KEY,
+    APCA_PAPER_API_SECRET,
+)
+
+
 log = logging.getLogger(__name__)
-
-
-APCA_DATA_URL = "https://data.alpaca.markets"
-APCA_PAPER_API_BASE_URL = "https://paper-api.alpaca.markets"
-APCA_PAPER_API_KEY = "PKXWBBJ7M52WIZUJGVNL"
-APCA_PAPER_API_SECRET = "uBIZAHUqflUVx0qwaJ6wsghxpyfORFLSMpdmuSHI"
 
 
 async def print_trade(t):

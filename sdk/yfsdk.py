@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from config import YF_GAINERS_URL
+from sdk.config import YF_GAINERS_URL
 
 
 def _get_browser_headers():
