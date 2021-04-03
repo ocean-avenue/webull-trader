@@ -24,13 +24,13 @@ def get_quote_1m_charts(ticker_id):
     ret_list = []
     for record in record_list:
         record_parts = record.split(",")
-        timestamp = float(record_parts[0])
+        timestamp = int(record_parts[0])
         open_price = float(record_parts[1])
         close_price = float(record_parts[2])
         high_price = float(record_parts[3])
         low_price = float(record_parts[4])
         volume = int(record_parts[6])
-        vwap = int(record_parts[7])
+        vwap = float(record_parts[7])
         ret_list.append({
             "timestamp": timestamp,
             "open": open_price,
