@@ -30,6 +30,7 @@ def get_quote_1m_charts(ticker_id):
         high_price = float(record_parts[3])
         low_price = float(record_parts[4])
         volume = int(record_parts[6])
+        vwap = int(record_parts[7])
         ret_list.append({
             "timestamp": timestamp,
             "open": open_price,
@@ -37,6 +38,7 @@ def get_quote_1m_charts(ticker_id):
             "high": high_price,
             "low": low_price,
             "volume": volume,
+            "vwap": vwap,
         })
     return ret_list
 
