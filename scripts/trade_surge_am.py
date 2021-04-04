@@ -61,8 +61,10 @@ def start():
         current_candle = charts[0]
         prev_candle = charts[1]
         # check low price above vwap and ema 9
-
-        # check first candle make new high
+        if current_candle['low'] > current_candle['vwap'] and current_candle['low'] > current_candle['ema9']:
+            # check first candle make new high
+            # TODO
+            pass
         return False
 
     while _is_after_market():
