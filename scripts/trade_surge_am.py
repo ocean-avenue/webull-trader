@@ -65,6 +65,8 @@ def start():
             # check first candle make new high
             # TODO
             pass
+        # TODO, buy after the first pull back
+        # TODO, take profit along the way (sell half, half, half...)
         return False
 
     while _is_after_market():
