@@ -1,7 +1,32 @@
 import requests
 import json
 import time
+from webull import webull, paper_webull
 from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
+
+# wb = webull()
+paper_wb = paper_webull()
+
+
+def paper_login():
+    input = open('sdk/webull_credentials.json', 'r')
+    credential_data = json.load(input)
+    input.close()
+
+    paper_wb._refresh_token = credential_data['refreshToken']
+    paper_wb._access_token = credential_data['accessToken']
+    paper_wb._token_expire = credential_data['tokenExpireTime']
+    paper_wb._uuid = credential_data['uuid']
+
+    n_data = paper_wb.refresh_login()
+
+    credential_data['refreshToken'] = n_data['refreshToken']
+    credential_data['accessToken'] = n_data['accessToken']
+    credential_data['tokenExpireTime'] = n_data['tokenExpireTime']
+
+    output = open('sdk/webull_credentials.json', 'w')
+    json.dump(credential_data, output)
+    output.close()
 
 
 def _get_browser_headers():

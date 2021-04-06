@@ -1,6 +1,7 @@
 alpaca-trade-api==1.0.1
 appdirs==1.4.4
 asgiref==3.3.1
+autopep8==1.5.6
 beautifulsoup4==4.9.3
 black==20.8b1
 CacheControl==0.12.6
@@ -12,6 +13,8 @@ contextlib2==0.6.0
 distlib==0.3.0
 distro==1.4.0
 Django==3.1.7
+dnspython==2.1.0
+email-validator==1.1.2
 html5lib==1.0.1
 idna==2.10
 ipaddr==2.2.0
@@ -24,6 +27,7 @@ pandas==1.2.2
 pathspec==0.8.1
 pep517==0.8.2
 progress==1.5
+pycodestyle==2.7.0
 pyparsing==2.4.6
 python-dateutil==2.8.1
 pytoml==0.1.21
@@ -42,3 +46,4 @@ urllib3==1.26.2
 webencodings==0.5.1
 websocket-client==0.57.0
 websockets==8.1
+webull==0.3.4
