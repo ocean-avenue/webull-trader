@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+PAPER_TRADE = True
+
 TRADED_SYMBOLS = []
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 1000
@@ -26,6 +28,9 @@ def start():
         if now.hour < 13 or now.hour >= 17:
             return False
         return True
+
+    webullsdk.init_webull(paper=PAPER_TRADE)
+    webullsdk.login()
 
     trading_ticker = None
 

@@ -4,21 +4,28 @@ import time
 from webull import webull, paper_webull
 from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
 
-# wb = webull()
-paper_wb = paper_webull()
+wb_instance = None
 
 
-def paper_login():
+def init_webull(paper=True):
+    global wb_instance
+    if paper:
+        wb_instance = paper_webull()
+    else:
+        wb_instance = webull()
+
+
+def login():
     input = open('sdk/webull_credentials.json', 'r')
     credential_data = json.load(input)
     input.close()
 
-    paper_wb._refresh_token = credential_data['refreshToken']
-    paper_wb._access_token = credential_data['accessToken']
-    paper_wb._token_expire = credential_data['tokenExpireTime']
-    paper_wb._uuid = credential_data['uuid']
+    wb_instance._refresh_token = credential_data['refreshToken']
+    wb_instance._access_token = credential_data['accessToken']
+    wb_instance._token_expire = credential_data['tokenExpireTime']
+    wb_instance._uuid = credential_data['uuid']
 
-    n_data = paper_wb.refresh_login()
+    n_data = wb_instance.refresh_login()
 
     credential_data['refreshToken'] = n_data['refreshToken']
     credential_data['accessToken'] = n_data['accessToken']
@@ -27,6 +34,23 @@ def paper_login():
     output = open('sdk/webull_credentials.json', 'w')
     json.dump(credential_data, output)
     output.close()
+
+    wb_instance.get_account_id()
+
+
+def place_order(ticker_id=None, price=0, action='BUY', order_type='LMT', enforce='GTC', quant=0, extend_hour=True, stop_price=None, trial_value=0, trial_type='DOLLAR'):
+    wb_instance.place_order(
+        tId=ticker_id,
+        price=price,
+        action=action,
+        orderType=order_type,
+        enforce=enforce,
+        quant=quant,
+        outsideRegularTradingHour=extend_hour,
+        stpPrice=stop_price,
+        trial_value=trial_value,
+        trial_type=trial_type,
+    )
 
 
 def _get_browser_headers():
