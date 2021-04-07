@@ -38,6 +38,14 @@ def login():
     wb_instance.get_account_id()
 
 
+def get_quote(ticker_id=None):
+    return wb_instance.get_quote(tId=ticker_id)
+
+
+def get_1m_bars(ticker_id=None, count=10):
+    return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
+
+
 def place_order(ticker_id=None, price=0, action='BUY', order_type='LMT', enforce='GTC', quant=0, extend_hour=True, stop_price=None, trial_value=0, trial_type='DOLLAR'):
     wb_instance.place_order(
         tId=ticker_id,
