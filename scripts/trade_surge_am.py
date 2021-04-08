@@ -78,7 +78,7 @@ def start():
         if trading_ticker:
             # already found trading ticker
             ticker_id = trading_ticker["ticker_id"]
-            charts = webullsdk.get_quote_1m_charts(ticker_id)
+            charts = webullsdk.get_1m_charts(ticker_id)
             if _trade(charts):
                 trading_ticker = None
         else:
@@ -94,7 +94,7 @@ def start():
                 change_percentage = gainer["change_percentage"]
                 # check if change >= 8%
                 if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
-                    charts = webullsdk.get_quote_1m_charts(ticker_id)
+                    charts = webullsdk.get_1m_charts(ticker_id)
                     latest_chart = charts[0]
                     latest_close = latest_chart["close"]
                     volume = latest_chart["volume"]

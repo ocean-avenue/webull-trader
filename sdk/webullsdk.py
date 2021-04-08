@@ -38,9 +38,106 @@ def login():
     wb_instance.get_account_id()
 
 
+# {
+#    "tickerId":925348770,
+#    "exchangeId":10,
+#    "type":2,
+#    "secType":[
+#       61
+#    ],
+#    "regionId":6,
+#    "regionCode":"US",
+#    "currencyId":247,
+#    "name":"American Virtual Cloud Technologies",
+#    "symbol":"AVCT",
+#    "disSymbol":"AVCT",
+#    "disExchangeCode":"NASDAQ",
+#    "exchangeCode":"NAS",
+#    "listStatus":1,
+#    "template":"stock",
+#    "derivativeSupport":1,
+#    "tradeTime":"2021-04-07T23:59:29.374+0000",
+#    "status":"A",
+#    "close":"5.81",
+#    "change":"-0.23",
+#    "changeRatio":"-0.0381",
+#    "pPrice":"8.65",
+#    "pChange":"2.84",
+#    "pChRatio":"0.4888",
+#    "marketValue":"114765284.41",
+#    "volume":"221671",
+#    "turnoverRate":"0.0112",
+#    "timeZone":"America/New_York",
+#    "tzName":"EDT",
+#    "preClose":"6.04",
+#    "open":"5.99",
+#    "high":"5.99",
+#    "low":"5.70",
+#    "vibrateRatio":"0.0480",
+#    "avgVol10D":"31626",
+#    "avgVol3M":"55179",
+#    "negMarketValue":"20955653.25",
+#    "pe":"-4.8599",
+#    "indicatedPe":"-4.8599",
+#    "peTtm":"-4.8738",
+#    "eps":"-1.1955",
+#    "epsTtm":"-1.1921",
+#    "pb":"2.187",
+#    "totalShares":"19753061",
+#    "outstandingShares":"3606825",
+#    "fiftyTwoWkHigh":"12.96",
+#    "fiftyTwoWkLow":"1.450",
+#    "yield":"0.0000",
+#    "baSize":0,
+#    "ntvSize":30,
+#    "depth":{
+#       "ntvAggAskList":[
+#          {
+#             "price":"8.97",
+#             "volume":"100"
+#          },
+#          {
+#             "price":"8.99",
+#             "volume":"7"
+#          },
+#          ...
+#       ],
+#       "ntvAggBidList":[
+#          {
+#             "price":"8.20",
+#             "volume":"35"
+#          },
+#          {
+#             "price":"8.15",
+#             "volume":"50"
+#          },
+#          ...
+#       ]
+#    },
+#    "currencyCode":"USD",
+#    "lotSize":"1",
+#    "ps":"1.112",
+#    "bps":"2.656",
+#    "estimateEarningsDate":"",
+#    "tradeStatus":"D"
+# }
+
 def get_quote(ticker_id=None):
     return wb_instance.get_quote(tId=ticker_id)
 
+
+#                            open  high   low  close  volume  vwap
+# timestamp
+# 2021-04-07 19:34:00-04:00  8.36  8.36  8.36   8.36    25.0  8.46
+# 2021-04-07 19:35:00-04:00  8.36  8.36  8.36   8.36    12.0  8.46
+# 2021-04-07 19:37:00-04:00  8.42  8.42  8.42   8.42    18.0  8.46
+# 2021-04-07 19:38:00-04:00  8.36  8.36  8.36   8.36   375.0  8.46
+# 2021-04-07 19:40:00-04:00  8.47  8.50  8.47   8.50  2533.0  8.46
+# 2021-04-07 19:42:00-04:00  8.47  8.47  8.47   8.47    17.0  8.46
+# 2021-04-07 19:50:00-04:00  8.56  8.60  8.56   8.60   300.0  8.46
+# 2021-04-07 19:51:00-04:00  8.60  8.60  8.60   8.60   263.0  8.46
+# 2021-04-07 19:56:00-04:00  8.60  8.60  8.60   8.60    25.0  8.46
+# 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
 def get_1m_bars(ticker_id=None, count=10):
     return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
@@ -69,10 +166,12 @@ def _get_browser_headers():
     }
 
 
-def get_quote_1m_charts(ticker_id):
-    time.sleep(1)
+# [{'timestamp': 1617840000, 'open': 8.65, 'close': 8.65, 'high': 8.65, 'low': 8.65, 'volume': 100, 'vwap': 8.46}, ...]
+
+def get_1m_charts(ticker_id, count=20):
+    # time.sleep(1)
     session = requests.Session()
-    url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id)
+    url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
     res = session.get(url, headers=_get_browser_headers())
     res_json = json.loads(res.text)
     if len(res_json) == 0:
