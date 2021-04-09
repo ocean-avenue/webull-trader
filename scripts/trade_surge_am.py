@@ -7,6 +7,7 @@ MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 1000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 6  # trading time out in minutes
+BUY_AMOUNT = 1000
 
 
 def start():
@@ -57,6 +58,8 @@ def start():
 
     def _trade(charts):
 
+        ticker_id = trading_ticker['ticker_id']
+
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
         if trading_ticker['holding_quantity'] == 0 and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
@@ -68,8 +71,19 @@ def start():
         # check low price above vwap and ema 9
         if current_candle['low'] > current_candle['vwap'] and current_candle['low'] > current_candle['ema9']:
             # check first candle make new high
+            if current_candle['close'] > prev_candle['high']:
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                ask_price = quote['depth']['ntvAggAskList'][0]['price']
+                buy_quant = BUY_AMOUNT / ask_price
+                # submit limit order at ask price
+                submit_order = webullsdk.place_order(
+                    ticker_id=ticker_id,
+                    price=ask_price,
+                    action='BUY',
+                    order_type='LMT',
+                    quant=buy_quant,
+                    extend_hour=True)
             # TODO
-            pass
         # TODO, buy after the first pull back
         # TODO, take profit along the way (sell half, half, half...)
         return False
