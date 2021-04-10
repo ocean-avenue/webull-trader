@@ -1,6 +1,7 @@
 import json
 from urllib.request import urlopen
-from sdk.config import FMP_API_BASE_URL, FMP_API_KEY
+from sdk.config import FMP_API_BASE_URL
+from credentials.fmp import FMP_API_KEY
 
 
 def _get_jsonparsed_data(url):

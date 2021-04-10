@@ -8,6 +8,7 @@ MIN_SURGE_VOL = 1000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 6  # trading time out in minutes
 BUY_AMOUNT = 1000
+HOLDING_POSITION = False
 
 
 def start():
@@ -15,6 +16,7 @@ def start():
     from datetime import datetime, timedelta
     from sdk import webullsdk
 
+    global PAPER_TRADE
     global TRADED_SYMBOLS
     global MIN_SURGE_AMOUNT
     global MIN_SURGE_VOL
@@ -30,8 +32,7 @@ def start():
             return False
         return True
 
-    webullsdk.init_webull(paper=PAPER_TRADE)
-    webullsdk.login()
+    webullsdk.login(paper=PAPER_TRADE)
 
     trading_ticker = None
 
@@ -58,6 +59,9 @@ def start():
 
     def _trade(charts):
 
+        global HOLDING_POSITION
+
+        symbol = trading_ticker['symbol']
         ticker_id = trading_ticker['ticker_id']
 
         # check timeout, skip this ticker if no trade during last 6 minutes
@@ -68,24 +72,74 @@ def start():
         _calculate_ema9(charts)
         current_candle = charts[0]
         prev_candle = charts[1]
-        # check low price above vwap and ema 9
-        if current_candle['low'] > current_candle['vwap'] and current_candle['low'] > current_candle['ema9']:
-            # check first candle make new high
-            if current_candle['close'] > prev_candle['high']:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                ask_price = quote['depth']['ntvAggAskList'][0]['price']
-                buy_quant = BUY_AMOUNT / ask_price
-                # submit limit order at ask price
-                submit_order = webullsdk.place_order(
+        if not HOLDING_POSITION:
+            # check low price above vwap and ema 9
+            if current_candle['low'] > current_candle['vwap'] and current_candle['low'] > current_candle['ema9']:
+                # check first candle make new high
+                if current_candle['high'] > prev_candle['high']:
+                    quote = webullsdk.get_quote(ticker_id=ticker_id)
+                    ask_price = quote['depth']['ntvAggAskList'][0]['price']
+                    buy_quant = BUY_AMOUNT / ask_price
+                    # submit limit order at ask price
+                    order_response = webullsdk.buy_limit_order(
+                        ticker_id=ticker_id,
+                        price=ask_price,
+                        quant=buy_quant)
+                    print("[{}] submit buy order <{}> [{}], quant: {}, limit price: {}".format(
+                        _get_now(), symbol, ticker_id, buy_quant, ask_price))
+                    if 'msg' in order_response:
+                        print("[{}] {}".format(
+                            _get_now(), order_response['msg']))
+                    else:
+                        # wait until order filled
+                        order_filled = False
+                        while not order_filled:
+                            print(
+                                "[{}] checking order filled...".format(_get_now()))
+                            positions = webullsdk.get_positions()
+                            if len(positions) > 0:
+                                order_filled = True
+                                HOLDING_POSITION = True
+                                print(
+                                    "[{}] order has been filled!".format(_get_now()))
+                            if order_filled:
+                                break
+                            # wait 1 sec
+                            time.sleep(1)
+        else:
+            position = webullsdk.get_positions()[0]
+            # simple count profit 2% and stop loss 1%
+            profit_loss_rate = float(position['unrealizedProfitLossRate'])
+            quantity = int(position['position'])
+            last_price = float(position['lastPrice'])
+            sell_price = last_price - 0.05
+            if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
+                order_response = order_response = webullsdk.buy_limit_order(
                     ticker_id=ticker_id,
-                    price=ask_price,
-                    action='BUY',
-                    order_type='LMT',
-                    quant=buy_quant,
-                    extend_hour=True)
-            # TODO
+                    price=sell_price,
+                    quant=quantity)
+                print("[{}] submit sell order <{}> [{}], quant: {}, limit price: {}".format(
+                    _get_now(), symbol, ticker_id, quantity, sell_price))
+                # wait until order filled
+                order_filled = False
+                while not order_filled:
+                    print("[{}] checking order filled...".format(_get_now()))
+                    positions = webullsdk.get_positions()
+                    if len(positions) == 0:
+                        order_filled = True
+                        HOLDING_POSITION = False
+                        print("[{}] order has been filled!".format(_get_now()))
+                    if order_filled:
+                        break
+                    # wait 1 sec
+                    time.sleep(1)
+
+                if order_filled:
+                    return True
+
         # TODO, buy after the first pull back
         # TODO, take profit along the way (sell half, half, half...)
+
         return False
 
     while _is_after_market():
@@ -102,6 +156,7 @@ def start():
 
             for gainer in top_10_gainers:
                 symbol = gainer["symbol"]
+                print("[{}] scanning <{}>...".format(_get_now(), symbol))
                 ticker_id = gainer["ticker_id"]
                 if symbol in TRADED_SYMBOLS:
                     continue

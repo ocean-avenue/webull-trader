@@ -7,16 +7,16 @@ from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS
 wb_instance = None
 
 
-def init_webull(paper=True):
+def login(paper=True):
     global wb_instance
     if paper:
         wb_instance = paper_webull()
     else:
         wb_instance = webull()
-
-
-def login():
-    input = open('sdk/webull_credentials.json', 'r')
+    credential_file = 'credentials/webull_live.json'
+    if paper:
+        credential_file = 'credentials/webull_paper.json'
+    input = open(credential_file, 'r')
     credential_data = json.load(input)
     input.close()
 
@@ -31,11 +31,15 @@ def login():
     credential_data['accessToken'] = n_data['accessToken']
     credential_data['tokenExpireTime'] = n_data['tokenExpireTime']
 
-    output = open('sdk/webull_credentials.json', 'w')
+    output = open(credential_file, 'w')
     json.dump(credential_data, output)
     output.close()
 
     wb_instance.get_account_id()
+
+
+def logout():
+    wb_instance.logout()
 
 
 # {
@@ -142,20 +146,78 @@ def get_quote(ticker_id=None):
 def get_1m_bars(ticker_id=None, count=10):
     return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
 
+# symbol = 'AVCT'
+# ticker_id = 925348770
 
-def place_order(ticker_id=None, price=0, action='BUY', order_type='LMT', enforce='GTC', quant=0, extend_hour=True, stop_price=None, trial_value=0, trial_type='DOLLAR'):
-    wb_instance.place_order(
+
+def buy_limit_order(ticker_id=None, price=0, quant=0):
+    return wb_instance.place_order(
         tId=ticker_id,
         price=price,
-        action=action,
-        orderType=order_type,
-        enforce=enforce,
+        action='BUY',
+        orderType='LMT',
         quant=quant,
-        outsideRegularTradingHour=extend_hour,
-        stpPrice=stop_price,
-        trial_value=trial_value,
-        trial_type=trial_type,
     )
+
+
+def sell_limit_order(ticker_id=None, price=0, quant=0):
+    return wb_instance.place_order(
+        tId=ticker_id,
+        price=price,
+        action='SELL',
+        orderType='LMT',
+        quant=quant,
+    )
+
+# [
+#    {
+#       "id":10395509,
+#       "accountId":4493986,
+#       "paperId":1,
+#       "ticker":{
+#          "tickerId":925348770,
+#          "symbol":"AVCT",
+#          "name":"American Virtual Cloud Technologies",
+#          "tinyName":"American Virtual Cloud Technologies",
+#          "listStatus":1,
+#          "exchangeCode":"NAS",
+#          "exchangeId":10,
+#          "extType":[
+
+#          ],
+#          "type":2,
+#          "regionId":6,
+#          "regionName":"美国",
+#          "regionIsoCode":"US",
+#          "currencyId":247,
+#          "currencyCode":"USD",
+#          "disExchangeCode":"NASDAQ",
+#          "disSymbol":"AVCT"
+#       },
+#       "status":1,
+#       "position":"1",
+#       "cost":"7.55",
+#       "costPrice":"7.550",
+#       "currency":"USD",
+#       "lastPrice":"7.56",
+#       "marketValue":"7.56",
+#       "unrealizedProfitLoss":"0.01",
+#       "unrealizedProfitLossRate":"0.0013",
+#       "lotSize":1
+#    }
+# ]
+
+
+def get_positions():
+    return wb_instance.get_positions()
+
+
+def get_current_orders():
+    return wb_instance.get_current_orders()
+
+
+def get_history_orders():
+    return wb_instance.get_history_orders()
 
 
 def _get_browser_headers():
