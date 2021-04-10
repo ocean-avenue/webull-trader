@@ -187,6 +187,8 @@ def start():
 
         time.sleep(5)
 
+    webullsdk.logout()
+
 
 if __name__ == "django.core.management.commands.shell":
     start()
