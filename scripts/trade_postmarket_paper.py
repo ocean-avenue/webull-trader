@@ -32,6 +32,12 @@ def start():
             return False
         return True
 
+    while not _is_after_market():
+        print("[{}] wait for after market open...".format(_get_now()))
+        time.sleep(1)
+
+    print("[{}] after market started!".format(_get_now()))
+
     webullsdk.login(paper=PAPER_TRADE)
 
     trading_ticker = None
@@ -188,6 +194,8 @@ def start():
         time.sleep(5)
 
     webullsdk.logout()
+
+    print("[{}] after market ended!".format(_get_now()))
 
 
 if __name__ == "django.core.management.commands.shell":
