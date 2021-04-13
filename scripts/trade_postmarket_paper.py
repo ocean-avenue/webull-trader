@@ -30,6 +30,8 @@ def start():
         now = datetime.now()
         if now.hour < 13 or now.hour >= 17:
             return False
+        if now.hour == 13 and now.minute == 0 and now.second < 30:
+            return False
         return True
 
     while not _is_after_market():
