@@ -66,9 +66,12 @@ def start():
     def _trade(charts):
 
         global HOLDING_POSITION
+        global BUY_AMOUNT
 
         symbol = trading_ticker['symbol']
         ticker_id = trading_ticker['ticker_id']
+
+        print("trading {}...".format(symbol))
 
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
@@ -84,7 +87,7 @@ def start():
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
-                    ask_price = quote['depth']['ntvAggAskList'][0]['price']
+                    ask_price = float(quote['depth']['ntvAggAskList'][0]['price'])
                     buy_quant = BUY_AMOUNT / ask_price
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
