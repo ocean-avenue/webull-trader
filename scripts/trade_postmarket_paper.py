@@ -84,14 +84,14 @@ def start():
         current_candle = charts[0]
         prev_candle = charts[1]
         if not HOLDING_POSITION:
-            current_price = current_candle['close']
+            current_low = current_candle['low']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = current_candle['volume']
-            print("[{}] trading {}: price {}, vwap {}, ema9 {}, volume {}".format(
-                _get_now(), symbol, current_price, current_vwap, current_ema9, current_volume))
+            print("[{}] trading {}: low {}, vwap {}, ema9 {}, volume {}".format(
+                _get_now(), symbol, current_low, current_vwap, current_ema9, current_volume))
             # check low price above vwap and ema 9
-            if current_price > current_candle['vwap'] and current_price > current_candle['ema9']:
+            if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -133,7 +133,7 @@ def start():
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 bid_price = float(
                     quote['depth']['ntvAggBidList'][0]['price'])
-                order_response = order_response = webullsdk.buy_limit_order(
+                order_response = order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=quantity)
