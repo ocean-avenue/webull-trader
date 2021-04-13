@@ -4,7 +4,7 @@ PAPER_TRADE = True
 
 TRADED_SYMBOLS = []
 MIN_SURGE_AMOUNT = 21000
-MIN_SURGE_VOL = 1000
+MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 6  # trading time out in minutes
 BUY_AMOUNT = 1000
@@ -22,6 +22,7 @@ def start():
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
     global TRADE_TIMEOUT
+    global BUY_AMOUNT
 
     def _get_now():
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -38,8 +39,9 @@ def start():
         print("[{}] wait for after market open...".format(_get_now()))
         time.sleep(1)
 
-    print("[{}] after market started!".format(_get_now()))
+    print("[{}] after market trading started!".format(_get_now()))
 
+    print("[{}] login webull...".format(_get_now()))
     webullsdk.login(paper=PAPER_TRADE)
 
     trading_ticker = None
@@ -68,30 +70,34 @@ def start():
     def _trade(charts):
 
         global HOLDING_POSITION
-        global BUY_AMOUNT
 
         symbol = trading_ticker['symbol']
         ticker_id = trading_ticker['ticker_id']
 
-        print("[{}] in trading {}...".format(_get_now(), symbol))
-
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
         if trading_ticker['holding_quantity'] == 0 and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
+            print("[{}] trading {} timeout!".format(_get_now(), symbol))
             return True
         # calculate and fill ema 9 data
         _calculate_ema9(charts)
         current_candle = charts[0]
         prev_candle = charts[1]
         if not HOLDING_POSITION:
+            current_price = current_candle['close']
+            current_vwap = current_candle['vwap']
+            current_ema9 = current_candle['ema9']
+            current_volume = current_candle['volume']
+            print("[{}] trading {}: price {}, vwap {}, ema9 {}, volume {}".format(
+                _get_now(), symbol, current_price, current_vwap, current_ema9, current_volume))
             # check low price above vwap and ema 9
-            if current_candle['low'] > current_candle['vwap'] and current_candle['low'] > current_candle['ema9']:
+            if current_price > current_candle['vwap'] and current_price > current_candle['ema9']:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
                     ask_price = float(
                         quote['depth']['ntvAggAskList'][0]['price'])
-                    buy_quant = BUY_AMOUNT / ask_price
+                    buy_quant = (int)(BUY_AMOUNT / ask_price)
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
                         ticker_id=ticker_id,
@@ -136,6 +142,7 @@ def start():
                 # wait until order filled
                 order_filled = False
                 while not order_filled:
+                    # TODO, re-submit sell order if timeout
                     print("[{}] checking order filled...".format(_get_now()))
                     positions = webullsdk.get_positions()
                     if len(positions) == 0:
@@ -200,9 +207,10 @@ def start():
 
         time.sleep(5)
 
+    print("[{}] logout webull...".format(_get_now()))
     webullsdk.logout()
 
-    print("[{}] after market ended!".format(_get_now()))
+    print("[{}] after market trading ended!".format(_get_now()))
 
 
 if __name__ == "django.core.management.commands.shell":
