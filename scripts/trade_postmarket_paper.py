@@ -71,7 +71,7 @@ def start():
         symbol = trading_ticker['symbol']
         ticker_id = trading_ticker['ticker_id']
 
-        print("trading {}...".format(symbol))
+        print("[{}] in trading {}...".format(_get_now(), symbol))
 
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
@@ -87,7 +87,8 @@ def start():
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
-                    ask_price = float(quote['depth']['ntvAggAskList'][0]['price'])
+                    ask_price = float(
+                        quote['depth']['ntvAggAskList'][0]['price'])
                     buy_quant = BUY_AMOUNT / ask_price
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
@@ -117,18 +118,19 @@ def start():
                             time.sleep(1)
         else:
             position = webullsdk.get_positions()[0]
-            # simple count profit 2% and stop loss 1%
             profit_loss_rate = float(position['unrealizedProfitLossRate'])
             quantity = int(position['position'])
-            last_price = float(position['lastPrice'])
-            sell_price = last_price - 0.05
+            # simple count profit 2% and stop loss 1%
             if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                bid_price = float(
+                    quote['depth']['ntvAggBidList'][0]['price'])
                 order_response = order_response = webullsdk.buy_limit_order(
                     ticker_id=ticker_id,
-                    price=sell_price,
+                    price=bid_price,
                     quant=quantity)
                 print("[{}] submit sell order <{}> [{}], quant: {}, limit price: {}".format(
-                    _get_now(), symbol, ticker_id, quantity, sell_price))
+                    _get_now(), symbol, ticker_id, quantity, bid_price))
                 # wait until order filled
                 order_filled = False
                 while not order_filled:
