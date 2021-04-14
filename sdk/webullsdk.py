@@ -231,7 +231,7 @@ def _get_browser_headers():
 # [{'timestamp': 1617840000, 'open': 8.65, 'close': 8.65, 'high': 8.65, 'low': 8.65, 'volume': 100, 'vwap': 8.46}, ...]
 
 def get_1m_charts(ticker_id, count=20):
-    # time.sleep(1)
+    time.sleep(1)
     session = requests.Session()
     url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
     res = session.get(url, headers=_get_browser_headers())

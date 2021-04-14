@@ -28,10 +28,12 @@ def start():
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def _is_after_market():
+        # NY after market hour from 16:00 to 20:00
         now = datetime.now()
-        if now.hour < 13 or now.hour >= 17:
+        if now.hour < 16 or now.hour >= 20:
             return False
-        if now.hour == 13 and now.minute == 0 and now.second < 30:
+        # wait 30 second for webull get after market data ready
+        if now.hour == 16 and now.minute == 0 and now.second < 30:
             return False
         return True
 
