@@ -2,7 +2,6 @@
 
 PAPER_TRADE = True
 
-TRADED_SYMBOLS = []
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
@@ -18,7 +17,6 @@ def start():
     from sdk import webullsdk
 
     global PAPER_TRADE
-    global TRADED_SYMBOLS
     global MIN_SURGE_AMOUNT
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
@@ -193,8 +191,6 @@ def start():
                 symbol = gainer["symbol"]
                 print("[{}] scanning <{}>...".format(_get_now(), symbol))
                 ticker_id = gainer["ticker_id"]
-                if symbol in TRADED_SYMBOLS:
-                    continue
                 change_percentage = gainer["change_percentage"]
                 # check if change >= 8%
                 if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
@@ -213,11 +209,11 @@ def start():
                             "ticker_id": ticker_id,
                             "start_time": datetime.now(),
                         }
-                        TRADED_SYMBOLS.append(symbol)
                         print("[{}] found <{}> to trade with...".format(
                             _get_now(), symbol))
                         if _trade(charts):
                             trading_ticker = None
+                        break
 
         time.sleep(5)
 
