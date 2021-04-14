@@ -89,7 +89,7 @@ def start():
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = current_candle['volume']
-            print("[{}] trading <{}>[{}], low {}, vwap {}, ema9 {}, volume {}".format(
+            print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
                 _get_now(), symbol, ticker_id, current_low, current_vwap, current_ema9, current_volume))
             # check low price above vwap and ema 9
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
@@ -102,7 +102,7 @@ def start():
                         quote['depth']['ntvAggBidList'][0]['price'])
                     gap = (ask_price - bid_price) / bid_price
                     if gap > MAX_GAP:
-                        print("[{}] stop <{}>[{}], ask {}, bid {}, gap too large!".format(
+                        print("[{}] stop <{}>[{}], ask: {}, bid: {}, gap too large!".format(
                             _get_now(), symbol, ticker_id, ask_price, bid_price))
                         return True
                     buy_quant = (int)(BUY_AMOUNT / ask_price)
@@ -138,10 +138,12 @@ def start():
                 print("[{}] error <{}>[{}], no position".format(
                     _get_now(), symbol, ticker_id))
             position = positions[0]
+            cost = float(position['cost'])
+            last_price = float(position['lastPrice'])
             profit_loss_rate = float(position['unrealizedProfitLossRate'])
             quantity = int(position['position'])
-            print("[{}] checking <{}>[{}], ratio {}%".format(
-                _get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
+            print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
+                _get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             # simple count profit 2% and stop loss 1%
             if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -178,6 +180,7 @@ def start():
 
         return False
 
+    # main loop
     while _is_after_market():
         if trading_ticker:
             # already found trading ticker
