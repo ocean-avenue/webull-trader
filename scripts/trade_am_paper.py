@@ -24,6 +24,7 @@ def start():
     global SURGE_MIN_CHANGE_PERCENTAGE
     global TRADE_TIMEOUT
     global BUY_AMOUNT
+    global MAX_GAP
 
     def _get_now():
         return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
