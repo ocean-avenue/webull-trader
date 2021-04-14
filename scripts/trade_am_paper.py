@@ -9,6 +9,7 @@ SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 6  # trading time out in minutes
 BUY_AMOUNT = 1000
 HOLDING_POSITION = False
+MAX_GAP = 0.02
 
 
 def start():
@@ -88,7 +89,7 @@ def start():
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = current_candle['volume']
-            print("[{}] trading {}: low {}, vwap {}, ema9 {}, volume {}".format(
+            print("[{}] trading {}, low {}, vwap {}, ema9 {}, volume {}".format(
                 _get_now(), symbol, current_low, current_vwap, current_ema9, current_volume))
             # check low price above vwap and ema 9
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
@@ -97,6 +98,13 @@ def start():
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
                     ask_price = float(
                         quote['depth']['ntvAggAskList'][0]['price'])
+                    bid_price = float(
+                        quote['depth']['ntvAggBidList'][0]['price'])
+                    gap = (ask_price - bid_price) / bid_price
+                    if gap > MAX_GAP:
+                        print("[{}] stop {}, ask {}, bid {}, gap too large!".format(
+                            _get_now(), symbol, ask_price, bid_price))
+                        return True
                     buy_quant = (int)(BUY_AMOUNT / ask_price)
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
