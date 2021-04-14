@@ -5,7 +5,7 @@ PAPER_TRADE = True
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
-TRADE_TIMEOUT = 6  # trading time out in minutes
+TRADE_TIMEOUT = 5  # trading time out in minutes
 BUY_AMOUNT = 1000
 HOLDING_POSITION = False
 MAX_GAP = 0.02
@@ -77,7 +77,8 @@ def start():
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
         if not HOLDING_POSITION and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
-            print("[{}] trading {} timeout!".format(_get_now(), symbol))
+            print("[{}] trading <{}>[{}] timeout!".format(
+                _get_now(), symbol, ticker_id))
             return True
         # calculate and fill ema 9 data
         _calculate_ema9(charts)
@@ -88,8 +89,8 @@ def start():
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = current_candle['volume']
-            print("[{}] trading {}, low {}, vwap {}, ema9 {}, volume {}".format(
-                _get_now(), symbol, current_low, current_vwap, current_ema9, current_volume))
+            print("[{}] trading <{}>[{}], low {}, vwap {}, ema9 {}, volume {}".format(
+                _get_now(), symbol, ticker_id, current_low, current_vwap, current_ema9, current_volume))
             # check low price above vwap and ema 9
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
                 # check first candle make new high
@@ -101,8 +102,8 @@ def start():
                         quote['depth']['ntvAggBidList'][0]['price'])
                     gap = (ask_price - bid_price) / bid_price
                     if gap > MAX_GAP:
-                        print("[{}] stop {}, ask {}, bid {}, gap too large!".format(
-                            _get_now(), symbol, ask_price, bid_price))
+                        print("[{}] stop <{}>[{}], ask {}, bid {}, gap too large!".format(
+                            _get_now(), symbol, ticker_id, ask_price, bid_price))
                         return True
                     buy_quant = (int)(BUY_AMOUNT / ask_price)
                     # submit limit order at ask price
@@ -110,7 +111,7 @@ def start():
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    print("[{}] submit buy order <{}> [{}], quant: {}, limit price: {}".format(
+                    print("[{}] submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         _get_now(), symbol, ticker_id, buy_quant, ask_price))
                     if 'msg' in order_response:
                         print("[{}] {}".format(
@@ -120,13 +121,13 @@ def start():
                         order_filled = False
                         while not order_filled:
                             print(
-                                "[{}] checking order filled...".format(_get_now()))
+                                "[{}] checking order <{}>[{}] filled...".format(_get_now(), symbol, ticker_id))
                             positions = webullsdk.get_positions()
                             if len(positions) > 0:
                                 order_filled = True
                                 HOLDING_POSITION = True
                                 print(
-                                    "[{}] order has been filled!".format(_get_now()))
+                                    "[{}] order <{}>[{}] has been filled!".format(_get_now(), symbol, ticker_id))
                             if order_filled:
                                 break
                             # wait 1 sec
@@ -134,13 +135,13 @@ def start():
         else:
             positions = webullsdk.get_positions()
             if len(positions) == 0:
-                print("[{}] error {}, no position".format(
-                    _get_now(), symbol))
+                print("[{}] error <{}>[{}], no position".format(
+                    _get_now(), symbol, ticker_id))
             position = positions[0]
             profit_loss_rate = float(position['unrealizedProfitLossRate'])
             quantity = int(position['position'])
-            print("[{}] checking {}, ratio {}%".format(
-                _get_now(), symbol, round(profit_loss_rate * 100, 2)))
+            print("[{}] checking <{}>[{}], ratio {}%".format(
+                _get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
             # simple count profit 2% and stop loss 1%
             if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -150,18 +151,20 @@ def start():
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=quantity)
-                print("[{}] submit sell order <{}> [{}], quant: {}, limit price: {}".format(
+                print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     _get_now(), symbol, ticker_id, quantity, bid_price))
                 # wait until order filled
                 order_filled = False
                 while not order_filled:
                     # TODO, re-submit sell order if timeout
-                    print("[{}] checking order filled...".format(_get_now()))
+                    print("[{}] checking order <{}>[{}] filled...".format(
+                        _get_now(), symbol, ticker_id))
                     positions = webullsdk.get_positions()
                     if len(positions) == 0:
                         order_filled = True
                         HOLDING_POSITION = False
-                        print("[{}] order has been filled!".format(_get_now()))
+                        print("[{}] order <{}>[{}] has been filled!".format(
+                            _get_now(), symbol, ticker_id))
                     if order_filled:
                         break
                     # wait 1 sec
@@ -189,8 +192,8 @@ def start():
 
             for gainer in top_10_gainers:
                 symbol = gainer["symbol"]
-                print("[{}] scanning <{}>...".format(_get_now(), symbol))
                 ticker_id = gainer["ticker_id"]
+                print("[{}] scanning <{}>[{}]...".format(_get_now(), symbol, ticker_id))
                 change_percentage = gainer["change_percentage"]
                 # check if change >= 8%
                 if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
@@ -209,8 +212,8 @@ def start():
                             "ticker_id": ticker_id,
                             "start_time": datetime.now(),
                         }
-                        print("[{}] found <{}> to trade with...".format(
-                            _get_now(), symbol))
+                        print("[{}] found <{}>[{}] to trade!".format(
+                            _get_now(), symbol, ticker_id))
                         if _trade(charts):
                             trading_ticker = None
                         break
