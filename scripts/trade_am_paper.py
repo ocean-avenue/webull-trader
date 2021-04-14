@@ -78,7 +78,7 @@ def start():
 
         # check timeout, skip this ticker if no trade during last 6 minutes
         now_time = datetime.now()
-        if trading_ticker['holding_quantity'] == 0 and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
+        if not HOLDING_POSITION and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
             print("[{}] trading {} timeout!".format(_get_now(), symbol))
             return True
         # calculate and fill ema 9 data
@@ -134,9 +134,15 @@ def start():
                             # wait 1 sec
                             time.sleep(1)
         else:
-            position = webullsdk.get_positions()[0]
+            positions = webullsdk.get_positions()
+            if len(positions) == 0:
+                print("[{}] error {}, no position".format(
+                    _get_now(), symbol))
+            position = positions[0]
             profit_loss_rate = float(position['unrealizedProfitLossRate'])
             quantity = int(position['position'])
+            print("[{}] checking {}, ratio {}%".format(
+                _get_now(), symbol, round(profit_loss_rate * 100, 2)))
             # simple count profit 2% and stop loss 1%
             if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -206,7 +212,6 @@ def start():
                             "symbol": symbol,
                             "ticker_id": ticker_id,
                             "start_time": datetime.now(),
-                            "holding_quantity": 0,
                         }
                         TRADED_SYMBOLS.append(symbol)
                         print("[{}] found <{}> to trade with...".format(
