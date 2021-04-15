@@ -7,7 +7,6 @@ MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading time out in minutes
 BUY_AMOUNT = 1000
-HOLDING_POSITION = False
 MAX_GAP = 0.02
 
 
@@ -34,26 +33,74 @@ def start():
     print("[{}] login webull...".format(utils.get_now()))
     webullsdk.login(paper=PAPER_TRADE)
 
-    trading_tickers = []
+    tracking_tickers = {}
 
-    def _trade(ticker, bars):
+    def _check_buy_order_filled(ticker):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        print("[{}] checking buy order <{}>[{}] filled...".format(
+            utils.get_now(), symbol, ticker_id))
+        positions = webullsdk.get_positions()
+        for position in positions:
+            if position['ticker']['symbol'] == symbol:
+                quantity = int(position['position'])
+                # update tracking_tickers
+                tracking_tickers[symbol]['positions'] = quantity
+                tracking_tickers[symbol]['pending_buy'] = False
+                print("[{}] buy order <{}>[{}] filled!".format(
+                    utils.get_now(), symbol, ticker_id))
+                break
 
-        global HOLDING_POSITION
+    def _check_sell_order_filled(ticker):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        print("[{}] checking sell order <{}>[{}] filled...".format(
+            utils.get_now(), symbol, ticker_id))
+        positions = webullsdk.get_positions()
+        order_filled = True
+        for position in positions:
+            if position['ticker']['symbol'] == symbol:
+                order_filled = False
+        if order_filled:
+            # update tracking_tickers
+            tracking_tickers[symbol]['positions'] = 0
+            tracking_tickers[symbol]['pending_sell'] = False
+            print("[{}] sell order <{}>[{}] filled!".format(
+                utils.get_now(), symbol, ticker_id))
 
-        symbol = trading_ticker['symbol']
-        ticker_id = trading_ticker['ticker_id']
+    def _do_trade(ticker):
 
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+
+        pending_buy = ticker['pending_buy']
+        if pending_buy:
+            _check_buy_order_filled(ticker)
+            return
+
+        pending_sell = ticker['pending_sell']
+        if pending_sell:
+            _check_sell_order_filled(ticker)
+            return
+
+        holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last TRADE_TIMEOUT minutes
         now_time = datetime.now()
-        if not HOLDING_POSITION and (now_time - trading_ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
-            print("[{}] trading <{}>[{}] timeout!".format(
+        if holding_quantity == 0 and (now_time - ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
+            print("[{}] trading <{}>[{}] session timeout!".format(
                 utils.get_now(), symbol, ticker_id))
-            return True
-        # calculate and fill ema 9 data
-        bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
-        current_candle = bars.iloc[-1]
-        prev_candle = bars.iloc[-2]
-        if not HOLDING_POSITION:
+            # remove from monitor
+            del tracking_tickers[symbol]
+            return
+
+        if holding_quantity == 0:
+            # fetch 1m bar charts
+            bars = webullsdk.get_1m_bars(ticker_id, count=30)
+            # calculate and fill ema 9 data
+            bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
+            current_candle = bars.iloc[-1]
+            prev_candle = bars.iloc[-2]
+            # current price data
             current_low = current_candle['low']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
@@ -73,7 +120,9 @@ def start():
                     if gap > MAX_GAP:
                         print("[{}] stop <{}>[{}], ask: {}, bid: {}, gap too large!".format(
                             utils.get_now(), symbol, ticker_id, ask_price, bid_price))
-                        return True
+                        # remove from monitor
+                        del tracking_tickers[symbol]
+                        return
                     buy_quant = (int)(BUY_AMOUNT / ask_price)
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
@@ -86,31 +135,24 @@ def start():
                         print("[{}] {}".format(
                             utils.get_now(), order_response['msg']))
                     else:
-                        # wait until order filled
-                        order_filled = False
-                        while not order_filled:
-                            print(
-                                "[{}] checking order <{}>[{}] filled...".format(utils.get_now(), symbol, ticker_id))
-                            positions = webullsdk.get_positions()
-                            if len(positions) > 0:
-                                order_filled = True
-                                HOLDING_POSITION = True
-                                print(
-                                    "[{}] order <{}>[{}] has been filled!".format(utils.get_now(), symbol, ticker_id))
-                            if order_filled:
-                                break
-                            # wait 1 sec
-                            time.sleep(1)
+                        # mark pending buy
+                        tracking_tickers[symbol]['pending_buy'] = True
         else:
             positions = webullsdk.get_positions()
-            if len(positions) == 0:
-                print("[{}] error <{}>[{}], no position".format(
+            ticker_position = None
+            for position in positions:
+                if position['ticker']['symbol'] == symbol:
+                    ticker_position = position
+                    break
+            if not ticker_position:
+                print("[{}] finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
-            position = positions[0]
-            cost = float(position['cost'])
-            last_price = float(position['lastPrice'])
-            profit_loss_rate = float(position['unrealizedProfitLossRate'])
-            quantity = int(position['position'])
+                return
+            cost = float(ticker_position['cost'])
+            last_price = float(ticker_position['lastPrice'])
+            profit_loss_rate = float(
+                ticker_position['unrealizedProfitLossRate'])
+            quantity = int(ticker_position['position'])
             print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
                 utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             # simple count profit 2% and stop loss 1%
@@ -118,45 +160,27 @@ def start():
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 bid_price = float(
                     quote['depth']['ntvAggBidList'][0]['price'])
-                order_response = order_response = webullsdk.sell_limit_order(
+                order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=quantity)
                 print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, quantity, bid_price))
-                # wait until order filled
-                order_filled = False
-                while not order_filled:
-                    # TODO, re-submit sell order if timeout
-                    print("[{}] checking order <{}>[{}] filled...".format(
-                        utils.get_now(), symbol, ticker_id))
-                    positions = webullsdk.get_positions()
-                    if len(positions) == 0:
-                        order_filled = True
-                        HOLDING_POSITION = False
-                        print("[{}] order <{}>[{}] has been filled!".format(
-                            utils.get_now(), symbol, ticker_id))
-                    if order_filled:
-                        break
-                    # wait 1 sec
-                    time.sleep(1)
-
-                if order_filled:
-                    return True
+                if 'msg' in order_response:
+                    print("[{}] {}".format(
+                        utils.get_now(), order_response['msg']))
+                else:
+                    # mark pending sell
+                    tracking_tickers[symbol]['pending_sell'] = True
 
         # TODO, buy after the first pull back
         # TODO, take profit along the way (sell half, half, half...)
 
-        return False
-
     # main loop
     while utils.is_after_market():
-        for ticker in trading_tickers:
-            # already found trading ticker
-            ticker_id = ticker["ticker_id"]
-            charts = webullsdk.get_1m_charts(ticker_id)
-            if _trade(charts):
-                trading_ticker = None
+        # trading tickers
+        for symbol, ticker in tracking_tickers.items():
+            _do_trade(ticker)
 
         # find trading ticker in top gainers
         top_gainers = webullsdk.get_after_market_gainers()
@@ -164,6 +188,9 @@ def start():
 
         for gainer in top_10_gainers:
             symbol = gainer["symbol"]
+            # check if ticker already in monitor
+            if symbol in tracking_tickers:
+                continue
             ticker_id = gainer["ticker_id"]
             print("[{}] scanning <{}>[{}]...".format(
                 utils.get_now(), symbol, ticker_id))
@@ -183,15 +210,17 @@ def start():
                     # check if trasaction amount meets requirement
                     if latest_close * volume >= MIN_SURGE_AMOUNT and volume >= MIN_SURGE_VOL:
                         # found trading ticker
-                        trading_ticker = {
+                        ticker = {
                             "symbol": symbol,
                             "ticker_id": ticker_id,
                             "start_time": datetime.now(),
+                            "pending_buy": False,
+                            "pending_sell": False,
+                            "positions": 0,
                         }
+                        tracking_tickers[symbol] = ticker
                         print("[{}] found <{}>[{}] to trade!".format(
                             utils.get_now(), symbol, ticker_id))
-                        if _trade(bars):
-                            trading_ticker = None
         # at least slepp 1 sec
         time.sleep(1)
 
