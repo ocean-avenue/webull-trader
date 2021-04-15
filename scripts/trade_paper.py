@@ -179,7 +179,8 @@ def start():
     # main loop
     while utils.is_after_market():
         # trading tickers
-        for symbol, ticker in tracking_tickers.items():
+        for symbol in list(tracking_tickers):
+            ticker = tracking_tickers[symbol]
             _do_trade(ticker)
 
         # find trading ticker in top gainers
