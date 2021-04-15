@@ -34,9 +34,9 @@ def start():
     print("[{}] login webull...".format(utils.get_now()))
     webullsdk.login(paper=PAPER_TRADE)
 
-    trading_ticker = None
+    trading_tickers = []
 
-    def _trade(bars):
+    def _trade(ticker, bars):
 
         global HOLDING_POSITION
 
@@ -151,51 +151,47 @@ def start():
 
     # main loop
     while utils.is_after_market():
-        if trading_ticker:
+        for ticker in trading_tickers:
             # already found trading ticker
-            ticker_id = trading_ticker["ticker_id"]
+            ticker_id = ticker["ticker_id"]
             charts = webullsdk.get_1m_charts(ticker_id)
             if _trade(charts):
                 trading_ticker = None
-        else:
-            # find trading ticker in top gainers
-            top_gainers = webullsdk.get_after_market_gainers()
-            top_10_gainers = top_gainers[:10]
 
-            for gainer in top_10_gainers:
-                symbol = gainer["symbol"]
-                ticker_id = gainer["ticker_id"]
-                print("[{}] scanning <{}>[{}]...".format(
-                    utils.get_now(), symbol, ticker_id))
-                change_percentage = gainer["change_percentage"]
-                # check if change >= 8%
-                if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
-                    bars = webullsdk.get_1m_bars(ticker_id, count=30)
-                    latest_bar = bars.iloc[-1]
-                    latest_index = bars.index[-1]
-                    latest_timestamp = int(datetime.timestamp(
-                        latest_index.to_pydatetime()))
-                    current_timestamp = int(datetime.timestamp(datetime.now()))
-                    # check if have valid latest chart data, delay no more than 1 minute
-                    if current_timestamp - latest_timestamp <= 60:
-                        latest_close = latest_bar["close"]
-                        volume = int(latest_bar["volume"])
-                        # check if trasaction amount meets requirement
-                        if (
-                            latest_close * volume >= MIN_SURGE_AMOUNT
-                            and volume >= MIN_SURGE_VOL
-                        ):
-                            # found trading ticker
-                            trading_ticker = {
-                                "symbol": symbol,
-                                "ticker_id": ticker_id,
-                                "start_time": datetime.now(),
-                            }
-                            print("[{}] found <{}>[{}] to trade!".format(
-                                utils.get_now(), symbol, ticker_id))
-                            if _trade(bars):
-                                trading_ticker = None
-                            break
+        # find trading ticker in top gainers
+        top_gainers = webullsdk.get_after_market_gainers()
+        top_10_gainers = top_gainers[:10]
+
+        for gainer in top_10_gainers:
+            symbol = gainer["symbol"]
+            ticker_id = gainer["ticker_id"]
+            print("[{}] scanning <{}>[{}]...".format(
+                utils.get_now(), symbol, ticker_id))
+            change_percentage = gainer["change_percentage"]
+            # check if change >= 8%
+            if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
+                bars = webullsdk.get_1m_bars(ticker_id, count=30)
+                latest_bar = bars.iloc[-1]
+                latest_index = bars.index[-1]
+                latest_timestamp = int(datetime.timestamp(
+                    latest_index.to_pydatetime()))
+                current_timestamp = int(datetime.timestamp(datetime.now()))
+                # check if have valid latest chart data, delay no more than 1 minute
+                if current_timestamp - latest_timestamp <= 60:
+                    latest_close = latest_bar["close"]
+                    volume = int(latest_bar["volume"])
+                    # check if trasaction amount meets requirement
+                    if latest_close * volume >= MIN_SURGE_AMOUNT and volume >= MIN_SURGE_VOL:
+                        # found trading ticker
+                        trading_ticker = {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "start_time": datetime.now(),
+                        }
+                        print("[{}] found <{}>[{}] to trade!".format(
+                            utils.get_now(), symbol, ticker_id))
+                        if _trade(bars):
+                            trading_ticker = None
         # at least slepp 1 sec
         time.sleep(1)
 
