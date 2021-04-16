@@ -72,6 +72,7 @@ def start():
             # update tracking_tickers
             tracking_tickers[symbol]['positions'] = 0
             tracking_tickers[symbol]['pending_sell'] = False
+            tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             print("[{}] sell order <{}>[{}] filled!".format(
                 utils.get_now(), symbol, ticker_id))
 
@@ -128,6 +129,11 @@ def start():
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
+                    if utils.check_since_last_sell_too_short(ticker['last_sell_time'], bars):
+                        print("[{}] <{}>[{}] on hold, do not buy too quick since last sell!".format(
+                            utils.get_now(), symbol, ticker_id))
+                        return
+
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
                     if quote == None:
                         return
@@ -234,10 +240,11 @@ def start():
                         ticker = {
                             "symbol": symbol,
                             "ticker_id": ticker_id,
-                            "start_time": datetime.now(),
                             "pending_buy": False,
                             "pending_sell": False,
                             "positions": 0,
+                            "start_time": datetime.now(),
+                            "last_sell_time": None,
                         }
                         tracking_tickers[symbol] = ticker
                         print("[{}] found <{}>[{}] to trade!".format(
