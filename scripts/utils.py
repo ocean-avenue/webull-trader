@@ -6,7 +6,9 @@ def get_now():
 
 
 def is_after_market():
-    # NY after market hour from 16:00 to 20:00
+    """
+    NY after market hour from 16:00 to 20:00
+    """
     now = datetime.now()
     if now.hour < 16 or now.hour >= 20:
         return False
@@ -15,10 +17,23 @@ def is_after_market():
         return False
     return True
 
-# https://school.stockcharts.com/doku.php?id=technical_indicators:moving_averages
+
+def check_bars_updated(bars):
+    """
+    check if have valid latest chart data, delay no more than 1 minute
+    """
+    latest_index = bars.index[-1]
+    latest_timestamp = int(datetime.timestamp(latest_index.to_pydatetime()))
+    current_timestamp = int(datetime.timestamp(datetime.now()))
+    if current_timestamp - latest_timestamp <= 60:
+        return True
+    return False
 
 
 def calculate_charts_ema9(charts):
+    """
+    https://school.stockcharts.com/doku.php?id=technical_indicators:moving_averages
+    """
     multiplier = 2 / (9 + 1)
     charts_length = len(charts)
     for i in range(0, charts_length):

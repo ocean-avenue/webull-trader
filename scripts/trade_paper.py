@@ -104,10 +104,19 @@ def start():
             bars = webullsdk.get_1m_bars(ticker_id, count=30)
             if bars.empty:
                 return
+
+            if not utils.check_bars_updated(bars):
+                print("[{}] <{}>[{}] charts is not updated, stop trading!".format(
+                    utils.get_now(), symbol, ticker_id))
+                # remove from monitor
+                del tracking_tickers[symbol]
+                return
+
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
             current_candle = bars.iloc[-1]
             prev_candle = bars.iloc[-2]
+
             # current price data
             current_low = current_candle['low']
             current_vwap = current_candle['vwap']
@@ -128,7 +137,7 @@ def start():
                         quote['depth']['ntvAggBidList'][0]['price'])
                     gap = (ask_price - bid_price) / bid_price
                     if gap > MAX_GAP:
-                        print("[{}] stop <{}>[{}], ask: {}, bid: {}, gap too large!".format(
+                        print("[{}] <{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
                             utils.get_now(), symbol, ticker_id, ask_price, bid_price))
                         # remove from monitor
                         del tracking_tickers[symbol]
@@ -216,12 +225,7 @@ def start():
                 if bars.empty:
                     continue
                 latest_bar = bars.iloc[-1]
-                latest_index = bars.index[-1]
-                latest_timestamp = int(datetime.timestamp(
-                    latest_index.to_pydatetime()))
-                current_timestamp = int(datetime.timestamp(datetime.now()))
-                # check if have valid latest chart data, delay no more than 1 minute
-                if current_timestamp - latest_timestamp <= 60:
+                if utils.check_bars_updated(bars):
                     latest_close = latest_bar["close"]
                     volume = int(latest_bar["volume"])
                     # check if trasaction amount meets requirement
