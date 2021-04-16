@@ -6,6 +6,7 @@ MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading time out in minutes
+REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
 BUY_AMOUNT = 1000
 MAX_GAP = 0.02
 
@@ -21,6 +22,7 @@ def start():
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
     global TRADE_TIMEOUT
+    global REFRESH_LOGIN_INTERVAL
     global BUY_AMOUNT
     global MAX_GAP
 
@@ -32,6 +34,7 @@ def start():
 
     print("[{}] login webull...".format(utils.get_now()))
     webullsdk.login(paper=PAPER_TRADE)
+    last_login_refresh_time = datetime.now()
 
     tracking_tickers = {}
 
@@ -41,6 +44,8 @@ def start():
         print("[{}] checking buy order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
+        if positions == None:
+            return
         for position in positions:
             if position['ticker']['symbol'] == symbol:
                 quantity = int(position['position'])
@@ -57,6 +62,8 @@ def start():
         print("[{}] checking sell order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
+        if positions == None:
+            return
         order_filled = True
         for position in positions:
             if position['ticker']['symbol'] == symbol:
@@ -85,8 +92,7 @@ def start():
 
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last TRADE_TIMEOUT minutes
-        now_time = datetime.now()
-        if holding_quantity == 0 and (now_time - ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
+        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
             print("[{}] trading <{}>[{}] session timeout!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
@@ -96,6 +102,8 @@ def start():
         if holding_quantity == 0:
             # fetch 1m bar charts
             bars = webullsdk.get_1m_bars(ticker_id, count=30)
+            if bars.empty:
+                return
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
             current_candle = bars.iloc[-1]
@@ -112,6 +120,8 @@ def start():
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
+                    if quote == None:
+                        return
                     ask_price = float(
                         quote['depth']['ntvAggAskList'][0]['price'])
                     bid_price = float(
@@ -139,6 +149,8 @@ def start():
                         tracking_tickers[symbol]['pending_buy'] = True
         else:
             positions = webullsdk.get_positions()
+            if positions == None:
+                return
             ticker_position = None
             for position in positions:
                 if position['ticker']['symbol'] == symbol:
@@ -158,6 +170,8 @@ def start():
             # simple count profit 2% and stop loss 1%
             if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
+                if quote == None:
+                    return
                 bid_price = float(
                     quote['depth']['ntvAggBidList'][0]['price'])
                 order_response = webullsdk.sell_limit_order(
@@ -199,6 +213,8 @@ def start():
             # check if change >= 8%
             if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
                 bars = webullsdk.get_1m_bars(ticker_id, count=30)
+                if bars.empty:
+                    continue
                 latest_bar = bars.iloc[-1]
                 latest_index = bars.index[-1]
                 latest_timestamp = int(datetime.timestamp(
@@ -222,6 +238,13 @@ def start():
                         tracking_tickers[symbol] = ticker
                         print("[{}] found <{}>[{}] to trade!".format(
                             utils.get_now(), symbol, ticker_id))
+
+        # refresh login
+        if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=REFRESH_LOGIN_INTERVAL):
+            print("[{}] refresh webull login...".format(utils.get_now()))
+            webullsdk.login(paper=PAPER_TRADE)
+            last_login_refresh_time = datetime.now()
+
         # at least slepp 1 sec
         time.sleep(1)
 

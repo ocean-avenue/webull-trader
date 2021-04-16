@@ -2,6 +2,8 @@ import requests
 import json
 import time
 from webull import webull, paper_webull
+import pandas as pd
+from scripts import utils
 from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
 
 wb_instance = None
@@ -127,7 +129,12 @@ def logout():
 # }
 
 def get_quote(ticker_id=None):
-    return wb_instance.get_quote(tId=ticker_id)
+    time.sleep(1)
+    try:
+        return wb_instance.get_quote(tId=ticker_id)
+    except Exception as e:
+        print("[{}] {}".format(utils.get_now(), e))
+        return None
 
 
 #                            open  high   low  close  volume  vwap
@@ -144,7 +151,12 @@ def get_quote(ticker_id=None):
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
 def get_1m_bars(ticker_id=None, count=10):
-    return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
+    time.sleep(1)
+    try:
+        return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
+    except Exception as e:
+        print("[{}] {}".format(utils.get_now(), e))
+        return pd.DataFrame()
 
 # symbol = 'AVCT'
 # ticker_id = 925348770
@@ -209,15 +221,30 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
 
 
 def get_positions():
-    return wb_instance.get_positions()
+    time.sleep(1)
+    try:
+        return wb_instance.get_positions()
+    except Exception as e:
+        print("[{}] {}".format(utils.get_now(), e))
+        return None
 
 
 def get_current_orders():
-    return wb_instance.get_current_orders()
+    time.sleep(1)
+    try:
+        return wb_instance.get_current_orders()
+    except Exception as e:
+        print("[{}] {}".format(utils.get_now(), e))
+        return None
 
 
 def get_history_orders():
-    return wb_instance.get_history_orders()
+    time.sleep(1)
+    try:
+        return wb_instance.get_history_orders()
+    except Exception as e:
+        print("[{}] {}".format(utils.get_now(), e))
+        return None
 
 
 def _get_browser_headers():
