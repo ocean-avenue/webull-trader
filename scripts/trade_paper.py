@@ -32,8 +32,8 @@ def start():
 
     print("[{}] after market trading started!".format(utils.get_now()))
 
-    print("[{}] login webull...".format(utils.get_now()))
     webullsdk.login(paper=PAPER_TRADE)
+    print("[{}] webull logged in".format(utils.get_now()))
     last_login_refresh_time = datetime.now()
 
     tracking_tickers = {}
@@ -122,7 +122,7 @@ def start():
             current_low = current_candle['low']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
-            current_volume = current_candle['volume']
+            current_volume = int(current_candle['volume'])
             print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
                 utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
             # check low price above vwap and ema 9
@@ -216,14 +216,16 @@ def start():
         top_gainers = webullsdk.get_after_market_gainers()
         top_10_gainers = top_gainers[:10]
 
+        # print("[{}] scanning top gainers [{}]...".format(
+        #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_10_gainers:
             symbol = gainer["symbol"]
             # check if ticker already in monitor
             if symbol in tracking_tickers:
                 continue
             ticker_id = gainer["ticker_id"]
-            print("[{}] scanning <{}>[{}]...".format(
-                utils.get_now(), symbol, ticker_id))
+            # print("[{}] scanning <{}>[{}]...".format(
+            #     utils.get_now(), symbol, ticker_id))
             change_percentage = gainer["change_percentage"]
             # check if change >= 8%
             if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
@@ -252,15 +254,15 @@ def start():
 
         # refresh login
         if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=REFRESH_LOGIN_INTERVAL):
-            print("[{}] refresh webull login...".format(utils.get_now()))
             webullsdk.login(paper=PAPER_TRADE)
+            print("[{}] refresh webull login".format(utils.get_now()))
             last_login_refresh_time = datetime.now()
 
         # at least slepp 1 sec
         time.sleep(1)
 
-    print("[{}] logout webull...".format(utils.get_now()))
     webullsdk.logout()
+    print("[{}] webull logged out".format(utils.get_now()))
 
     print("[{}] after market trading ended!".format(utils.get_now()))
 

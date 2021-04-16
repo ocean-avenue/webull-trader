@@ -133,7 +133,7 @@ def get_quote(ticker_id=None):
     try:
         return wb_instance.get_quote(tId=ticker_id)
     except Exception as e:
-        print("[{}] {}".format(utils.get_now(), e))
+        print("[{}] get_quote exception: {}".format(utils.get_now(), e))
         return None
 
 
@@ -155,7 +155,7 @@ def get_1m_bars(ticker_id=None, count=10):
     try:
         return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
     except Exception as e:
-        print("[{}] {}".format(utils.get_now(), e))
+        print("[{}] get_1m_bars exception: {}".format(utils.get_now(), e))
         return pd.DataFrame()
 
 # symbol = 'AVCT'
@@ -225,7 +225,7 @@ def get_positions():
     try:
         return wb_instance.get_positions()
     except Exception as e:
-        print("[{}] {}".format(utils.get_now(), e))
+        print("[{}] get_positions exception: {}".format(utils.get_now(), e))
         return None
 
 
@@ -234,7 +234,7 @@ def get_current_orders():
     try:
         return wb_instance.get_current_orders()
     except Exception as e:
-        print("[{}] {}".format(utils.get_now(), e))
+        print("[{}] get_current_orders exception: {}".format(utils.get_now(), e))
         return None
 
 
@@ -243,7 +243,7 @@ def get_history_orders():
     try:
         return wb_instance.get_history_orders()
     except Exception as e:
-        print("[{}] {}".format(utils.get_now(), e))
+        print("[{}] get_history_orders exception: {}".format(utils.get_now(), e))
         return None
 
 
@@ -319,115 +319,133 @@ def get_pre_market_gainers():
 
 def get_top_gainers():
     time.sleep(1)
-    session = requests.Session()
-    res = session.get(
-        WEBULL_TOP_GAINERS_URL,
-        headers=_get_browser_headers())
-    res_json = json.loads(res.text)
-    obj_list = res_json["data"]
-    gainers = []
-    for json_obj in obj_list:
-        ticker_obj = json_obj["ticker"]
-        values_obj = json_obj["values"]
-        symbol = ticker_obj["symbol"]
-        ticker_id = ticker_obj["tickerId"]
-        change = float(values_obj["change"])
-        change_percentage = float(values_obj["changeRatio"])
-        price = float(ticker_obj["pprice"])
-        gainers.append(
-            {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "change": change,
-                "change_percentage": change_percentage,
-                "price": price,
-            }
-        )
-    return gainers
+    try:
+        session = requests.Session()
+        res = session.get(
+            WEBULL_TOP_GAINERS_URL,
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        obj_list = res_json["data"]
+        gainers = []
+        for json_obj in obj_list:
+            ticker_obj = json_obj["ticker"]
+            values_obj = json_obj["values"]
+            symbol = ticker_obj["symbol"]
+            ticker_id = ticker_obj["tickerId"]
+            change = float(values_obj["change"])
+            change_percentage = float(values_obj["changeRatio"])
+            price = float(ticker_obj["pprice"])
+            gainers.append(
+                {
+                    "symbol": symbol,
+                    "ticker_id": ticker_id,
+                    "change": change,
+                    "change_percentage": change_percentage,
+                    "price": price,
+                }
+            )
+        return gainers
+    except Exception as e:
+        print("[{}] get_top_gainers exception: {}".format(utils.get_now(), e))
+        return []
 
 
 def get_after_market_gainers():
     time.sleep(1)
-    session = requests.Session()
-    res = session.get(
-        WEBULL_AFTER_MARKET_GAINERS_URL,
-        headers=_get_browser_headers())
-    res_json = json.loads(res.text)
-    obj_list = res_json["data"]
-    gainers = []
-    for json_obj in obj_list:
-        ticker_obj = json_obj["ticker"]
-        values_obj = json_obj["values"]
-        symbol = ticker_obj["symbol"]
-        ticker_id = ticker_obj["tickerId"]
-        change = float(values_obj["change"])
-        change_percentage = float(values_obj["changeRatio"])
-        price = float(values_obj["price"])
-        gainers.append(
-            {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "change": change,
-                "change_percentage": change_percentage,
-                "price": price,
-            }
-        )
-    return gainers
+    try:
+        session = requests.Session()
+        res = session.get(
+            WEBULL_AFTER_MARKET_GAINERS_URL,
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        obj_list = res_json["data"]
+        gainers = []
+        for json_obj in obj_list:
+            ticker_obj = json_obj["ticker"]
+            values_obj = json_obj["values"]
+            symbol = ticker_obj["symbol"]
+            ticker_id = ticker_obj["tickerId"]
+            change = float(values_obj["change"])
+            change_percentage = float(values_obj["changeRatio"])
+            price = float(values_obj["price"])
+            gainers.append(
+                {
+                    "symbol": symbol,
+                    "ticker_id": ticker_id,
+                    "change": change,
+                    "change_percentage": change_percentage,
+                    "price": price,
+                }
+            )
+        return gainers
+    except Exception as e:
+        print("[{}] get_after_market_gainers exception: {}".format(
+            utils.get_now(), e))
+        return []
 
 
 def get_top_losers():
     time.sleep(1)
-    session = requests.Session()
-    res = session.get(
-        WEBULL_TOP_LOSERS_URL,
-        headers=_get_browser_headers())
-    res_json = json.loads(res.text)
-    obj_list = res_json["data"]
-    gainers = []
-    for json_obj in obj_list:
-        ticker_obj = json_obj["ticker"]
-        values_obj = json_obj["values"]
-        symbol = ticker_obj["symbol"]
-        ticker_id = ticker_obj["tickerId"]
-        change = float(values_obj["change"])
-        change_percentage = float(values_obj["changeRatio"])
-        price = float(ticker_obj["pprice"])
-        gainers.append(
-            {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "change": change,
-                "change_percentage": change_percentage,
-                "price": price,
-            }
-        )
-    return gainers
+    try:
+        session = requests.Session()
+        res = session.get(
+            WEBULL_TOP_LOSERS_URL,
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        obj_list = res_json["data"]
+        losers = []
+        for json_obj in obj_list:
+            ticker_obj = json_obj["ticker"]
+            values_obj = json_obj["values"]
+            symbol = ticker_obj["symbol"]
+            ticker_id = ticker_obj["tickerId"]
+            change = float(values_obj["change"])
+            change_percentage = float(values_obj["changeRatio"])
+            price = float(ticker_obj["pprice"])
+            losers.append(
+                {
+                    "symbol": symbol,
+                    "ticker_id": ticker_id,
+                    "change": change,
+                    "change_percentage": change_percentage,
+                    "price": price,
+                }
+            )
+        return losers
+    except Exception as e:
+        print("[{}] get_top_losers exception: {}".format(utils.get_now(), e))
+        return []
 
 
 def get_after_market_losers():
     time.sleep(1)
-    session = requests.Session()
-    res = session.get(
-        WEBULL_AFTER_MARKET_LOSERS_URL,
-        headers=_get_browser_headers())
-    res_json = json.loads(res.text)
-    obj_list = res_json["data"]
-    gainers = []
-    for json_obj in obj_list:
-        ticker_obj = json_obj["ticker"]
-        values_obj = json_obj["values"]
-        symbol = ticker_obj["symbol"]
-        ticker_id = ticker_obj["tickerId"]
-        change = float(values_obj["change"])
-        change_percentage = float(values_obj["changeRatio"])
-        price = float(values_obj["price"])
-        gainers.append(
-            {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "change": change,
-                "change_percentage": change_percentage,
-                "price": price,
-            }
-        )
-    return gainers
+    try:
+        session = requests.Session()
+        res = session.get(
+            WEBULL_AFTER_MARKET_LOSERS_URL,
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        obj_list = res_json["data"]
+        gainers = []
+        for json_obj in obj_list:
+            ticker_obj = json_obj["ticker"]
+            values_obj = json_obj["values"]
+            symbol = ticker_obj["symbol"]
+            ticker_id = ticker_obj["tickerId"]
+            change = float(values_obj["change"])
+            change_percentage = float(values_obj["changeRatio"])
+            price = float(values_obj["price"])
+            gainers.append(
+                {
+                    "symbol": symbol,
+                    "ticker_id": ticker_id,
+                    "change": change,
+                    "change_percentage": change_percentage,
+                    "price": price,
+                }
+            )
+        return gainers
+    except Exception as e:
+        print("[{}] get_after_market_losers exception: {}".format(
+            utils.get_now(), e))
+        return []
