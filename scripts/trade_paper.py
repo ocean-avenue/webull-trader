@@ -124,7 +124,7 @@ def start():
             current_ema9 = current_candle['ema9']
             current_volume = current_candle['volume']
             print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
-                utils.get_now(), symbol, ticker_id, current_low, current_vwap, current_ema9, current_volume))
+                utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
             # check low price above vwap and ema 9
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
                 # check first candle make new high
