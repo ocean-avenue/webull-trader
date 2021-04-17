@@ -75,6 +75,8 @@ def start():
             tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             print("[{}] sell order <{}>[{}] filled!".format(
                 utils.get_now(), symbol, ticker_id))
+            # remove from monitor
+            del tracking_tickers[symbol]
 
     def _do_trade(ticker):
 
