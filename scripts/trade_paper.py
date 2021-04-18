@@ -3,7 +3,8 @@
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
-TRADE_TIMEOUT = 5  # trading time out in minutes
+TRADE_TIMEOUT = 5  # trading timeout in minutes
+ORDER_TIMEOUT = 10  # order timeout in seconds
 REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
 BUY_AMOUNT = 1000
 MAX_GAP = 0.02
@@ -19,13 +20,14 @@ def start():
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
     global TRADE_TIMEOUT
+    global ORDER_TIMEOUT
     global REFRESH_LOGIN_INTERVAL
     global BUY_AMOUNT
     global MAX_GAP
 
     while not utils.is_after_market():
         print("[{}] wait for after market open...".format(utils.get_now()))
-        time.sleep(1)
+        time.sleep(10)
 
     print("[{}] after market trading started!".format(utils.get_now()))
 
@@ -43,15 +45,32 @@ def start():
         positions = webullsdk.get_positions()
         if positions == None:
             return
+        order_filled = False
         for position in positions:
             if position['ticker']['symbol'] == symbol:
+                order_filled = True
                 quantity = int(position['position'])
                 # update tracking_tickers
                 tracking_tickers[symbol]['positions'] = quantity
                 tracking_tickers[symbol]['pending_buy'] = False
+                tracking_tickers[symbol]['pending_order_id'] = None
+                tracking_tickers[symbol]['pending_order_time'] = None
                 print("[{}] buy order <{}>[{}] filled!".format(
                     utils.get_now(), symbol, ticker_id))
                 break
+        if not order_filled:
+            # check order timeout
+            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=ORDER_TIMEOUT):
+                # cancel timeout order
+                if webullsdk.cancel_order(ticker['pending_order_id']):
+                    tracking_tickers[symbol]['pending_buy'] = False
+                    tracking_tickers[symbol]['pending_order_id'] = None
+                    tracking_tickers[symbol]['pending_order_time'] = None
+                    print("[{}] buy order <{}>[{}] timeout, canceled!".format(
+                        utils.get_now(), symbol, ticker_id))
+                else:
+                    print("[{}] failed to cancel timeout buy order <{}>[{}]!".format(
+                        utils.get_now(), symbol, ticker_id))
 
     def _check_sell_order_filled(ticker):
         symbol = ticker['symbol']
@@ -69,10 +88,44 @@ def start():
             # update tracking_tickers
             tracking_tickers[symbol]['positions'] = 0
             tracking_tickers[symbol]['pending_sell'] = False
+            tracking_tickers[symbol]['pending_order_id'] = None
+            tracking_tickers[symbol]['pending_order_time'] = None
             print("[{}] sell order <{}>[{}] filled!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del tracking_tickers[symbol]
+        else:
+            # check order timeout
+            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=ORDER_TIMEOUT):
+                # cancel timeout order
+                if webullsdk.cancel_order(ticker['pending_order_id']):
+                    print("[{}] sell order <{}>[{}] timeout, canceled!".format(
+                        utils.get_now(), symbol, ticker_id))
+                    # resubmit sell order
+                    quote = webullsdk.get_quote(ticker_id=ticker_id)
+                    if quote == None:
+                        return
+                    bid_price = float(
+                        quote['depth']['ntvAggBidList'][0]['price'])
+                    holding_quantity = ticker['positions']
+                    order_response = webullsdk.sell_limit_order(
+                        ticker_id=ticker_id,
+                        price=bid_price,
+                        quant=holding_quantity)
+                    print("[{}] resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                        utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
+                    if 'msg' in order_response:
+                        print("[{}] {}".format(
+                            utils.get_now(), order_response['msg']))
+                    else:
+                        # mark pending sell
+                        tracking_tickers[symbol]['pending_sell'] = True
+                        tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                        tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+                        )
+                else:
+                    print("[{}] failed to cancel timeout sell order <{}>[{}]!".format(
+                        utils.get_now(), symbol, ticker_id))
 
     def _do_trade(ticker):
 
@@ -155,6 +208,9 @@ def start():
                     else:
                         # mark pending buy
                         tracking_tickers[symbol]['pending_buy'] = True
+                        tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                        tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+                        )
         else:
             positions = webullsdk.get_positions()
             if positions == None:
@@ -198,6 +254,9 @@ def start():
                 else:
                     # mark pending sell
                     tracking_tickers[symbol]['pending_sell'] = True
+                    tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                    tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+                    )
 
         # TODO, buy after the first pull back
 
@@ -240,6 +299,8 @@ def start():
                             "ticker_id": ticker_id,
                             "pending_buy": False,
                             "pending_sell": False,
+                            "pending_order_id": None,
+                            "pending_order_time": None,
                             "positions": 0,
                             "start_time": datetime.now(),
                             # paper trade do not have stop trailing order, this value keep track of max P&L
