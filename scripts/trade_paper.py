@@ -27,11 +27,14 @@ def start():
     global BUY_AMOUNT
     global MAX_GAP
 
-    while not utils.is_after_market():
-        print("[{}] wait for after market open...".format(utils.get_now()))
+    while not utils.is_extended_market_hour():
+        print("[{}] waiting for extended market hour...".format(utils.get_now()))
         time.sleep(10)
 
-    print("[{}] after market trading started!".format(utils.get_now()))
+    if utils.is_pre_market_hour():
+        print("[{}] pre market trading started!".format(utils.get_now()))
+    elif utils.is_after_market_hour():
+        print("[{}] after market trading started!".format(utils.get_now()))
 
     webullsdk.login(paper=True)
     print("[{}] webull logged in".format(utils.get_now()))
@@ -272,14 +275,18 @@ def start():
         # TODO, buy after the first pull back
 
     # main loop
-    while utils.is_after_market():
+    while utils.is_extended_market_hour():
         # trading tickers
         for symbol in list(tracking_tickers):
             ticker = tracking_tickers[symbol]
             _do_trade(ticker)
 
         # find trading ticker in top gainers
-        top_gainers = webullsdk.get_after_market_gainers()
+        top_gainers = []
+        if utils.is_pre_market_hour():
+            top_gainers = webullsdk.get_pre_market_gainers()
+        elif utils.is_after_market_hour():
+            top_gainers = webullsdk.get_after_market_gainers()
         top_10_gainers = top_gainers[:10]
 
         # print("[{}] scanning top gainers [{}]...".format(
@@ -330,6 +337,8 @@ def start():
 
         # at least slepp 1 sec
         time.sleep(1)
+
+    # TODO, check if still holding any positions before logout
 
     webullsdk.logout()
     print("[{}] webull logged out".format(utils.get_now()))

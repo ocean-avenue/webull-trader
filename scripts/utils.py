@@ -5,7 +5,26 @@ def get_now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def is_after_market():
+def is_extended_market_hour():
+    return is_pre_market_hour() or is_after_market_hour()
+
+
+def is_pre_market_hour():
+    """
+    NY pre market hour from 04:00 to 09:30
+    """
+    now = datetime.now()
+    if now.hour < 4 or now.hour > 9:
+        return False
+    if now.hour == 9 and now.minute >= 30:
+        return False
+    # wait 30 second for webull get after market data ready
+    if now.hour == 4 and now.minute == 0 and now.second < 30:
+        return False
+    return True
+
+
+def is_after_market_hour():
     """
     NY after market hour from 16:00 to 20:00
     """
