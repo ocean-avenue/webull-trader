@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-PAPER_TRADE = True
-
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
@@ -17,7 +15,6 @@ def start():
     from sdk import webullsdk
     from scripts import utils
 
-    global PAPER_TRADE
     global MIN_SURGE_AMOUNT
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
@@ -32,7 +29,7 @@ def start():
 
     print("[{}] after market trading started!".format(utils.get_now()))
 
-    webullsdk.login(paper=PAPER_TRADE)
+    webullsdk.login(paper=True)
     print("[{}] webull logged in".format(utils.get_now()))
     last_login_refresh_time = datetime.now()
 
@@ -72,7 +69,6 @@ def start():
             # update tracking_tickers
             tracking_tickers[symbol]['positions'] = 0
             tracking_tickers[symbol]['pending_sell'] = False
-            tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             print("[{}] sell order <{}>[{}] filled!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
@@ -131,11 +127,6 @@ def start():
             if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
-                    if utils.check_since_last_sell_too_short(ticker['last_sell_time'], bars):
-                        print("[{}] <{}>[{}] on hold, do not buy too quick since last sell!".format(
-                            utils.get_now(), symbol, ticker_id))
-                        return
-
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
                     if quote == None:
                         return
@@ -181,11 +172,15 @@ def start():
             last_price = float(ticker_position['lastPrice'])
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
+            # due to no stop trailing order in paper account, keep tracking of max P&L rate
+            max_profit_loss_rate = tracking_tickers[symbol]['max_profit_loss_rate']
+            if profit_loss_rate > max_profit_loss_rate:
+                tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
             quantity = int(ticker_position['position'])
             print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
                 utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
-            # simple count profit 2% and stop loss 1%
-            if profit_loss_rate >= 0.02 or profit_loss_rate < -0.01:
+            # sell if drawdown 1% from max P&L rate
+            if max_profit_loss_rate - profit_loss_rate >= 0.01:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
@@ -205,7 +200,6 @@ def start():
                     tracking_tickers[symbol]['pending_sell'] = True
 
         # TODO, buy after the first pull back
-        # TODO, take profit along the way (sell half, half, half...)
 
     # main loop
     while utils.is_after_market():
@@ -248,7 +242,8 @@ def start():
                             "pending_sell": False,
                             "positions": 0,
                             "start_time": datetime.now(),
-                            "last_sell_time": None,
+                            # paper trade do not have stop trailing order, this value keep track of max P&L
+                            "max_profit_loss_rate": 0,
                         }
                         tracking_tickers[symbol] = ticker
                         print("[{}] found <{}>[{}] to trade!".format(
@@ -256,7 +251,7 @@ def start():
 
         # refresh login
         if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=REFRESH_LOGIN_INTERVAL):
-            webullsdk.login(paper=PAPER_TRADE)
+            webullsdk.login(paper=True)
             print("[{}] refresh webull login".format(utils.get_now()))
             last_login_refresh_time = datetime.now()
 
