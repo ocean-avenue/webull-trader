@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 MIN_SURGE_AMOUNT = 21000
-MIN_SURGE_VOL = 3000
-SURGE_MIN_CHANGE_PERCENTAGE = 8  # at least 8% change for surge
+MIN_SURGE_VOL = 1000
+SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading timeout in minutes
 PENDING_ORDER_TIMEOUT = 10  # pending order timeout in seconds
-HOLDING_ORDER_TIMEOUT = 180  # holding order timeout in seconds
+HOLDING_ORDER_TIMEOUT = 1800  # holding order timeout in seconds
 REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
 BUY_AMOUNT = 1000
 MAX_GAP = 0.02
@@ -243,10 +243,15 @@ def start():
                 utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             trailing_stop = False
             # sell if drawdown 1% from max P&L rate
-            if max_profit_loss_rate - profit_loss_rate >= 0.01:
+            # if max_profit_loss_rate - profit_loss_rate >= 0.01:
+            #     trailing_stop = True
+            # simply take 3% profit and 1% loss
+            if profit_loss_rate >= 0.03 or profit_loss_rate <= -0.01:
                 trailing_stop = True
             holding_timeout = False
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
+                print("[] holding <{}>[{}] too long!".format(
+                    utils.get_now(), symbol, ticker_id))
                 holding_timeout = True
 
             # sell if holding too long and no
