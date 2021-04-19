@@ -176,14 +176,14 @@ def start():
             prev_candle = bars.iloc[-2]
 
             # current price data
-            current_low = current_candle['low']
+            current_close = current_candle['close']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = int(current_candle['volume'])
-            print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
-                utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
+            print("[{}] trading <{}>[{}], last: {}, vwap: {}, ema9: {}, volume: {}".format(
+                utils.get_now(), symbol, ticker_id, current_close, current_vwap, round(current_ema9, 3), current_volume))
             # check low price above vwap and ema 9
-            if current_low > current_candle['vwap'] and current_low > current_candle['ema9']:
+            if current_close > current_candle['vwap'] and current_close > current_candle['ema9']:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
