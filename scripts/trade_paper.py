@@ -310,12 +310,13 @@ def start():
                 bars = webullsdk.get_1m_bars(ticker_id, count=30)
                 if bars.empty:
                     continue
-                latest_bar = bars.iloc[-1]
+                latest_candle = bars.iloc[-1]
                 if utils.check_bars_updated(bars):
-                    latest_close = latest_bar["close"]
-                    volume = int(latest_bar["volume"])
+                    latest_close = latest_candle["close"]
+                    latest_vwap = latest_candle["vwap"]
+                    volume = int(latest_candle["volume"])
                     # check if trasaction amount meets requirement
-                    if latest_close * volume >= MIN_SURGE_AMOUNT and volume >= MIN_SURGE_VOL:
+                    if latest_close * volume >= MIN_SURGE_AMOUNT and volume >= MIN_SURGE_VOL and latest_close >= latest_vwap:
                         # found trading ticker
                         ticker = {
                             "symbol": symbol,
