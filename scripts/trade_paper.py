@@ -231,8 +231,8 @@ def start():
                 print("[{}] finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
                 return
-            cost = float(ticker_position['cost'])
-            last_price = float(ticker_position['lastPrice'])
+            # cost = float(ticker_position['cost'])
+            # last_price = float(ticker_position['lastPrice'])
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
@@ -240,15 +240,17 @@ def start():
             if profit_loss_rate > max_profit_loss_rate:
                 tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
             quantity = int(ticker_position['position'])
-            print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
-                utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
-            trailing_stop = False
+            # print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
+            #     utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
+            stop = False
             # sell if drawdown 1% from max P&L rate
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
-            #     trailing_stop = True
+            #     stop = True
             # simply take 3% profit and 1% loss
             if profit_loss_rate >= 0.03 or profit_loss_rate <= -0.01:
-                trailing_stop = True
+                print("[] stop trading <{}>[{}] for {}!".format(
+                    utils.get_now(), symbol, ticker_id, profit_loss_rate))
+                stop = True
             holding_timeout = False
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
                 print("[] holding <{}>[{}] too long!".format(
@@ -256,7 +258,7 @@ def start():
                 holding_timeout = True
 
             # sell if holding too long and no
-            if trailing_stop or holding_timeout:
+            if stop or holding_timeout:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
