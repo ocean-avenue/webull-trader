@@ -180,9 +180,7 @@ def start():
             current_low = current_candle['low']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
-            # current_volume = int(current_candle['volume'])
-            # print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
-            #     utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
+            current_volume = int(current_candle['volume'])
             # check low price above vwap and ema 9
             if current_low > current_vwap and current_low > current_ema9:
                 # check first candle make new high
@@ -207,6 +205,8 @@ def start():
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
+                    print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
+                        utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
                     print("[{}] submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                     if 'msg' in order_response:
