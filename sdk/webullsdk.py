@@ -44,6 +44,19 @@ def logout():
     wb_instance.logout()
 
 
+def get_account():
+    return wb_instance.get_account()
+
+
+# {'totalMarketValue': '0.00', 'usableCash': '4876.63', 'dayProfitLoss': '-133.15'}
+
+def get_portfolio():
+    return wb_instance.get_portfolio()
+
+
+def get_trade_token(password=''):
+    return wb_instance.get_trade_token(password=password)
+
 # {
 #    "tickerId":925348770,
 #    "exchangeId":10,
@@ -127,6 +140,7 @@ def logout():
 #    "estimateEarningsDate":"",
 #    "tradeStatus":"D"
 # }
+
 
 def get_quote(ticker_id=None):
     time.sleep(1)

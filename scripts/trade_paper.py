@@ -55,14 +55,15 @@ def start():
             if position['ticker']['symbol'] == symbol:
                 order_filled = True
                 quantity = int(position['position'])
+                cost = float(position['costPrice'])
                 # update tracking_tickers
                 tracking_tickers[symbol]['positions'] = quantity
                 tracking_tickers[symbol]['pending_buy'] = False
                 tracking_tickers[symbol]['pending_order_id'] = None
                 tracking_tickers[symbol]['pending_order_time'] = None
                 tracking_tickers[symbol]['order_filled_time'] = datetime.now()
-                print("[{}] buy order <{}>[{}] filled!".format(
-                    utils.get_now(), symbol, ticker_id))
+                print("[{}] buy order <{}>[{}] filled at {}!".format(
+                    utils.get_now(), symbol, ticker_id, cost))
                 break
         if not order_filled:
             # check order timeout
@@ -346,10 +347,18 @@ def start():
 
     # TODO, check if still holding any positions before logout
 
-    webullsdk.logout()
-    print("[{}] webull logged out".format(utils.get_now()))
+    if utils.is_pre_market_hour():
+        print("[{}] pre market trading ended!".format(utils.get_now()))
+    elif utils.is_after_market_hour():
+        print("[{}] after market trading ended!".format(utils.get_now()))
 
-    print("[{}] after market trading ended!".format(utils.get_now()))
+    # output today's proft loss
+    portfolio = webullsdk.get_portfolio()
+    print("[{}] today's P&L: {}".format(
+        utils.get_now(), portfolio['dayProfitLoss']))
+
+    # webullsdk.logout()
+    # print("[{}] webull logged out".format(utils.get_now()))
 
 
 if __name__ == "django.core.management.commands.shell":
