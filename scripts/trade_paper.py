@@ -248,8 +248,8 @@ def start():
             #     stop = True
             # simply take 3% profit and 1% loss
             if profit_loss_rate >= 0.03 or profit_loss_rate <= -0.01:
-                print("[] stop trading <{}>[{}] for {}!".format(
-                    utils.get_now(), symbol, ticker_id, profit_loss_rate))
+                print("[{}] stop trading <{}>[{}] for {}%!".format(
+                    utils.get_now(), symbol, ticker_id, profit_loss_rate * 100))
                 stop = True
             holding_timeout = False
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:

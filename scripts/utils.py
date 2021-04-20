@@ -16,9 +16,10 @@ def is_pre_market_hour():
     now = datetime.now()
     if now.hour < 4 or now.hour > 9:
         return False
-    if now.hour == 9 and now.minute >= 30:
+    # stop pre market earlier for 5 minutes
+    if now.hour == 9 and now.minute >= 25:
         return False
-    # wait 30 second for webull get after market data ready
+    # wait 30 second for webull get pre market data ready
     if now.hour == 4 and now.minute == 0 and now.second < 30:
         return False
     return True
@@ -33,6 +34,9 @@ def is_after_market_hour():
         return False
     # wait 30 second for webull get after market data ready
     if now.hour == 16 and now.minute == 0 and now.second < 30:
+        return False
+    # stop after market earlier for 5 minutes
+    if now.hour == 19 and now.minute >= 55:
         return False
     return True
 
