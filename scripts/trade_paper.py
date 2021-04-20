@@ -242,23 +242,39 @@ def start():
             quantity = int(ticker_position['position'])
             # print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
             #     utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
-            stop = False
+            exit_trading = False
             # sell if drawdown 1% from max P&L rate
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
-            #     stop = True
+            #     exit_trading = True
             # simply take 3% profit and 1% loss
             if profit_loss_rate >= 0.03 or profit_loss_rate <= -0.01:
-                print("[{}] stop trading <{}>[{}] for {}%!".format(
+                print("[{}] exit trading <{}>[{}] for {}%!".format(
                     utils.get_now(), symbol, ticker_id, profit_loss_rate * 100))
-                stop = True
-            holding_timeout = False
+                exit_trading = True
+            # check if holding too long
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
-                print("[] holding <{}>[{}] too long!".format(
+                print("[{}] holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
-                holding_timeout = True
+                exit_trading = True
+            # check if price go sideway
+            # if quote != None:
+            #     if float(quote['pChRatio']) == 0.0:
+            #         print("[{}] <{}>[{}] price is going sideway...".format(
+            #             utils.get_now(), symbol, ticker_id))
+            #         exit_trading = True
+            if not exit_trading:
+                # fetch 1m bar charts
+                bars = webullsdk.get_1m_bars(ticker_id, count=10)
+                if not bars.empty:
+                    prev_close = bars.iloc[-2]['close']
+                    prev_close2 = bars.iloc[-3]['close']
+                    if prev_close == prev_close2:
+                        print("[{}] <{}>[{}] price is going sideway at {}...".format(
+                            utils.get_now(), symbol, ticker_id, prev_close))
+                        exit_trading = True
 
-            # sell if holding too long and no
-            if stop or holding_timeout:
+            # exit trading
+            if exit_trading:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
