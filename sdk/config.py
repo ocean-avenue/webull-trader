@@ -10,9 +10,9 @@ YF_GAINERS_URL = "https://finance.yahoo.com/gainers?count=100"
 
 # https://app.webull.com/market/region/6
 
-WEBULL_TOP_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=1d&pageIndex=1&pageSize=50"
-WEBULL_PRE_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=preMarket&pageIndex=1&pageSize=50"
-WEBULL_AFTER_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize=50"
-WEBULL_TOP_LOSERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/dropGainers?regionId=6&rankType=1d&pageIndex=1&pageSize=50"
-WEBULL_AFTER_MARKET_LOSERS_URL = "https://quotes-gw.webullbroker.com/api/wlas/ranking/dropGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize=50"
+WEBULL_TOP_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=1d&pageIndex=1&pageSize=10"
+WEBULL_PRE_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=preMarket&pageIndex=1&pageSize=10"
+WEBULL_AFTER_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize=10"
+WEBULL_TOP_LOSERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/dropGainers?regionId=6&rankType=1d&pageIndex=1&pageSize=10"
+WEBULL_AFTER_MARKET_LOSERS_URL = "https://quotes-gw.webullbroker.com/api/wlas/ranking/dropGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize=10"
 WEBULL_QUOTE_1M_CHARTS_URL = "https://quotes-gw.webullbroker.com/api/quote/charts/query?tickerIds={}&type=m1&count={}&extendTrading=1"

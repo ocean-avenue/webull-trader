@@ -31,14 +31,11 @@ def start():
     global PROFIT_RATE
     global LOSS_RATE
 
-    while not utils.is_extended_market_hour():
+    while not utils.is_market_hour():
         print("[{}] waiting for extended market hour...".format(utils.get_now()))
         time.sleep(10)
 
-    if utils.is_pre_market_hour():
-        print("[{}] pre market trading started!".format(utils.get_now()))
-    elif utils.is_after_market_hour():
-        print("[{}] after market trading started!".format(utils.get_now()))
+    print("[{}] trading started...".format(utils.get_now()))
 
     webullsdk.login(paper=True)
     print("[{}] webull logged in".format(utils.get_now()))
@@ -341,7 +338,7 @@ def start():
             tracking_tickers[symbol]['pending_order_time'] = datetime.now()
 
     # main loop
-    while utils.is_extended_market_hour():
+    while utils.is_market_hour():
         # trading tickers
         for symbol in list(tracking_tickers):
             ticker = tracking_tickers[symbol]
@@ -349,15 +346,16 @@ def start():
 
         # find trading ticker in top gainers
         top_gainers = []
-        if utils.is_pre_market_hour():
+        if utils.is_regular_market_hour():
+            top_gainers = webullsdk.get_top_gainers()
+        elif utils.is_pre_market_hour():
             top_gainers = webullsdk.get_pre_market_gainers()
         elif utils.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
-        top_10_gainers = top_gainers[:10]
 
         # print("[{}] scanning top gainers [{}]...".format(
         #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
-        for gainer in top_10_gainers:
+        for gainer in top_gainers:
             symbol = gainer["symbol"]
             # check if ticker already in monitor
             if symbol in tracking_tickers:
@@ -414,10 +412,7 @@ def start():
         # at least slepp 1 sec
         time.sleep(1)
 
-    if utils.is_pre_market_hour():
-        print("[{}] pre market trading ended!".format(utils.get_now()))
-    elif utils.is_after_market_hour():
-        print("[{}] after market trading ended!".format(utils.get_now()))
+    print("[{}] trading ended!".format(utils.get_now()))
 
     # output today's proft loss
     portfolio = webullsdk.get_portfolio()

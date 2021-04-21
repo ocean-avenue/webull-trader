@@ -5,6 +5,10 @@ def get_now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def is_market_hour():
+    return is_regular_market_hour() or is_extended_market_hour()
+
+
 def is_extended_market_hour():
     return is_pre_market_hour() or is_after_market_hour()
 
@@ -37,6 +41,24 @@ def is_after_market_hour():
         return False
     # stop after market earlier for 5 minutes
     if now.hour == 19 and now.minute >= 55:
+        return False
+    return True
+
+
+def is_regular_market_hour():
+    """
+    NY regular market hour from 09:30 to 16:00
+    """
+    now = datetime.now()
+    if now.hour < 9 or now.hour >= 16:
+        return False
+    if now.hour == 9 and now.minute < 30:
+        return False
+    # stop regular market earlier for 5 minutes
+    if now.hour == 15 and now.minute >= 55:
+        return False
+    # wait 30 second for webull get regular market data ready
+    if now.hour == 9 and now.minute == 30 and now.second < 30:
         return False
     return True
 
