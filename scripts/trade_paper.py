@@ -32,7 +32,7 @@ def start():
     global LOSS_RATE
 
     while not utils.is_market_hour():
-        print("[{}] waiting for extended market hour...".format(utils.get_now()))
+        print("[{}] waiting for market hour...".format(utils.get_now()))
         time.sleep(10)
 
     print("[{}] trading started...".format(utils.get_now()))
