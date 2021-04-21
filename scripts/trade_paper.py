@@ -32,13 +32,13 @@ def start():
     global LOSS_RATE
 
     while not utils.is_market_hour():
-        print("[{}] waiting for market hour...".format(utils.get_now()))
+        print("[{}] Waiting for market hour...".format(utils.get_now()))
         time.sleep(10)
 
-    print("[{}] trading started...".format(utils.get_now()))
+    print("[{}] Trading started...".format(utils.get_now()))
 
     webullsdk.login(paper=True)
-    print("[{}] webull logged in".format(utils.get_now()))
+    print("[{}] Webull logged in".format(utils.get_now()))
     last_login_refresh_time = datetime.now()
 
     tracking_tickers = {}
@@ -46,7 +46,7 @@ def start():
     def _check_buy_order_filled(ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        print("[{}] checking buy order <{}>[{}] filled...".format(
+        print("[{}] Checking buy order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
@@ -63,7 +63,7 @@ def start():
                 tracking_tickers[symbol]['pending_order_id'] = None
                 tracking_tickers[symbol]['pending_order_time'] = None
                 tracking_tickers[symbol]['order_filled_time'] = datetime.now()
-                print("[{}] buy order <{}>[{}] filled, cost: {}".format(
+                print("[{}] Buy order <{}>[{}] filled, cost: {}".format(
                     utils.get_now(), symbol, ticker_id, cost))
                 break
         if not order_filled:
@@ -74,16 +74,16 @@ def start():
                     tracking_tickers[symbol]['pending_buy'] = False
                     tracking_tickers[symbol]['pending_order_id'] = None
                     tracking_tickers[symbol]['pending_order_time'] = None
-                    print("[{}] buy order <{}>[{}] timeout, canceled!".format(
+                    print("[{}] Buy order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                 else:
-                    print("[{}] failed to cancel timeout buy order <{}>[{}]!".format(
+                    print("[{}] Failed to cancel timeout buy order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
     def _check_sell_order_filled(ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        print("[{}] checking sell order <{}>[{}] filled...".format(
+        print("[{}] Checking sell order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
@@ -98,7 +98,7 @@ def start():
             tracking_tickers[symbol]['pending_sell'] = False
             tracking_tickers[symbol]['pending_order_id'] = None
             tracking_tickers[symbol]['pending_order_time'] = None
-            print("[{}] sell order <{}>[{}] filled".format(
+            print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del tracking_tickers[symbol]
@@ -107,7 +107,7 @@ def start():
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
-                    print("[{}] sell order <{}>[{}] timeout, canceled!".format(
+                    print("[{}] Sell order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     # resubmit sell order
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -120,7 +120,7 @@ def start():
                         ticker_id=ticker_id,
                         price=bid_price,
                         quant=holding_quantity)
-                    print("[{}] resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                    print("[{}] Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                     if 'msg' in order_response:
                         print("[{}] {}".format(
@@ -132,7 +132,7 @@ def start():
                         tracking_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
                 else:
-                    print("[{}] failed to cancel timeout sell order <{}>[{}]!".format(
+                    print("[{}] Failed to cancel timeout sell order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
     def _do_trade(ticker):
@@ -153,7 +153,7 @@ def start():
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last TRADE_TIMEOUT minutes
         if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
-            print("[{}] trading <{}>[{}] session timeout!".format(
+            print("[{}] Trading <{}>[{}] session timeout!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del tracking_tickers[symbol]
@@ -206,9 +206,9 @@ def start():
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    print("[{}] trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
+                    print("[{}] Trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
                         utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
-                    print("[{}] submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                    print("[{}] Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                     if 'msg' in order_response:
                         print("[{}] {}".format(
@@ -229,7 +229,7 @@ def start():
                     ticker_position = position
                     break
             if not ticker_position:
-                print("[{}] finding <{}>[{}] position error!".format(
+                print("[{}] Finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
                 return
             # cost = float(ticker_position['cost'])
@@ -241,7 +241,7 @@ def start():
             if profit_loss_rate > max_profit_loss_rate:
                 tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
             # quantity = int(ticker_position['position'])
-            # print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
+            # print("[{}] Checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
             #     utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             exit_trading = False
             # sell if drawdown 1% from max P&L rate
@@ -252,7 +252,7 @@ def start():
                 exit_trading = True
             # check if holding too long
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
-                print("[{}] holding <{}>[{}] too long!".format(
+                print("[{}] Holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
                 exit_trading = True
             # check if price go sideway
@@ -268,7 +268,7 @@ def start():
                     prev_close = bars.iloc[-2]['close']
                     prev_close2 = bars.iloc[-3]['close']
                     if prev_close == prev_close2:
-                        print("[{}] <{}>[{}] price is going sideway at {}...".format(
+                        print("[{}] <{}>[{}] Price is going sideway at {}...".format(
                             utils.get_now(), symbol, ticker_id, prev_close))
                         exit_trading = True
 
@@ -283,9 +283,9 @@ def start():
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                print("[{}] exit trading <{}>[{}] >>> P&L: {}% <<<".format(
+                print("[{}] Exit trading <{}>[{}] >>> P&L: {}% <<<".format(
                     utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
-                print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                print("[{}] Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 if 'msg' in order_response:
                     print("[{}] {}".format(
@@ -327,7 +327,7 @@ def start():
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+        print("[{}] Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
             utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
         if 'msg' in order_response:
             print("[{}] {}".format(utils.get_now(), order_response['msg']))
@@ -353,7 +353,7 @@ def start():
         elif utils.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # print("[{}] scanning top gainers [{}]...".format(
+        # print("[{}] Scanning top gainers [{}]...".format(
         #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -361,7 +361,7 @@ def start():
             if symbol in tracking_tickers:
                 continue
             ticker_id = gainer["ticker_id"]
-            # print("[{}] scanning <{}>[{}]...".format(
+            # print("[{}] Scanning <{}>[{}]...".format(
             #     utils.get_now(), symbol, ticker_id))
             change_percentage = gainer["change_percentage"]
             # check if change >= 8%
@@ -391,13 +391,13 @@ def start():
                             "max_profit_loss_rate": 0,
                         }
                         tracking_tickers[symbol] = ticker
-                        print("[{}] found <{}>[{}] to trade!".format(
+                        print("[{}] Found <{}>[{}] to trade!".format(
                             utils.get_now(), symbol, ticker_id))
 
         # refresh login
         if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=REFRESH_LOGIN_INTERVAL):
             webullsdk.login(paper=True)
-            print("[{}] refresh webull login".format(utils.get_now()))
+            print("[{}] Refresh webull login".format(utils.get_now()))
             last_login_refresh_time = datetime.now()
 
         # at least slepp 1 sec
@@ -412,15 +412,15 @@ def start():
         # at least slepp 1 sec
         time.sleep(1)
 
-    print("[{}] trading ended!".format(utils.get_now()))
+    print("[{}] Trading ended!".format(utils.get_now()))
 
     # output today's proft loss
     portfolio = webullsdk.get_portfolio()
-    print("[{}] today's P&L: {}".format(
+    print("[{}] Today's P&L: {}".format(
         utils.get_now(), portfolio['dayProfitLoss']))
 
     # webullsdk.logout()
-    # print("[{}] webull logged out".format(utils.get_now()))
+    # print("[{}] Webull logged out".format(utils.get_now()))
 
 
 if __name__ == "django.core.management.commands.shell":
