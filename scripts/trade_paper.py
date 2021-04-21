@@ -267,7 +267,8 @@ def start():
                 if not bars.empty:
                     prev_close = bars.iloc[-2]['close']
                     prev_close2 = bars.iloc[-3]['close']
-                    if prev_close == prev_close2:
+                    prev_close3 = bars.iloc[-4]['close']
+                    if prev_close == prev_close2 and prev_close2 == prev_close3:
                         print("[{}] <{}>[{}] Price is going sideway at {}...".format(
                             utils.get_now(), symbol, ticker_id, prev_close))
                         exit_trading = True
