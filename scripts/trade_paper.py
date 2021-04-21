@@ -63,7 +63,7 @@ def start():
                 tracking_tickers[symbol]['pending_order_id'] = None
                 tracking_tickers[symbol]['pending_order_time'] = None
                 tracking_tickers[symbol]['order_filled_time'] = datetime.now()
-                print("[{}] buy order <{}>[{}] filled at {}!".format(
+                print("[{}] buy order <{}>[{}] filled, cost: {}".format(
                     utils.get_now(), symbol, ticker_id, cost))
                 break
         if not order_filled:
@@ -98,7 +98,7 @@ def start():
             tracking_tickers[symbol]['pending_sell'] = False
             tracking_tickers[symbol]['pending_order_id'] = None
             tracking_tickers[symbol]['pending_order_time'] = None
-            print("[{}] sell order <{}>[{}] filled!".format(
+            print("[{}] sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del tracking_tickers[symbol]
@@ -249,7 +249,7 @@ def start():
             #     exit_trading = True
             # simply observe profit/loss ratio
             if profit_loss_rate >= PROFIT_RATE or profit_loss_rate <= LOSS_RATE:
-                print("[{}] exit trading <{}>[{}] for {}%!".format(
+                print("[{}] exit trading <{}>[{}], P&L: {}%".format(
                     utils.get_now(), symbol, ticker_id, profit_loss_rate * 100))
                 exit_trading = True
             # check if holding too long
