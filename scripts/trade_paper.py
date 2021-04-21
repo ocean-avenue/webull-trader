@@ -9,6 +9,8 @@ HOLDING_ORDER_TIMEOUT = 1800  # holding order timeout in seconds
 REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
 BUY_AMOUNT = 1000
 MAX_GAP = 0.02
+PROFIT_RATE = 0.02
+LOSS_RATE = -0.01
 
 
 def start():
@@ -26,6 +28,8 @@ def start():
     global REFRESH_LOGIN_INTERVAL
     global BUY_AMOUNT
     global MAX_GAP
+    global PROFIT_RATE
+    global LOSS_RATE
 
     while not utils.is_extended_market_hour():
         print("[{}] waiting for extended market hour...".format(utils.get_now()))
@@ -246,8 +250,8 @@ def start():
             # sell if drawdown 1% from max P&L rate
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
             #     exit_trading = True
-            # simply take 3% profit and 1% loss
-            if profit_loss_rate >= 0.03 or profit_loss_rate <= -0.01:
+            # simply observe profit/loss ratio
+            if profit_loss_rate >= PROFIT_RATE or profit_loss_rate <= LOSS_RATE:
                 print("[{}] exit trading <{}>[{}] for {}%!".format(
                     utils.get_now(), symbol, ticker_id, profit_loss_rate * 100))
                 exit_trading = True
