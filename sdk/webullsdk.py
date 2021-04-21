@@ -199,6 +199,11 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
 def cancel_order(order_id):
     return wb_instance.cancel_order(order_id)
 
+
+def cancel_all_orders():
+    wb_instance.cancel_all_orders()
+
+
 # [
 #    {
 #       "id":10395509,

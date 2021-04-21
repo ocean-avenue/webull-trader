@@ -239,7 +239,7 @@ def start():
             max_profit_loss_rate = tracking_tickers[symbol]['max_profit_loss_rate']
             if profit_loss_rate > max_profit_loss_rate:
                 tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
-            quantity = int(ticker_position['position'])
+            # quantity = int(ticker_position['position'])
             # print("[{}] checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
             #     utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             exit_trading = False
@@ -283,9 +283,9 @@ def start():
                 order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
                     price=bid_price,
-                    quant=quantity)
+                    quant=holding_quantity)
                 print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
-                    utils.get_now(), symbol, ticker_id, quantity, bid_price))
+                    utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 if 'msg' in order_response:
                     print("[{}] {}".format(
                         utils.get_now(), order_response['msg']))
@@ -297,6 +297,44 @@ def start():
                     )
 
         # TODO, buy after the first pull back
+
+    def _do_clear(ticker):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+
+        pending_buy = ticker['pending_buy']
+        if pending_buy:
+            _check_buy_order_filled(ticker)
+            return
+
+        pending_sell = ticker['pending_sell']
+        if pending_sell:
+            _check_sell_order_filled(ticker)
+            return
+
+        holding_quantity = ticker['positions']
+        if holding_quantity == 0:
+            # remove from monitor
+            del tracking_tickers[symbol]
+            return
+
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        if quote == None:
+            return
+        bid_price = float(quote['depth']['ntvAggBidList'][0]['price'])
+        order_response = webullsdk.sell_limit_order(
+            ticker_id=ticker_id,
+            price=bid_price,
+            quant=holding_quantity)
+        print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+            utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
+        if 'msg' in order_response:
+            print("[{}] {}".format(utils.get_now(), order_response['msg']))
+        else:
+            # mark pending sell
+            tracking_tickers[symbol]['pending_sell'] = True
+            tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            tracking_tickers[symbol]['pending_order_time'] = datetime.now()
 
     # main loop
     while utils.is_extended_market_hour():
@@ -363,7 +401,14 @@ def start():
         # at least slepp 1 sec
         time.sleep(1)
 
-    # TODO, check if still holding any positions before logout
+    # check if still holding any positions before exit
+    while len(list(tracking_tickers)) > 0:
+        for symbol in list(tracking_tickers):
+            ticker = tracking_tickers[symbol]
+            _do_clear(ticker)
+
+        # at least slepp 1 sec
+        time.sleep(1)
 
     if utils.is_pre_market_hour():
         print("[{}] pre market trading ended!".format(utils.get_now()))
