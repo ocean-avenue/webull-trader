@@ -4,7 +4,7 @@ MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 1000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading timeout in minutes
-PENDING_ORDER_TIMEOUT = 10  # pending order timeout in seconds
+PENDING_ORDER_TIMEOUT = 60  # pending order timeout in seconds
 HOLDING_ORDER_TIMEOUT = 1800  # holding order timeout in seconds
 REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
 BUY_AMOUNT = 1000
@@ -249,8 +249,6 @@ def start():
             #     exit_trading = True
             # simply observe profit/loss ratio
             if profit_loss_rate >= PROFIT_RATE or profit_loss_rate <= LOSS_RATE:
-                print("[{}] exit trading <{}>[{}], P&L: {}%".format(
-                    utils.get_now(), symbol, ticker_id, profit_loss_rate * 100))
                 exit_trading = True
             # check if holding too long
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
@@ -285,6 +283,8 @@ def start():
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
+                print("[{}] exit trading <{}>[{}] >>> P&L: {}% <<<".format(
+                    utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
                 print("[{}] submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 if 'msg' in order_response:
