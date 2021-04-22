@@ -208,7 +208,7 @@ def start():
                         quant=buy_quant)
                     print("[{}] Trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
                         utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
-                    print("[{}] >>> Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                    print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                     if 'msg' in order_response:
                         print("[{}] {}".format(
@@ -284,9 +284,9 @@ def start():
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                print("[{}] *** Exit trading <{}>[{}] P&L: {}%".format(
+                print("[{}] 📈 Exit trading <{}>[{}] P&L: {}%".format(
                     utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
-                print("[{}] <<< Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 if 'msg' in order_response:
                     print("[{}] {}".format(
@@ -328,7 +328,7 @@ def start():
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        print("[{}] <<< Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+        print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
             utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
         if 'msg' in order_response:
             print("[{}] {}".format(utils.get_now(), order_response['msg']))

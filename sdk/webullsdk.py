@@ -147,7 +147,7 @@ def get_quote(ticker_id=None):
     try:
         return wb_instance.get_quote(tId=ticker_id)
     except Exception as e:
-        print("[{}] !!! Exception get_quote: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_quote: {}".format(utils.get_now(), e))
         return None
 
 
@@ -169,7 +169,7 @@ def get_1m_bars(ticker_id=None, count=10):
     try:
         return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
     except Exception as e:
-        print("[{}] !!! Exception get_1m_bars: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_1m_bars: {}".format(utils.get_now(), e))
         return pd.DataFrame()
 
 # symbol = 'AVCT'
@@ -248,7 +248,7 @@ def get_positions():
     try:
         return wb_instance.get_positions()
     except Exception as e:
-        print("[{}] !!! Exception get_positions: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_positions: {}".format(utils.get_now(), e))
         return None
 
 
@@ -257,7 +257,7 @@ def get_current_orders():
     try:
         return wb_instance.get_current_orders()
     except Exception as e:
-        print("[{}] !!! Exception get_current_orders: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_current_orders: {}".format(utils.get_now(), e))
         return None
 
 
@@ -266,7 +266,7 @@ def get_history_orders():
     try:
         return wb_instance.get_history_orders()
     except Exception as e:
-        print("[{}] !!! Exception get_history_orders: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_history_orders: {}".format(utils.get_now(), e))
         return None
 
 
@@ -371,7 +371,7 @@ def get_top_gainers():
                 )
         return gainers
     except Exception as e:
-        print("[{}] !!! Exception get_top_gainers: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_top_gainers: {}".format(utils.get_now(), e))
         return []
 
 
@@ -405,7 +405,7 @@ def get_after_market_gainers():
                 )
         return gainers
     except Exception as e:
-        print("[{}] !!! Exception get_after_market_gainers: {}".format(
+        print("[{}] ⚠️  Exception get_after_market_gainers: {}".format(
             utils.get_now(), e))
         return []
 
@@ -440,7 +440,7 @@ def get_top_losers():
                 )
         return losers
     except Exception as e:
-        print("[{}] !!! Exception get_top_losers: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_top_losers: {}".format(utils.get_now(), e))
         return []
 
 
@@ -474,6 +474,6 @@ def get_after_market_losers():
                 )
         return gainers
     except Exception as e:
-        print("[{}] !!! Exception get_after_market_losers: {}".format(
+        print("[{}] ⚠️  Exception get_after_market_losers: {}".format(
             utils.get_now(), e))
         return []
