@@ -323,20 +323,21 @@ def get_pre_market_gainers():
     for json_obj in obj_list:
         ticker_obj = json_obj["ticker"]
         values_obj = json_obj["values"]
-        symbol = ticker_obj["symbol"]
-        ticker_id = ticker_obj["tickerId"]
-        change = float(values_obj["change"])
-        change_percentage = float(values_obj["changeRatio"])
-        price = float(values_obj["price"])
-        gainers.append(
-            {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "change": change,
-                "change_percentage": change_percentage,
-                "price": price,
-            }
-        )
+        if ticker_obj["template"] == "stock":
+            symbol = ticker_obj["symbol"]
+            ticker_id = ticker_obj["tickerId"]
+            change = float(values_obj["change"])
+            change_percentage = float(values_obj["changeRatio"])
+            price = float(values_obj["price"])
+            gainers.append(
+                {
+                    "symbol": symbol,
+                    "ticker_id": ticker_id,
+                    "change": change,
+                    "change_percentage": change_percentage,
+                    "price": price,
+                }
+            )
     return gainers
 
 
@@ -353,20 +354,21 @@ def get_top_gainers():
         for json_obj in obj_list:
             ticker_obj = json_obj["ticker"]
             values_obj = json_obj["values"]
-            symbol = ticker_obj["symbol"]
-            ticker_id = ticker_obj["tickerId"]
-            change = float(values_obj["change"])
-            change_percentage = float(values_obj["changeRatio"])
-            price = float(ticker_obj["pprice"])
-            gainers.append(
-                {
-                    "symbol": symbol,
-                    "ticker_id": ticker_id,
-                    "change": change,
-                    "change_percentage": change_percentage,
-                    "price": price,
-                }
-            )
+            if ticker_obj["template"] == "stock":
+                symbol = ticker_obj["symbol"]
+                ticker_id = ticker_obj["tickerId"]
+                change = float(values_obj["change"])
+                change_percentage = float(values_obj["changeRatio"])
+                price = float(ticker_obj["pprice"])
+                gainers.append(
+                    {
+                        "symbol": symbol,
+                        "ticker_id": ticker_id,
+                        "change": change,
+                        "change_percentage": change_percentage,
+                        "price": price,
+                    }
+                )
         return gainers
     except Exception as e:
         print("[{}] get_top_gainers exception: {}".format(utils.get_now(), e))
@@ -386,20 +388,21 @@ def get_after_market_gainers():
         for json_obj in obj_list:
             ticker_obj = json_obj["ticker"]
             values_obj = json_obj["values"]
-            symbol = ticker_obj["symbol"]
-            ticker_id = ticker_obj["tickerId"]
-            change = float(values_obj["change"])
-            change_percentage = float(values_obj["changeRatio"])
-            price = float(values_obj["price"])
-            gainers.append(
-                {
-                    "symbol": symbol,
-                    "ticker_id": ticker_id,
-                    "change": change,
-                    "change_percentage": change_percentage,
-                    "price": price,
-                }
-            )
+            if ticker_obj["template"] == "stock":
+                symbol = ticker_obj["symbol"]
+                ticker_id = ticker_obj["tickerId"]
+                change = float(values_obj["change"])
+                change_percentage = float(values_obj["changeRatio"])
+                price = float(values_obj["price"])
+                gainers.append(
+                    {
+                        "symbol": symbol,
+                        "ticker_id": ticker_id,
+                        "change": change,
+                        "change_percentage": change_percentage,
+                        "price": price,
+                    }
+                )
         return gainers
     except Exception as e:
         print("[{}] get_after_market_gainers exception: {}".format(
@@ -420,20 +423,21 @@ def get_top_losers():
         for json_obj in obj_list:
             ticker_obj = json_obj["ticker"]
             values_obj = json_obj["values"]
-            symbol = ticker_obj["symbol"]
-            ticker_id = ticker_obj["tickerId"]
-            change = float(values_obj["change"])
-            change_percentage = float(values_obj["changeRatio"])
-            price = float(ticker_obj["pprice"])
-            losers.append(
-                {
-                    "symbol": symbol,
-                    "ticker_id": ticker_id,
-                    "change": change,
-                    "change_percentage": change_percentage,
-                    "price": price,
-                }
-            )
+            if ticker_obj["template"] == "stock":
+                symbol = ticker_obj["symbol"]
+                ticker_id = ticker_obj["tickerId"]
+                change = float(values_obj["change"])
+                change_percentage = float(values_obj["changeRatio"])
+                price = float(ticker_obj["pprice"])
+                losers.append(
+                    {
+                        "symbol": symbol,
+                        "ticker_id": ticker_id,
+                        "change": change,
+                        "change_percentage": change_percentage,
+                        "price": price,
+                    }
+                )
         return losers
     except Exception as e:
         print("[{}] get_top_losers exception: {}".format(utils.get_now(), e))
@@ -453,20 +457,21 @@ def get_after_market_losers():
         for json_obj in obj_list:
             ticker_obj = json_obj["ticker"]
             values_obj = json_obj["values"]
-            symbol = ticker_obj["symbol"]
-            ticker_id = ticker_obj["tickerId"]
-            change = float(values_obj["change"])
-            change_percentage = float(values_obj["changeRatio"])
-            price = float(values_obj["price"])
-            gainers.append(
-                {
-                    "symbol": symbol,
-                    "ticker_id": ticker_id,
-                    "change": change,
-                    "change_percentage": change_percentage,
-                    "price": price,
-                }
-            )
+            if ticker_obj["template"] == "stock":
+                symbol = ticker_obj["symbol"]
+                ticker_id = ticker_obj["tickerId"]
+                change = float(values_obj["change"])
+                change_percentage = float(values_obj["changeRatio"])
+                price = float(values_obj["price"])
+                gainers.append(
+                    {
+                        "symbol": symbol,
+                        "ticker_id": ticker_id,
+                        "change": change,
+                        "change_percentage": change_percentage,
+                        "price": price,
+                    }
+                )
         return gainers
     except Exception as e:
         print("[{}] get_after_market_losers exception: {}".format(
