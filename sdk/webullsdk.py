@@ -257,7 +257,8 @@ def get_current_orders():
     try:
         return wb_instance.get_current_orders()
     except Exception as e:
-        print("[{}] ⚠️  Exception get_current_orders: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_current_orders: {}".format(
+            utils.get_now(), e))
         return None
 
 
@@ -266,7 +267,8 @@ def get_history_orders():
     try:
         return wb_instance.get_history_orders()
     except Exception as e:
-        print("[{}] ⚠️  Exception get_history_orders: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_history_orders: {}".format(
+            utils.get_now(), e))
         return None
 
 
@@ -313,32 +315,36 @@ def get_1m_charts(ticker_id, count=20):
 
 def get_pre_market_gainers():
     time.sleep(1)
-    session = requests.Session()
-    res = session.get(
-        WEBULL_PRE_MARKET_GAINERS_URL,
-        headers=_get_browser_headers())
-    res_json = json.loads(res.text)
-    obj_list = res_json["data"]
-    gainers = []
-    for json_obj in obj_list:
-        ticker_obj = json_obj["ticker"]
-        values_obj = json_obj["values"]
-        if ticker_obj["template"] == "stock":
-            symbol = ticker_obj["symbol"]
-            ticker_id = ticker_obj["tickerId"]
-            change = float(values_obj["change"])
-            change_percentage = float(values_obj["changeRatio"])
-            price = float(values_obj["price"])
-            gainers.append(
-                {
-                    "symbol": symbol,
-                    "ticker_id": ticker_id,
-                    "change": change,
-                    "change_percentage": change_percentage,
-                    "price": price,
-                }
-            )
-    return gainers
+    try:
+        session = requests.Session()
+        res = session.get(
+            WEBULL_PRE_MARKET_GAINERS_URL,
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        obj_list = res_json["data"]
+        gainers = []
+        for json_obj in obj_list:
+            ticker_obj = json_obj["ticker"]
+            values_obj = json_obj["values"]
+            if ticker_obj["template"] == "stock":
+                symbol = ticker_obj["symbol"]
+                ticker_id = ticker_obj["tickerId"]
+                change = float(values_obj["change"])
+                change_percentage = float(values_obj["changeRatio"])
+                price = float(values_obj["price"])
+                gainers.append(
+                    {
+                        "symbol": symbol,
+                        "ticker_id": ticker_id,
+                        "change": change,
+                        "change_percentage": change_percentage,
+                        "price": price,
+                    }
+                )
+        return gainers
+    except Exception as e:
+        print("[{}] ⚠️  Exception get_pre_market_gainers: {}".format(utils.get_now(), e))
+        return []
 
 
 def get_top_gainers():
