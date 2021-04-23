@@ -54,6 +54,10 @@ def get_portfolio():
     return wb_instance.get_portfolio()
 
 
+def get_history_orders(status='Filled', count=500):
+    return wb_instance.get_history_orders(status, count)
+
+
 def get_trade_token(password=''):
     return wb_instance.get_trade_token(password=password)
 
@@ -343,7 +347,8 @@ def get_pre_market_gainers():
                 )
         return gainers
     except Exception as e:
-        print("[{}] ⚠️  Exception get_pre_market_gainers: {}".format(utils.get_now(), e))
+        print("[{}] ⚠️  Exception get_pre_market_gainers: {}".format(
+            utils.get_now(), e))
         return []
 
 
