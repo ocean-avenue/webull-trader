@@ -10,17 +10,18 @@ def start():
     history_orders = webullsdk.get_history_orders(
         status='Filled', count=1000)[::-1]
 
-    today = datetime.today().strftime("%m/%d/%Y")
+    export_day = history_orders[-1]['filledTime'].split(" ")[0]
+
     today_orders = []
 
     for order in history_orders:
         filled_day = order['filledTime'].split(" ")[0]
-        if today == filled_day:
+        if export_day == filled_day:
             today_orders.append(order)
 
     # output csv for now
-    output_file_name = "Webull_Orders_Records_{}_{}_{}.csv".format(
-        datetime.today().year, datetime.today().month, datetime.today().day)
+    output_file_name = "Webull_Orders_Records_{}.csv".format(
+        export_day.replace("/", "_"))
     output = open(output_file_name, "w")
     # write header
     output.write(
