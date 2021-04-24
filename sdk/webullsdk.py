@@ -54,10 +54,6 @@ def get_portfolio():
     return wb_instance.get_portfolio()
 
 
-def get_history_orders(status='Filled', count=500):
-    return wb_instance.get_history_orders(status, count)
-
-
 def get_trade_token(password=''):
     return wb_instance.get_trade_token(password=password)
 
@@ -266,10 +262,10 @@ def get_current_orders():
         return None
 
 
-def get_history_orders():
+def get_history_orders(status='Filled', count=1000):
     time.sleep(1)
     try:
-        return wb_instance.get_history_orders()
+        return wb_instance.get_history_orders(status=status, count=count)
     except Exception as e:
         print("[{}] ⚠️  Exception get_history_orders: {}".format(
             utils.get_now(), e))
