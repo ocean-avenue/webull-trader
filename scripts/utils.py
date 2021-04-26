@@ -91,6 +91,19 @@ def check_bars_updated(bars):
     return False
 
 
+def check_bars_price_fixed(bars):
+    """
+    check if prev chart candlestick price is fixed
+    """
+    if not bars.empty:
+        prev_close2 = bars.iloc[-2]['close']
+        prev_close3 = bars.iloc[-3]['close']
+        prev_close4 = bars.iloc[-4]['close']
+        if prev_close2 == prev_close3 and prev_close3 == prev_close4:
+            return True
+    return False
+
+
 def calculate_charts_ema9(charts):
     """
     https://school.stockcharts.com/doku.php?id=technical_indicators:moving_averages

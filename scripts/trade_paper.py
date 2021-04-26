@@ -172,6 +172,13 @@ def start():
                 del tracking_tickers[symbol]
                 return
 
+            if utils.check_bars_price_fixed(bars):
+                print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
+                    utils.get_now(), symbol, ticker_id))
+                # remove from monitor
+                del tracking_tickers[symbol]
+                return
+
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
             current_candle = bars.iloc[-1]
@@ -264,14 +271,10 @@ def start():
             if not exit_trading:
                 # fetch 1m bar charts
                 bars = webullsdk.get_1m_bars(ticker_id, count=10)
-                if not bars.empty:
-                    prev_close = bars.iloc[-2]['close']
-                    prev_close2 = bars.iloc[-3]['close']
-                    prev_close3 = bars.iloc[-4]['close']
-                    if prev_close == prev_close2 and prev_close2 == prev_close3:
-                        print("[{}] <{}>[{}] Price is going sideway at {}...".format(
-                            utils.get_now(), symbol, ticker_id, prev_close))
-                        exit_trading = True
+                if utils.check_bars_price_fixed(bars):
+                    print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
+                        utils.get_now(), symbol, ticker_id))
+                    exit_trading = True
 
             # exit trading
             if exit_trading:
