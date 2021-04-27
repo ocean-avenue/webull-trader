@@ -66,21 +66,21 @@ class Command(BaseCommand):
             job=paper_trading_job,
             job_name="paper_trading_job_premarket",
             hour="04",
-            minute="01")
+            minute="00")
 
         # regular hour paper trading jobs
         add_weekday_jobs(
             job=paper_trading_job,
             job_name="paper_trading_job",
             hour="09",
-            minute="31")
+            minute="30")
 
         # post-market paper trading jobs
         add_weekday_jobs(
             job=paper_trading_job,
             job_name="paper_trading_job_postmarket",
-            hour="09",
-            minute="31")
+            hour="16",
+            minute="00")
 
         try:
             print("[{}] start scheduler...".format(utils.get_now()))
