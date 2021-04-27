@@ -172,12 +172,12 @@ def start():
                 del tracking_tickers[symbol]
                 return
 
-            if utils.check_bars_price_fixed(bars):
-                print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
-                    utils.get_now(), symbol, ticker_id))
-                # remove from monitor
-                del tracking_tickers[symbol]
-                return
+            # if utils.check_bars_price_fixed(bars):
+            #     print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
+            #         utils.get_now(), symbol, ticker_id))
+            #     # remove from monitor
+            #     del tracking_tickers[symbol]
+            #     return
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
