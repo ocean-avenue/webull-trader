@@ -1,5 +1,6 @@
 alpaca-trade-api==1.0.1
 appdirs==1.4.4
+APScheduler==3.7.0
 asgiref==3.3.1
 autopep8==1.5.6
 beautifulsoup4==4.9.3
@@ -13,6 +14,7 @@ contextlib2==0.6.0
 distlib==0.3.0
 distro==1.4.0
 Django==3.1.7
+django-apscheduler==0.5.2
 dnspython==2.1.0
 email-validator==1.1.2
 html5lib==1.0.1
@@ -42,6 +44,7 @@ sqlparse==0.4.1
 toml==0.10.2
 typed-ast==1.4.2
 typing-extensions==3.7.4.3
+tzlocal==2.1
 urllib3==1.26.2
 webencodings==0.5.1
 websocket-client==0.57.0
