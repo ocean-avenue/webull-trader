@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third party
     'django_apscheduler',
+    # our app
+    'old_ross',
 ]
 
 MIDDLEWARE = [

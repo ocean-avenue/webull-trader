@@ -61,3 +61,10 @@ def get_intraday_sma(symbol, interval, period):
             FMP_API_BASE_URL, interval, symbol, period, FMP_API_KEY
         )
     )
+
+def get_market_hour():
+    return _get_jsonparsed_data(
+        "{}/market-hours?apikey={}".format(
+            FMP_API_BASE_URL, FMP_API_KEY
+        )
+    )[0]
