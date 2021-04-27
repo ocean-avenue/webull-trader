@@ -27,15 +27,18 @@ def login(paper=True):
     wb_instance._token_expire = credential_data['tokenExpireTime']
     wb_instance._uuid = credential_data['uuid']
 
-    n_data = wb_instance.refresh_login()
+    try:
+        n_data = wb_instance.refresh_login()
 
-    credential_data['refreshToken'] = n_data['refreshToken']
-    credential_data['accessToken'] = n_data['accessToken']
-    credential_data['tokenExpireTime'] = n_data['tokenExpireTime']
+        credential_data['refreshToken'] = n_data['refreshToken']
+        credential_data['accessToken'] = n_data['accessToken']
+        credential_data['tokenExpireTime'] = n_data['tokenExpireTime']
 
-    output = open(credential_file, 'w')
-    json.dump(credential_data, output)
-    output.close()
+        output = open(credential_file, 'w')
+        json.dump(credential_data, output)
+        output.close()
+    except Exception as e:
+        print("[{}] ⚠️  Exception refresh_login: {}".format(utils.get_now(), e))
 
     wb_instance.get_account_id()
 
