@@ -275,6 +275,16 @@ def get_history_orders(status='Filled', count=1000):
         return None
 
 
+def get_news(stock=None, items=5):
+    '''
+    get news and returns a list of articles
+    params:
+        Id: 0 is latest news article
+        items: number of articles to return
+    '''
+    return wb_instance.get_news(stock=stock, Id=0, items=items)
+
+
 def _get_browser_headers():
     return {
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
