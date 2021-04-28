@@ -54,3 +54,17 @@ class WebullOrderNote(models.Model):
 
     def __str__(self):
         return "{}: {}".format(self.order_id, self.note)
+
+
+class WebullNews(models.Model):
+    news_id = models.CharField(max_length=128)
+    symbol = models.CharField(max_length=64)
+    title = models.CharField(max_length=512)
+    source = models.CharField(max_length=64)
+    news_time = models.CharField(max_length=64)
+    summary = models.TextField()
+    news_url = models.URLField(max_length=200)
+    trade_date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] <{}>: {}".format(self.trade_date, self.symbol, self.title)
