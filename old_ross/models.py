@@ -5,6 +5,7 @@ from old_ross import enums
 
 
 class WebullOrder(models.Model):
+    order_id = models.CharField(max_length=128)
     symbol = models.CharField(max_length=64)
     SIDE_TYPE_CHOICES = (
         (enums.SideType.BUY, enums.SideType.tostr(enums.SideType.BUY)),
@@ -23,16 +24,18 @@ class WebullOrder(models.Model):
     filled_time = models.DateTimeField(auto_now_add=False, auto_now=False)
     placed_time = models.DateTimeField(auto_now_add=False, auto_now=False)
     TIME_IN_FORCE_TYPE_CHOICES = (
-        (enums.TimeInForceType.GTC, enums.TimeInForceType.tostr(enums.TimeInForceType.GTC)),
-        (enums.TimeInForceType.DAY, enums.TimeInForceType.tostr(enums.TimeInForceType.DAY)),
-        (enums.TimeInForceType.IOC, enums.TimeInForceType.tostr(enums.TimeInForceType.IOC)),
+        (enums.TimeInForceType.GTC, enums.TimeInForceType.tostr(
+            enums.TimeInForceType.GTC)),
+        (enums.TimeInForceType.DAY, enums.TimeInForceType.tostr(
+            enums.TimeInForceType.DAY)),
+        (enums.TimeInForceType.IOC, enums.TimeInForceType.tostr(
+            enums.TimeInForceType.IOC)),
     )
     time_in_force = models.PositiveSmallIntegerField(
         choices=TIME_IN_FORCE_TYPE_CHOICES,
         default=enums.TimeInForceType.GTC
     )
     paper = models.BooleanField(default=True)
-    note = models.CharField(max_length=512)
 
     def __str__(self):
         return "[{}] <{}> {} total: {}, filled: {}, price: ${}, avg: ${}".format(
@@ -43,3 +46,11 @@ class WebullOrder(models.Model):
             self.filled_quantity,
             self.price,
             self.avg_price)
+
+
+class WebullOrderNote(models.Model):
+    order_id = models.CharField(max_length=128)
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return "{}: {}".format(self.order_id, self.note)

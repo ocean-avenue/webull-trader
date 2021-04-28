@@ -71,11 +71,13 @@ def start():
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
+                    utils.save_webull_order_note(
+                        ticker['pending_order_id'], "Buy order timeout, canceled!")
+                    print("[{}] Buy order <{}>[{}] timeout, canceled!".format(
+                        utils.get_now(), symbol, ticker_id))
                     tracking_tickers[symbol]['pending_buy'] = False
                     tracking_tickers[symbol]['pending_order_id'] = None
                     tracking_tickers[symbol]['pending_order_time'] = None
-                    print("[{}] Buy order <{}>[{}] timeout, canceled!".format(
-                        utils.get_now(), symbol, ticker_id))
                 else:
                     print("[{}] Failed to cancel timeout buy order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
@@ -93,11 +95,17 @@ def start():
             if position['ticker']['symbol'] == symbol:
                 order_filled = False
         if order_filled:
+            # check if have any exit note
+            exit_note = tracking_tickers[symbol]['exit_note']
+            if exit_note:
+                utils.save_webull_order_note(
+                    tracking_tickers[symbol]['pending_order_id'], exit_note)
             # update tracking_tickers
             tracking_tickers[symbol]['positions'] = 0
             tracking_tickers[symbol]['pending_sell'] = False
             tracking_tickers[symbol]['pending_order_id'] = None
             tracking_tickers[symbol]['pending_order_time'] = None
+            tracking_tickers[symbol]['exit_note'] = None
             print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
@@ -107,6 +115,8 @@ def start():
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
+                    utils.save_webull_order_note(
+                        ticker['pending_order_id'], "Sell order timeout, canceled!")
                     print("[{}] Sell order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     # resubmit sell order
@@ -126,6 +136,8 @@ def start():
                         print("[{}] {}".format(
                             utils.get_now(), order_response['msg']))
                     else:
+                        utils.save_webull_order_note(
+                            order_response['orderId'], "Resubmit sell order.")
                         # mark pending sell
                         tracking_tickers[symbol]['pending_sell'] = True
                         tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
@@ -257,10 +269,12 @@ def start():
             # simply observe profit/loss ratio
             if profit_loss_rate >= PROFIT_RATE or profit_loss_rate <= LOSS_RATE:
                 exit_trading = True
+            exit_note = None
             # check if holding too long
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
                 print("[{}] Holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
+                exit_note = "Holding too long!"
                 exit_trading = True
             # check if price go sideway
             # if quote != None:
@@ -274,6 +288,7 @@ def start():
                 if utils.check_bars_price_fixed(bars):
                     print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
                         utils.get_now(), symbol, ticker_id))
+                    exit_note = "Price is fixed during last 3 candles..."
                     exit_trading = True
 
             # exit trading
@@ -300,6 +315,7 @@ def start():
                     tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
                     tracking_tickers[symbol]['pending_order_time'] = datetime.now(
                     )
+                    tracking_tickers[symbol]['exit_note'] = exit_note
 
         # TODO, buy after the first pull back
 
@@ -393,6 +409,7 @@ def start():
                             "start_time": datetime.now(),
                             # paper trade do not have stop trailing order, this value keep track of max P&L
                             "max_profit_loss_rate": 0,
+                            "exit_note": None,
                         }
                         tracking_tickers[symbol] = ticker
                         print("[{}] Found <{}>[{}] to trade!".format(

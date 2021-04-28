@@ -1,4 +1,5 @@
 from datetime import datetime
+from old_ross.models import WebullOrderNote
 
 
 def get_now():
@@ -126,3 +127,11 @@ def calculate_charts_ema9(charts):
             candle['ema9'] = round(
                 (candle['close'] - prev_candle['ema9']) * multiplier + prev_candle['ema9'], 2)
     return charts
+
+
+def save_webull_order_note(order_id, note):
+    order_note = WebullOrderNote(
+        order_id=str(order_id),
+        note=note,
+    )
+    order_note.save()
