@@ -101,27 +101,29 @@ def _vwap_resampler(series):
 
 
 def convert_2m_bars(bars):
-    bars_2m = pd.DataFrame()
-    bars_2m_open = bars['open'].resample(
-        '2T', label="right", closed="right").apply(_open_resampler)
-    bars_2m_close = bars['close'].resample(
-        '2T', label="right", closed="right").apply(_close_resampler)
-    bars_2m_high = bars['high'].resample(
-        '2T', label="right", closed="right").apply(_high_resampler)
-    bars_2m_low = bars['low'].resample(
-        '2T', label="right", closed="right").apply(_low_resampler)
-    bars_2m_volume = bars['volume'].resample(
-        '2T', label="right", closed="right").apply(_volume_resampler)
-    bars_2m_vwap = bars['vwap'].resample(
-        '2T', label="right", closed="right").apply(_vwap_resampler)
-    bars_2m['open'] = bars_2m_open
-    bars_2m['close'] = bars_2m_close
-    bars_2m['high'] = bars_2m_high
-    bars_2m['low'] = bars_2m_low
-    bars_2m['volume'] = bars_2m_volume
-    bars_2m['vwap'] = bars_2m_vwap
-    # filter zero row
-    return bars_2m.loc[(bars_2m != 0).all(axis=1), :]
+    if not bars.empty:
+        bars_2m = pd.DataFrame()
+        bars_2m_open = bars['open'].resample(
+            '2T', label="right", closed="right").apply(_open_resampler)
+        bars_2m_close = bars['close'].resample(
+            '2T', label="right", closed="right").apply(_close_resampler)
+        bars_2m_high = bars['high'].resample(
+            '2T', label="right", closed="right").apply(_high_resampler)
+        bars_2m_low = bars['low'].resample(
+            '2T', label="right", closed="right").apply(_low_resampler)
+        bars_2m_volume = bars['volume'].resample(
+            '2T', label="right", closed="right").apply(_volume_resampler)
+        bars_2m_vwap = bars['vwap'].resample(
+            '2T', label="right", closed="right").apply(_vwap_resampler)
+        bars_2m['open'] = bars_2m_open
+        bars_2m['close'] = bars_2m_close
+        bars_2m['high'] = bars_2m_high
+        bars_2m['low'] = bars_2m_low
+        bars_2m['volume'] = bars_2m_volume
+        bars_2m['vwap'] = bars_2m_vwap
+        # filter zero row
+        return bars_2m.loc[(bars_2m != 0).all(axis=1), :]
+    return pd.DataFrame()
 
 
 def check_since_last_sell_too_short(last_sell_time, bars):
