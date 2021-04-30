@@ -1,15 +1,15 @@
 UNKNOWN = 'Unknown'
 
 
-class SideType:
+class ActionType:
     BUY = 0
     SELL = 1
 
     @staticmethod
     def tostr(val):
-        if val == SideType.BUY:
+        if val == ActionType.BUY:
             return 'BUY'
-        if val == SideType.SELL:
+        if val == ActionType.SELL:
             return 'SELL'
         return UNKNOWN
 

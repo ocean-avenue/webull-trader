@@ -4,16 +4,28 @@ from old_ross import enums
 # Create your models here.
 
 
+class WebullCredentials(models.Model):
+    cred = models.TextField(null=True, blank=True)
+    paper = models.BooleanField(default=True)
+
+    def __str__(self):
+        account_type = "LIVE"
+        if self.paper:
+            account_type = "PAPER"
+        return "Credentials for {} webull account".format(account_type)
+
+
 class WebullOrder(models.Model):
     order_id = models.CharField(max_length=128)
+    ticker_id = models.CharField(max_length=128)
     symbol = models.CharField(max_length=64)
-    SIDE_TYPE_CHOICES = (
-        (enums.SideType.BUY, enums.SideType.tostr(enums.SideType.BUY)),
-        (enums.SideType.SELL, enums.SideType.tostr(enums.SideType.SELL)),
+    ACTION_TYPE_CHOICES = (
+        (enums.ActionType.BUY, enums.ActionType.tostr(enums.ActionType.BUY)),
+        (enums.ActionType.SELL, enums.ActionType.tostr(enums.ActionType.SELL)),
     )
-    side = models.PositiveSmallIntegerField(
-        choices=SIDE_TYPE_CHOICES,
-        default=enums.SideType.BUY
+    action = models.PositiveSmallIntegerField(
+        choices=ACTION_TYPE_CHOICES,
+        default=enums.ActionType.BUY
     )
     status = models.CharField(max_length=64)
     total_quantity = models.PositiveIntegerField(default=1)
@@ -40,7 +52,7 @@ class WebullOrder(models.Model):
     def __str__(self):
         return "[{}] <{}> {} total: {}, filled: {}, price: ${}, avg: ${}".format(
             self.filled_time,
-            enums.SideType.tostr(self.side),
+            enums.ActionType.tostr(self.action),
             self.stock.symbol,
             self.total_quantity,
             self.filled_quantity,
@@ -68,3 +80,66 @@ class WebullNews(models.Model):
 
     def __str__(self):
         return "[{}] <{}>: {}".format(self.trade_date, self.symbol, self.title)
+
+
+class HistoricalKeyStatistics:
+    symbol = models.CharField(max_length=64)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    change = models.FloatField()
+    change_ratio = models.FloatField()
+    market_value = models.FloatField()
+    volume = models.FloatField()
+    turnover_rate = models.FloatField()
+    vibrate_ratio = models.FloatField()
+    avg_vol_10d = models.FloatField()
+    avg_vol_3m = models.FloatField()
+    pe = models.FloatField()
+    forward_pe = models.FloatField()
+    pe_ttm = models.FloatField()
+    eps = models.FloatField()
+    eps_ttm = models.FloatField()
+    pb = models.FloatField()
+    ps = models.FloatField()
+    bps = models.FloatField()
+    total_shares = models.FloatField()
+    outstanding_shares = models.FloatField()
+    fifty_two_wk_high = models.FloatField()
+    fifty_two_wk_low = models.FloatField()
+    latest_earnings_date = models.CharField(max_length=128)
+    estimate_earnings_date = models.CharField(max_length=128)
+
+    date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] <{}> historical mktcap: {}".format(self.date, self.symbol, self.market_value)
+
+
+class HistoricalMinuteBar:
+    symbol = models.CharField(max_length=64)
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    time = models.DateTimeField(auto_now=False, auto_now_add=False)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    volume = models.FloatField()
+    vwap = models.FloatField()
+
+    def __str__(self):
+        return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.time, self.symbol, self.open, self.high, self.low, self.close)
+
+
+class HistoricalDailyBar:
+    symbol = models.CharField(max_length=64)
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    volume = models.FloatField()
+
+    def __str__(self):
+        return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.time, self.symbol, self.open, self.high, self.low, self.close)

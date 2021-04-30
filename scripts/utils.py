@@ -204,10 +204,8 @@ def calculate_charts_ema9(charts):
 
 
 def save_webull_order_note(order_id, note):
-    # order_note = WebullOrderNote(
-    #     order_id=str(order_id),
-    #     note=note,
-    # )
-    # order_note.save()
-    # TODO
-    pass
+    order_note = WebullOrderNote(
+        order_id=str(order_id),
+        note=note,
+    )
+    order_note.save()
