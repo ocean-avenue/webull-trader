@@ -167,7 +167,7 @@ def get_quote(ticker_id=None):
 # 2021-04-07 19:56:00-04:00  8.60  8.60  8.60   8.60    25.0  8.46
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
-def get_1m_bars(ticker_id=None, count=10):
+def get_1m_bars(ticker_id=None, count=20):
     time.sleep(1)
     try:
         return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
@@ -177,6 +177,8 @@ def get_1m_bars(ticker_id=None, count=10):
 
 # symbol = 'AVCT'
 # ticker_id = 925348770
+# symbol = 'AAPL'
+# ticker_id = 913256135
 
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):

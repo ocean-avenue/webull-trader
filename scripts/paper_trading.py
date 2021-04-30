@@ -173,7 +173,8 @@ def start():
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            bars = webullsdk.get_1m_bars(ticker_id, count=30)
+            bars = utils.convert_2m_bars(
+                webullsdk.get_1m_bars(ticker_id, count=60))
             if bars.empty:
                 return
 
@@ -284,7 +285,8 @@ def start():
             #         exit_trading = True
             if not exit_trading:
                 # fetch 1m bar charts
-                bars = webullsdk.get_1m_bars(ticker_id, count=10)
+                bars = utils.convert_2m_bars(
+                    webullsdk.get_1m_bars(ticker_id, count=20))
                 if utils.check_bars_price_fixed(bars):
                     print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
                         utils.get_now(), symbol, ticker_id))
@@ -386,7 +388,8 @@ def start():
             change_percentage = gainer["change_percentage"]
             # check if change >= 8%
             if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
-                bars = webullsdk.get_1m_bars(ticker_id, count=30)
+                bars = utils.convert_2m_bars(
+                    webullsdk.get_1m_bars(ticker_id, count=60))
                 if bars.empty:
                     continue
                 latest_candle = bars.iloc[-1]

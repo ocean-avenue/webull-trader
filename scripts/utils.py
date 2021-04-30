@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 from datetime import datetime
 from old_ross.models import WebullOrderNote
 
@@ -24,8 +26,8 @@ def is_pre_market_hour():
     # stop pre market earlier for 5 minutes
     if now.hour == 9 and now.minute >= 25:
         return False
-    # wait 30 second for webull get pre market data ready
-    if now.hour == 4 and now.minute == 0 and now.second < 30:
+    # wait 3 min for webull get pre market data ready
+    if now.hour == 4 and now.minute < 3:
         return False
     return True
 
@@ -37,8 +39,8 @@ def is_after_market_hour():
     now = datetime.now()
     if now.hour < 16 or now.hour >= 20:
         return False
-    # wait 30 second for webull get after market data ready
-    if now.hour == 16 and now.minute == 0 and now.second < 30:
+    # wait 3 min for webull get after market data ready
+    if now.hour == 16 and now.minute < 3:
         return False
     # stop after market earlier for 5 minutes
     if now.hour == 19 and now.minute >= 55:
@@ -53,15 +55,73 @@ def is_regular_market_hour():
     now = datetime.now()
     if now.hour < 9 or now.hour >= 16:
         return False
-    if now.hour == 9 and now.minute < 30:
+    # wait 3 min for webull get regular market data ready
+    if now.hour == 9 and now.minute < 33:
         return False
     # stop regular market earlier for 5 minutes
     if now.hour == 15 and now.minute >= 55:
         return False
-    # wait 30 second for webull get regular market data ready
-    if now.hour == 9 and now.minute == 30 and now.second < 30:
-        return False
     return True
+
+
+def _open_resampler(series):
+    if series.size > 0:
+        return series[0]
+    return 0
+
+
+def _close_resampler(series):
+    if series.size > 0:
+        return series[-1]
+    return 0
+
+
+def _high_resampler(series):
+    if series.size > 0:
+        return np.max(series)
+    return 0
+
+
+def _low_resampler(series):
+    if series.size > 0:
+        return np.min(series)
+    return 0
+
+
+def _volume_resampler(series):
+    if series.size > 0:
+        return np.sum(series)
+    return 0
+
+
+def _vwap_resampler(series):
+    if series.size > 0:
+        return np.average(series)
+    return 0
+
+
+def convert_2m_bars(bars):
+    bars_2m = pd.DataFrame()
+    bars_2m_open = bars['open'].resample(
+        '2T', label="right", closed="right").apply(_open_resampler)
+    bars_2m_close = bars['close'].resample(
+        '2T', label="right", closed="right").apply(_close_resampler)
+    bars_2m_high = bars['high'].resample(
+        '2T', label="right", closed="right").apply(_high_resampler)
+    bars_2m_low = bars['low'].resample(
+        '2T', label="right", closed="right").apply(_low_resampler)
+    bars_2m_volume = bars['volume'].resample(
+        '2T', label="right", closed="right").apply(_volume_resampler)
+    bars_2m_vwap = bars['vwap'].resample(
+        '2T', label="right", closed="right").apply(_vwap_resampler)
+    bars_2m['open'] = bars_2m_open
+    bars_2m['close'] = bars_2m_close
+    bars_2m['high'] = bars_2m_high
+    bars_2m['low'] = bars_2m_low
+    bars_2m['volume'] = bars_2m_volume
+    bars_2m['vwap'] = bars_2m_vwap
+    # filter zero row
+    return bars_2m.loc[(bars_2m != 0).all(axis=1), :]
 
 
 def check_since_last_sell_too_short(last_sell_time, bars):
