@@ -267,30 +267,43 @@ def start():
             # sell if drawdown 1% from max P&L rate
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
             #     exit_trading = True
-            # simply observe profit/loss ratio
-            if profit_loss_rate >= PROFIT_RATE or profit_loss_rate <= LOSS_RATE:
-                exit_trading = True
             exit_note = None
+            # stop loss for LOSS_RATE
+            if profit_loss_rate <= LOSS_RATE:
+                exit_note = "Stop loss!"
+                exit_trading = True
+
             # check if holding too long
             if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=HOLDING_ORDER_TIMEOUT) and profit_loss_rate < 0.01:
                 print("[{}] Holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
                 exit_note = "Holding too long!"
                 exit_trading = True
-            # check if price go sideway
-            # if quote != None:
-            #     if float(quote['pChRatio']) == 0.0:
-            #         print("[{}] <{}>[{}] price is going sideway...".format(
-            #             utils.get_now(), symbol, ticker_id))
-            #         exit_trading = True
+
             if not exit_trading:
                 # fetch 1m bar charts
                 bars = utils.convert_2m_bars(
                     webullsdk.get_1m_bars(ticker_id, count=20))
-                if utils.check_bars_price_fixed(bars):
-                    print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
+
+                # get bars error
+                if bars.empty:
+                    print("[{}] <{}>[{}] Bars data error!".format(
                         utils.get_now(), symbol, ticker_id))
-                    exit_note = "Price is fixed during last 3 candles..."
+                    exit_note = "Bars data error!"
+                    exit_trading = True
+
+                # check if momentum is stop
+                if not exit_trading and utils.check_bars_current_low_less_than_prev_low(bars):
+                    print("[{}] <{}>[{}] Current low price is less than previous low price.".format(
+                        utils.get_now(), symbol, ticker_id))
+                    exit_note = "Current Low < Previous Low."
+                    exit_trading = True
+
+                # check if price fixed in last 3 candles
+                if not exit_trading and utils.check_bars_price_fixed(bars):
+                    print("[{}] <{}>[{}] Price is fixed during last 3 candles.".format(
+                        utils.get_now(), symbol, ticker_id))
+                    exit_note = "Price fixed during last 3 candles."
                     exit_trading = True
 
             # exit trading

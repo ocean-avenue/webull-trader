@@ -154,6 +154,18 @@ def check_bars_updated(bars):
     return False
 
 
+def check_bars_current_low_less_than_prev_low(bars):
+    """
+    check if current low price less than prev low price
+    """
+    if not bars.empty:
+        current_low = bars.iloc[-1]['low']
+        prev_low = bars.iloc[-2]['low']
+        if current_low < prev_low:
+            return True
+    return False
+
+
 def check_bars_price_fixed(bars):
     """
     check if prev chart candlestick price is fixed
