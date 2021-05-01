@@ -33,8 +33,10 @@ class WebullOrder(models.Model):
     price = models.FloatField()
     avg_price = models.FloatField()
 
-    filled_time = models.DateTimeField(auto_now_add=False, auto_now=False)
-    placed_time = models.DateTimeField(auto_now_add=False, auto_now=False)
+    filled_time = models.DateTimeField(
+        auto_now_add=False, auto_now=False, null=True, blank=True)
+    placed_time = models.DateTimeField(
+        auto_now_add=False, auto_now=False, null=True, blank=True)
     TIME_IN_FORCE_TYPE_CHOICES = (
         (enums.TimeInForceType.GTC, enums.TimeInForceType.tostr(
             enums.TimeInForceType.GTC)),

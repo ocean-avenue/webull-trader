@@ -267,7 +267,7 @@ def get_current_orders():
         return None
 
 
-def get_history_orders(status='Filled', count=1000):
+def get_history_orders(status='All', count=1000):
     time.sleep(1)
     try:
         return wb_instance.get_history_orders(status=status, count=count)

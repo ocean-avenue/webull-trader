@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# paper trading
+
 MIN_SURGE_AMOUNT = 21000
 MIN_SURGE_VOL = 1000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge

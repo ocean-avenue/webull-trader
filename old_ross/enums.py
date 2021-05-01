@@ -36,6 +36,31 @@ class OrderType:
         return UNKNOWN
 
 
+class StatusType:
+    FILLED = 0
+    CANCELLED = 1
+    PARTIALLY_FILLED = 2
+    FAILED = 3
+    WORKING = 4
+    PENDING = 5
+
+    @staticmethod
+    def tostr(val):
+        if val == StatusType.FILLED:
+            return 'FILLED'
+        if val == StatusType.CANCELLED:
+            return 'CANCELLED'
+        if val == StatusType.PARTIALLY_FILLED:
+            return 'PARTIALLY_FILLED'
+        if val == StatusType.FAILED:
+            return 'FAILED'
+        if val == StatusType.WORKING:
+            return 'WORKING'
+        if val == StatusType.PENDING:
+            return 'PENDING'
+        return UNKNOWN
+
+
 class TimeInForceType:
     GTC = 0
     DAY = 1
