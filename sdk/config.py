@@ -10,6 +10,7 @@ YF_GAINERS_URL = "https://finance.yahoo.com/gainers?count=100"
 
 # https://app.webull.com/market/region/6
 
+WEBULL_TICKER_QUOTE_URL = "https://quotes-gw.webullbroker.com/api/quotes/ticker/getTickerRealTime?tickerId={}&includeSecu=1&includeQuote=1"
 WEBULL_TOP_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=1d&pageIndex=1&pageSize=10"
 WEBULL_PRE_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=preMarket&pageIndex=1&pageSize=10"
 WEBULL_AFTER_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize=10"

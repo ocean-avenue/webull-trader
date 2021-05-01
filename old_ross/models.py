@@ -82,7 +82,7 @@ class WebullNews(models.Model):
         return "[{}] <{}>: {}".format(self.trade_date, self.symbol, self.title)
 
 
-class HistoricalKeyStatistics:
+class HistoricalKeyStatistics(models.Model):
     symbol = models.CharField(max_length=64)
     open = models.FloatField()
     high = models.FloatField()
@@ -117,7 +117,7 @@ class HistoricalKeyStatistics:
         return "[{}] <{}> historical mktcap: {}".format(self.date, self.symbol, self.market_value)
 
 
-class HistoricalMinuteBar:
+class HistoricalMinuteBar(models.Model):
     symbol = models.CharField(max_length=64)
     date = models.DateField(auto_now=False, auto_now_add=False)
     time = models.DateTimeField(auto_now=False, auto_now_add=False)
@@ -132,7 +132,7 @@ class HistoricalMinuteBar:
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.time, self.symbol, self.open, self.high, self.low, self.close)
 
 
-class HistoricalDailyBar:
+class HistoricalDailyBar(models.Model):
     symbol = models.CharField(max_length=64)
     date = models.DateField(auto_now=False, auto_now_add=False)
     open = models.FloatField()
