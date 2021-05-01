@@ -4,6 +4,24 @@ from old_ross import enums
 # Create your models here.
 
 
+class TradingSettings(models.Model):
+    paper = models.BooleanField(default=True)
+    order_amount_limit = models.FloatField()
+    min_surge_amount = models.FloatField()
+    min_surge_volume = models.FloatField()
+    min_surge_change_ratio = models.FloatField()
+    observe_timeout_in_sec = models.IntegerField()
+    pending_order_timeout_in_sec = models.IntegerField()
+    holding_order_timeout_in_sec = models.IntegerField()
+    max_bid_ask_gap_ratio = models.FloatField()
+    target_profit_ratio = models.FloatField()
+    stop_loss_ratio = models.FloatField()
+    refresh_login_interval_in_min = models.IntegerField()
+
+    def __str__(self):
+        return "Trading settings, paper: {}, order amount limit: {}".format(self.paper, self.order_amount_limit)
+
+
 class WebullCredentials(models.Model):
     cred = models.TextField(null=True, blank=True)
     paper = models.BooleanField(default=True)

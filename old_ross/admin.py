@@ -4,6 +4,26 @@ from old_ross import models
 # Register your models here.
 
 
+class TradingSettingsAdmin(admin.ModelAdmin):
+    list_display = [
+        'paper',
+        'order_amount_limit',
+        'min_surge_amount',
+        'min_surge_volume',
+        'min_surge_change_ratio',
+        'observe_timeout_in_sec',
+        'pending_order_timeout_in_sec',
+        'holding_order_timeout_in_sec',
+        'max_bid_ask_gap_ratio',
+        'target_profit_ratio',
+        'stop_loss_ratio',
+        'refresh_login_interval_in_min',
+    ]
+
+
+admin.site.register(models.TradingSettings, TradingSettingsAdmin)
+
+
 class WebullCredentialsAdmin(admin.ModelAdmin):
 
     list_display = [
