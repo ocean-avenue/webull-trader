@@ -239,11 +239,11 @@ def save_webull_order(order_data, paper=True):
     order_id = str(order_data['orderId'])
     order = WebullOrder.objects.filter(order_id=order_id).first()
     symbol = order_data['ticker']['symbol']
-    print("[{}] Importing Order <{}> {}...".format(
-        order_data['placedTime'], symbol, order_id))
+    print("[{}] Importing Order <{}> {} ({})...".format(
+        get_now(), symbol, order_id, order_data['placedTime']))
     if order:
-        print("[{}] Order <{}> {} already existed!".format(
-            order_data['placedTime'], symbol, order_id))
+        print("[{}] Order <{}> {} ({}) already existed!".format(
+            get_now(), symbol, order_id, order_data['placedTime']))
     else:
         ticker_id = str(order_data['ticker']['tickerId'])
         action = get_order_action_enum(order_data['action'])

@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# export orders from webull paper account to csv file
+# export orders from webull account to csv file
 
 def start():
-    from datetime import datetime
     from sdk import webullsdk
+    from scripts import utils
+    from old_ross.models import TradingSettings
 
-    webullsdk.login(paper=True)
+    trading_settings = TradingSettings.objects.first()
+    if not trading_settings:
+        print("[{}] Cannot find trading settings, exit!".format(utils.get_now()))
+        return
+
+    webullsdk.login(paper=trading_settings.paper)
 
     history_orders = webullsdk.get_history_orders(
         status='Filled', count=1000)[::-1]

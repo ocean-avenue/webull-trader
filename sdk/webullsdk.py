@@ -167,10 +167,10 @@ def get_quote(ticker_id=None):
 # 2021-04-07 19:56:00-04:00  8.60  8.60  8.60   8.60    25.0  8.46
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
-def get_1m_bars(ticker_id=None, count=20):
+def get_1m_bars(ticker_id=None, count=20, timeStamp=None):
     time.sleep(1)
     try:
-        return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1)
+        return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timeStamp)
     except Exception as e:
         print("[{}] ⚠️  Exception get_1m_bars: {}".format(utils.get_now(), e))
         return pd.DataFrame()
