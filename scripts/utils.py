@@ -5,7 +5,7 @@ import pytz
 from django.conf import settings
 from datetime import datetime
 from old_ross import enums
-from old_ross.models import WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from old_ross.models import HistoricalKeyStatistics, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -289,6 +289,83 @@ def save_webull_order_note(order_id, note):
     order_note.save()
 
 
+def save_hist_key_statistics(quote_data, date):
+    symbol = quote_data['symbol']
+    print("[{}] Import key statistics for {}...".format(
+        get_now(), symbol))
+    key_statistics = HistoricalKeyStatistics.objects.filter(
+        symbol=symbol, date=date)
+    if not key_statistics:
+        pe = None
+        if 'pe' in quote_data:
+            pe = float(quote_data['pe'])
+        forward_pe = None
+        if 'forwardPe' in quote_data:
+            forward_pe = float(quote_data['forwardPe'])
+        pe_ttm = None
+        if 'peTtm' in quote_data:
+            pe_ttm = float(quote_data['peTtm'])
+        eps = None
+        if 'eps' in quote_data:
+            eps = float(quote_data['eps'])
+        eps_ttm = None
+        if 'epsTtm' in quote_data:
+            eps_ttm = float(quote_data['epsTtm'])
+        pb = None
+        if 'pb' in quote_data:
+            pb = float(quote_data['pb'])
+        ps = None
+        if 'ps' in quote_data:
+            ps = float(quote_data['ps'])
+        bps = None
+        if 'bps' in quote_data:
+            bps = float(quote_data['bps'])
+        latest_earnings_date = ''
+        if 'latestEarningsDate' in quote_data:
+            latest_earnings_date = quote_data['latestEarningsDate']
+        estimate_earnings_date = ''
+        if 'estimateEarningsDate' in quote_data:
+            estimate_earnings_date = quote_data['estimateEarningsDate']
+        key_statistics = HistoricalKeyStatistics(
+            symbol=symbol,
+            open=float(quote_data['open']),
+            high=float(quote_data['high']),
+            low=float(quote_data['low']),
+            close=float(quote_data['close']),
+            change=float(quote_data['change']),
+            change_ratio=float(quote_data['changeRatio']),
+            market_value=float(quote_data['marketValue']),
+            volume=float(quote_data['volume']),
+            turnover_rate=float(quote_data['turnoverRate']),
+            vibrate_ratio=float(quote_data['vibrateRatio']),
+            avg_vol_10d=float(quote_data['avgVol10D']),
+            avg_vol_3m=float(quote_data['avgVol3M']),
+            pe=pe,
+            forward_pe=forward_pe,
+            pe_ttm=pe_ttm,
+            eps=eps,
+            eps_ttm=eps_ttm,
+            pb=pb,
+            ps=ps,
+            bps=bps,
+            total_shares=float(quote_data['totalShares']),
+            outstanding_shares=float(quote_data['outstandingShares']),
+            fifty_two_wk_high=float(quote_data['fiftyTwoWkHigh']),
+            fifty_two_wk_low=float(quote_data['fiftyTwoWkLow']),
+            latest_earnings_date=latest_earnings_date,
+            estimate_earnings_date=estimate_earnings_date,
+            date=date,
+        )
+        key_statistics.save()
+
+
+def save_hist_minute_bar_list(bar_list):
+    print("[{}] Import minute bar for {}...".format(
+        get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_hist_minute_bar(bar_data)
+
+
 def save_hist_minute_bar(bar_data):
     bar = HistoricalMinuteBar.objects.filter(
         symbol=bar_data['symbol'], time=bar_data['time']).first()
@@ -305,6 +382,13 @@ def save_hist_minute_bar(bar_data):
             vwap=bar_data['vwap'],
         )
         bar.save()
+
+
+def save_hist_daily_bar_list(bar_list):
+    print("[{}] Import daily bar for {}...".format(
+        get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_hist_daily_bar(bar_data)
 
 
 def save_hist_daily_bar(bar_data):
