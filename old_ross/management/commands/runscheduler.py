@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import paper_trading, utils
+from scripts import paper_trading, fetch_orders, fetch_news, fetch_histdata, utils
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 
@@ -43,6 +43,26 @@ def paper_trading_job():
     print("[{}] done paper trading job!".format(utils.get_now()))
 
 
+def fetch_stats_data_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip fetch data job...".format(
+            utils.get_now(), holiday))
+        return
+
+    print("[{}] start fetch orders job...".format(utils.get_now()))
+    fetch_orders.start()
+    print("[{}] done fetch orders job!".format(utils.get_now()))
+
+    print("[{}] start fetch news job...".format(utils.get_now()))
+    fetch_news.start()
+    print("[{}] done fetch news job!".format(utils.get_now()))
+
+    print("[{}] start fetch hist data job...".format(utils.get_now()))
+    fetch_histdata.start()
+    print("[{}] done fetch hist data job!".format(utils.get_now()))
+
+
 def add_weekday_jobs(job, job_name, hour, minute, second="00"):
     for weekday in WEEKDAYS:
         scheduler.add_job(
@@ -61,26 +81,36 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        # pre-market paper trading jobs
-        add_weekday_jobs(
-            job=paper_trading_job,
-            job_name="paper_trading_job_premarket",
-            hour="04",
-            minute="00")
+        paper = utils.check_paper()
 
-        # regular hour paper trading jobs
-        add_weekday_jobs(
-            job=paper_trading_job,
-            job_name="paper_trading_job",
-            hour="09",
-            minute="30")
+        if paper:
+            # pre-market paper trading jobs
+            add_weekday_jobs(
+                job=paper_trading_job,
+                job_name="paper_trading_job_premarket",
+                hour="04",
+                minute="00")
 
-        # post-market paper trading jobs
+            # regular hour paper trading jobs
+            add_weekday_jobs(
+                job=paper_trading_job,
+                job_name="paper_trading_job",
+                hour="09",
+                minute="30")
+
+            # post-market paper trading jobs
+            add_weekday_jobs(
+                job=paper_trading_job,
+                job_name="paper_trading_job_postmarket",
+                hour="16",
+                minute="00")
+
+        # fetch stats data after trading
         add_weekday_jobs(
-            job=paper_trading_job,
-            job_name="paper_trading_job_postmarket",
-            hour="16",
-            minute="00")
+            job=fetch_stats_data_job,
+            job_name="fetch_stats_data_job",
+            hour="20",
+            minute="15")
 
         try:
             print("[{}] start scheduler...".format(utils.get_now()))
