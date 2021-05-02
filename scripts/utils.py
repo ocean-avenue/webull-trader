@@ -1,10 +1,11 @@
+from os import sync
 import pandas as pd
 import numpy as np
 import pytz
 from django.conf import settings
 from datetime import datetime
 from old_ross import enums
-from old_ross.models import WebullOrder, WebullOrderNote
+from old_ross.models import WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -286,3 +287,37 @@ def save_webull_order_note(order_id, note):
         note=note,
     )
     order_note.save()
+
+
+def save_hist_minute_bar(bar_data):
+    bar = HistoricalMinuteBar.objects.filter(
+        symbol=bar_data['symbol'], time=bar_data['time']).first()
+    if not bar:
+        bar = HistoricalMinuteBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            time=bar_data['time'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+            vwap=bar_data['vwap'],
+        )
+        bar.save()
+
+
+def save_hist_daily_bar(bar_data):
+    bar = HistoricalDailyBar.objects.filter(
+        symbol=bar_data['symbol'], date=bar_data['date']).first()
+    if not bar:
+        bar = HistoricalDailyBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+        )
+        bar.save()

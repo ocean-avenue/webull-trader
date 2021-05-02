@@ -16,9 +16,7 @@ def start():
 
     webullsdk.login(paper=trading_settings.paper)
 
-    # TODO
-    # today = date.today()
-    today = date(2021, 4, 30)
+    today = date.today()
     # get all symbols orders in today's orders
     symbol_list = []
     ticker_id_list = []
@@ -31,23 +29,23 @@ def start():
             symbol_list.append(symbol)
             ticker_id_list.append(ticker_id)
 
-    # fetch minute historical candle
     for i in range(0, len(symbol_list)):
         symbol = symbol_list[i]
         ticker_id = ticker_id_list[i]
+        # fetch minute historical candle
         timestamp = int(time.time())
-        candle_list = []
+        minute_bar_list = []
         while timestamp:
             finish = False
-            temp_candle_list = []
+            temp_bar_list = []
             bars = webullsdk.get_1m_bars(
-                ticker_id=ticker_id, count=500, timeStamp=timestamp)
+                ticker_id=ticker_id, count=500, timestamp=timestamp)
             for index, bar in bars.iterrows():
                 date_time = index.to_pydatetime()
                 if today != date_time.date():
                     finish = True
                 else:
-                    temp_candle_list.append({
+                    temp_bar_list.append({
                         'symbol': symbol,
                         'date': date_time.date(),
                         'time': date_time,
@@ -58,12 +56,36 @@ def start():
                         'volume': bar['volume'],
                         'vwap': bar['vwap'],
                     })
-            candle_list = temp_candle_list + candle_list
-            temp_candle_list = []
+            minute_bar_list = temp_bar_list + minute_bar_list
+            # reset temp list
+            temp_bar_list = []
             if finish:
                 timestamp = None
             else:
                 timestamp = int(bars.index[0].timestamp()) - 1
+        # fetch daily historical candle
+        daily_bar_list = []
+        bars = webullsdk.get_1d_bars(ticker_id=ticker_id, count=60)
+        for index, bar in bars.iterrows():
+            daily_bar_list.append({
+                'symbol': symbol,
+                'date': index.to_pydatetime().date(),
+                'open': bar['open'],
+                'high': bar['high'],
+                'low': bar['low'],
+                'close': bar['close'],
+                'volume': bar['volume'],
+            })
+
+        print("[{}] Import minute bar for {}...".format(
+            utils.get_now(), symbol))
+        for bar_data in minute_bar_list:
+            utils.save_hist_minute_bar(bar_data)
+
+        print("[{}] Import daily bar for {}...".format(utils.get_now(), symbol))
+        for bar_data in daily_bar_list:
+            utils.save_hist_daily_bar(bar_data)
+
         # sleep for a while
         time.sleep(5)
 
