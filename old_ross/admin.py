@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from old_ross import models
 
 # Register your models here.
@@ -70,15 +71,19 @@ admin.site.register(models.WebullOrderNote, WebullOrderNoteAdmin)
 
 class WebullNewsAdmin(admin.ModelAdmin):
 
+    def news_link(self, obj):
+        return format_html('<a href="{}" target="_blank">{}</a>'.format(obj.news_url, obj.news_url))
+
     list_display = [
         'news_id',
         'symbol',
         'title',
-        'source',
+        'source_name',
+        'collect_source',
         'news_time',
         'summary',
-        'news_url',
-        'trade_date',
+        'news_link',
+        'date',
     ]
 
 

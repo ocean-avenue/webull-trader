@@ -17,7 +17,6 @@ def start():
     webullsdk.login(paper=trading_settings.paper)
 
     today = date.today()
-    today = date(2021, 4, 30)
     # get all symbols orders in today's orders
     symbol_list = []
     ticker_id_list = []

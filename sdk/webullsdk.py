@@ -285,6 +285,20 @@ def get_history_orders(status='All', count=1000):
             utils.get_now(), e))
         return None
 
+# [
+#    {
+#       "id":41413595,
+#       "title":"US Indexes End Lower on Last Day of April",
+#       "sourceName":"GuruFocus News",
+#       "newsTime":"2021-05-01T21:19:00.556+0000",
+#       "summary":"",
+#       "newsUrl":"https://www.gurufocus.com/news/1412728/us-indexes-end-lower-on-last-day-of-april/?r=21637c73084e87d770a98f867757282f",
+#       "siteType":1,
+#       "collectSource":"cnn"
+#    },
+#    ...
+# ]
+
 
 def get_news(stock=None, items=5):
     '''
@@ -293,7 +307,13 @@ def get_news(stock=None, items=5):
         Id: 0 is latest news article
         items: number of articles to return
     '''
-    return wb_instance.get_news(stock=stock, Id=0, items=items)
+    time.sleep(1)
+    try:
+        return wb_instance.get_news(stock=stock, Id=0, items=items)
+    except Exception as e:
+        print("[{}] ⚠️  Exception get_news: {}".format(
+            utils.get_now(), e))
+        return []
 
 
 def _get_browser_headers():

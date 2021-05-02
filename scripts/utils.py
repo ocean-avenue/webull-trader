@@ -5,7 +5,7 @@ import pytz
 from django.conf import settings
 from datetime import datetime
 from old_ross import enums
-from old_ross.models import HistoricalKeyStatistics, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from old_ross.models import HistoricalKeyStatistics, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -289,9 +289,32 @@ def save_webull_order_note(order_id, note):
     order_note.save()
 
 
+def save_webull_news_list(news_list, symbol, date):
+    print("[{}] Importing news for {}...".format(get_now(), symbol))
+    for news_data in news_list:
+        save_webull_news(news_data, symbol, date)
+
+
+def save_webull_news(news_data, symbol, date):
+    news = WebullNews.objects.filter(
+        news_id=news_data['id'], symbol=symbol, date=date).first()
+    if not news:
+        news = WebullNews(
+            news_id=news_data['id'],
+            title=news_data['title'],
+            source_name=news_data['sourceName'],
+            collect_source=news_data['collectSource'],
+            news_time=news_data['newsTime'],
+            summary=news_data['summary'],
+            news_url=news_data['newsUrl'],
+            date=date,
+        )
+        news.save()
+
+
 def save_hist_key_statistics(quote_data, date):
     symbol = quote_data['symbol']
-    print("[{}] Import key statistics for {}...".format(
+    print("[{}] Importing key statistics for {}...".format(
         get_now(), symbol))
     key_statistics = HistoricalKeyStatistics.objects.filter(
         symbol=symbol, date=date)
@@ -360,7 +383,7 @@ def save_hist_key_statistics(quote_data, date):
 
 
 def save_hist_minute_bar_list(bar_list):
-    print("[{}] Import minute bar for {}...".format(
+    print("[{}] Importing minute bar for {}...".format(
         get_now(), bar_list[0]['symbol']))
     for bar_data in bar_list:
         save_hist_minute_bar(bar_data)
@@ -385,7 +408,7 @@ def save_hist_minute_bar(bar_data):
 
 
 def save_hist_daily_bar_list(bar_list):
-    print("[{}] Import daily bar for {}...".format(
+    print("[{}] Importing daily bar for {}...".format(
         get_now(), bar_list[0]['symbol']))
     for bar_data in bar_list:
         save_hist_daily_bar(bar_data)
