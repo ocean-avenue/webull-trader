@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# import orders from webull account to database
+# fetch orders from webull account into database
 
 def start():
     from sdk import webullsdk

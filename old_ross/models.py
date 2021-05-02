@@ -71,9 +71,9 @@ class WebullOrder(models.Model):
 
     def __str__(self):
         return "[{}] <{}> {} total: {}, filled: {}, price: ${}, avg: ${}".format(
-            self.filled_time,
+            self.placed_time,
+            self.symbol,
             enums.ActionType.tostr(self.action),
-            self.stock.symbol,
             self.total_quantity,
             self.filled_quantity,
             self.price,
