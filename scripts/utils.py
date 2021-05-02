@@ -5,7 +5,7 @@ import pytz
 from django.conf import settings
 from datetime import datetime
 from old_ross import enums
-from old_ross.models import HistoricalKeyStatistics, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from old_ross.models import HistoricalKeyStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -234,6 +234,30 @@ def get_time_in_force_enum(time_in_force_str):
     elif time_in_force_str == "IOC":
         time_in_force = enums.TimeInForceType.IOC
     return time_in_force
+
+
+def load_webull_credentials(cred_data, paper=True):
+    credentials = WebullCredentials.objects.filter(paper=paper).first()
+    if not credentials:
+        credentials = WebullCredentials(
+            cred=cred_data,
+            paper=paper,
+        )
+    else:
+        credentials.cred = cred_data
+    credentials.save()
+
+
+def save_webull_credentials(cred_data, paper=True):
+    credentials = WebullCredentials.objects.filter(paper=paper).first()
+    if not credentials:
+        credentials = WebullCredentials(
+            cred=cred_data,
+            paper=paper,
+        )
+    else:
+        credentials.cred = cred_data
+    credentials.save()
 
 
 def save_webull_order(order_data, paper=True):

@@ -5,6 +5,7 @@ from webull import webull, paper_webull
 import pandas as pd
 from scripts import utils
 from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
+from old_ross.models import WebullCredentials
 
 wb_instance = None
 
@@ -15,28 +16,29 @@ def login(paper=True):
         wb_instance = paper_webull()
     else:
         wb_instance = webull()
-    credential_file = 'credentials/webull_live.json'
-    if paper:
-        credential_file = 'credentials/webull_paper.json'
-    input = open(credential_file, 'r')
-    credential_data = json.load(input)
-    input.close()
 
-    wb_instance._refresh_token = credential_data['refreshToken']
-    wb_instance._access_token = credential_data['accessToken']
-    wb_instance._token_expire = credential_data['tokenExpireTime']
-    wb_instance._uuid = credential_data['uuid']
+    credentials = WebullCredentials.objects.filter(paper=paper).first()
+    if not credentials:
+        print("[{}] Can not load webull credentials, login failed!".format(
+            utils.get_now()))
+        return
+
+    credentials_data = json.loads(credentials.cred)
+
+    wb_instance._refresh_token = credentials_data['refreshToken']
+    wb_instance._access_token = credentials_data['accessToken']
+    wb_instance._token_expire = credentials_data['tokenExpireTime']
+    wb_instance._uuid = credentials_data['uuid']
 
     try:
+        # refresh login
         n_data = wb_instance.refresh_login()
 
-        credential_data['refreshToken'] = n_data['refreshToken']
-        credential_data['accessToken'] = n_data['accessToken']
-        credential_data['tokenExpireTime'] = n_data['tokenExpireTime']
+        credentials_data['refreshToken'] = n_data['refreshToken']
+        credentials_data['accessToken'] = n_data['accessToken']
+        credentials_data['tokenExpireTime'] = n_data['tokenExpireTime']
 
-        output = open(credential_file, 'w')
-        json.dump(credential_data, output)
-        output.close()
+        utils.save_webull_credentials(json.dumps(credentials_data), paper)
     except Exception as e:
         print("[{}] ⚠️  Exception refresh_login: {}".format(utils.get_now(), e))
 

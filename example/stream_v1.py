@@ -4,7 +4,7 @@ from datetime import datetime
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.common import URL
 
-from credentials.apca_paper import APCA_PAPER_API_KEY, APCA_PAPER_API_SECRET
+from credentials.apca import APCA_PAPER_API_KEY, APCA_PAPER_API_SECRET
 from sdk.config import APCA_DATA_URL, APCA_PAPER_API_BASE_URL
 
 # NY_TZ = "America/New_York"
