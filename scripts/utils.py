@@ -5,7 +5,7 @@ import pytz
 from django.conf import settings
 from datetime import datetime
 from old_ross import enums
-from old_ross.models import HistoricalKeyStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -234,6 +234,15 @@ def get_time_in_force_enum(time_in_force_str):
     elif time_in_force_str == "IOC":
         time_in_force = enums.TimeInForceType.IOC
     return time_in_force
+
+
+def check_paper():
+    trading_settings = TradingSettings.objects.first()
+    if not trading_settings:
+        print(
+            "[{}] Cannot find trading settings, default paper trading!".format(get_now()))
+        return False
+    return trading_settings.paper
 
 
 def load_webull_credentials(cred_data, paper=True):

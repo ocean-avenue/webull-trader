@@ -5,14 +5,9 @@
 def start():
     from sdk import webullsdk
     from scripts import utils
-    from old_ross.models import TradingSettings
 
-    trading_settings = TradingSettings.objects.first()
-    if not trading_settings:
-        print("[{}] Cannot find trading settings, exit!".format(utils.get_now()))
-        return
-
-    webullsdk.login(paper=trading_settings.paper)
+    paper = utils.check_paper()
+    webullsdk.login(paper=paper)
 
     history_orders = webullsdk.get_history_orders(
         status='Filled', count=1000)[::-1]

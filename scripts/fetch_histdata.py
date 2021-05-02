@@ -7,14 +7,10 @@ def start():
     from datetime import date
     from sdk import webullsdk
     from scripts import utils
-    from old_ross.models import TradingSettings, WebullOrder
+    from old_ross.models import WebullOrder
 
-    trading_settings = TradingSettings.objects.first()
-    if not trading_settings:
-        print("[{}] Cannot find trading settings, exit!".format(utils.get_now()))
-        return
-
-    webullsdk.login(paper=trading_settings.paper)
+    paper = utils.check_paper()
+    webullsdk.login(paper=paper)
 
     today = date.today()
     # get all symbols orders in today's orders
