@@ -120,6 +120,7 @@ class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):
         'fifty_two_wk_low',
         'latest_earnings_date',
         'estimate_earnings_date',
+        'short_float',
         'date',
     ]
 

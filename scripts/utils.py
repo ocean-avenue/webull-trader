@@ -1,4 +1,3 @@
-from os import sync
 import pandas as pd
 import numpy as np
 import pytz
@@ -382,6 +381,9 @@ def save_hist_key_statistics(quote_data, date):
         estimate_earnings_date = ''
         if 'estimateEarningsDate' in quote_data:
             estimate_earnings_date = quote_data['estimateEarningsDate']
+        short_float = None
+        if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-":
+            short_float = float(quote_data['shortFloat'])
         key_statistics = HistoricalKeyStatistics(
             symbol=symbol,
             open=float(quote_data['open']),
@@ -404,6 +406,7 @@ def save_hist_key_statistics(quote_data, date):
             pb=pb,
             ps=ps,
             bps=bps,
+            short_float=short_float,
             total_shares=float(quote_data['totalShares']),
             outstanding_shares=float(quote_data['outstandingShares']),
             fifty_two_wk_high=float(quote_data['fiftyTwoWkHigh']),

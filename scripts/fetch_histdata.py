@@ -5,7 +5,7 @@
 def start():
     import time
     from datetime import date
-    from sdk import webullsdk
+    from sdk import webullsdk, finvizsdk
     from scripts import utils
     from old_ross.models import WebullOrder
 
@@ -83,6 +83,10 @@ def start():
 
         # fetch historical quote
         quote_data = webullsdk.get_quote(ticker_id=ticker_id)
+
+        additional_quote_data = finvizsdk.get_quote(symbol)
+
+        quote_data['shortFloat'] = additional_quote_data['shortFloat']
 
         # save historical quote
         utils.save_hist_key_statistics(quote_data, today)
