@@ -100,7 +100,7 @@ def _volume_resampler(series):
 
 def _vwap_resampler(series):
     if series.size > 0:
-        return np.average(series)
+        return series[-1]
     return 0
 
 
