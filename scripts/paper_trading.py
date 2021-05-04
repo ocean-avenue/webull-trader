@@ -2,8 +2,8 @@
 
 # paper trading
 
-MIN_SURGE_AMOUNT = 21000
-MIN_SURGE_VOL = 1000
+MIN_SURGE_AMOUNT = 30000
+MIN_SURGE_VOL = 2000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading timeout in minutes
 PENDING_ORDER_TIMEOUT = 60  # pending order timeout in seconds
