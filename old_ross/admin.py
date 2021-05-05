@@ -75,6 +75,7 @@ class WebullNewsAdmin(admin.ModelAdmin):
         return format_html('<a href="{}" target="_blank">{}</a>'.format(obj.news_url, obj.news_url))
 
     list_display = [
+        'date',
         'news_id',
         'symbol',
         'title',
@@ -83,16 +84,31 @@ class WebullNewsAdmin(admin.ModelAdmin):
         'news_time',
         'summary',
         'news_link',
-        'date',
     ]
 
 
 admin.site.register(models.WebullNews, WebullNewsAdmin)
 
 
+class WebullAccountStatisticsAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'date',
+        'net_liquidation',
+        'total_profit_loss',
+        'total_profit_loss_rate',
+        'day_profit_loss',
+    ]
+
+
+admin.site.register(models.WebullAccountStatistics,
+                    WebullAccountStatisticsAdmin)
+
+
 class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):
 
     list_display = [
+        'date',
         'symbol',
         'open',
         'high',
@@ -121,7 +137,6 @@ class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):
         'latest_earnings_date',
         'estimate_earnings_date',
         'short_float',
-        'date',
     ]
 
 

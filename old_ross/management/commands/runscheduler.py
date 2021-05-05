@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import paper_trading, fetch_orders, fetch_news, fetch_histdata, utils
+from scripts import paper_trading, fetch_account, fetch_orders, fetch_news, fetch_histdata, utils
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 
@@ -49,6 +49,10 @@ def fetch_stats_data_job():
         print("[{}] {}, skip fetch data job...".format(
             utils.get_now(), holiday))
         return
+
+    print("[{}] start fetch account job...".format(utils.get_now()))
+    fetch_account.start()
+    print("[{}] done fetch account job!".format(utils.get_now()))
 
     print("[{}] start fetch orders job...".format(utils.get_now()))
     fetch_orders.start()

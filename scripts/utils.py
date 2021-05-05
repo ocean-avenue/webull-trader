@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import pytz
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, date
 from old_ross import enums
-from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 def get_now():
@@ -268,11 +268,35 @@ def save_webull_credentials(cred_data, paper=True):
     credentials.save()
 
 
+def save_webull_account(acc_data):
+    today = date.today()
+    print("[{}] Importing daily account status ({})...".format(
+        get_now(), today.strftime("%Y-%m-%d")))
+    acc_status = WebullAccountStatistics.objects.filter(date=today).first()
+    if acc_status:
+        print("[{}] Daily account status ({}) already existed!".format(
+            get_now(), today.strftime("%Y-%m-%d")))
+        return
+    account_members = acc_data['accountMembers']
+    day_profit_loss = 0
+    for account_member in account_members:
+        if account_member['key'] == 'dayProfitLoss':
+            day_profit_loss = float(account_member['value'])
+    acc_status = WebullAccountStatistics(
+        net_liquidation=acc_data['netLiquidation'],
+        total_profit_loss=acc_data['totalProfitLoss'],
+        total_profit_loss_rate=acc_data['totalProfitLossRate'],
+        day_profit_loss=day_profit_loss,
+        date=today,
+    )
+    acc_status.save()
+
+
 def save_webull_order(order_data, paper=True):
     order_id = str(order_data['orderId'])
     order = WebullOrder.objects.filter(order_id=order_id).first()
     symbol = order_data['ticker']['symbol']
-    print("[{}] Importing Order <{}> {} ({})...".format(
+    print("[{}] Importing order <{}> {} ({})...".format(
         get_now(), symbol, order_id, order_data['placedTime']))
     if order:
         print("[{}] Order <{}> {} ({}) already existed!".format(

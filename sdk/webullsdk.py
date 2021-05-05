@@ -49,6 +49,58 @@ def logout():
     wb_instance.logout()
 
 
+# {
+#    "accountId":4493986,
+#    "currency":"USD",
+#    "currencyId":247,
+#    "netLiquidation":"5251.69",
+#    "totalProfitLoss":"251.69",
+#    "totalProfitLossRate":"0.0503",
+#    "accountMembers":[
+#       {
+#          "key":"totalMarketValue",
+#          "value":"0.00"
+#       },
+#       {
+#          "key":"usableCash",
+#          "value":"5251.69"
+#       },
+#       {
+#          "key":"dayProfitLoss",
+#          "value":"309.23"
+#       }
+#    ],
+#    "accounts":[
+#       {
+#          "id":4493986,
+#          "paperId":1,
+#          "status":0,
+#          "paperType":0,
+#          "paperName":"Paper Trading",
+#          "paperTickerPoolCode":"wb_week",
+#          "currency":"USD",
+#          "currencyId":247,
+#          "supportOutsideRth":true,
+#          "timeInForces":[
+#             "DAY",
+#             "GTC"
+#          ],
+#          "orderTypes":[
+#             "MKT",
+#             "LMT"
+#          ]
+#       }
+#    ],
+#    "openOrders":[
+
+#    ],
+#    "openOrderSize":0,
+#    "positions":[
+
+#    ],
+#    "actBaseUrl":"https://act.webull.com/contentEdit/paperRule.html"
+# }
+
 def get_account():
     return wb_instance.get_account()
 

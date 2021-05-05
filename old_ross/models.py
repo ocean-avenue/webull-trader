@@ -104,6 +104,18 @@ class WebullNews(models.Model):
         return "[{}] <{}>: {}".format(self.date, self.symbol, self.title)
 
 
+class WebullAccountStatistics(models.Model):
+    net_liquidation = models.FloatField()
+    total_profit_loss = models.FloatField()
+    total_profit_loss_rate = models.FloatField()
+    day_profit_loss = models.FloatField()
+
+    date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] day P&L: {}".format(self.date, self.day_profit_loss)
+
+
 class HistoricalKeyStatistics(models.Model):
     symbol = models.CharField(max_length=64)
     open = models.FloatField()
