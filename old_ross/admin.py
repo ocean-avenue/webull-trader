@@ -13,6 +13,7 @@ class TradingSettingsAdmin(admin.ModelAdmin):
         'min_surge_volume',
         'min_surge_change_ratio',
         'observe_timeout_in_sec',
+        'trade_interval_in_sec',
         'pending_order_timeout_in_sec',
         'holding_order_timeout_in_sec',
         'max_bid_ask_gap_ratio',

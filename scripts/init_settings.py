@@ -18,6 +18,7 @@ def start():
         min_surge_volume=2000,
         min_surge_change_ratio=0.04,
         observe_timeout_in_sec=300,
+        trade_interval_in_sec=120,
         pending_order_timeout_in_sec=60,
         holding_order_timeout_in_sec=1800,
         max_bid_ask_gap_ratio=0.02,

@@ -11,6 +11,7 @@ class TradingSettings(models.Model):
     min_surge_volume = models.FloatField()
     min_surge_change_ratio = models.FloatField()
     observe_timeout_in_sec = models.IntegerField()
+    trade_interval_in_sec = models.IntegerField()
     pending_order_timeout_in_sec = models.IntegerField()
     holding_order_timeout_in_sec = models.IntegerField()
     max_bid_ask_gap_ratio = models.FloatField()

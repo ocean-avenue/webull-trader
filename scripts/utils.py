@@ -129,22 +129,6 @@ def convert_2m_bars(bars):
     return pd.DataFrame()
 
 
-def check_since_last_sell_too_short(last_sell_time, bars):
-    """
-    check if last sell candle is same as currently candle
-    """
-    if last_sell_time == None:
-        return False
-    last_sell_timestamp = int(datetime.timestamp(last_sell_time))
-    latest_index = bars.index[-1]
-    latest_timestamp = int(datetime.timestamp(latest_index.to_pydatetime()))
-    last_sell_minutes = int(last_sell_timestamp / 60)
-    latest_minutes = int(latest_timestamp / 60)
-    if latest_minutes == last_sell_minutes:
-        return True
-    return False
-
-
 def check_bars_updated(bars):
     """
     check if have valid latest chart data, delay no more than 1 minute

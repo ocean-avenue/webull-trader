@@ -6,6 +6,7 @@ MIN_SURGE_AMOUNT = 30000
 MIN_SURGE_VOL = 2000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading timeout in minutes
+TRADE_INTERVAL = 120  # buy after sell interval in seconds
 PENDING_ORDER_TIMEOUT = 60  # pending order timeout in seconds
 HOLDING_ORDER_TIMEOUT = 1800  # holding order timeout in seconds
 REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
@@ -25,6 +26,7 @@ def start():
     global MIN_SURGE_VOL
     global SURGE_MIN_CHANGE_PERCENTAGE
     global TRADE_TIMEOUT
+    global TRADE_INTERVAL
     global PENDING_ORDER_TIMEOUT
     global HOLDING_ORDER_TIMEOUT
     global REFRESH_LOGIN_INTERVAL
@@ -107,11 +109,12 @@ def start():
             tracking_tickers[symbol]['pending_sell'] = False
             tracking_tickers[symbol]['pending_order_id'] = None
             tracking_tickers[symbol]['pending_order_time'] = None
+            tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             tracking_tickers[symbol]['exit_note'] = None
             print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
-            # remove from monitor
-            del tracking_tickers[symbol]
+            # # remove from monitor
+            # del tracking_tickers[symbol]
         else:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
@@ -187,6 +190,12 @@ def start():
                 del tracking_tickers[symbol]
                 return
 
+            # check if last sell time is too short compare current time
+            if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
+                print("[{}] Don't buy <{}>[{}] too quick after sold!".format(
+                    utils.get_now(), symbol, ticker_id))
+                return
+
             # if utils.check_bars_price_fixed(bars):
             #     print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
             #         utils.get_now(), symbol, ticker_id))
@@ -204,6 +213,7 @@ def start():
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = int(current_candle['volume'])
+
             # check low price above vwap and ema 9
             if current_low > current_vwap and current_low > current_ema9:
                 # check first candle make new high
@@ -423,6 +433,7 @@ def start():
                             "pending_order_id": None,
                             "pending_order_time": None,
                             "order_filled_time": None,
+                            "last_sell_time": None,
                             "positions": 0,
                             "start_time": datetime.now(),
                             # paper trade do not have stop trailing order, this value keep track of max P&L
