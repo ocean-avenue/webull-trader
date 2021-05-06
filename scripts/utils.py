@@ -390,7 +390,7 @@ def save_hist_key_statistics(quote_data, date):
         if 'estimateEarningsDate' in quote_data:
             estimate_earnings_date = quote_data['estimateEarningsDate']
         short_float = None
-        if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-":
+        if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-" and quote_data['shortFloat'] != None:
             short_float = float(quote_data['shortFloat'])
         key_statistics = HistoricalKeyStatistics(
             symbol=symbol,
