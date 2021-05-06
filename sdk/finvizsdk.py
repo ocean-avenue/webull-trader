@@ -35,20 +35,25 @@ def _get_browser_headers():
 
 def get_quote(symbol):
     time.sleep(1)
-    session = requests.Session()
-    url = FINVIZ_QUOTE_URL.format(symbol)
-    res = session.get(url, headers=_get_browser_headers())
-    sp = BeautifulSoup(res.text, "html.parser")
-    all_tr = sp.findAll("tr", {"class": "table-dark-row"})
-    container = all_tr[2].findAll('td', {'class': 'snapshot-td2'})[4]
-    if container.find("span"):
-        short_float = container.find("span").contents[0].replace("%", "")
-    else:
-        short_float = container.contents[0].contents[0].replace("%", "")
+    try:
+        session = requests.Session()
+        url = FINVIZ_QUOTE_URL.format(symbol)
+        res = session.get(url, headers=_get_browser_headers())
+        sp = BeautifulSoup(res.text, "html.parser")
+        all_tr = sp.findAll("tr", {"class": "table-dark-row"})
+        container = all_tr[2].findAll('td', {'class': 'snapshot-td2'})[4]
+        if container.find("span"):
+            short_float = container.find("span").contents[0].replace("%", "")
+        else:
+            short_float = container.contents[0].contents[0].replace("%", "")
 
-    return {
-        "shortFloat": short_float,
-    }
+        return {
+            "shortFloat": short_float,
+        }
+    except:
+        return {
+            "shortFloat": None,
+        }
 
 
 def fetch_screeners(screener_type):
