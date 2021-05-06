@@ -4,6 +4,7 @@ from server.settings.common import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
+    "old-ross.paper.quanturtle.net",
     "old-ross.quanturtle.net",
 ]
 
