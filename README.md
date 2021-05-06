@@ -1,7 +1,9 @@
 # old-ross
+
 Day trading system with Webull (only pre/after market)
 
 ### Strategy:
+
 [Gap and Go](https://www.warriortrading.com/gap-go/)
 
 [Bull Flag](https://www.warriortrading.com/bull-flag-trading/)
@@ -36,4 +38,18 @@ $ python manage.py runserver
 
 ```
 $ python manage.py runscheduler
+```
+
+### Deploy:
+
+1. Run server:
+
+```
+$ uwsgi --ini server_uwsgi.ini --touch-reload /tmp/old-ross/deploy.ini --logto /tmp/old-ross/uwsgi.log
+```
+
+2. Hot reload:
+
+```
+$ touch /tmp/old-ross/deploy.ini
 ```
