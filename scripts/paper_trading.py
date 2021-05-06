@@ -113,7 +113,7 @@ def start():
             tracking_tickers[symbol]['exit_note'] = None
             last_profit_loss_rate = tracking_tickers[symbol]['last_profit_loss_rate']
             # keep in track if > 10% profit, prevent buy back too quick
-            if last_profit_loss_rate < 0.1:
+            if last_profit_loss_rate != None and last_profit_loss_rate < 0.1:
                 # remove from monitor
                 del tracking_tickers[symbol]
             print("[{}] Sell order <{}>[{}] filled".format(
