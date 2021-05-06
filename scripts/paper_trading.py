@@ -111,10 +111,13 @@ def start():
             tracking_tickers[symbol]['pending_order_time'] = None
             tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             tracking_tickers[symbol]['exit_note'] = None
+            last_profit_loss_rate = tracking_tickers[symbol]['last_profit_loss_rate']
+            # keep in track if > 10% profit, prevent buy back too quick
+            if last_profit_loss_rate < 0.1:
+                # remove from monitor
+                del tracking_tickers[symbol]
             print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
-            # # remove from monitor
-            # del tracking_tickers[symbol]
         else:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
@@ -268,6 +271,7 @@ def start():
             # last_price = float(ticker_position['lastPrice'])
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
+            tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
             max_profit_loss_rate = tracking_tickers[symbol]['max_profit_loss_rate']
             if profit_loss_rate > max_profit_loss_rate:
@@ -282,7 +286,7 @@ def start():
             exit_note = None
             # stop loss for LOSS_RATE
             if profit_loss_rate <= LOSS_RATE:
-                exit_note = "Stop loss!"
+                exit_note = "Stop loss {}!".format(profit_loss_rate)
                 exit_trading = True
 
             # check if holding too long
@@ -433,6 +437,7 @@ def start():
                             "pending_order_id": None,
                             "pending_order_time": None,
                             "order_filled_time": None,
+                            "last_profit_loss_rate": None,
                             "last_sell_time": None,
                             "positions": 0,
                             "start_time": datetime.now(),
