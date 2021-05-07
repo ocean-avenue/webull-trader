@@ -1,11 +1,15 @@
 {% extends 'old_ross/base.html' %}
+
 {% block title %} Dashboard {% endblock %} 
+
 {% load static %}
+
 {% block content %}
+
 <div class="container-fluid p-0">
   <div class="row mb-2 mb-xl-3">
     <div class="col-auto d-none d-sm-block">
-      <h3>Dashboard</h3>
+      <h3>Dashboard (Paper)</h3>
     </div>
 
     <div class="col-auto ms-auto text-end mt-n1">
@@ -39,102 +43,133 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-12 col-sm-6 col-xxl d-flex">
-      <div class="card illustration flex-fill">
-        <div class="card-body p-0 d-flex flex-fill">
-          <div class="row g-0 w-100">
-            <div class="col-6">
-              <div class="illustration-text p-3 m-1">
-                <h4 class="illustration-text">Welcome Back, Chris!</h4>
-                <p class="mb-0">AppStack Dashboard</p>
+    <div class="col-lg-6 col-xl-5 d-flex">
+      <div class="w-100">
+        <div class="row">
+          <div class="col-sm-6 col-lg-12 col-xxl-6 d-flex">
+            <div class="card flex-fill">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col mt-0">
+                    <h5 class="card-title">Net Account Value</h5>
+                  </div>
+
+                  <div class="col-auto">
+                    <div class="stat stat-sm">
+                      <i class="align-middle" data-feather="layers"></i>
+                    </div>
+                  </div>
+                </div>
+                <span class="h1 d-inline-block mt-1 mb-4">$4973.23</span>
+                <div class="mb-0">
+                  <span class="badge badge-soft-danger me-2">
+                    <i class="mdi mdi-arrow-bottom-right"></i> -26.77%
+                  </span>
+                  <span class="badge badge-soft-danger me-2">
+                    <i class="mdi mdi-arrow-bottom-right"></i> -0.54%
+                  </span>
+                </div>
               </div>
             </div>
-            <div class="col-6 align-self-end text-end">
-              <img
-                src="https://appstack.bootlab.io/img/illustrations/customer-support.png"
-                alt="Customer Support"
-                class="img-fluid illustration-img"
-              />
+          </div>
+          <div class="col-sm-6 col-lg-12 col-xxl-6 d-flex">
+            <div class="card flex-fill">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col mt-0">
+                    <h5 class="card-title">Day's P&L</h5>
+                  </div>
+
+                  <div class="col-auto">
+                    <div class="stat stat-sm">
+                      <i class="align-middle" data-feather="trending-up"></i>
+                    </div>
+                  </div>
+                </div>
+                <span class="h1 d-inline-block mt-1 mb-4 text-danger">-$577.47</span>
+                <div class="mb-0">
+                  <span class="text-muted">Day's P&L %</span>
+                  <span class="badge badge-soft-danger me-2">
+                    <i class="mdi mdi-arrow-bottom-right"></i> -10.40%
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row d-lg-none d-xxl-flex">
+          <div class="col-sm-6 col-lg-12 col-xxl-6 d-flex">
+            <div class="card flex-fill">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col mt-0">
+                    <h5 class="card-title">Day's P&L Ratio</h5>
+                  </div>
+
+                  <div class="col-auto">
+                    <div class="stat stat-sm">
+                      <i class="align-middle" data-feather="divide"></i>
+                    </div>
+                  </div>
+                </div>
+                <span class="h1 d-inline-block text-success mt-1 mb-4">3.2</span>
+                <div class="mb-0">
+                  <span class="text-muted">Overall P&L ratio</span>
+                  <span class="badge badge-soft-danger me-2">
+                    <i class="mdi mdi-arrow-bottom-right"></i> 0.98
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-12 col-xxl-6 d-flex">
+            <div class="card flex-fill">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col mt-0">
+                    <h5 class="card-title">Day's Win Ratio</h5>
+                  </div>
+
+                  <div class="col-auto">
+                    <div class="stat stat-sm">
+                      <i class="align-middle" data-feather="percent"></i>
+                    </div>
+                  </div>
+                </div>
+                <span class="h1 d-inline-block text-success mt-1 mb-4">41.79%</span>
+                <div class="mb-0">
+                  <span class="text-muted">Overall win ratio</span>
+                  <span class="badge badge-soft-danger me-2">
+                    <i class="mdi mdi-arrow-bottom-right"></i> 20.79%
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-6 col-xxl d-flex">
-      <div class="card flex-fill">
-        <div class="card-body py-4">
-          <div class="d-flex align-items-start">
-            <div class="flex-grow-1">
-              <h3 class="mb-2">$ 24.300</h3>
-              <p class="mb-2">Total Earnings</p>
-              <div class="mb-0">
-                <span class="badge badge-soft-success me-2">
-                  <i class="mdi mdi-arrow-bottom-right"></i> +5.35%
-                </span>
-                <span class="text-muted">Since last week</span>
-              </div>
-            </div>
-            <div class="d-inline-block ms-3">
-              <div class="stat">
-                <i
-                  class="align-middle text-success"
-                  data-feather="dollar-sign"
-                ></i>
+
+    <div class="col-lg-6 col-xl-7">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <div class="card-actions float-end">
+            <div class="dropdown show">
+              <a href="#" data-bs-toggle="dropdown" data-bs-display="static">
+                <i class="align-middle" data-feather="more-horizontal"></i>
+              </a>
+
+              <div class="dropdown-menu dropdown-menu-end">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
               </div>
             </div>
           </div>
+          <h5 class="card-title mb-0">Net Assets</h5>
         </div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xxl d-flex">
-      <div class="card flex-fill">
-        <div class="card-body py-4">
-          <div class="d-flex align-items-start">
-            <div class="flex-grow-1">
-              <h3 class="mb-2">43</h3>
-              <p class="mb-2">Pending Orders</p>
-              <div class="mb-0">
-                <span class="badge badge-soft-danger me-2">
-                  <i class="mdi mdi-arrow-bottom-right"></i> -4.25%
-                </span>
-                <span class="text-muted">Since last week</span>
-              </div>
-            </div>
-            <div class="d-inline-block ms-3">
-              <div class="stat">
-                <i
-                  class="align-middle text-danger"
-                  data-feather="shopping-bag"
-                ></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-6 col-xxl d-flex">
-      <div class="card flex-fill">
-        <div class="card-body py-4">
-          <div class="d-flex align-items-start">
-            <div class="flex-grow-1">
-              <h3 class="mb-2">$ 18.700</h3>
-              <p class="mb-2">Total Revenue</p>
-              <div class="mb-0">
-                <span class="badge badge-soft-success me-2">
-                  <i class="mdi mdi-arrow-bottom-right"></i> +8.65%
-                </span>
-                <span class="text-muted">Since last week</span>
-              </div>
-            </div>
-            <div class="d-inline-block ms-3">
-              <div class="stat">
-                <i
-                  class="align-middle text-info"
-                  data-feather="dollar-sign"
-                ></i>
-              </div>
-            </div>
-          </div>
+        <div class="card-body p-2">
+          <div id="world_map" style="height: 279px"></div>
         </div>
       </div>
     </div>
@@ -490,8 +525,7 @@
     </table>
   </div>
 </div>
-{% endblock %}
-{% block js %}
+{% endblock %} {% block js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Bar chart
