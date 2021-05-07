@@ -55,7 +55,11 @@
       <nav id="sidebar" class="sidebar">
         <div class="sidebar-content js-simplebar">
           <a class="sidebar-brand" href="index.html">
-            <img width="40px" height="40px" src="{% static 'old_ross/img/logo.png' %}" />
+            <img
+              width="40px"
+              height="40px"
+              src="{% static 'old_ross/img/logo.png' %}"
+            />
             <span class="align-middle me-3">Old Ross</span>
           </a>
 
@@ -107,7 +111,6 @@
               </a>
             </li>
           </ul>
-
         </div>
       </nav>
       <div class="main">
@@ -161,15 +164,13 @@
         </nav>
 
         <main class="content">
-          {% block content %}
-          {% endblock %}
+        {% block content %} {% endblock %}
         </main>
 
         <footer class="footer">
           <div class="container-fluid">
             <div class="row text-muted">
-              <div class="col-6 text-start">
-              </div>
+              <div class="col-6 text-start"></div>
               <div class="col-6 text-end">
                 <p class="mb-0">
                   &copy; {% now "Y" %} -
@@ -182,7 +183,6 @@
       </div>
     </div>
     <script src="{% static 'old_ross/js/app.js' %}"></script>
-    {% block js %}
-    {% endblock %}
+    {% block js %} {% endblock %}
   </body>
 </html>
