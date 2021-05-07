@@ -95,9 +95,26 @@ class WebullOrder(models.Model):
 class WebullOrderNote(models.Model):
     order_id = models.CharField(max_length=128)
     note = models.TextField(null=True, blank=True)
+    SETUP_CHOICES = (
+        (enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH, enums.SetupType.tostr(
+            enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH)),
+        (enums.SetupType.DAY_GAP_AND_GO, enums.SetupType.tostr(
+            enums.SetupType.DAY_GAP_AND_GO)),
+        (enums.SetupType.DAY_BULL_FLAG, enums.SetupType.tostr(
+            enums.SetupType.DAY_BULL_FLAG)),
+        (enums.SetupType.DAY_REVERSAL, enums.SetupType.tostr(
+            enums.SetupType.DAY_REVERSAL)),
+        (enums.SetupType.SWING_20_DAYS_NEW_HIGH, enums.SetupType.tostr(
+            enums.SetupType.SWING_20_DAYS_NEW_HIGH)),
+    )
+    setup = models.PositiveSmallIntegerField(
+        choices=SETUP_CHOICES,
+        default=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH
+    )
 
     def __str__(self):
-        return "{}: {}".format(self.order_id, self.note)
+        setup_str = enums.SetupType.tostr(self.setup)
+        return "{}: {}, {}".format(self.order_id, setup_str, self.note)
 
 
 class WebullNews(models.Model):

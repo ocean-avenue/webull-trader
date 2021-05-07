@@ -64,6 +64,7 @@ class WebullOrderNoteAdmin(admin.ModelAdmin):
 
     list_display = [
         'order_id',
+        'setup',
         'note',
     ]
 

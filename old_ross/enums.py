@@ -75,3 +75,25 @@ class TimeInForceType:
         if val == TimeInForceType.IOC:
             return 'IOC'
         return UNKNOWN
+
+
+class SetupType:
+    DAY_FIRST_CANDLE_NEW_HIGH = 0
+    DAY_GAP_AND_GO = 1
+    DAY_BULL_FLAG = 2
+    DAY_REVERSAL = 3
+    SWING_20_DAYS_NEW_HIGH = 4
+
+    @staticmethod
+    def tostr(val):
+        if val == SetupType.DAY_FIRST_CANDLE_NEW_HIGH:
+            return '(Day) First candle new high'
+        if val == SetupType.DAY_GAP_AND_GO:
+            return '(Day) Gap and Go'
+        if val == SetupType.DAY_BULL_FLAG:
+            return '(Day) Bull Flag'
+        if val == SetupType.DAY_REVERSAL:
+            return '(Day) Reversal'
+        if val == SetupType.SWING_20_DAYS_NEW_HIGH:
+            return '(Swing) 20 days new high'
+        return UNKNOWN
