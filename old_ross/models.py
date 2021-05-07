@@ -51,6 +51,17 @@ class WebullOrder(models.Model):
     filled_quantity = models.PositiveIntegerField(default=1)
     price = models.FloatField()
     avg_price = models.FloatField()
+    ORDER_TYPE_CHOICES = (
+        (enums.OrderType.LMT, enums.OrderType.tostr(enums.OrderType.LMT)),
+        (enums.OrderType.MKT, enums.OrderType.tostr(enums.OrderType.MKT)),
+        (enums.OrderType.STP, enums.OrderType.tostr(enums.OrderType.STP)),
+        (enums.OrderType.STP_LMT, enums.OrderType.tostr(enums.OrderType.STP_LMT)),
+        (enums.OrderType.STP_TRAIL, enums.OrderType.tostr(enums.OrderType.STP_TRAIL)),
+    )
+    order_type = models.PositiveSmallIntegerField(
+        choices=ORDER_TYPE_CHOICES,
+        default=enums.OrderType.LMT
+    )
 
     filled_time = models.DateTimeField(
         auto_now_add=False, auto_now=False, null=True, blank=True)

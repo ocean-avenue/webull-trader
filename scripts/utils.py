@@ -210,6 +210,19 @@ def get_order_status_enum(status_str):
     return status
 
 
+def get_order_type_enum(type_str):
+    order_type = enums.OrderType.LMT
+    if type_str == "MKT":
+        order_type = enums.OrderType.MKT
+    elif type_str == "STP":
+        order_type = enums.OrderType.STP
+    elif type_str == "STP LMT":
+        order_type = enums.OrderType.STP_LMT
+    elif type_str == "STP TRAIL":
+        order_type = enums.OrderType.STP_TRAIL
+    return order_type
+
+
 def get_time_in_force_enum(time_in_force_str):
     time_in_force = enums.TimeInForceType.GTC
     if time_in_force_str == "DAY":
@@ -277,48 +290,56 @@ def save_webull_account(acc_data):
 
 
 def save_webull_order(order_data, paper=True):
-    order_id = str(order_data['orderId'])
-    order = WebullOrder.objects.filter(order_id=order_id).first()
-    symbol = order_data['ticker']['symbol']
-    print("[{}] Importing order <{}> {} ({})...".format(
-        get_now(), symbol, order_id, order_data['placedTime']))
-    if order:
-        print("[{}] Order <{}> {} ({}) already existed!".format(
+    if paper:
+        order_id = str(order_data['orderId'])
+        order = WebullOrder.objects.filter(order_id=order_id).first()
+        symbol = order_data['ticker']['symbol']
+        print("[{}] Importing order <{}> {} ({})...".format(
             get_now(), symbol, order_id, order_data['placedTime']))
-    else:
-        ticker_id = str(order_data['ticker']['tickerId'])
-        action = get_order_action_enum(order_data['action'])
-        status = get_order_status_enum(order_data['status'])
-        total_quantity = int(order_data['totalQuantity'])
-        filled_quantity = int(order_data['filledQuantity'])
-        price = float(order_data['lmtPrice'])
-        avg_price = 0
-        if 'avgFilledPrice' in order_data:
-            avg_price = float(order_data['avgFilledPrice'])
-        filled_time = None
-        if 'filledTime' in order_data:
-            filled_time = pytz.timezone(settings.TIME_ZONE).localize(
-                datetime.strptime(order_data['filledTime'], "%m/%d/%Y %H:%M:%S EDT"))
-        placed_time = pytz.timezone(settings.TIME_ZONE).localize(
-            datetime.strptime(order_data['placedTime'], "%m/%d/%Y %H:%M:%S EDT"))
-        time_in_force = get_time_in_force_enum(order_data['timeInForce'])
+        if order:
+            print("[{}] Order <{}> {} ({}) already existed!".format(
+                get_now(), symbol, order_id, order_data['placedTime']))
+        else:
+            ticker_id = str(order_data['ticker']['tickerId'])
+            action = get_order_action_enum(order_data['action'])
+            status = get_order_status_enum(order_data['statusStr'])
+            order_type = get_order_type_enum(order_data['orderType'])
+            total_quantity = int(order_data['totalQuantity'])
+            filled_quantity = int(order_data['filledQuantity'])
+            avg_price = 0
+            if 'avgFilledPrice' in order_data:
+                avg_price = float(order_data['avgFilledPrice'])
+                price = avg_price
+            if 'lmtPrice' in order_data:
+                price = float(order_data['lmtPrice'])
+            filled_time = None
+            if 'filledTime' in order_data:
+                filled_time = pytz.timezone(settings.TIME_ZONE).localize(
+                    datetime.strptime(order_data['filledTime'], "%m/%d/%Y %H:%M:%S EDT"))
+            placed_time = pytz.timezone(settings.TIME_ZONE).localize(
+                datetime.strptime(order_data['placedTime'], "%m/%d/%Y %H:%M:%S EDT"))
+            time_in_force = get_time_in_force_enum(order_data['timeInForce'])
 
-        order = WebullOrder(
-            order_id=order_id,
-            ticker_id=ticker_id,
-            symbol=symbol,
-            action=action,
-            status=status,
-            total_quantity=total_quantity,
-            filled_quantity=filled_quantity,
-            price=price,
-            avg_price=avg_price,
-            filled_time=filled_time,
-            placed_time=placed_time,
-            time_in_force=time_in_force,
-            paper=paper,
-        )
-        order.save()
+            order = WebullOrder(
+                order_id=order_id,
+                ticker_id=ticker_id,
+                symbol=symbol,
+                action=action,
+                status=status,
+                total_quantity=total_quantity,
+                filled_quantity=filled_quantity,
+                price=price,
+                avg_price=avg_price,
+                order_type=order_type,
+                filled_time=filled_time,
+                placed_time=placed_time,
+                time_in_force=time_in_force,
+                paper=paper,
+            )
+            order.save()
+    else:
+        # TODO, support live trade orders
+        pass
 
 
 def save_webull_order_note(order_id, note):

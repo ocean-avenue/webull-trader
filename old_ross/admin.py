@@ -49,6 +49,7 @@ class WebullOrderAdmin(admin.ModelAdmin):
         'filled_quantity',
         'price',
         'avg_price',
+        'order_type',
         'filled_time',
         'placed_time',
         'time_in_force',
