@@ -269,23 +269,18 @@ def save_webull_account(acc_data):
     today = date.today()
     print("[{}] Importing daily account status ({})...".format(
         get_now(), today.strftime("%Y-%m-%d")))
-    acc_status = WebullAccountStatistics.objects.filter(date=today).first()
-    if acc_status:
-        print("[{}] Daily account status ({}) already existed!".format(
-            get_now(), today.strftime("%Y-%m-%d")))
-        return
     account_members = acc_data['accountMembers']
     day_profit_loss = 0
     for account_member in account_members:
         if account_member['key'] == 'dayProfitLoss':
             day_profit_loss = float(account_member['value'])
-    acc_status = WebullAccountStatistics(
-        net_liquidation=acc_data['netLiquidation'],
-        total_profit_loss=acc_data['totalProfitLoss'],
-        total_profit_loss_rate=acc_data['totalProfitLossRate'],
-        day_profit_loss=day_profit_loss,
-        date=today,
-    )
+    acc_status = WebullAccountStatistics.objects.filter(date=today).first()
+    if not acc_status:
+        acc_status = WebullAccountStatistics(date=today)
+    acc_status.net_liquidation = acc_data['netLiquidation']
+    acc_status.total_profit_loss = acc_data['totalProfitLoss']
+    acc_status.total_profit_loss_rate = acc_data['totalProfitLossRate']
+    acc_status.day_profit_loss = day_profit_loss
     acc_status.save()
 
 

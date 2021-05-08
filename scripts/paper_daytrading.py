@@ -118,6 +118,9 @@ def start():
                 del tracking_tickers[symbol]
             print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
+            # update account status
+            account_data = webullsdk.get_account()
+            utils.save_webull_account(account_data)
         else:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=PENDING_ORDER_TIMEOUT):
