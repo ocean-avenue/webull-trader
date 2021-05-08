@@ -9,6 +9,9 @@ from old_ross.models import WebullAccountStatistics
 def index(request):
     today = date.today()
 
+    # account type data
+    account_type = utils.get_account_type_render()
+
     # account statistics data
     net_account_value = {
         "value": "$0.0",
@@ -68,8 +71,25 @@ def index(request):
                 day_profit_loss["day_pl_rate"]
             day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"
 
+    # net assets chart
+    acc_status_list = WebullAccountStatistics.objects.all()
+    daily_values = []
+    daily_dates = []
+    for acc_status in acc_status_list:
+        daily_values.append(acc_status.net_liquidation)
+        daily_dates.append(acc_status.date.strftime("%Y/%m/%d"))
+    net_assets = {
+        'daily_values': daily_values,
+        'daily_dates': daily_dates,
+        'weekly_values': [], # TODO
+        'weekly_dates': [], # TODO
+        'monthly_values': [], # TODO
+        'monthly_dates': [], # TODO
+    }
+
     return render(request, 'old_ross/index.html', {
-        "account_type": utils.get_account_display_type(),
+        "account_type": account_type,
         "net_account_value": net_account_value,
         "day_profit_loss": day_profit_loss,
+        "net_assets": net_assets,
     })

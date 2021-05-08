@@ -240,13 +240,6 @@ def check_paper():
         return False
     return trading_settings.paper
 
-def get_account_display_type():
-    account_type = "Live"
-    paper = check_paper()
-    if paper:
-        account_type = "Paper"
-    return account_type
-
 
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
@@ -497,3 +490,14 @@ def save_hist_daily_bar(bar_data):
             volume=bar_data['volume'],
         )
         bar.save()
+
+
+def get_account_type_render():
+    account_type = {
+        "value": "LIVE",
+        "value_style": "bg-success",
+    }
+    if check_paper():
+        account_type["value"] = "PAPER"
+        account_type["value_style"] = "bg-warning"
+    return account_type
