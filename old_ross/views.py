@@ -111,3 +111,8 @@ def index(request):
         "net_assets": net_assets,
         "profit_loss": profit_loss,
     })
+
+
+def calendar(request):
+    return render(request, 'old_ross/calendar.html', {
+    })

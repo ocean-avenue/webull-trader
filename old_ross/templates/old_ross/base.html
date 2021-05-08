@@ -71,7 +71,7 @@
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="calendar.html">
+              <a class="sidebar-link" href="{% url 'calendar' %}">
                 <i class="align-middle" data-feather="calendar"></i>
                 <span class="align-middle">Calendar</span>
               </a>
@@ -115,7 +115,6 @@
       </nav>
       <div class="main">
         <nav class="navbar navbar-expand navbar-light navbar-bg">
-
           <div class="navbar-collapse collapse">
             <ul class="navbar-nav navbar-align">
               <li class="nav-item dropdown">
@@ -147,9 +146,7 @@
           </div>
         </nav>
 
-        <main class="content">
-        {% block content %} {% endblock %}
-        </main>
+        <main class="content">{% block content %} {% endblock %}</main>
 
         <footer class="footer">
           <div class="container-fluid">
@@ -158,7 +155,9 @@
               <div class="col-6 text-end">
                 <p class="mb-0">
                   &copy; {% now "Y" %} -
-                  <a href="{% url 'dashboard' %}" class="text-muted">Old Ross</a>
+                  <a href="{% url 'dashboard' %}" class="text-muted">
+                    Old Ross
+                  </a>
                 </p>
               </div>
             </div>
