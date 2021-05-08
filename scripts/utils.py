@@ -4,6 +4,7 @@ import pytz
 from django.conf import settings
 from datetime import datetime, date
 from old_ross import enums
+from scripts import config
 from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
@@ -492,7 +493,7 @@ def save_hist_daily_bar(bar_data):
         bar.save()
 
 
-def get_account_type_render():
+def get_account_type_for_render():
     account_type = {
         "value": "LIVE",
         "value_style": "bg-success",
@@ -501,3 +502,15 @@ def get_account_type_render():
         account_type["value"] = "PAPER"
         account_type["value_style"] = "bg-warning"
     return account_type
+
+
+def get_color_bar_chart_item_for_render(value):
+    if value >= 0:
+        return {
+            'value': value,
+            'itemStyle': {'color': config.PROFIT_COLOR},
+        }
+    return {
+        'value': value,
+        'itemStyle': {'color': config.LOSS_COLOR},
+    }

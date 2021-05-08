@@ -117,8 +117,34 @@
 					<h5 class="card-title mb-0">Net Assets</h5>
 				</div>
 				<div class="card-body d-flex w-100">
-          <div class="align-self-center chart chart-lg">
-            <div id="net-assets-chart" style="width:100%; min-height:400px;"></div>
+          <div class="align-self-center chart chart-md">
+            <div id="net-assets-chart" style="width:100%; min-height:300px;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <div class="card-actions float-end">
+            <div class="dropdown show">
+              <a href="#" data-bs-toggle="dropdown" data-bs-display="static">
+                <i class="align-middle" data-feather="more-horizontal"></i>
+              </a>
+							<div class="dropdown-menu dropdown-menu-end">
+                <button type="button" class="dropdown-item">Daily</button>
+                <button type="button" class="dropdown-item">Weekly</button>
+                <button type="button" class="dropdown-item">Monthly</button>
+							</div>
+						</div>
+					</div>
+					<h5 class="card-title mb-0">Daily P&L</h5>
+				</div>
+				<div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="profit-loss-chart" style="width:100%; min-height:300px;"></div>
 					</div>
 				</div>
 			</div>
@@ -141,6 +167,9 @@
       bottom: '3%',
       containLabel: true
     },
+    dataZoom: [{
+      type: 'inside'
+    }],
     xAxis: {
       type: 'category',
       boundaryGap: false,
@@ -159,5 +188,32 @@
     }]
   };
   net_assets_chart.setOption(net_assets_option);
+
+  // profit loss chart
+  const profit_loss_chart = echarts.init(document.getElementById("profit-loss-chart"));
+  const profit_loss_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    dataZoom: [{
+      type: 'inside'
+    }],
+    xAxis: {
+      type: 'category',
+      data: {{profit_loss.daily_dates|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [{
+      data: {{profit_loss.daily_values|safe}},
+      type: 'bar',
+      areaStyle: {}
+    }]
+  };
+  profit_loss_chart.setOption(profit_loss_option);
 </script>
 {% endblock %}
