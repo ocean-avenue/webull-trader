@@ -54,7 +54,7 @@
     <div class="wrapper">
       <nav id="sidebar" class="sidebar">
         <div class="sidebar-content js-simplebar">
-          <a class="sidebar-brand" href="index.html">
+          <a class="sidebar-brand" href="{% url 'dashboard' %}">
             <img
               width="40px"
               height="40px"
@@ -65,7 +65,7 @@
 
           <ul class="sidebar-nav">
             <li class="sidebar-item active">
-              <a class="sidebar-link" href="index.html">
+              <a class="sidebar-link" href="{% url 'dashboard' %}">
                 <i class="align-middle" data-feather="bar-chart"></i>
                 <span class="align-middle">Dashboard</span>
               </a>
@@ -174,7 +174,7 @@
               <div class="col-6 text-end">
                 <p class="mb-0">
                   &copy; {% now "Y" %} -
-                  <a href="index.html" class="text-muted">Old Ross</a>
+                  <a href="{% url 'dashboard' %}" class="text-muted">Old Ross</a>
                 </p>
               </div>
             </div>

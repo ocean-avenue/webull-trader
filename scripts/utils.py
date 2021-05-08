@@ -240,6 +240,13 @@ def check_paper():
         return False
     return trading_settings.paper
 
+def get_account_display_type():
+    account_type = "Live"
+    paper = check_paper()
+    if paper:
+        account_type = "Paper"
+    return account_type
+
 
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
