@@ -480,6 +480,30 @@ def save_hist_daily_bar(bar_data):
         bar.save()
 
 
+def get_trades_from_orders(buy_orders, sell_orders):
+    trades = []
+    for buy_order in buy_orders:
+        # fill buy side
+        trades.append({
+            "symbol": buy_order.symbol,
+            "ticker_id": buy_order.ticker_id,
+            "quantity": buy_order.filled_quantity,
+            "buy_price": buy_order.avg_price,
+            "buy_time": buy_order.filled_time,
+            "buy_order_id": buy_order.order_id,
+        })
+    for sell_order in sell_orders:
+        # fill sell side
+        for trade in trades:
+            if sell_order.symbol == trade["symbol"] and sell_order.filled_quantity == trade["quantity"] and "sell_price" not in trade:
+                trade["sell_price"] = sell_order.avg_price
+                trade["buy_time"] = sell_order.filled_time
+                trade["sell_order_id"] = sell_order.order_id
+    return trades
+
+
+# utils for render UI
+
 def get_account_type_for_render():
     account_type = {
         "value": "LIVE",
@@ -501,3 +525,30 @@ def get_color_bar_chart_item_for_render(value):
         'value': value,
         'itemStyle': {'color': config.LOSS_COLOR},
     }
+
+
+def get_day_profit_loss_for_render(acc_status):
+    day_profit_loss = {
+        "value": "$0.0",
+        "value_style": "",
+        "day_pl_rate": "0.0%",
+        "day_pl_rate_style": "badge-soft-dark",
+    }
+    if acc_status:
+        day_profit_loss["value"] = "${}".format(
+            abs(acc_status.day_profit_loss))
+        day_pl_rate = acc_status.day_profit_loss / \
+            (acc_status.net_liquidation - acc_status.day_profit_loss)
+        day_profit_loss["day_pl_rate"] = "{}%".format(
+            round(day_pl_rate * 100, 2))
+        if acc_status.day_profit_loss > 0:
+            day_profit_loss["value"] = "+" + day_profit_loss["value"]
+            day_profit_loss["value_style"] = "text-success"
+            day_profit_loss["day_pl_rate"] = "+" + \
+                day_profit_loss["day_pl_rate"]
+            day_profit_loss["day_pl_rate_style"] = "badge-soft-success"
+        elif acc_status.day_profit_loss < 0:
+            day_profit_loss["value"] = "-" + day_profit_loss["value"]
+            day_profit_loss["value_style"] = "text-danger"
+            day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"
+    return day_profit_loss
