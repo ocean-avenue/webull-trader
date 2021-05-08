@@ -198,19 +198,6 @@ def get_order_action_enum(action_str):
     return action
 
 
-def get_order_status_enum(status_str):
-    status = enums.StatusType.FILLED
-    if status_str == "Cancelled":
-        status = enums.StatusType.CANCELLED
-    elif status_str == "Working":
-        status = enums.StatusType.WORKING
-    elif status_str == "Pending":
-        status = enums.StatusType.PENDING
-    elif status_str == "Failed":
-        status = enums.StatusType.FAILED
-    return status
-
-
 def get_order_type_enum(type_str):
     order_type = enums.OrderType.LMT
     if type_str == "MKT":
@@ -298,7 +285,7 @@ def save_webull_order(order_data, paper=True):
         else:
             ticker_id = str(order_data['ticker']['tickerId'])
             action = get_order_action_enum(order_data['action'])
-            status = get_order_status_enum(order_data['statusStr'])
+            status = order_data['statusStr']
             order_type = get_order_type_enum(order_data['orderType'])
             total_quantity = int(order_data['totalQuantity'])
             filled_quantity = int(order_data['filledQuantity'])
