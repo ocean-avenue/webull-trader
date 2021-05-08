@@ -171,35 +171,105 @@ def analytics_date(request, date=None):
     day_top_gain = {"value": "$0.0", "amount": 0.0, "symbol": ""}
     day_top_loss = {"value": "$0.0", "amount": 0.0, "symbol": ""}
     # win rate
-    win_trades = 0
-    loss_trades = 0
+    total_win_trades = 0
+    total_loss_trades = 0
     # profit/loss ratio
     total_profit = 0.0
     total_loss = 0.0
+    # trade records
+    trades_dist = {}
     for trade in trades:
         if "sell_price" in trade:
+            symbol = trade["symbol"]
             gain = round(
                 (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
+            # calculate win rate, profit/loss ratio
             if gain > 0:
                 total_profit += gain
-                win_trades += 1
+                total_win_trades += 1
             else:
                 total_loss += gain
-                loss_trades += 1
+                total_loss_trades += 1
+            # calculate top gain & loss
             if gain > day_top_gain["amount"]:
-                day_top_gain["symbol"] = trade["symbol"]
+                day_top_gain["symbol"] = symbol
                 day_top_gain["amount"] = gain
                 day_top_gain["value"] = "+${}".format(gain)
             if gain < day_top_loss["amount"]:
-                day_top_loss["symbol"] = trade["symbol"]
+                day_top_loss["symbol"] = symbol
                 day_top_loss["amount"] = gain
                 day_top_loss["value"] = "-${}".format(abs(gain))
+            # build trades_dist
+            if symbol not in trades_dist:
+                trades_dist[symbol] = {
+                    "trades": 0,
+                    "win_trades": 0,
+                    "loss_trades": 0,
+                    "total_gain": 0,
+                    "total_loss": 0,
+                    "profit_loss": 0,
+                    "total_cost": 0,
+                }
+            trades_dist[symbol]["trades"] += 1
+            trades_dist[symbol]["profit_loss"] += gain
+            trades_dist[symbol]["total_cost"] += trade["buy_price"]
+            if gain > 0:
+                trades_dist[symbol]["win_trades"] += 1
+                trades_dist[symbol]["total_gain"] += gain
+            else:
+                trades_dist[symbol]["loss_trades"] += 1
+                trades_dist[symbol]["total_loss"] += gain
+    print(trades_dist)
+
     # win rate
-    win_rate = "{}%".format(round(win_trades / total_trades * 100, 2))
+    overall_win_rate = "0.0%"
+    if total_trades > 0:
+        overall_win_rate = "{}%".format(
+            round(total_win_trades / total_trades * 100, 2))
     # profit/loss ratio
-    avg_profit = total_profit / win_trades
-    avg_loss = abs(total_loss / loss_trades)
-    profit_loss_ratio = round(avg_profit/avg_loss, 2)
+    overall_avg_profit = 0.0
+    if total_win_trades > 0:
+        overall_avg_profit = total_profit / total_win_trades
+    overall_avg_loss = 0.0
+    if total_loss_trades > 0:
+        overall_avg_loss = abs(total_loss / total_loss_trades)
+    overall_profit_loss_ratio = 1.0
+    if overall_avg_loss > 0:
+        overall_profit_loss_ratio = round(overall_avg_profit/overall_avg_loss, 2)
+    # trade records
+    trade_records = []
+    for symbol, trade in trades_dist.items():
+        win_rate = "0.0%"
+        if trade["trades"] > 0:
+            win_rate = "{}%".format(
+                round(trade["win_trades"] / trade["trades"] * 100, 2))
+        avg_profit = 0.0
+        if trade["win_trades"] > 0:
+            avg_profit = trade["total_gain"] / trade["win_trades"]
+        avg_loss = 0.0
+        if trade["loss_trades"] > 0:
+            avg_loss = abs(trade["total_loss"] / trade["loss_trades"])
+        profit_loss_ratio = 1.0
+        if avg_loss > 0:
+            profit_loss_ratio = round(avg_profit/avg_loss, 2)
+        avg_price = "${}".format(round(trade["total_cost"] / trade["trades"], 2))
+        profit_loss = "+${}".format(round(trade["profit_loss"], 2))
+        profit_loss_style = "text-success"
+        if trade["profit_loss"] < 0:
+            profit_loss = "-${}".format(abs(round(trade["profit_loss"], 2)))
+            profit_loss_style = "text-danger"
+        trade_records.append({
+            "symbol": symbol,
+            "trades": trade["trades"],
+            "profit_loss_value": round(trade["profit_loss"], 2),
+            "profit_loss": profit_loss,
+            "win_rate": win_rate,
+            "profit_loss_ratio": profit_loss_ratio,
+            "avg_price": avg_price,
+            "profit_loss_style": profit_loss_style,
+        })
+    # sort trade records
+    trade_records.sort(key=lambda p: p['profit_loss_value'], reverse=True)
 
     return render(request, 'old_ross/analytics_date.html', {
         "account_type": account_type,
@@ -208,6 +278,7 @@ def analytics_date(request, date=None):
         "trades_count": total_trades,
         "day_top_gain": day_top_gain,
         "day_top_loss": day_top_loss,
-        "win_rate": win_rate,
-        "profit_loss_ratio": profit_loss_ratio,
+        "win_rate": overall_win_rate,
+        "profit_loss_ratio": overall_profit_loss_ratio,
+        "trade_records": trade_records,
     })

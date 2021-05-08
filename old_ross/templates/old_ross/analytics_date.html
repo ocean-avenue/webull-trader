@@ -77,12 +77,14 @@
               </h3>
               <p class="mb-2">Day's Top Gain</p>
               <div class="mb-0">
-                <span
-                  class="badge badge-soft-dark me-2"
-                >
-                  <i class="mdi mdi-arrow-bottom-right"></i>
-                  {{day_top_gain.symbol|safe}}
-                </span>
+                <a href="/">
+                  <span
+                    class="badge badge-soft-dark me-2"
+                  >
+                    <i class="mdi mdi-arrow-bottom-right"></i>
+                    {{day_top_gain.symbol|safe}}
+                  </span>
+                </a>
               </div>
             </div>
             <div class="d-inline-block ms-3">
@@ -104,12 +106,14 @@
               </h3>
               <p class="mb-2">Day's Top Loss</p>
               <div class="mb-0">
-                <span
-                  class="badge badge-soft-dark me-2"
-                >
-                  <i class="mdi mdi-arrow-bottom-right"></i>
-                  {{day_top_loss.symbol|safe}}
-                </span>
+                <a href="/">
+                  <span
+                    class="badge badge-soft-dark me-2"
+                  >
+                    <i class="mdi mdi-arrow-bottom-right"></i>
+                    {{day_top_loss.symbol|safe}}
+                  </span>
+                </a>
               </div>
             </div>
             <div class="d-inline-block ms-3">
@@ -156,6 +160,44 @@
       </div>
     </div>
   </div>
+
+  <div class="card flex-fill">
+		<div class="card-header">
+      <h5 class="card-title mb-0">Trades</h5>
+		</div>
+    <table class="table table-striped my-0">
+			<thead>
+        <tr>
+					<th>Symbol</th>
+					<th class="d-none d-xl-table-cell">P&L</th>
+					<th class="d-none d-xl-table-cell">Avg Price</th>
+					<th class="d-none d-xl-table-cell">Gap</th>
+					<th class="d-none d-xl-table-cell">News</th>
+					<th class="d-none d-xl-table-cell">Float</th>
+					<th class="d-none d-xl-table-cell">Short Ratio</th>
+					<th class="d-none d-xl-table-cell">Trades</th>
+					<th class="d-none d-xl-table-cell">Win Rate</th>
+					<th class="d-none d-md-table-cell">Profit/Loss Ratio</th>
+				</tr>
+			</thead>
+      <tbody>
+        {% for trade in trade_records %}
+        <tr>
+					<td><a href="/"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+					<td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+					<td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
+					<td class="d-none d-xl-table-cell">4.1%</td>
+					<td class="d-none d-xl-table-cell">0</td>
+					<td class="d-none d-md-table-cell">2M</td>
+					<td class="d-none d-md-table-cell">2.1%</td>
+					<td class="d-none d-md-table-cell">{{trade.trades|safe}}</td>
+					<td class="d-none d-md-table-cell">{{trade.win_rate|safe}}</td>
+					<td class="d-none d-md-table-cell">{{trade.profit_loss_ratio|safe}}</td>
+				</tr>
+        {% endfor %}
+			</tbody>
+		</table>
+	</div>
 </div>
 
 {% endblock %}
