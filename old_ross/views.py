@@ -1,7 +1,8 @@
 from datetime import date
 from django.shortcuts import render
 from scripts import utils, config
-from old_ross.models import WebullAccountStatistics
+from old_ross.enums import ActionType
+from old_ross.models import WebullAccountStatistics, WebullOrder
 
 # Create your views here.
 
@@ -131,6 +132,10 @@ def calendar(request):
     for acc_status in acc_status_list:
         day_pl_rate = acc_status.day_profit_loss / \
             (acc_status.net_liquidation - acc_status.day_profit_loss)
+        # count trades
+        filled_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month, filled_time__day=acc_status.date.day).filter(action=ActionType.BUY)
+        trades_count = len(filled_orders)
+        # events
         if acc_status.day_profit_loss < 0:
             loss_events['events'].append({
                 "title": "-${} ({}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
@@ -138,7 +143,7 @@ def calendar(request):
                 "url": "/",
             })
             loss_events['events'].append({
-                "title": "100 trades",
+                "title": "{} trades".format(trades_count),
                 "start": acc_status.date.strftime("%Y-%m-%d"),
                 "url": "/",
             })
@@ -149,7 +154,7 @@ def calendar(request):
                 "url": "/",
             })
             profit_events['events'].append({
-                "title": "200 trades",
+                "title": "{} trades".format(trades_count),
                 "start": acc_status.date.strftime("%Y-%m-%d"),
                 "url": "/",
             })
