@@ -29,8 +29,8 @@ admin.site.register(models.TradingSettings, TradingSettingsAdmin)
 class WebullCredentialsAdmin(admin.ModelAdmin):
 
     list_display = [
-        'cred',
         'paper',
+        'cred',
     ]
 
 

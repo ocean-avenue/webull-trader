@@ -114,7 +114,7 @@ def index(request):
     })
 
 
-def calendar(request):
+def analytics(request):
     today = date.today()
 
     profit_events = {
@@ -133,9 +133,10 @@ def calendar(request):
         day_pl_rate = acc_status.day_profit_loss / \
             (acc_status.net_liquidation - acc_status.day_profit_loss)
         # count trades
-        filled_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month, filled_time__day=acc_status.date.day).filter(action=ActionType.BUY)
+        filled_orders = WebullOrder.objects.filter(
+            filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month, filled_time__day=acc_status.date.day).filter(action=ActionType.BUY)
         trades_count = len(filled_orders)
-        # events
+        # calendar events
         if acc_status.day_profit_loss < 0:
             loss_events['events'].append({
                 "title": "-${} ({}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
@@ -159,8 +160,14 @@ def calendar(request):
                 "url": "/",
             })
 
-    return render(request, 'old_ross/calendar.html', {
+    return render(request, 'old_ross/analytics.html', {
         "initial_date": today.strftime("%Y-%m-%d"),
         "profit_events": profit_events,
         "loss_events": loss_events,
+    })
+
+
+def analytics_detail(request, date=None):
+    return render(request, 'old_ross/analytics.html', {
+
     })

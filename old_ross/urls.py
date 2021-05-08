@@ -3,5 +3,6 @@ from old_ross import views
 
 urlpatterns = [
     path('', views.index, name='dashboard'),
-    path('calendar', views.calendar, name='calendar'),
+    path('analytics', views.analytics, name='analytics'),
+    path('analytics/<str:date>', views.analytics_detail, name='analytics_detail'),
 ]

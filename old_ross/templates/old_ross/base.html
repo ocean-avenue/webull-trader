@@ -75,14 +75,14 @@
                 <span class="align-middle">Dashboard</span>
               </a>
             </li>
-            {% if request.path == '/calendar' %}
+            {% if 'analytics' in request.path %}
             <li class="sidebar-item active">
             {% else  %}
             <li class="sidebar-item">
             {% endif %}
-              <a class="sidebar-link" href="{% url 'calendar' %}">
+              <a class="sidebar-link" href="{% url 'analytics' %}">
                 <i class="align-middle" data-feather="calendar"></i>
-                <span class="align-middle">Calendar</span>
+                <span class="align-middle">Analytics</span>
               </a>
             </li>
             <li class="sidebar-item">
