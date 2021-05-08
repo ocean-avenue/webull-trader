@@ -36,6 +36,7 @@
     />
     <!-- <script src="js/settings.js"></script> -->
     <!-- END SETTINGS -->
+    {% block css %} {% endblock %}
   </head>
   <!--
   HOW TO USE: 
@@ -64,13 +65,21 @@
           </a>
 
           <ul class="sidebar-nav">
+            {% if request.path == '/' %}
             <li class="sidebar-item active">
+            {% else  %}
+            <li class="sidebar-item">
+            {% endif %}
               <a class="sidebar-link" href="{% url 'dashboard' %}">
                 <i class="align-middle" data-feather="bar-chart"></i>
                 <span class="align-middle">Dashboard</span>
               </a>
             </li>
+            {% if request.path == '/calendar' %}
+            <li class="sidebar-item active">
+            {% else  %}
             <li class="sidebar-item">
+            {% endif %}
               <a class="sidebar-link" href="{% url 'calendar' %}">
                 <i class="align-middle" data-feather="calendar"></i>
                 <span class="align-middle">Calendar</span>

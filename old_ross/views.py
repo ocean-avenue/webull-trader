@@ -1,6 +1,6 @@
 from datetime import date
 from django.shortcuts import render
-from scripts import utils
+from scripts import utils, config
 from old_ross.models import WebullAccountStatistics
 
 # Create your views here.
@@ -114,5 +114,48 @@ def index(request):
 
 
 def calendar(request):
+    today = date.today()
+
+    profit_events = {
+        "events": [],
+        "color": config.PROFIT_COLOR,
+    }
+
+    loss_events = {
+        "events": [],
+        "color": config.LOSS_COLOR,
+    }
+
+    acc_status_list = WebullAccountStatistics.objects.all()
+
+    for acc_status in acc_status_list:
+        day_pl_rate = acc_status.day_profit_loss / \
+            (acc_status.net_liquidation - acc_status.day_profit_loss)
+        if acc_status.day_profit_loss < 0:
+            loss_events['events'].append({
+                "title": "-${} ({}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
+                "start": acc_status.date.strftime("%Y-%m-%d"),
+                "url": "/",
+            })
+            loss_events['events'].append({
+                "title": "100 trades",
+                "start": acc_status.date.strftime("%Y-%m-%d"),
+                "url": "/",
+            })
+        else:
+            profit_events['events'].append({
+                "title": "+${} (+{}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
+                "start": acc_status.date.strftime("%Y-%m-%d"),
+                "url": "/",
+            })
+            profit_events['events'].append({
+                "title": "200 trades",
+                "start": acc_status.date.strftime("%Y-%m-%d"),
+                "url": "/",
+            })
+
     return render(request, 'old_ross/calendar.html', {
+        "initial_date": today.strftime("%Y-%m-%d"),
+        "profit_events": profit_events,
+        "loss_events": loss_events,
     })
