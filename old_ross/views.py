@@ -2,7 +2,7 @@ from datetime import datetime, date
 from django.shortcuts import get_object_or_404, render
 from scripts import utils, config
 from old_ross.enums import ActionType, OrderType
-from old_ross.models import HistoricalDailyBar, HistoricalKeyStatistics, WebullAccountStatistics, WebullNews, WebullOrder
+from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, WebullAccountStatistics, WebullNews, WebullOrder
 
 # Create your views here.
 
@@ -107,40 +107,42 @@ def analytics(request):
         "color": config.LOSS_COLOR,
     }
 
-    acc_status_list = WebullAccountStatistics.objects.all()
+    daytrade_perfs = HistoricalDayTradePerformance.objects.all()
 
-    for acc_status in acc_status_list:
-        day_pl_rate = acc_status.day_profit_loss / \
-            (acc_status.net_liquidation - acc_status.day_profit_loss)
-        # count trades
-        filled_orders = WebullOrder.objects.filter(
-            filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month, filled_time__day=acc_status.date.day).filter(action=ActionType.BUY)
-        trades_count = len(filled_orders)
+    for daytrade_perf in daytrade_perfs:
         # calendar events
-        event_date = acc_status.date.strftime("%Y-%m-%d")
+        event_date = daytrade_perf.date.strftime("%Y-%m-%d")
         event_url = "/analytics/{}".format(event_date)
-        if acc_status.day_profit_loss < 0:
+        target_events = None
+        if daytrade_perf.day_profit_loss < 0:
             loss_events['events'].append({
-                "title": "-${} ({}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
+                "title": "-${}".format(abs(daytrade_perf.day_profit_loss)),
                 "start": event_date,
                 "url": event_url,
             })
-            loss_events['events'].append({
-                "title": "{} trades".format(trades_count),
-                "start": event_date,
-                "url": event_url,
-            })
+            target_events = loss_events
         else:
             profit_events['events'].append({
-                "title": "+${} (+{}%)".format(abs(acc_status.day_profit_loss), round(day_pl_rate * 100, 2)),
+                "title": "+${}".format(abs(daytrade_perf.day_profit_loss)),
                 "start": event_date,
                 "url": event_url,
             })
-            profit_events['events'].append({
-                "title": "{} trades".format(trades_count),
-                "start": event_date,
-                "url": event_url,
-            })
+            target_events = profit_events
+        target_events['events'].append({
+            "title": "{}% win rate".format(daytrade_perf.win_rate),
+            "start": event_date,
+            "url": event_url,
+        })
+        target_events['events'].append({
+            "title": "{} profit/loss ratio".format(daytrade_perf.profit_loss_ratio),
+            "start": event_date,
+            "url": event_url,
+        })
+        target_events['events'].append({
+            "title": "{} trades".format(daytrade_perf.trades),
+            "start": event_date,
+            "url": event_url,
+        })
 
     return render(request, 'old_ross/analytics.html', {
         "account_type": account_type,
@@ -151,6 +153,7 @@ def analytics(request):
 
 
 def analytics_date(request, date=None):
+    daytrade_perf = get_object_or_404(HistoricalDayTradePerformance, date=date)
     acc_status = get_object_or_404(WebullAccountStatistics, date=date)
 
     # account type data
@@ -158,47 +161,30 @@ def analytics_date(request, date=None):
 
     # day profit loss
     day_profit_loss = utils.get_day_profit_loss_for_render(acc_status)
+    # top gain & loss
+    day_top_gain = {
+        "value": "+${}".format(daytrade_perf.top_gain_amount),
+        "symbol": daytrade_perf.top_gain_symbol
+    }
+    day_top_loss = {
+        "value": "-${}".format(abs(daytrade_perf.top_loss_amount)),
+        "symbol": daytrade_perf.top_loss_symbol
+    }
+
     # only limit orders for day trades
     buy_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month,
                                             filled_time__day=acc_status.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY)
     sell_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month,
                                              filled_time__day=acc_status.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
     # trades
-    trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    # trade count
-    total_trades = len(trades)
-    # top gain & loss
-    day_top_gain = {"value": "$0.0", "amount": 0.0, "symbol": ""}
-    day_top_loss = {"value": "$0.0", "amount": 0.0, "symbol": ""}
-    # win rate
-    total_win_trades = 0
-    total_loss_trades = 0
-    # profit/loss ratio
-    total_profit = 0.0
-    total_loss = 0.0
-    # trade records
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    # for trade records
     trades_dist = {}
-    for trade in trades:
+    for trade in day_trades:
         if "sell_price" in trade:
             symbol = trade["symbol"]
             gain = round(
                 (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
-            # calculate win rate, profit/loss ratio
-            if gain > 0:
-                total_profit += gain
-                total_win_trades += 1
-            else:
-                total_loss += gain
-                total_loss_trades += 1
-            # calculate top gain & loss
-            if gain > day_top_gain["amount"]:
-                day_top_gain["symbol"] = symbol
-                day_top_gain["amount"] = gain
-                day_top_gain["value"] = "+${}".format(gain)
-            if gain < day_top_loss["amount"]:
-                day_top_loss["symbol"] = symbol
-                day_top_loss["amount"] = gain
-                day_top_loss["value"] = "-${}".format(abs(gain))
             # build trades_dist
             if symbol not in trades_dist:
                 trades_dist[symbol] = {
@@ -219,23 +205,6 @@ def analytics_date(request, date=None):
             else:
                 trades_dist[symbol]["loss_trades"] += 1
                 trades_dist[symbol]["total_loss"] += gain
-
-    # win rate
-    overall_win_rate = "0.0%"
-    if total_trades > 0:
-        overall_win_rate = "{}%".format(
-            round(total_win_trades / total_trades * 100, 2))
-    # profit/loss ratio
-    overall_avg_profit = 0.0
-    if total_win_trades > 0:
-        overall_avg_profit = total_profit / total_win_trades
-    overall_avg_loss = 0.0
-    if total_loss_trades > 0:
-        overall_avg_loss = abs(total_loss / total_loss_trades)
-    overall_profit_loss_ratio = 1.0
-    if overall_avg_loss > 0:
-        overall_profit_loss_ratio = round(
-            overall_avg_profit/overall_avg_loss, 2)
     # trade records
     trade_records = []
     for symbol, trade in trades_dist.items():
@@ -311,10 +280,10 @@ def analytics_date(request, date=None):
         "account_type": account_type,
         "date": date,
         "day_profit_loss": day_profit_loss,
-        "trades_count": total_trades,
+        "trades_count": daytrade_perf.trades,
         "day_top_gain": day_top_gain,
         "day_top_loss": day_top_loss,
-        "win_rate": overall_win_rate,
-        "profit_loss_ratio": overall_profit_loss_ratio,
+        "win_rate": "{}%".format(daytrade_perf.win_rate),
+        "profit_loss_ratio": daytrade_perf.profit_loss_ratio,
         "trade_records": trade_records,
     })
