@@ -210,12 +210,16 @@ def analytics_date(request, date=None):
     for symbol, trade in trades_dist.items():
         key_statistics = HistoricalKeyStatistics.objects.filter(
             symbol=symbol).filter(date=date).first()
+        mktcap = 0
         short_float = None
         float_shares = 0
+        turnover_rate = "0.0%"
         if key_statistics:
+            mktcap = utils.millify(key_statistics.market_value)
             if key_statistics.short_float:
                 short_float = "{}%".format(key_statistics.short_float)
             float_shares = utils.millify(key_statistics.outstanding_shares)
+            turnover_rate = "{}%".format(round(key_statistics.turnover_rate * 100, 2))
         relative_volume = round(
             key_statistics.volume / key_statistics.avg_vol_3m, 2)
         win_rate = "0.0%"
@@ -272,6 +276,8 @@ def analytics_date(request, date=None):
             "relative_volume": relative_volume,
             "gap": gap,
             "news": news_count,
+            "mktcap": mktcap,
+            "turnover_rate": turnover_rate,
         })
     # sort trade records
     trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)

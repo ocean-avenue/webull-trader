@@ -170,12 +170,14 @@
         <tr>
 					<th>Symbol</th>
 					<th class="d-none d-xl-table-cell">P&L</th>
-					<th class="d-none d-xl-table-cell">Avg Price</th>
 					<th class="d-none d-xl-table-cell">Gap</th>
-					<th class="d-none d-xl-table-cell">News</th>
-					<th class="d-none d-xl-table-cell">Float</th>
+					<th class="d-none d-xl-table-cell">Avg Price</th>
+					<th class="d-none d-xl-table-cell">Market Cap</th>
+					<th class="d-none d-xl-table-cell">Free Float</th>
+					<th class="d-none d-xl-table-cell">Turnover Rate</th>
 					<th class="d-none d-xl-table-cell">Short Ratio</th>
 					<th class="d-none d-xl-table-cell">Relative Volume</th>
+					<th class="d-none d-xl-table-cell">News</th>
 					<th class="d-none d-xl-table-cell">Trades</th>
 					<th class="d-none d-xl-table-cell">Win Rate</th>
 					<th class="d-none d-md-table-cell">Profit/Loss Ratio</th>
@@ -186,12 +188,14 @@
         <tr>
 					<td><a href="/"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
 					<td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
 					<td class="d-none d-xl-table-cell">{{trade.gap|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.news|safe}}</td>
+					<td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
+					<td class="d-none d-xl-table-cell">{{trade.mktcap|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.float_shares|safe}}</td>
+					<td class="d-none d-md-table-cell">{{trade.turnover_rate|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.short_float|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.relative_volume|safe}}</td>
+					<td class="d-none d-xl-table-cell">{{trade.news|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.trades|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.win_rate|safe}}</td>
 					<td class="d-none d-md-table-cell">{{trade.profit_loss_ratio|safe}}</td>
