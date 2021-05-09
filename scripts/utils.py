@@ -273,14 +273,14 @@ def save_webull_account(acc_data):
     for account_member in account_members:
         if account_member['key'] == 'dayProfitLoss':
             day_profit_loss = float(account_member['value'])
-    acc_status = WebullAccountStatistics.objects.filter(date=today).first()
-    if not acc_status:
-        acc_status = WebullAccountStatistics(date=today)
-    acc_status.net_liquidation = acc_data['netLiquidation']
-    acc_status.total_profit_loss = acc_data['totalProfitLoss']
-    acc_status.total_profit_loss_rate = acc_data['totalProfitLossRate']
-    acc_status.day_profit_loss = day_profit_loss
-    acc_status.save()
+    acc_stat = WebullAccountStatistics.objects.filter(date=today).first()
+    if not acc_stat:
+        acc_stat = WebullAccountStatistics(date=today)
+    acc_stat.net_liquidation = acc_data['netLiquidation']
+    acc_stat.total_profit_loss = acc_data['totalProfitLoss']
+    acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
+    acc_stat.day_profit_loss = day_profit_loss
+    acc_stat.save()
 
 
 def save_webull_order(order_data, paper=True):
@@ -515,6 +515,142 @@ def get_trades_from_orders(buy_orders, sell_orders):
     return trades
 
 
+def get_market_hourly_interval_empty():
+    empty_list = []
+    for i in range(0, 32):
+        empty_list.append({
+            "trades": 0,
+            "win_trades": 0,
+            "loss_trades": 0,
+            "total_profit": 0.0,
+            "total_loss": 0.0,
+            "profit_loss": 0.0,
+        })
+    return empty_list
+
+
+def get_market_hourly_interval_labels():
+    return [
+        "04:00-04:30",  # 0
+        "04:30-05:00",  # 1
+        "05:00-05:30",  # 2
+        "05:30-06:00",  # 3
+        "06:00-06:30",  # 4
+        "06:30-07:00",  # 5
+        "07:00-07:30",  # 6
+        "07:30-08:00",  # 7
+        "08:00-08:30",  # 8
+        "08:30-09:00",  # 9
+        "09:00-09:30",  # 10
+        "09:30-10:00",  # 11
+        "10:00-10:30",  # 12
+        "10:30-11:00",  # 13
+        "11:00-11:30",  # 14
+        "11:30-12:00",  # 15
+        "12:00-12:30",  # 16
+        "12:30-13:00",  # 17
+        "13:00-13:30",  # 18
+        "13:30-14:00",  # 19
+        "14:00-14:30",  # 20
+        "14:30-15:00",  # 21
+        "15:00-15:30",  # 22
+        "15:30-16:00",  # 23
+        "16:00-16:30",  # 24
+        "16:30-17:00",  # 25
+        "17:00-17:30",  # 26
+        "17:30-18:00",  # 27
+        "18:00-18:30",  # 28
+        "18:30-19:00",  # 29
+        "19:00-19:30",  # 30
+        "19:30-20:00",  # 31
+    ]
+
+
+def get_market_hourly_interval_index(t):
+    index = -1
+    if t.hour == 4:
+        if t.minute < 30:
+            index = 0
+        else:
+            index = 1
+    elif t.hour == 5:
+        if t.minute < 30:
+            index = 2
+        else:
+            index = 3
+    elif t.hour == 6:
+        if t.minute < 30:
+            index = 4
+        else:
+            index = 5
+    elif t.hour == 7:
+        if t.minute < 30:
+            index = 6
+        else:
+            index = 7
+    elif t.hour == 8:
+        if t.minute < 30:
+            index = 8
+        else:
+            index = 9
+    elif t.hour == 9:
+        if t.minute < 30:
+            index = 10
+        else:
+            index = 11
+    elif t.hour == 10:
+        if t.minute < 30:
+            index = 12
+        else:
+            index = 13
+    elif t.hour == 11:
+        if t.minute < 30:
+            index = 14
+        else:
+            index = 15
+    elif t.hour == 12:
+        if t.minute < 30:
+            index = 16
+        else:
+            index = 17
+    elif t.hour == 13:
+        if t.minute < 30:
+            index = 18
+        else:
+            index = 19
+    elif t.hour == 14:
+        if t.minute < 30:
+            index = 20
+        else:
+            index = 21
+    elif t.hour == 15:
+        if t.minute < 30:
+            index = 22
+        else:
+            index = 23
+    elif t.hour == 16:
+        if t.minute < 30:
+            index = 24
+        else:
+            index = 25
+    elif t.hour == 17:
+        if t.minute < 30:
+            index = 26
+        else:
+            index = 27
+    elif t.hour == 18:
+        if t.minute < 30:
+            index = 28
+        else:
+            index = 29
+    elif t.hour == 19:
+        if t.minute < 30:
+            index = 30
+        else:
+            index = 31
+    return index
+
+
 # utils for render UI
 
 def get_account_type_for_render():
@@ -540,27 +676,27 @@ def get_color_bar_chart_item_for_render(value):
     }
 
 
-def get_day_profit_loss_for_render(acc_status):
+def get_day_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",
         "value_style": "",
         "day_pl_rate": "0.0%",
         "day_pl_rate_style": "badge-soft-dark",
     }
-    if acc_status:
+    if acc_stat:
         day_profit_loss["value"] = "${}".format(
-            abs(acc_status.day_profit_loss))
-        day_pl_rate = acc_status.day_profit_loss / \
-            (acc_status.net_liquidation - acc_status.day_profit_loss)
+            abs(acc_stat.day_profit_loss))
+        day_pl_rate = acc_stat.day_profit_loss / \
+            (acc_stat.net_liquidation - acc_stat.day_profit_loss)
         day_profit_loss["day_pl_rate"] = "{}%".format(
             round(day_pl_rate * 100, 2))
-        if acc_status.day_profit_loss > 0:
+        if acc_stat.day_profit_loss > 0:
             day_profit_loss["value"] = "+" + day_profit_loss["value"]
             day_profit_loss["value_style"] = "text-success"
             day_profit_loss["day_pl_rate"] = "+" + \
                 day_profit_loss["day_pl_rate"]
             day_profit_loss["day_pl_rate_style"] = "badge-soft-success"
-        elif acc_status.day_profit_loss < 0:
+        elif acc_stat.day_profit_loss < 0:
             day_profit_loss["value"] = "-" + day_profit_loss["value"]
             day_profit_loss["value_style"] = "text-danger"
             day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"

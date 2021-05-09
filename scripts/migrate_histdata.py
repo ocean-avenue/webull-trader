@@ -7,9 +7,9 @@ def start():
     from old_ross.models import WebullOrder, WebullAccountStatistics, HistoricalDayTradePerformance
     from old_ross.enums import OrderType, ActionType
 
-    acc_status_list = WebullAccountStatistics.objects.all()
-    for acc_status in acc_status_list:
-        today = acc_status.date
+    acc_stat_list = WebullAccountStatistics.objects.all()
+    for acc_stat in acc_stat_list:
+        today = acc_stat.date
         # day trade
         # only limit orders for day trades
         buy_orders = WebullOrder.objects.filter(filled_time__year=today.year, filled_time__month=today.month,

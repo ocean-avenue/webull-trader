@@ -161,6 +161,38 @@
     </div>
   </div>
 
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Hourly P&L</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="profit-loss-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Hourly Statistics</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="hourly-stats-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card flex-fill">
 		<div class="card-header">
       <h5 class="card-title mb-0">Trades</h5>
@@ -210,6 +242,94 @@
 
 {% block js %}
 <script>
-  
+  // profit loss chart
+  const profit_loss_chart = echarts.init(document.getElementById("profit-loss-chart"));
+  const profit_loss_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    dataZoom: [{
+      type: 'inside'
+    }],
+    xAxis: {
+      type: 'category',
+      data: {{hourly_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [{
+      data: {{hourly_profit_loss|safe}},
+      type: 'bar',
+      areaStyle: {}
+    }]
+  };
+  profit_loss_chart.setOption(profit_loss_option);
+
+  // hourly stats chart
+  const hourly_stats_chart = echarts.init(document.getElementById("hourly-stats-chart"));
+  const hourly_stats_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    legend: {
+        data: ['Win Rate', 'Profit/Loss Ratio', 'Trades']
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    dataZoom: [{
+      type: 'inside'
+    }],
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: {{hourly_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Win Rate",
+        data: {{hourly_win_rate|safe}},
+        type: 'line',
+        smooth: true,
+      },
+      {
+        name: "Profit/Loss Ratio",
+        data: {{hourly_profit_loss_ratio|safe}},
+        type: 'line',
+        smooth: true,
+      },
+      {
+        name: "Trades",
+        data: {{hourly_trades|safe}},
+        type: 'line',
+        smooth: true,
+      }
+    ]
+  };
+  hourly_stats_chart.setOption(hourly_stats_option);
+
+  // resize charts
+  window.onresize = function() {
+    profit_loss_chart.resize();
+  };
 </script>
 {% endblock %}

@@ -22,33 +22,33 @@ def index(request):
         "total_pl_rate_style": "badge-soft-dark",
     }
 
-    last_acc_status = WebullAccountStatistics.objects.last()
-    if last_acc_status:
+    last_acc_stat = WebullAccountStatistics.objects.last()
+    if last_acc_stat:
         net_account_value["value"] = "${}".format(
-            last_acc_status.net_liquidation)
+            last_acc_stat.net_liquidation)
 
         net_account_value["total_pl"] = "{}".format(
-            last_acc_status.total_profit_loss)
-        if last_acc_status.total_profit_loss > 0:
+            last_acc_stat.total_profit_loss)
+        if last_acc_stat.total_profit_loss > 0:
             net_account_value["total_pl"] = "+" + net_account_value["total_pl"]
             net_account_value["total_pl_style"] = "badge-soft-success"
-        elif last_acc_status.total_profit_loss < 0:
+        elif last_acc_stat.total_profit_loss < 0:
             net_account_value["total_pl_style"] = "badge-soft-danger"
 
         net_account_value["total_pl_rate"] = "{}%".format(
-            last_acc_status.total_profit_loss_rate * 100)
-        if last_acc_status.total_profit_loss_rate > 0:
+            last_acc_stat.total_profit_loss_rate * 100)
+        if last_acc_stat.total_profit_loss_rate > 0:
             net_account_value["total_pl_rate"] = "+" + \
                 net_account_value["total_pl_rate"]
             net_account_value["total_pl_rate_style"] = "badge-soft-success"
-        elif last_acc_status.total_profit_loss_rate < 0:
+        elif last_acc_stat.total_profit_loss_rate < 0:
             net_account_value["total_pl_rate_style"] = "badge-soft-danger"
 
-    today_acc_status = WebullAccountStatistics.objects.filter(
+    today_acc_stat = WebullAccountStatistics.objects.filter(
         date=today).first()
-    day_profit_loss = utils.get_day_profit_loss_for_render(today_acc_status)
+    day_profit_loss = utils.get_day_profit_loss_for_render(today_acc_stat)
 
-    acc_status_list = WebullAccountStatistics.objects.all()
+    acc_stat_list = WebullAccountStatistics.objects.all()
     # net assets chart
     net_assets_daily_values = []
     net_assets_daily_dates = []
@@ -56,12 +56,12 @@ def index(request):
     profit_loss_daily_values = []
     profit_loss_daily_dates = []
 
-    for acc_status in acc_status_list:
-        net_assets_daily_values.append(acc_status.net_liquidation)
-        net_assets_daily_dates.append(acc_status.date.strftime("%Y/%m/%d"))
+    for acc_stat in acc_stat_list:
+        net_assets_daily_values.append(acc_stat.net_liquidation)
+        net_assets_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
         profit_loss_daily_values.append(
-            utils.get_color_bar_chart_item_for_render(acc_status.day_profit_loss))
-        profit_loss_daily_dates.append(acc_status.date.strftime("%Y/%m/%d"))
+            utils.get_color_bar_chart_item_for_render(acc_stat.day_profit_loss))
+        profit_loss_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
 
     net_assets = {
         'daily_values': net_assets_daily_values,
@@ -154,13 +154,13 @@ def analytics(request):
 
 def analytics_date(request, date=None):
     daytrade_perf = get_object_or_404(HistoricalDayTradePerformance, date=date)
-    acc_status = get_object_or_404(WebullAccountStatistics, date=date)
+    acc_stat = get_object_or_404(WebullAccountStatistics, date=date)
 
     # account type data
     account_type = utils.get_account_type_for_render()
 
     # day profit loss
-    day_profit_loss = utils.get_day_profit_loss_for_render(acc_status)
+    day_profit_loss = utils.get_day_profit_loss_for_render(acc_stat)
     # top gain & loss
     day_top_gain = {
         "value": "+${}".format(daytrade_perf.top_gain_amount),
@@ -172,13 +172,55 @@ def analytics_date(request, date=None):
     }
 
     # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month,
-                                            filled_time__day=acc_status.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(filled_time__year=acc_status.date.year, filled_time__month=acc_status.date.month,
-                                             filled_time__day=acc_status.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
-    # trades
+    buy_orders = WebullOrder.objects.filter(filled_time__year=acc_stat.date.year, filled_time__month=acc_stat.date.month,
+                                            filled_time__day=acc_stat.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(filled_time__year=acc_stat.date.year, filled_time__month=acc_stat.date.month,
+                                             filled_time__day=acc_stat.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
+    # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    # for trade records
+    hourly_statistics = utils.get_market_hourly_interval_empty()
+    # for hourly P&L, win rate and profit/loss ratio, trades
+    for day_trade in day_trades:
+        hourly_idx = utils.get_market_hourly_interval_index(
+            day_trade['buy_time'])
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                hourly_statistics[hourly_idx]['win_trades'] += 1
+                hourly_statistics[hourly_idx]['total_profit'] += gain
+            else:
+                hourly_statistics[hourly_idx]['loss_trades'] += 1
+                hourly_statistics[hourly_idx]['total_loss'] += gain
+            hourly_statistics[hourly_idx]['profit_loss'] += gain
+            hourly_statistics[hourly_idx]['trades'] += 1
+    hourly_profit_loss = []
+    hourly_win_rate = []
+    hourly_profit_loss_ratio = []
+    hourly_trades = []
+    # calculate win rate and profit/loss ratio
+    for hourly_stat in hourly_statistics:
+        hourly_trades.append(hourly_stat['trades'])
+        hourly_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(hourly_stat['profit_loss'], 2)))
+        if hourly_stat['trades'] > 0:
+            hourly_win_rate.append(
+                round(hourly_stat['win_trades']/hourly_stat['trades'] * 100, 2))
+        else:
+            hourly_win_rate.append(0.0)
+        avg_profit = 1.0
+        if hourly_stat['win_trades'] > 0:
+            avg_profit = hourly_stat['total_profit'] / \
+                hourly_stat['win_trades']
+        avg_loss = 1.0
+        if hourly_stat['loss_trades'] > 0:
+            avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if hourly_stat['trades'] > 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        hourly_profit_loss_ratio.append(profit_loss_ratio)
+
+    # for trade records group by symbol
     trades_dist = {}
     for trade in day_trades:
         if "sell_price" in trade:
@@ -219,7 +261,8 @@ def analytics_date(request, date=None):
             if key_statistics.short_float:
                 short_float = "{}%".format(key_statistics.short_float)
             float_shares = utils.millify(key_statistics.outstanding_shares)
-            turnover_rate = "{}%".format(round(key_statistics.turnover_rate * 100, 2))
+            turnover_rate = "{}%".format(
+                round(key_statistics.turnover_rate * 100, 2))
         relative_volume = round(
             key_statistics.volume / key_statistics.avg_vol_3m, 2)
         win_rate = "0.0%"
@@ -291,5 +334,10 @@ def analytics_date(request, date=None):
         "day_top_loss": day_top_loss,
         "win_rate": "{}%".format(daytrade_perf.win_rate),
         "profit_loss_ratio": daytrade_perf.profit_loss_ratio,
+        "hourly_labels": utils.get_market_hourly_interval_labels(),
+        "hourly_profit_loss": hourly_profit_loss,
+        "hourly_win_rate": hourly_win_rate,
+        "hourly_profit_loss_ratio": hourly_profit_loss_ratio,
+        "hourly_trades": hourly_trades,
         "trade_records": trade_records,
     })
