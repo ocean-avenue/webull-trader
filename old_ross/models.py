@@ -168,7 +168,9 @@ class HistoricalKeyStatistics(models.Model):
     ps = models.FloatField(null=True, blank=True)
     bps = models.FloatField(null=True, blank=True)
     short_float = models.FloatField(null=True, blank=True)
+    # shares outstand
     total_shares = models.FloatField()
+    # free float
     outstanding_shares = models.FloatField()
     fifty_two_wk_high = models.FloatField()
     fifty_two_wk_low = models.FloatField()
