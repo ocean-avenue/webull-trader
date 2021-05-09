@@ -1,11 +1,22 @@
 import pandas as pd
 import numpy as np
 import pytz
+import math
 from django.conf import settings
 from datetime import datetime, date
 from old_ross import enums
 from scripts import config
 from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+
+
+MILLNAMES = ['', 'K', 'M', 'B', 'T']
+
+
+def millify(n):
+    n = float(n)
+    millidx = max(0, min(len(MILLNAMES)-1,
+                         int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
+    return '{:.2f}{}'.format(n / 10**(3 * millidx), MILLNAMES[millidx])
 
 
 def get_now():
@@ -347,6 +358,7 @@ def save_webull_news(news_data, symbol, date):
     if not news:
         news = WebullNews(
             news_id=news_data['id'],
+            symbol=symbol,
             title=news_data['title'],
             source_name=news_data['sourceName'],
             collect_source=news_data['collectSource'],

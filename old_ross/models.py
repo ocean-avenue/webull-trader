@@ -206,4 +206,4 @@ class HistoricalDailyBar(models.Model):
     volume = models.FloatField()
 
     def __str__(self):
-        return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.time, self.symbol, self.open, self.high, self.low, self.close)
+        return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)

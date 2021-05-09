@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import datetime, date
 from django.shortcuts import get_object_or_404, render
 from scripts import utils, config
 from old_ross.enums import ActionType, OrderType
-from old_ross.models import WebullAccountStatistics, WebullOrder
+from old_ross.models import HistoricalDailyBar, HistoricalKeyStatistics, WebullAccountStatistics, WebullNews, WebullOrder
 
 # Create your views here.
 
@@ -219,7 +219,6 @@ def analytics_date(request, date=None):
             else:
                 trades_dist[symbol]["loss_trades"] += 1
                 trades_dist[symbol]["total_loss"] += gain
-    print(trades_dist)
 
     # win rate
     overall_win_rate = "0.0%"
@@ -235,10 +234,21 @@ def analytics_date(request, date=None):
         overall_avg_loss = abs(total_loss / total_loss_trades)
     overall_profit_loss_ratio = 1.0
     if overall_avg_loss > 0:
-        overall_profit_loss_ratio = round(overall_avg_profit/overall_avg_loss, 2)
+        overall_profit_loss_ratio = round(
+            overall_avg_profit/overall_avg_loss, 2)
     # trade records
     trade_records = []
     for symbol, trade in trades_dist.items():
+        key_statistics = HistoricalKeyStatistics.objects.filter(
+            symbol=symbol).filter(date=date).first()
+        short_float = None
+        float_shares = 0
+        if key_statistics:
+            if key_statistics.short_float:
+                short_float = "{}%".format(key_statistics.short_float)
+            float_shares = utils.millify(key_statistics.outstanding_shares)
+        relative_volume = round(
+            key_statistics.volume / key_statistics.avg_vol_3m, 2)
         win_rate = "0.0%"
         if trade["trades"] > 0:
             win_rate = "{}%".format(
@@ -252,12 +262,33 @@ def analytics_date(request, date=None):
         profit_loss_ratio = 1.0
         if avg_loss > 0:
             profit_loss_ratio = round(avg_profit/avg_loss, 2)
-        avg_price = "${}".format(round(trade["total_cost"] / trade["trades"], 2))
+        avg_price = "${}".format(
+            round(trade["total_cost"] / trade["trades"], 2))
         profit_loss = "+${}".format(round(trade["profit_loss"], 2))
         profit_loss_style = "text-success"
         if trade["profit_loss"] < 0:
             profit_loss = "-${}".format(abs(round(trade["profit_loss"], 2)))
             profit_loss_style = "text-danger"
+        hist_daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
+        day_index = 0
+        for i in range(0, len(hist_daily_bars)):
+            if hist_daily_bars[i].date == key_statistics.date:
+                day_index = i
+                break
+        gap = "0.0%"
+        if day_index > 0:
+            gap_value = round((hist_daily_bars[day_index].open - hist_daily_bars[day_index -
+                                                                                 1].close) / hist_daily_bars[day_index - 1].close * 100, 2)
+            if gap_value > 0:
+                gap = "+{}%".format(gap_value)
+            else:
+                gap = "{}%".format(gap_value)
+        webull_news = WebullNews.objects.filter(
+            symbol=symbol).filter(date=date)
+        news_count = 0
+        for webull_new in webull_news:
+            if datetime.strptime(webull_new.news_time, "%Y-%m-%dT%H:%M:%S.000+0000").date() == key_statistics.date:
+                news_count += 1
         trade_records.append({
             "symbol": symbol,
             "trades": trade["trades"],
@@ -267,9 +298,14 @@ def analytics_date(request, date=None):
             "profit_loss_ratio": profit_loss_ratio,
             "avg_price": avg_price,
             "profit_loss_style": profit_loss_style,
+            "short_float": short_float,
+            "float_shares": float_shares,
+            "relative_volume": relative_volume,
+            "gap": gap,
+            "news": news_count,
         })
     # sort trade records
-    trade_records.sort(key=lambda p: p['profit_loss_value'], reverse=True)
+    trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
 
     return render(request, 'old_ross/analytics_date.html', {
         "account_type": account_type,
