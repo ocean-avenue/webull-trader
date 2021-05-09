@@ -207,3 +207,19 @@ class HistoricalDailyBar(models.Model):
 
     def __str__(self):
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
+
+
+class HistoricalDayTradePerformance(models.Model):
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    win_rate = models.FloatField()
+    profit_loss_ratio = models.FloatField()
+    day_profit_loss = models.FloatField()
+    trades = models.PositiveIntegerField()
+
+    top_gain_amount = models.FloatField()
+    top_gain_symbol = models.CharField(max_length=64)
+    top_loss_amount = models.FloatField()
+    top_loss_symbol = models.CharField(max_length=64)
+
+    def __str__(self):
+        return "[{}] P&L: {}, {} trades".format(self.date, self.day_profit_loss, self.trades)

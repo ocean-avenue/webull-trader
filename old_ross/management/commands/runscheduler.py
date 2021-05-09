@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import paper_daytrading, fetch_account, fetch_orders, fetch_news, fetch_histdata, utils
+from scripts import paper_daytrading, fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 
@@ -62,9 +62,9 @@ def fetch_stats_data_job():
     fetch_news.start()
     print("[{}] done fetch news job!".format(utils.get_now()))
 
-    print("[{}] start fetch hist data job...".format(utils.get_now()))
-    fetch_histdata.start()
-    print("[{}] done fetch hist data job!".format(utils.get_now()))
+    print("[{}] start calculate hist data job...".format(utils.get_now()))
+    calculate_histdata.start()
+    print("[{}] done calculate hist data job!".format(utils.get_now()))
 
 
 def add_weekday_jobs(job, job_name, hour, minute, second="00"):

@@ -178,3 +178,21 @@ class HistoricalDailyBarAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.HistoricalDailyBar, HistoricalDailyBarAdmin)
+
+
+class HistoricalDayTradePerformanceAdmin(admin.ModelAdmin):
+    list_display = [
+        'date',
+        'day_profit_loss',
+        'trades',
+        'win_rate',
+        'profit_loss_ratio',
+        'top_gain_amount',
+        'top_gain_symbol',
+        'top_loss_amount',
+        'top_loss_symbol',
+    ]
+
+
+admin.site.register(models.HistoricalDayTradePerformance,
+                    HistoricalDayTradePerformanceAdmin)

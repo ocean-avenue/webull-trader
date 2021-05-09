@@ -509,8 +509,9 @@ def get_trades_from_orders(buy_orders, sell_orders):
         for trade in trades:
             if sell_order.symbol == trade["symbol"] and sell_order.filled_quantity == trade["quantity"] and "sell_price" not in trade:
                 trade["sell_price"] = sell_order.avg_price
-                trade["buy_time"] = sell_order.filled_time
+                trade["sell_time"] = sell_order.filled_time
                 trade["sell_order_id"] = sell_order.order_id
+                break
     return trades
 
 
