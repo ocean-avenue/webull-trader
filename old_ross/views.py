@@ -37,7 +37,7 @@ def index(request):
             net_account_value["total_pl_style"] = "badge-soft-danger"
 
         net_account_value["total_pl_rate"] = "{}%".format(
-            last_acc_stat.total_profit_loss_rate * 100)
+            round(last_acc_stat.total_profit_loss_rate * 100, 2))
         if last_acc_stat.total_profit_loss_rate > 0:
             net_account_value["total_pl_rate"] = "+" + \
                 net_account_value["total_pl_rate"]
