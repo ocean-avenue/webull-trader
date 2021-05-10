@@ -75,9 +75,9 @@
               <h3 class="mb-2 text-success">
                 {{day_top_gain.value|safe}}
               </h3>
-              <p class="mb-2">Top Gain</p>
+              <p class="mb-2">Top Gain Trade</p>
               <div class="mb-0">
-                <a href="/">
+                <a href="/analytics/{{date|safe}}/{{day_top_gain.symbol|safe}}">
                   <span
                     class="badge badge-soft-dark me-2"
                   >
@@ -104,9 +104,9 @@
               <h3 class="mb-2 text-danger">
                 {{day_top_loss.value|safe}}
               </h3>
-              <p class="mb-2">Top Loss</p>
+              <p class="mb-2">Top Loss Trade</p>
               <div class="mb-0">
-                <a href="/">
+                <a href="/analytics/{{date|safe}}/{{day_top_loss.symbol|safe}}">
                   <span
                     class="badge badge-soft-dark me-2"
                   >
@@ -194,48 +194,48 @@
   </div>
 
   <div class="card flex-fill">
-		<div class="card-header">
+    <div class="card-header">
       <h5 class="card-title mb-0">Trades</h5>
-		</div>
+    </div>
     <table class="table table-striped my-0">
-			<thead>
+      <thead>
         <tr>
-					<th>Symbol</th>
-					<th class="d-none d-xl-table-cell">P&L</th>
-					<th class="d-none d-xl-table-cell">Gap</th>
-					<th class="d-none d-xl-table-cell">Avg Price</th>
-					<th class="d-none d-xl-table-cell">Market Cap</th>
-					<th class="d-none d-xl-table-cell">Free Float</th>
-					<th class="d-none d-xl-table-cell">Turnover Rate</th>
-					<th class="d-none d-xl-table-cell">Short Ratio</th>
-					<th class="d-none d-xl-table-cell">Relative Volume</th>
-					<th class="d-none d-xl-table-cell">News</th>
-					<th class="d-none d-xl-table-cell">Trades</th>
-					<th class="d-none d-xl-table-cell">Win Rate</th>
-					<th class="d-none d-md-table-cell">Profit/Loss Ratio</th>
-				</tr>
-			</thead>
+          <th>Symbol</th>
+          <th class="d-none d-xl-table-cell">P&L</th>
+          <th class="d-none d-xl-table-cell">Gap</th>
+          <th class="d-none d-xl-table-cell">Avg Price</th>
+          <th class="d-none d-xl-table-cell">Market Cap</th>
+          <th class="d-none d-xl-table-cell">Free Float</th>
+          <th class="d-none d-xl-table-cell">Turnover Rate</th>
+          <th class="d-none d-xl-table-cell">Short Ratio</th>
+          <th class="d-none d-xl-table-cell">Relative Volume</th>
+          <th class="d-none d-xl-table-cell">News</th>
+          <th class="d-none d-xl-table-cell">Trades</th>
+          <th class="d-none d-xl-table-cell">Win Rate</th>
+          <th class="d-none d-md-table-cell">Profit/Loss Ratio</th>
+        </tr>
+      </thead>
       <tbody>
         {% for trade in trade_records %}
         <tr>
-					<td><a href="/"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
-					<td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.gap|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.mktcap|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.float_shares|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.turnover_rate|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.short_float|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.relative_volume|safe}}</td>
-					<td class="d-none d-xl-table-cell">{{trade.news|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.trades|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.win_rate|safe}}</td>
-					<td class="d-none d-md-table-cell">{{trade.profit_loss_ratio|safe}}</td>
-				</tr>
+          <td><a href="/analytics/{{date|safe}}/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+          <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.gap|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.mktcap|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.float_shares|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.turnover_rate|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.short_float|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.relative_volume|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.news|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.trades|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.win_rate|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.profit_loss_ratio|safe}}</td>
+        </tr>
         {% endfor %}
-			</tbody>
-		</table>
-	</div>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock %}
@@ -330,6 +330,7 @@
   // resize charts
   window.onresize = function() {
     profit_loss_chart.resize();
+    hourly_stats_chart.resize();
   };
 </script>
 {% endblock %}

@@ -1,8 +1,9 @@
+import pandas as pd
 from datetime import datetime, date
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_list_or_404, get_object_or_404, render
 from scripts import utils, config
 from old_ross.enums import ActionType, OrderType
-from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, WebullAccountStatistics, WebullNews, WebullOrder
+from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder
 
 # Create your views here.
 
@@ -340,4 +341,50 @@ def analytics_date(request, date=None):
         "hourly_profit_loss_ratio": hourly_profit_loss_ratio,
         "hourly_trades": hourly_trades,
         "trade_records": trade_records,
+    })
+
+
+def analytics_date_symbol(request, date=None, symbol=None):
+    minute_bars = get_list_or_404(
+        HistoricalMinuteBar, date=date, symbol=symbol)
+
+    timestamps = []
+    # for load data frame
+    m1_data_for_df = {
+        "open": [],
+        "high": [],
+        "low": [],
+        "close": [],
+        "volume": [],
+        "vwap": [],
+    }
+    for minute_bar in minute_bars:
+        timestamps.append(minute_bar.time)
+        m1_data_for_df['open'].append(minute_bar.open)
+        m1_data_for_df['high'].append(minute_bar.high)
+        m1_data_for_df['low'].append(minute_bar.low)
+        m1_data_for_df['close'].append(minute_bar.close)
+        m1_data_for_df['volume'].append(minute_bar.volume)
+        m1_data_for_df['vwap'].append(minute_bar.vwap)
+    m1_bars = pd.DataFrame(m1_data_for_df, index=timestamps)
+    # calculate and fill ema 9 data
+    m1_bars['ema9'] = m1_bars['close'].ewm(span=9, adjust=False).mean()
+    # load 1m data for render
+    m1_candle_data = utils.get_minute_candle_data_for_render(m1_bars)
+    # calculate 2m bars
+    m2_bars = utils.convert_2m_bars(m1_bars)
+    # calculate and fill ema 9 data
+    m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
+    # load 2m data for render
+    m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
+    # calculate daily candle
+    d1_candle_data = utils.get_last_60d_daily_candle_data_for_render(
+        symbol, minute_bars[0].date)
+
+    return render(request, 'old_ross/analytics_date_symbol.html', {
+        "date": date,
+        "symbol": symbol,
+        "m1_candle_data": m1_candle_data,
+        "m2_candle_data": m2_candle_data,
+        "d1_candle_data": d1_candle_data,
     })

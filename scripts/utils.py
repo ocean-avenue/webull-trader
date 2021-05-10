@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pytz
 import math
+from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, date
 from old_ross import enums
@@ -17,6 +18,13 @@ def millify(n):
     millidx = max(0, min(len(MILLNAMES)-1,
                          int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
     return '{:.2f}{}'.format(n / 10**(3 * millidx), MILLNAMES[millidx])
+
+
+def local_time_minute(t):
+    utc = t.replace(tzinfo=pytz.UTC)
+    localtz = utc.astimezone(timezone.get_current_timezone())
+    format = '%H:%M'
+    return localtz.strftime(format)
 
 
 def get_now():
@@ -701,3 +709,68 @@ def get_day_profit_loss_for_render(acc_stat):
             day_profit_loss["value_style"] = "text-danger"
             day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"
     return day_profit_loss
+
+
+def get_minute_candle_data_for_render(bars):
+    candle_data = {
+        "times": [],
+        "candles": [],
+        "volumes": [],
+        "vwaps": [],
+        "ema9s": [],
+    }
+    for timestamp, candle in bars.iterrows():
+        candle_data['times'].append(local_time_minute(timestamp))
+        # open, close, low, high
+        candle_data['candles'].append(
+            [candle['open'], candle['close'], candle['low'], candle['high']])
+        if candle['close'] < candle['open']:
+            candle_data['volumes'].append({
+                'value': candle['volume'],
+                'itemStyle': {'color': config.LOSS_COLOR},
+            })
+        else:
+            candle_data['volumes'].append({
+                'value': candle['volume'],
+                'itemStyle': {'color': config.PROFIT_COLOR},
+            })
+        candle_data['vwaps'].append(candle['vwap'])
+        candle_data['ema9s'].append(round(candle['ema9'], 2))
+    return candle_data
+
+
+def get_last_60d_daily_candle_data_for_render(symbol, date):
+    candle_data = {
+        "times": [],
+        "candles": [],
+        "volumes": [],
+    }
+    daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
+    end_idx = -1
+    for i in range(0, len(daily_bars)):
+        if daily_bars[i].date == date:
+            end_idx = i + 1
+            break
+    start_idx = max(end_idx - 60, 0)
+    candle_data = {
+        "times": [],
+        "candles": [],
+        "volumes": [],
+    }
+    for i in range(start_idx, end_idx):
+        candle = daily_bars[i]
+        candle_data["times"].append(candle.date.strftime("%m/%d"))
+        # open, close, low, high
+        candle_data["candles"].append(
+            [candle.open, candle.close, candle.low, candle.high])
+        if candle.close < candle.open:
+            candle_data['volumes'].append({
+                'value': candle.volume,
+                'itemStyle': {'color': config.LOSS_COLOR},
+            })
+        else:
+            candle_data['volumes'].append({
+                'value': candle.volume,
+                'itemStyle': {'color': config.PROFIT_COLOR},
+            })
+    return candle_data
