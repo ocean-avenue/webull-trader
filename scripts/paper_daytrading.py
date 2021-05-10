@@ -480,8 +480,11 @@ def start():
 
     # output today's proft loss
     portfolio = webullsdk.get_portfolio()
+    day_profit_loss = "-"
+    if "dayProfitLoss" in portfolio:
+        day_profit_loss = portfolio['dayProfitLoss']
     print("[{}] Today's P&L: {}".format(
-        utils.get_now(), portfolio['dayProfitLoss']))
+        utils.get_now(), day_profit_loss))
 
     # webullsdk.logout()
     # print("[{}] Webull logged out".format(utils.get_now()))
