@@ -377,14 +377,60 @@ def analytics_date_symbol(request, date=None, symbol=None):
     m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
     # load 2m data for render
     m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
+    # borrow minute bar for date
+    analytics_date = minute_bars[0].date
     # calculate daily candle
     d1_candle_data = utils.get_last_60d_daily_candle_data_for_render(
-        symbol, minute_bars[0].date)
+        symbol, analytics_date)
+    # 1m trade records
+    m1_trade_records = []
+    # 2m trade records
+    m2_trade_records = []
+    buy_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
+                                            filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY).filter(symbol=symbol)
+    for buy_order in buy_orders:
+        m1_trade_records.append({
+            "name": "+{}".format(buy_order.filled_quantity),
+            "coord": [utils.local_time_minute_delay(buy_order.filled_time), buy_order.avg_price],
+            "value": buy_order.avg_price,
+            "itemStyle": {
+                "color": config.BUY_COLOR,
+            }
+        })
+        m2_trade_records.append({
+            "name": "+{}".format(buy_order.filled_quantity),
+            "coord": [utils.local_time_minute2(buy_order.filled_time), buy_order.avg_price],
+            "value": buy_order.avg_price,
+            "itemStyle": {
+                "color": config.BUY_COLOR,
+            }
+        })
+    sell_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
+                                             filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL).filter(symbol=symbol)
+    for sell_order in sell_orders:
+        m1_trade_records.append({
+            "name": "-{}".format(sell_order.filled_quantity),
+            "coord": [utils.local_time_minute_delay(sell_order.filled_time), sell_order.avg_price],
+            "value": sell_order.avg_price,
+            "itemStyle": {
+                "color": config.SELL_COLOR,
+            }
+        })
+        m2_trade_records.append({
+            "name": "-{}".format(sell_order.filled_quantity),
+            "coord": [utils.local_time_minute2(sell_order.filled_time), sell_order.avg_price],
+            "value": sell_order.avg_price,
+            "itemStyle": {
+                "color": config.SELL_COLOR,
+            }
+        })
 
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
         "symbol": symbol,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
+        "m1_trade_records": m1_trade_records,
+        "m2_trade_records": m2_trade_records,
         "d1_candle_data": d1_candle_data,
     })

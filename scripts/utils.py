@@ -27,6 +27,38 @@ def local_time_minute(t):
     return localtz.strftime(format)
 
 
+# hack to delay 1 minute
+
+
+def local_time_minute_delay(t):
+    utc = t.replace(tzinfo=pytz.UTC)
+    localtz = utc.astimezone(timezone.get_current_timezone())
+    hour = str(localtz.hour)
+    minute = str(localtz.minute + 1)
+    if len(hour) < 2:
+        hour = "0{}".format(hour)
+    if len(minute) < 2:
+        minute = "0{}".format(minute)
+    return "{}:{}".format(hour, minute)
+
+# for 2 minute
+
+
+def local_time_minute2(t):
+    utc = t.replace(tzinfo=pytz.UTC)
+    localtz = utc.astimezone(timezone.get_current_timezone())
+    hour = str(localtz.hour)
+    minute = localtz.minute
+    if minute % 2 == 1:
+        minute -= 1
+    minute = str(minute + 2)
+    if len(hour) < 2:
+        hour = "0{}".format(hour)
+    if len(minute) < 2:
+        minute = "0{}".format(minute)
+    return "{}:{}".format(hour, minute)
+
+
 def get_now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

@@ -141,8 +141,11 @@
       {
         scale: true,
         splitArea: {
-          show: true
-        }
+          show: false
+        },
+        splitLine: {
+          show: false
+        },
       },
       {
         scale: true,
@@ -172,6 +175,21 @@
           color0: "#d9534f",
           borderColor: null,
           borderColor0: null,
+        },
+        markPoint: {
+          label: {
+            normal: {
+              formatter: function (param) {
+                return param.name;
+              }
+            }
+          },
+          data: {{ m1_trade_records|safe }},
+          tooltip: {
+            formatter: function (param) {
+              return param.name + '<br>' + (param.data.coord || '');
+            }
+          }
         },
       },
       {
@@ -274,8 +292,11 @@
       {
         scale: true,
         splitArea: {
-          show: true
-        }
+          show: false
+        },
+        splitLine: {
+          show: false
+        },
       },
       {
         scale: true,
@@ -291,8 +312,8 @@
       {
         type: 'inside',
         xAxisIndex: [0, 1],
-        start: 10,
-        end: 70
+        start: 20,
+        end: 75
       },
     ],
     series: [
@@ -305,6 +326,21 @@
           color0: "#d9534f",
           borderColor: null,
           borderColor0: null,
+        },
+        markPoint: {
+          label: {
+            normal: {
+              formatter: function (param) {
+                return param.name;
+              }
+            }
+          },
+          data: {{ m2_trade_records|safe }},
+          tooltip: {
+            formatter: function (param) {
+              return param.name + '<br>' + (param.data.coord || '');
+            }
+          }
         },
       },
       {
@@ -336,7 +372,7 @@
         type: 'bar',
         xAxisIndex: 1,
         yAxisIndex: 1,
-        data: {{m1_candle_data.volumes|safe}},
+        data: {{m2_candle_data.volumes|safe}},
       },
     ]
   };
@@ -407,8 +443,11 @@
       {
         scale: true,
         splitArea: {
-          show: true
-        }
+          show: false
+        },
+        splitLine: {
+          show: false
+        },
       },
       {
         scale: true,
