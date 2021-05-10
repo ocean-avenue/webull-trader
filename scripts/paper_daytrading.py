@@ -2,6 +2,9 @@
 
 # paper trading
 
+from old_ross.enums import SetupType
+
+
 MIN_SURGE_AMOUNT = 30000
 MIN_SURGE_VOL = 2000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
@@ -61,6 +64,9 @@ def start():
                 order_filled = True
                 quantity = int(position['position'])
                 cost = float(position['costPrice'])
+                # TODO save other setup
+                utils.save_webull_order_note(
+                    ticker['pending_order_id'], setup=SetupType.DAY_FIRST_CANDLE_NEW_HIGH, note="Entry point.")
                 # update tracking_tickers
                 tracking_tickers[symbol]['positions'] = quantity
                 tracking_tickers[symbol]['pending_buy'] = False
@@ -76,7 +82,7 @@ def start():
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(
-                        ticker['pending_order_id'], "Buy order timeout, canceled!")
+                        ticker['pending_order_id'], note="Buy order timeout, canceled!")
                     print("[{}] Buy order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     tracking_tickers[symbol]['pending_buy'] = False
@@ -103,7 +109,7 @@ def start():
             exit_note = tracking_tickers[symbol]['exit_note']
             if exit_note:
                 utils.save_webull_order_note(
-                    tracking_tickers[symbol]['pending_order_id'], exit_note)
+                    tracking_tickers[symbol]['pending_order_id'], note=exit_note)
             # update tracking_tickers
             tracking_tickers[symbol]['positions'] = 0
             tracking_tickers[symbol]['pending_sell'] = False
@@ -127,7 +133,7 @@ def start():
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(
-                        ticker['pending_order_id'], "Sell order timeout, canceled!")
+                        ticker['pending_order_id'], note="Sell order timeout, canceled!")
                     print("[{}] Sell order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     # resubmit sell order
@@ -148,7 +154,7 @@ def start():
                             utils.get_now(), order_response['msg']))
                     else:
                         utils.save_webull_order_note(
-                            order_response['orderId'], "Resubmit sell order.")
+                            order_response['orderId'], note="Resubmit sell order.")
                         # mark pending sell
                         tracking_tickers[symbol]['pending_sell'] = True
                         tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']

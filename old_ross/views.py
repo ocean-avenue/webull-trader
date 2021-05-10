@@ -2,8 +2,8 @@ import pandas as pd
 from datetime import datetime, date
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from scripts import utils, config
-from old_ross.enums import ActionType, OrderType
-from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder
+from old_ross.enums import ActionType, OrderType, SetupType
+from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
 
 # Create your views here.
 
@@ -436,6 +436,16 @@ def analytics_date_symbol(request, date=None, symbol=None):
         if gain < 0:
             profit_loss = "-${}".format(abs(gain))
             profit_loss_style = "text-danger"
+        entries = []
+        buy_order_notes = WebullOrderNote.objects.filter(
+            order_id=day_trade["buy_order_id"])
+        for buy_order_note in buy_order_notes:
+            entries.append(SetupType.tostr(buy_order_note.setup))
+        notes = []
+        sell_order_notes = WebullOrderNote.objects.filter(
+            order_id=day_trade["sell_order_id"])
+        for sell_order_note in sell_order_notes:
+            notes.append(sell_order_note.note)
         trade_records.append({
             "symbol": symbol,
             "quantity": quantity,
@@ -443,6 +453,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "sell_price": "${}".format(sell_price),
             "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
             "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
+            "entry": ", ".join(entries),
+            "notes": " ".join(notes),
             "profit_loss": profit_loss,
             "profit_loss_style": profit_loss_style,
         })

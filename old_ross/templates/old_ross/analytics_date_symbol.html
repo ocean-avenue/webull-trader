@@ -32,10 +32,12 @@
         <tr>
           <th>Symbol</th>
           <th class="d-none d-xl-table-cell">Buy Price</th>
-          <th class="d-none d-xl-table-cell">Sell Price</th>
-          <th class="d-none d-xl-table-cell">Quantity</th>
           <th class="d-none d-xl-table-cell">Buy Time</th>
+          <th class="d-none d-xl-table-cell">Entry</th>
+          <th class="d-none d-xl-table-cell">Sell Price</th>
           <th class="d-none d-xl-table-cell">Sell Time</th>
+          <th class="d-none d-xl-table-cell">Quantity</th>
+          <th class="d-none d-xl-table-cell">Note</th>
           <th class="d-none d-xl-table-cell">P&L</th>
         </tr>
       </thead>
@@ -44,10 +46,12 @@
         <tr>
           <td><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></td>
           <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.entry|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
           <td class="d-none d-md-table-cell">{{trade.sell_time|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.notes|safe}}</td>
           <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
         </tr>
         {% endfor %}

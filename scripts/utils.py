@@ -390,11 +390,10 @@ def save_webull_order(order_data, paper=True):
         pass
 
 
-def save_webull_order_note(order_id, note):
-    # TODO, support other setup
+def save_webull_order_note(order_id, setup=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH, note=""):
     order_note = WebullOrderNote(
         order_id=str(order_id),
-        setup=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH,
+        setup=setup,
         note=note,
     )
     order_note.save()
