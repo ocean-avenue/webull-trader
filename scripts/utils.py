@@ -26,6 +26,7 @@ def local_time_minute(t):
     format = '%H:%M'
     return localtz.strftime(format)
 
+
 def local_time_minute_second(t):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
@@ -320,19 +321,20 @@ def save_webull_account(acc_data):
     today = date.today()
     print("[{}] Importing daily account status ({})...".format(
         get_now(), today.strftime("%Y-%m-%d")))
-    account_members = acc_data['accountMembers']
-    day_profit_loss = 0
-    for account_member in account_members:
-        if account_member['key'] == 'dayProfitLoss':
-            day_profit_loss = float(account_member['value'])
-    acc_stat = WebullAccountStatistics.objects.filter(date=today).first()
-    if not acc_stat:
-        acc_stat = WebullAccountStatistics(date=today)
-    acc_stat.net_liquidation = acc_data['netLiquidation']
-    acc_stat.total_profit_loss = acc_data['totalProfitLoss']
-    acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
-    acc_stat.day_profit_loss = day_profit_loss
-    acc_stat.save()
+    if "accountMembers" in acc_data:
+        account_members = acc_data['accountMembers']
+        day_profit_loss = 0
+        for account_member in account_members:
+            if account_member['key'] == 'dayProfitLoss':
+                day_profit_loss = float(account_member['value'])
+        acc_stat = WebullAccountStatistics.objects.filter(date=today).first()
+        if not acc_stat:
+            acc_stat = WebullAccountStatistics(date=today)
+        acc_stat.net_liquidation = acc_data['netLiquidation']
+        acc_stat.total_profit_loss = acc_data['totalProfitLoss']
+        acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
+        acc_stat.day_profit_loss = day_profit_loss
+        acc_stat.save()
 
 
 def save_webull_order(order_data, paper=True):
