@@ -446,8 +446,6 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "profit_loss": profit_loss,
             "profit_loss_style": profit_loss_style,
         })
-    
-    print(m1_trade_records)
 
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
