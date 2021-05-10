@@ -26,6 +26,12 @@ def local_time_minute(t):
     format = '%H:%M'
     return localtz.strftime(format)
 
+def local_time_minute_second(t):
+    utc = t.replace(tzinfo=pytz.UTC)
+    localtz = utc.astimezone(timezone.get_current_timezone())
+    format = '%H:%M:%S'
+    return localtz.strftime(format)
+
 
 # hack to delay 1 minute
 
@@ -35,6 +41,9 @@ def local_time_minute_delay(t):
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
     minute = str(localtz.minute + 1)
+    if minute == "60":
+        minute = "00"
+        hour = str(localtz.hour + 1)
     if len(hour) < 2:
         hour = "0{}".format(hour)
     if len(minute) < 2:
@@ -52,6 +61,9 @@ def local_time_minute2(t):
     if minute % 2 == 1:
         minute -= 1
     minute = str(minute + 2)
+    if minute == "60":
+        minute = "00"
+        hour = str(localtz.hour + 1)
     if len(hour) < 2:
         hour = "0{}".format(hour)
     if len(minute) < 2:

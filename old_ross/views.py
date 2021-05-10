@@ -424,6 +424,30 @@ def analytics_date_symbol(request, date=None, symbol=None):
                 "color": config.SELL_COLOR,
             }
         })
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    trade_records = []
+    for day_trade in day_trades:
+        buy_price = day_trade["buy_price"]
+        sell_price = day_trade["sell_price"]
+        quantity = day_trade["quantity"]
+        gain = round((sell_price - buy_price) * quantity, 2)
+        profit_loss_style = "text-success"
+        profit_loss = "+${}".format(gain)
+        if gain < 0:
+            profit_loss = "-${}".format(abs(gain))
+            profit_loss_style = "text-danger"
+        trade_records.append({
+            "symbol": symbol,
+            "quantity": quantity,
+            "buy_price": "${}".format(buy_price),
+            "sell_price": "${}".format(sell_price),
+            "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
+            "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
+            "profit_loss": profit_loss,
+            "profit_loss_style": profit_loss_style,
+        })
+    
+    print(m1_trade_records)
 
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
@@ -433,4 +457,5 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "m1_trade_records": m1_trade_records,
         "m2_trade_records": m2_trade_records,
         "d1_candle_data": d1_candle_data,
+        "trade_records": trade_records,
     })
