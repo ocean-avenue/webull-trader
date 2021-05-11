@@ -710,6 +710,21 @@ def get_market_hourly_interval_index(t):
     return index
 
 
+def get_minute_candle_high_by_time_minute(candle_data, time):
+    # candle_data = {
+    #     "times": ...,
+    #     "candles": ...,
+    #     "volumes": ...,
+    #     ...
+    # }
+    idx = 0
+    for i in range(0, len(candle_data['times'])):
+        if candle_data['times'][i] == time:
+            idx = i
+            break
+    return candle_data['candles'][idx][3]
+
+
 # utils for render UI
 
 def get_account_type_for_render():

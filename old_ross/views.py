@@ -396,7 +396,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "name": "{}".format(buy_order.avg_price),
             "coord": [
                 utils.local_time_minute_delay(buy_order.filled_time),
-                buy_order.avg_price * 1.04
+                # use high price avoid block candle
+                utils.get_minute_candle_high_by_time_minute(m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
             ],
             "value": buy_order.avg_price,
             "itemStyle": {
@@ -408,7 +409,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "name": "{}".format(buy_order.avg_price),
             "coord": [
                 utils.local_time_minute2(buy_order.filled_time),
-                buy_order.avg_price * 1.04
+                # use high price avoid block candle
+                utils.get_minute_candle_high_by_time_minute(m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
             ],
             "value": buy_order.avg_price,
             "itemStyle": {
@@ -423,7 +425,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "name": "{}".format(sell_order.avg_price),
             "coord": [
                 utils.local_time_minute_delay(sell_order.filled_time),
-                sell_order.avg_price * 1.04
+                # use high price avoid block candle
+                utils.get_minute_candle_high_by_time_minute(m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
             ],
             "value": sell_order.avg_price,
             "itemStyle": {
@@ -435,7 +438,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "name": "{}".format(sell_order.avg_price),
             "coord": [
                 utils.local_time_minute2(sell_order.filled_time),
-                sell_order.avg_price * 1.04
+                # use high price avoid block candle
+                utils.get_minute_candle_high_by_time_minute(m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
             ],
             "value": sell_order.avg_price,
             "itemStyle": {
