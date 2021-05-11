@@ -231,7 +231,7 @@ def start():
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
-                    if quote == None:
+                    if quote == None or 'depth' not in quote:
                         return
                     ask_price = float(
                         quote['depth']['ntvAggAskList'][0]['price'])
