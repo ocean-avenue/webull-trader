@@ -214,9 +214,14 @@ def start():
             # remove from monitor
             del tracking_tickers[symbol]
             return
-        
-        # check if continues lose 3 times
-        # TODO
+
+        # check if 3 continues loss trades and still in blacklist time
+        if symbol in trading_stats and trading_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - trading_stats['symbol']['last_trade_time']) <= timedelta(seconds=BLACKLIST_TIMEOUT):
+            print("[{}] <{}>[{}] all last 3 trade loss, waiting for blacklist timeout, stop trading!".format(
+                utils.get_now(), symbol, ticker_id))
+            # remove from monitor
+            del tracking_tickers[symbol]
+            return
 
         if holding_quantity == 0:
             # fetch 1m bar charts
