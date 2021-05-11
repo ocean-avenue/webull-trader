@@ -6,7 +6,9 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import paper_daytrading, fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
+from scripts import paper_daytrading, paper_daytrading2, fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
+from old_ross.enums import AlgorithmType
+from old_ross.models import TradingSettings
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 
@@ -38,9 +40,19 @@ def paper_daytrading_job():
         print("[{}] {}, skip paper day trading job...".format(
             utils.get_now(), holiday))
         return
-    print("[{}] start paper day trading job...".format(utils.get_now()))
-    paper_daytrading.start()
-    print("[{}] done paper day trading job!".format(utils.get_now()))
+    print("[{}] Start paper day trading job...".format(utils.get_now()))
+    # load algo type
+    settings = TradingSettings.objects.first()
+    if settings == None:
+        print("[{}] Cannot find trading settings, quit!".format(utils.get_now()))
+        return
+    if settings.algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
+        # dynamic optimize
+        paper_daytrading2.start()
+    else:
+        # default
+        paper_daytrading.start()
+    print("[{}] Done paper day trading job!".format(utils.get_now()))
 
 
 def fetch_stats_data_job():
@@ -50,25 +62,25 @@ def fetch_stats_data_job():
             utils.get_now(), holiday))
         return
 
-    print("[{}] start fetch account job...".format(utils.get_now()))
+    print("[{}] Start fetch account job...".format(utils.get_now()))
     fetch_account.start()
-    print("[{}] done fetch account job!".format(utils.get_now()))
+    print("[{}] Done fetch account job!".format(utils.get_now()))
 
-    print("[{}] start fetch orders job...".format(utils.get_now()))
+    print("[{}] Start fetch orders job...".format(utils.get_now()))
     fetch_orders.start()
-    print("[{}] done fetch orders job!".format(utils.get_now()))
+    print("[{}] Done fetch orders job!".format(utils.get_now()))
 
-    print("[{}] start fetch news job...".format(utils.get_now()))
+    print("[{}] Start fetch news job...".format(utils.get_now()))
     fetch_news.start()
-    print("[{}] done fetch news job!".format(utils.get_now()))
+    print("[{}] Done fetch news job!".format(utils.get_now()))
 
-    print("[{}] start fetch hist data job...".format(utils.get_now()))
+    print("[{}] Start fetch hist data job...".format(utils.get_now()))
     fetch_histdata.start()
-    print("[{}] done fetch hist data job!".format(utils.get_now()))
+    print("[{}] Done fetch hist data job!".format(utils.get_now()))
 
-    print("[{}] start calculate hist data job...".format(utils.get_now()))
+    print("[{}] Start calculate hist data job...".format(utils.get_now()))
     calculate_histdata.start()
-    print("[{}] done calculate hist data job!".format(utils.get_now()))
+    print("[{}] Done calculate hist data job!".format(utils.get_now()))
 
 
 def add_weekday_jobs(job, job_name, hour, minute, second="00"):
