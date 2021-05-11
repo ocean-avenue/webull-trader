@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Paper Trading
-# Default - Trade as much as possible, mainly for collect data.
+# Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.
 
 
 def start():
@@ -75,6 +75,7 @@ def start():
     last_login_refresh_time = datetime.now()
 
     tracking_tickers = {}
+    trading_stats = {}
 
     def _check_buy_order_filled(ticker):
         symbol = ticker['symbol']
@@ -213,6 +214,9 @@ def start():
             # remove from monitor
             del tracking_tickers[symbol]
             return
+        
+        # check if continues lose 3 times
+        # TODO
 
         if holding_quantity == 0:
             # fetch 1m bar charts
@@ -270,7 +274,14 @@ def start():
                         # remove from monitor
                         del tracking_tickers[symbol]
                         return
-                    buy_quant = (int)(BUY_ORDER_LIMIT / ask_price)
+                    buy_position_amount = BUY_ORDER_LIMIT
+                    # check win rate
+                    if symbol in trading_stats:
+                        win_rate = float(
+                            trading_stats[symbol]['win_trades']) / trading_stats[symbol]['trades']
+                        buy_position_amount = max(
+                            BUY_ORDER_LIMIT * win_rate, BUY_ORDER_LIMIT * 0.3)
+                    buy_quant = (int)(buy_position_amount / ask_price)
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
                         ticker_id=ticker_id,
@@ -383,6 +394,23 @@ def start():
                     tracking_tickers[symbol]['pending_order_time'] = datetime.now(
                     )
                     tracking_tickers[symbol]['exit_note'] = exit_note
+                # update trading stats
+                if symbol in trading_stats:
+                    trading_stats[symbol] = {
+                        "trades": 0,
+                        "win_trades": 0,
+                        "lose_trades": 0,
+                        "continue_lose_trades": 0,
+                        "last_trade_time": None,
+                    }
+                trading_stats[symbol]['trades'] += 1
+                trading_stats[symbol]['last_trade_time'] = datetime.now()
+                if profit_loss_rate > 0:
+                    trading_stats[symbol]['win_trades'] += 1
+                    trading_stats[symbol]['continue_lose_trades'] = 0
+                else:
+                    trading_stats[symbol]['lose_trades'] += 1
+                    trading_stats[symbol]['continue_lose_trades'] += 1
 
     def _do_clear(ticker):
         symbol = ticker['symbol']
