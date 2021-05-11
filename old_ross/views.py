@@ -183,7 +183,7 @@ def analytics_date(request, date=None):
     # for hourly P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
         hourly_idx = utils.get_market_hourly_interval_index(
-            day_trade['buy_time'])
+            utils.local_datetime(day_trade['buy_time']))
         if 'sell_price' in day_trade:
             gain = (day_trade['sell_price'] -
                     day_trade['buy_price']) * day_trade['quantity']

@@ -20,6 +20,12 @@ def millify(n):
     return '{:.2f}{}'.format(n / 10**(3 * millidx), MILLNAMES[millidx])
 
 
+def local_datetime(t):
+    utc = t.replace(tzinfo=pytz.UTC)
+    localtz = utc.astimezone(timezone.get_current_timezone())
+    return localtz
+
+
 def local_time_minute(t):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
