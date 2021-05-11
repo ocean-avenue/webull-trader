@@ -222,109 +222,13 @@ def analytics_date(request, date=None):
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
     # for trade records group by symbol
-    trades_dist = {}
-    for trade in day_trades:
-        if "sell_price" in trade:
-            symbol = trade["symbol"]
-            gain = round(
-                (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
-            # build trades_dist
-            if symbol not in trades_dist:
-                trades_dist[symbol] = {
-                    "trades": 0,
-                    "win_trades": 0,
-                    "loss_trades": 0,
-                    "total_gain": 0,
-                    "total_loss": 0,
-                    "profit_loss": 0,
-                    "total_cost": 0,
-                }
-            trades_dist[symbol]["trades"] += 1
-            trades_dist[symbol]["profit_loss"] += gain
-            trades_dist[symbol]["total_cost"] += trade["buy_price"]
-            if gain > 0:
-                trades_dist[symbol]["win_trades"] += 1
-                trades_dist[symbol]["total_gain"] += gain
-            else:
-                trades_dist[symbol]["loss_trades"] += 1
-                trades_dist[symbol]["total_loss"] += gain
+    trades_dist = utils.get_trade_stat_dist_from_trades(day_trades)
     # trade records
     trade_records = []
     for symbol, trade in trades_dist.items():
-        key_statistics = HistoricalKeyStatistics.objects.filter(
-            symbol=symbol).filter(date=date).first()
-        mktcap = 0
-        short_float = None
-        float_shares = 0
-        turnover_rate = "0.0%"
-        relative_volume = 0
-        if key_statistics:
-            mktcap = utils.millify(key_statistics.market_value)
-            if key_statistics.short_float:
-                short_float = "{}%".format(key_statistics.short_float)
-            float_shares = utils.millify(key_statistics.outstanding_shares)
-            turnover_rate = "{}%".format(
-                round(key_statistics.turnover_rate * 100, 2))
-            relative_volume = round(
-                key_statistics.volume / key_statistics.avg_vol_3m, 2)
-        win_rate = "0.0%"
-        if trade["trades"] > 0:
-            win_rate = "{}%".format(
-                round(trade["win_trades"] / trade["trades"] * 100, 2))
-        avg_profit = 0.0
-        if trade["win_trades"] > 0:
-            avg_profit = trade["total_gain"] / trade["win_trades"]
-        avg_loss = 0.0
-        if trade["loss_trades"] > 0:
-            avg_loss = abs(trade["total_loss"] / trade["loss_trades"])
-        profit_loss_ratio = 1.0
-        if avg_loss > 0:
-            profit_loss_ratio = round(avg_profit/avg_loss, 2)
-        avg_price = "${}".format(
-            round(trade["total_cost"] / trade["trades"], 2))
-        profit_loss = "+${}".format(round(trade["profit_loss"], 2))
-        profit_loss_style = "text-success"
-        if trade["profit_loss"] < 0:
-            profit_loss = "-${}".format(abs(round(trade["profit_loss"], 2)))
-            profit_loss_style = "text-danger"
-        hist_daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
-        day_index = 0
-        for i in range(0, len(hist_daily_bars)):
-            if hist_daily_bars[i].date == key_statistics.date:
-                day_index = i
-                break
-        gap = "0.0%"
-        if day_index > 0:
-            gap_value = round((hist_daily_bars[day_index].open - hist_daily_bars[day_index -
-                                                                                 1].close) / hist_daily_bars[day_index - 1].close * 100, 2)
-            if gap_value > 0:
-                gap = "+{}%".format(gap_value)
-            else:
-                gap = "{}%".format(gap_value)
-        webull_news = WebullNews.objects.filter(
-            symbol=symbol).filter(date=date)
-        news_count = 0
-        for webull_new in webull_news:
-            news_time = webull_new.news_time.split('.')[0]
-            if datetime.strptime(news_time, "%Y-%m-%dT%H:%M:%S").date() == key_statistics.date:
-                news_count += 1
-        trade_records.append({
-            "symbol": symbol,
-            "trades": trade["trades"],
-            "profit_loss_value": round(trade["profit_loss"], 2),
-            "profit_loss": profit_loss,
-            "win_rate": win_rate,
-            "profit_loss_ratio": profit_loss_ratio,
-            "avg_price": avg_price,
-            "profit_loss_style": profit_loss_style,
-            "short_float": short_float,
-            "float_shares": float_shares,
-            "relative_volume": relative_volume,
-            "gap": gap,
-            "news": news_count,
-            "mktcap": mktcap,
-            "turnover_rate": turnover_rate,
-        })
+        trade_record_for_render = utils.get_trade_stat_record_for_render(
+            symbol, trade, date)
+        trade_records.append(trade_record_for_render)
     # sort trade records
     trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
 
@@ -485,6 +389,10 @@ def analytics_date_symbol(request, date=None, symbol=None):
                 "profit_loss": profit_loss,
                 "profit_loss_style": profit_loss_style,
             })
+    # stats
+    trades_dist = utils.get_trade_stat_dist_from_trades(day_trades)
+    trade_stats = utils.get_trade_stat_record_for_render(
+        symbol, trades_dist[symbol], date)
     # news
     webull_news = WebullNews.objects.filter(
         symbol=symbol).filter(date=date)
@@ -508,5 +416,6 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "m2_trade_records": m2_trade_records,
         "d1_candle_data": d1_candle_data,
         "trade_records": trade_records,
+        "trade_stats": trade_stats,
         "news": news,
     })

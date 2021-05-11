@@ -24,7 +24,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2 {{day_profit_loss.value_style}}">
+              <h3 class="mb-2 {{day_profit_loss.value_style|safe}}">
                 {{day_profit_loss.value|safe}}
               </h3>
               <p class="mb-2">P&L</p>
