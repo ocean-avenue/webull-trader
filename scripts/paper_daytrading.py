@@ -1,47 +1,74 @@
 # -*- coding: utf-8 -*-
 
-# paper trading
-
-
-MIN_SURGE_AMOUNT = 15000
-MIN_SURGE_VOL = 3000
-SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
-TRADE_TIMEOUT = 5  # trading timeout in minutes
-TRADE_INTERVAL = 120  # buy after sell interval in seconds
-PENDING_ORDER_TIMEOUT = 60  # pending order timeout in seconds
-HOLDING_ORDER_TIMEOUT = 1800  # holding order timeout in seconds
-REFRESH_LOGIN_INTERVAL = 10  # refresh login interval minutes
-BUY_AMOUNT = 1000
-MAX_GAP = 0.02
-PROFIT_RATE = 0.02
-LOSS_RATE = -0.01
+# Paper Trading
+# Default - Trade as much as possible, mainly for collect data.
 
 
 def start():
     import time
     from datetime import datetime, timedelta
     from old_ross.enums import SetupType
+    from old_ross.models import TradingSettings
     from sdk import webullsdk
     from scripts import utils
 
-    global MIN_SURGE_AMOUNT
-    global MIN_SURGE_VOL
-    global SURGE_MIN_CHANGE_PERCENTAGE
-    global TRADE_TIMEOUT
-    global TRADE_INTERVAL
-    global PENDING_ORDER_TIMEOUT
-    global HOLDING_ORDER_TIMEOUT
-    global REFRESH_LOGIN_INTERVAL
-    global BUY_AMOUNT
-    global MAX_GAP
-    global PROFIT_RATE
-    global LOSS_RATE
+    trading_settings = TradingSettings.objects.first()
+    if not trading_settings:
+        print("[{}] Cannot find trading settings, quit!".format(utils.get_now()))
+        return
 
     while not utils.is_market_hour():
         print("[{}] Waiting for market hour...".format(utils.get_now()))
         time.sleep(10)
 
     print("[{}] Trading started...".format(utils.get_now()))
+
+    # load settings
+    MIN_SURGE_AMOUNT = trading_settings.min_surge_amount
+    print("[{}] Min surge amount: {}".format(
+        utils.get_now(), MIN_SURGE_AMOUNT))
+    MIN_SURGE_VOL = trading_settings.min_surge_volume
+    print("[{}] Min surge volume: {}".format(
+        utils.get_now(), MIN_SURGE_VOL))
+    # at least 8% change for surge
+    MIN_SURGE_CHANGE_PERCENTAGE = trading_settings.min_surge_change_ratio
+    print("[{}] Min gap change: {}%".format(
+        utils.get_now(), round(MIN_SURGE_CHANGE_PERCENTAGE * 100, 2)))
+    BUY_ORDER_LIMIT = trading_settings.order_amount_limit
+    print("[{}] Buy order limit: {}".format(
+        utils.get_now(), BUY_ORDER_LIMIT))
+    # observe timeout in seconds
+    OBSERVE_TIMEOUT = trading_settings.observe_timeout_in_sec
+    print("[{}] Observe timeout: {} sec".format(
+        utils.get_now(), OBSERVE_TIMEOUT))
+    # buy after sell interval in seconds
+    TRADE_INTERVAL = trading_settings.trade_interval_in_sec
+    print("[{}] Trade interval: {} sec".format(
+        utils.get_now(), TRADE_INTERVAL))
+    # pending order timeout in seconds
+    PENDING_ORDER_TIMEOUT = trading_settings.pending_order_timeout_in_sec
+    print("[{}] Pending order timeout: {} sec".format(
+        utils.get_now(), PENDING_ORDER_TIMEOUT))
+    # holding order timeout in seconds
+    HOLDING_ORDER_TIMEOUT = trading_settings.holding_order_timeout_in_sec
+    print("[{}] Holding order timeout: {} sec".format(
+        utils.get_now(), HOLDING_ORDER_TIMEOUT))
+    # refresh login interval minutes
+    REFRESH_LOGIN_INTERVAL = trading_settings.refresh_login_interval_in_min
+    print("[{}] Refresh login timeout: {} min".format(
+        utils.get_now(), REFRESH_LOGIN_INTERVAL))
+    MAX_BID_ASK_GAP = trading_settings.max_bid_ask_gap_ratio
+    print("[{}] Max bid ask gap: {}%".format(
+        utils.get_now(), round(MAX_BID_ASK_GAP * 100, 2)))
+    TARGET_PROFIT_RATE = trading_settings.target_profit_ratio
+    print("[{}] Target profit rate: {}%".format(
+        utils.get_now(), round(TARGET_PROFIT_RATE * 100, 2)))
+    STOP_LOSS_RATE = trading_settings.stop_loss_ratio
+    print("[{}] Stop loss rate: {}%".format(
+        utils.get_now(), round(STOP_LOSS_RATE * 100, 2)))
+    BLACKLIST_TIMEOUT = trading_settings.blacklist_timeout_in_sec
+    print("[{}] Blacklist timeout: {} sec".format(
+        utils.get_now(), BLACKLIST_TIMEOUT))
 
     webullsdk.login(paper=True)
     print("[{}] Webull logged in".format(utils.get_now()))
@@ -179,8 +206,8 @@ def start():
             return
 
         holding_quantity = ticker['positions']
-        # check timeout, skip this ticker if no trade during last TRADE_TIMEOUT minutes
-        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(minutes=TRADE_TIMEOUT):
+        # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
+        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=OBSERVE_TIMEOUT):
             print("[{}] Trading <{}>[{}] session timeout!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
@@ -237,13 +264,13 @@ def start():
                     bid_price = float(
                         quote['depth']['ntvAggBidList'][0]['price'])
                     gap = (ask_price - bid_price) / bid_price
-                    if gap > MAX_GAP:
+                    if gap > MAX_BID_ASK_GAP:
                         print("[{}] <{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
                             utils.get_now(), symbol, ticker_id, ask_price, bid_price))
                         # remove from monitor
                         del tracking_tickers[symbol]
                         return
-                    buy_quant = (int)(BUY_AMOUNT / ask_price)
+                    buy_quant = (int)(BUY_ORDER_LIMIT / ask_price)
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
                         ticker_id=ticker_id,
@@ -292,8 +319,8 @@ def start():
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
             #     exit_trading = True
             exit_note = None
-            # stop loss for LOSS_RATE
-            if profit_loss_rate <= LOSS_RATE:
+            # stop loss for STOP_LOSS_RATE
+            if profit_loss_rate <= STOP_LOSS_RATE:
                 exit_note = "Stop loss {}%".format(
                     round(profit_loss_rate * 100, 2))
                 exit_trading = True
@@ -424,8 +451,8 @@ def start():
             # print("[{}] Scanning <{}>[{}]...".format(
             #     utils.get_now(), symbol, ticker_id))
             change_percentage = gainer["change_percentage"]
-            # check if change >= 8%
-            if change_percentage * 100 >= SURGE_MIN_CHANGE_PERCENTAGE:
+            # check gap change
+            if change_percentage >= MIN_SURGE_CHANGE_PERCENTAGE:
                 bars = utils.convert_2m_bars(
                     webullsdk.get_1m_bars(ticker_id, count=60))
                 if bars.empty:
