@@ -81,7 +81,7 @@ class AlgorithmType:
     @staticmethod
     def tostr(val):
         if val == AlgorithmType.DEFAULT:
-            return 'Default - Trade as much as possible, mainly for gather data.'
+            return 'Default - Trade as much as possible, mainly for collect data.'
         if val == AlgorithmType.DYNAMIC_OPTIMIZE:
             return 'Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.'
         return UNKNOWN
