@@ -72,3 +72,16 @@ class SetupType:
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '(Swing) 20 days new high'
         return UNKNOWN
+
+
+class AlgorithmType:
+    DEFAULT = 0
+    DYNAMIC_OPTIMIZE = 1
+
+    @staticmethod
+    def tostr(val):
+        if val == AlgorithmType.DEFAULT:
+            return 'Default - Trade as much as possible, mainly for gather data.'
+        if val == AlgorithmType.DYNAMIC_OPTIMIZE:
+            return 'Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.'
+        return UNKNOWN

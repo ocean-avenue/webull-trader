@@ -6,21 +6,44 @@ from old_ross import enums
 
 class TradingSettings(models.Model):
     paper = models.BooleanField(default=True)
+    ALGO_TYPE_CHOICES = (
+        (enums.AlgorithmType.DEFAULT, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.DEFAULT)),
+        (enums.AlgorithmType.DYNAMIC_OPTIMIZE, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.DYNAMIC_OPTIMIZE)),
+    )
+    algo_type = models.PositiveSmallIntegerField(
+        choices=ALGO_TYPE_CHOICES,
+        default=enums.AlgorithmType.DEFAULT
+    )
+    # position amount
     order_amount_limit = models.FloatField()
+    # surge amount = surge volume x price
     min_surge_amount = models.FloatField()
+    # min surge volume
     min_surge_volume = models.FloatField()
+    # min gap ratio
     min_surge_change_ratio = models.FloatField()
+    # trading observe timeout in seconds
     observe_timeout_in_sec = models.IntegerField()
+    # buy after sell interval in seconds
     trade_interval_in_sec = models.IntegerField()
+    # pending order timeout in seconds
     pending_order_timeout_in_sec = models.IntegerField()
+    # holding order timeout in seconds
     holding_order_timeout_in_sec = models.IntegerField()
+    # level 2, (ask - bid) / bid
     max_bid_ask_gap_ratio = models.FloatField()
     target_profit_ratio = models.FloatField()
     stop_loss_ratio = models.FloatField()
+    # refresh login interval minutes
     refresh_login_interval_in_min = models.IntegerField()
+    # trading blacklist timeout in seconds
+    blacklist_timeout_in_sec = models.IntegerField()
 
     def __str__(self):
-        return "Trading settings, paper: {}, order amount limit: {}".format(self.paper, self.order_amount_limit)
+        return "Trading settings, paper: {}, order amount limit: {}, algo: {}".format(
+            self.paper, self.order_amount_limit, enums.AlgorithmType.tostr(self.algo_type))
 
 
 class WebullCredentials(models.Model):

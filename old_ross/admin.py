@@ -8,18 +8,19 @@ from old_ross import models
 class TradingSettingsAdmin(admin.ModelAdmin):
     list_display = [
         'paper',
+        'algo_type',
         'order_amount_limit',
         'min_surge_amount',
         'min_surge_volume',
         'min_surge_change_ratio',
-        'observe_timeout_in_sec',
-        'trade_interval_in_sec',
-        'pending_order_timeout_in_sec',
-        'holding_order_timeout_in_sec',
-        'max_bid_ask_gap_ratio',
-        'target_profit_ratio',
-        'stop_loss_ratio',
-        'refresh_login_interval_in_min',
+        # 'observe_timeout_in_sec',
+        # 'trade_interval_in_sec',
+        # 'pending_order_timeout_in_sec',
+        # 'holding_order_timeout_in_sec',
+        # 'max_bid_ask_gap_ratio',
+        # 'target_profit_ratio',
+        # 'stop_loss_ratio',
+        # 'refresh_login_interval_in_min',
     ]
 
 

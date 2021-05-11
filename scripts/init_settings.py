@@ -2,8 +2,10 @@
 
 # init trading settings
 
+
 def start():
     from scripts import utils
+    from old_ross import enums
     from old_ross.models import TradingSettings
 
     trading_settings = TradingSettings.objects.first()
@@ -25,6 +27,8 @@ def start():
         target_profit_ratio=0.02,
         stop_loss_ratio=-0.01,
         refresh_login_interval_in_min=10,
+        blacklist_timeout_in_sec=1800,
+        algo_type=enums.AlgorithmType.DEFAULT,
     )
     trading_settings.save()
 
