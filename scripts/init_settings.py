@@ -16,8 +16,8 @@ def start():
     trading_settings = TradingSettings(
         paper=True,
         order_amount_limit=1000.0,
-        min_surge_amount=30000.0,
-        min_surge_volume=2000,
+        min_surge_amount=15000.0,
+        min_surge_volume=3000,
         min_surge_change_ratio=0.04,
         observe_timeout_in_sec=300,
         trade_interval_in_sec=120,

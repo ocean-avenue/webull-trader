@@ -5,8 +5,8 @@
 from old_ross.enums import SetupType
 
 
-MIN_SURGE_AMOUNT = 30000
-MIN_SURGE_VOL = 2000
+MIN_SURGE_AMOUNT = 15000
+MIN_SURGE_VOL = 3000
 SURGE_MIN_CHANGE_PERCENTAGE = 4  # at least 8% change for surge
 TRADE_TIMEOUT = 5  # trading timeout in minutes
 TRADE_INTERVAL = 120  # buy after sell interval in seconds
