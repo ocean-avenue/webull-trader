@@ -2,8 +2,6 @@
 
 # paper trading
 
-from old_ross.enums import SetupType
-
 
 MIN_SURGE_AMOUNT = 15000
 MIN_SURGE_VOL = 3000
@@ -22,6 +20,7 @@ LOSS_RATE = -0.01
 def start():
     import time
     from datetime import datetime, timedelta
+    from old_ross.enums import SetupType
     from sdk import webullsdk
     from scripts import utils
 
