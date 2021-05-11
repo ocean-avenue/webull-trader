@@ -450,36 +450,37 @@ def analytics_date_symbol(request, date=None, symbol=None):
     trade_records = []
     for day_trade in day_trades:
         buy_price = day_trade["buy_price"]
-        sell_price = day_trade["sell_price"]
-        quantity = day_trade["quantity"]
-        gain = round((sell_price - buy_price) * quantity, 2)
-        profit_loss_style = "text-success"
-        profit_loss = "+${}".format(gain)
-        if gain < 0:
-            profit_loss = "-${}".format(abs(gain))
-            profit_loss_style = "text-danger"
-        entries = []
-        buy_order_notes = WebullOrderNote.objects.filter(
-            order_id=day_trade["buy_order_id"])
-        for buy_order_note in buy_order_notes:
-            entries.append(SetupType.tostr(buy_order_note.setup))
-        notes = []
-        sell_order_notes = WebullOrderNote.objects.filter(
-            order_id=day_trade["sell_order_id"])
-        for sell_order_note in sell_order_notes:
-            notes.append(sell_order_note.note)
-        trade_records.append({
-            "symbol": symbol,
-            "quantity": quantity,
-            "buy_price": "${}".format(buy_price),
-            "sell_price": "${}".format(sell_price),
-            "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
-            "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
-            "entry": ", ".join(entries),
-            "notes": " ".join(notes),
-            "profit_loss": profit_loss,
-            "profit_loss_style": profit_loss_style,
-        })
+        if "sell_price" in day_trade:
+            sell_price = day_trade["sell_price"]
+            quantity = day_trade["quantity"]
+            gain = round((sell_price - buy_price) * quantity, 2)
+            profit_loss_style = "text-success"
+            profit_loss = "+${}".format(gain)
+            if gain < 0:
+                profit_loss = "-${}".format(abs(gain))
+                profit_loss_style = "text-danger"
+            entries = []
+            buy_order_notes = WebullOrderNote.objects.filter(
+                order_id=day_trade["buy_order_id"])
+            for buy_order_note in buy_order_notes:
+                entries.append(SetupType.tostr(buy_order_note.setup))
+            notes = []
+            sell_order_notes = WebullOrderNote.objects.filter(
+                order_id=day_trade["sell_order_id"])
+            for sell_order_note in sell_order_notes:
+                notes.append(sell_order_note.note)
+            trade_records.append({
+                "symbol": symbol,
+                "quantity": quantity,
+                "buy_price": "${}".format(buy_price),
+                "sell_price": "${}".format(sell_price),
+                "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
+                "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
+                "entry": ", ".join(entries),
+                "notes": " ".join(notes),
+                "profit_loss": profit_loss,
+                "profit_loss_style": profit_loss_style,
+            })
 
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
