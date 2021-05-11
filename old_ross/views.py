@@ -392,16 +392,24 @@ def analytics_date_symbol(request, date=None, symbol=None):
                                             filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY).filter(symbol=symbol)
     for buy_order in buy_orders:
         m1_trade_records.append({
-            "name": "+{}".format(buy_order.filled_quantity),
-            "coord": [utils.local_time_minute_delay(buy_order.filled_time), buy_order.avg_price],
+            # "name": "+{}".format(buy_order.filled_quantity),
+            "name": "{}".format(buy_order.avg_price),
+            "coord": [
+                utils.local_time_minute_delay(buy_order.filled_time),
+                buy_order.avg_price * 1.04
+            ],
             "value": buy_order.avg_price,
             "itemStyle": {
                 "color": config.BUY_COLOR,
             }
         })
         m2_trade_records.append({
-            "name": "+{}".format(buy_order.filled_quantity),
-            "coord": [utils.local_time_minute2(buy_order.filled_time), buy_order.avg_price],
+            # "name": "+{}".format(buy_order.filled_quantity),
+            "name": "{}".format(buy_order.avg_price),
+            "coord": [
+                utils.local_time_minute2(buy_order.filled_time),
+                buy_order.avg_price * 1.04
+            ],
             "value": buy_order.avg_price,
             "itemStyle": {
                 "color": config.BUY_COLOR,
@@ -411,16 +419,24 @@ def analytics_date_symbol(request, date=None, symbol=None):
                                              filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL).filter(symbol=symbol)
     for sell_order in sell_orders:
         m1_trade_records.append({
-            "name": "-{}".format(sell_order.filled_quantity),
-            "coord": [utils.local_time_minute_delay(sell_order.filled_time), sell_order.avg_price],
+            # "name": "-{}".format(sell_order.filled_quantity),
+            "name": "{}".format(sell_order.avg_price),
+            "coord": [
+                utils.local_time_minute_delay(sell_order.filled_time),
+                sell_order.avg_price * 1.04
+            ],
             "value": sell_order.avg_price,
             "itemStyle": {
                 "color": config.SELL_COLOR,
             }
         })
         m2_trade_records.append({
-            "name": "-{}".format(sell_order.filled_quantity),
-            "coord": [utils.local_time_minute2(sell_order.filled_time), sell_order.avg_price],
+            # "name": "-{}".format(sell_order.filled_quantity),
+            "name": "{}".format(sell_order.avg_price),
+            "coord": [
+                utils.local_time_minute2(sell_order.filled_time),
+                sell_order.avg_price * 1.04
+            ],
             "value": sell_order.avg_price,
             "itemStyle": {
                 "color": config.SELL_COLOR,

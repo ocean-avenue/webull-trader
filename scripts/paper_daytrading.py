@@ -295,7 +295,8 @@ def start():
             exit_note = None
             # stop loss for LOSS_RATE
             if profit_loss_rate <= LOSS_RATE:
-                exit_note = "Stop loss {}!".format(profit_loss_rate)
+                exit_note = "Stop loss {}%".format(
+                    round(profit_loss_rate * 100, 2))
                 exit_trading = True
 
             # check if holding too long
