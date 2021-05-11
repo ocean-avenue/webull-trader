@@ -257,6 +257,7 @@ def analytics_date(request, date=None):
         short_float = None
         float_shares = 0
         turnover_rate = "0.0%"
+        relative_volume = 0
         if key_statistics:
             mktcap = utils.millify(key_statistics.market_value)
             if key_statistics.short_float:
@@ -264,8 +265,8 @@ def analytics_date(request, date=None):
             float_shares = utils.millify(key_statistics.outstanding_shares)
             turnover_rate = "{}%".format(
                 round(key_statistics.turnover_rate * 100, 2))
-        relative_volume = round(
-            key_statistics.volume / key_statistics.avg_vol_3m, 2)
+            relative_volume = round(
+                key_statistics.volume / key_statistics.avg_vol_3m, 2)
         win_rate = "0.0%"
         if trade["trades"] > 0:
             win_rate = "{}%".format(

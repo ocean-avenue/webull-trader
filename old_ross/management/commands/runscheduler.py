@@ -62,6 +62,10 @@ def fetch_stats_data_job():
     fetch_news.start()
     print("[{}] done fetch news job!".format(utils.get_now()))
 
+    print("[{}] start fetch hist data job...".format(utils.get_now()))
+    fetch_histdata.start()
+    print("[{}] done fetch hist data job!".format(utils.get_now()))
+
     print("[{}] start calculate hist data job...".format(utils.get_now()))
     calculate_histdata.start()
     print("[{}] done calculate hist data job!".format(utils.get_now()))
