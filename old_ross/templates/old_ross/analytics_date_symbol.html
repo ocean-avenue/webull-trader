@@ -106,6 +106,36 @@
       </div>
     </div>
   </div>
+
+  <div class="card flex-fill">
+    <div class="card-header">
+      <h5 class="card-title mb-0">News</h5>
+    </div>
+    <table class="table table-striped my-0">
+      <thead>
+        <tr>
+          <th class="d-none d-xl-table-cell">Title</th>
+          <th class="d-none d-xl-table-cell">Summary</th>
+          <th class="d-none d-xl-table-cell">Source Name</th>
+          <th class="d-none d-xl-table-cell">Collect Source</th>
+          <th class="d-none d-xl-table-cell">News Time</th>
+          <th class="d-none d-xl-table-cell">News Url</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for news_record in news %}
+        <tr>
+          <td class="d-none d-xl-table-cell">{{news_record.title|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{news_record.summary|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{news_record.source_name|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{news_record.collect_source|safe}}</td>
+          <td class="d-none d-md-table-cell">{{news_record.news_time|safe}}</td>
+          <td class="d-none d-xl-table-cell"><a href="{{news_record.news_url|safe}}" target="_blank">Click</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
 {% endblock %}

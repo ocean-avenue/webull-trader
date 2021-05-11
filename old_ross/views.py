@@ -397,7 +397,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "coord": [
                 utils.local_time_minute_delay(buy_order.filled_time),
                 # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
+                utils.get_minute_candle_high_by_time_minute(
+                    m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
             ],
             "value": buy_order.avg_price,
             "itemStyle": {
@@ -410,7 +411,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "coord": [
                 utils.local_time_minute2(buy_order.filled_time),
                 # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
+                utils.get_minute_candle_high_by_time_minute(
+                    m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
             ],
             "value": buy_order.avg_price,
             "itemStyle": {
@@ -426,7 +428,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "coord": [
                 utils.local_time_minute_delay(sell_order.filled_time),
                 # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
+                utils.get_minute_candle_high_by_time_minute(
+                    m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
             ],
             "value": sell_order.avg_price,
             "itemStyle": {
@@ -439,7 +442,8 @@ def analytics_date_symbol(request, date=None, symbol=None):
             "coord": [
                 utils.local_time_minute2(sell_order.filled_time),
                 # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
+                utils.get_minute_candle_high_by_time_minute(
+                    m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
             ],
             "value": sell_order.avg_price,
             "itemStyle": {
@@ -481,6 +485,19 @@ def analytics_date_symbol(request, date=None, symbol=None):
                 "profit_loss": profit_loss,
                 "profit_loss_style": profit_loss_style,
             })
+    # news
+    webull_news = WebullNews.objects.filter(
+        symbol=symbol).filter(date=date)
+    news = []
+    for webull_new in webull_news:
+        news.append({
+            'title': webull_new.title,
+            'source_name': webull_new.source_name,
+            'collect_source': webull_new.collect_source,
+            'news_time': webull_new.news_time.split('.')[0].replace("T", " "),
+            'summary': webull_new.summary,
+            'news_url': webull_new.news_url,
+        })
 
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
@@ -491,4 +508,5 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "m2_trade_records": m2_trade_records,
         "d1_candle_data": d1_candle_data,
         "trade_records": trade_records,
+        "news": news,
     })
