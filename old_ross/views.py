@@ -305,7 +305,8 @@ def analytics_date(request, date=None):
             symbol=symbol).filter(date=date)
         news_count = 0
         for webull_new in webull_news:
-            if datetime.strptime(webull_new.news_time, "%Y-%m-%dT%H:%M:%S.000+0000").date() == key_statistics.date:
+            news_time = webull_new.news_time.split('.')[0]
+            if datetime.strptime(news_time, "%Y-%m-%dT%H:%M:%S").date() == key_statistics.date:
                 news_count += 1
         trade_records.append({
             "symbol": symbol,
