@@ -200,6 +200,32 @@ def convert_2m_bars(bars):
     return pd.DataFrame()
 
 
+def convert_5m_bars(bars):
+    if not bars.empty:
+        bars_5m = pd.DataFrame()
+        bars_5m_open = bars['open'].resample(
+            '5T', label="right", closed="right").apply(_open_resampler)
+        bars_5m_close = bars['close'].resample(
+            '5T', label="right", closed="right").apply(_close_resampler)
+        bars_5m_high = bars['high'].resample(
+            '5T', label="right", closed="right").apply(_high_resampler)
+        bars_5m_low = bars['low'].resample(
+            '5T', label="right", closed="right").apply(_low_resampler)
+        bars_5m_volume = bars['volume'].resample(
+            '5T', label="right", closed="right").apply(_volume_resampler)
+        bars_5m_vwap = bars['vwap'].resample(
+            '5T', label="right", closed="right").apply(_vwap_resampler)
+        bars_5m['open'] = bars_5m_open
+        bars_5m['close'] = bars_5m_close
+        bars_5m['high'] = bars_5m_high
+        bars_5m['low'] = bars_5m_low
+        bars_5m['volume'] = bars_5m_volume
+        bars_5m['vwap'] = bars_5m_vwap
+        # filter zero row
+        return bars_5m.loc[(bars_5m != 0).all(axis=1), :]
+    return pd.DataFrame()
+
+
 def check_bars_updated(bars):
     """
     check if have valid latest chart data, delay no more than 1 minute

@@ -301,6 +301,12 @@ def analytics_date_symbol(request, date=None, symbol=None):
     m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
     # load 2m data for render
     m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
+    # calculate 5m bars
+    m5_bars = utils.convert_5m_bars(m1_bars)
+    # calculate and fill ema 9 data
+    m5_bars['ema9'] = m5_bars['close'].ewm(span=9, adjust=False).mean()
+    # load 5m data for render
+    m5_candle_data = utils.get_minute_candle_data_for_render(m5_bars)
     # borrow minute bar for date
     analytics_date = minute_bars[0].date
     # calculate daily candle
@@ -458,6 +464,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "algo_type": algo_type,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
+        "m5_candle_data": m5_candle_data,
         "m1_trade_price_records": m1_trade_price_records,
         "m1_trade_quantity_records": m1_trade_quantity_records,
         "m2_trade_price_records": m2_trade_price_records,

@@ -361,6 +361,24 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
+          <h5 class="card-title mb-0">5 Minute Chart</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div
+              id="m5-candle-chart"
+              style="width: 100%; min-height: 400px"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
           <h5 class="card-title mb-0">Last 60 Day Chart</h5>
         </div>
         <div class="card-body d-flex w-100">
@@ -737,6 +755,142 @@
     m2_candle_chart.setOption(m2_candle_option);
   }
 
+  // 5 minute candle chart
+  const m5_candle_chart = echarts.init(document.getElementById("m5-candle-chart"));
+  const m5_candle_option = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross'
+      },
+    },
+    legend: {
+      data: ['5 Minute Candle', 'VWAP', 'EMA 9', 'Volume']
+    },
+    axisPointer: {
+      link: {xAxisIndex: 'all'},
+      label: {
+        backgroundColor: '#777'
+      }
+    },
+    grid: [
+      {
+        left: '3%',
+        right: '4%',
+        height: '60%'
+      },
+      {
+        left: '3%',
+        right: '4%',
+        top: '75%',
+        height: '20%'
+      }
+    ],
+    xAxis: [
+      {
+        type: 'category',
+        data: {{m5_candle_data.times|safe}},
+        scale: true,
+        boundaryGap: true,
+        axisLine: {onZero: false},
+        splitLine: {show: false},
+        splitNumber: 20,
+        min: 'dataMin',
+        max: 'dataMax',
+        axisPointer: {
+          z: 100
+        },
+      },
+      {
+        type: 'category',
+        gridIndex: 1,
+        data: {{m5_candle_data.times|safe}},
+        scale: true,
+        boundaryGap: true,
+        axisLine: {onZero: false},
+        axisTick: {show: false},
+        splitLine: {show: false},
+        axisLabel: {show: false},
+        splitNumber: 20,
+        min: 'dataMin',
+        max: 'dataMax'
+      },
+    ],
+    yAxis: [
+      {
+        scale: true,
+        splitArea: {
+          show: false
+        },
+        splitLine: {
+          show: false
+        },
+      },
+      {
+        scale: true,
+        gridIndex: 1,
+        splitNumber: 2,
+        axisLabel: {show: false},
+        axisLine: {show: false},
+        axisTick: {show: false},
+        splitLine: {show: false}
+      },
+    ],
+    dataZoom: [
+      {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+        start: 20,
+        end: 75
+      },
+    ],
+    series: [
+      {
+        name: '5 Minute Candle',
+        type: 'candlestick',
+        data: {{m5_candle_data.candles|safe}},
+        itemStyle: {
+          color: "#4bbf73",
+          color0: "#d9534f",
+          borderColor: null,
+          borderColor0: null,
+        },
+      },
+      {
+        name: 'VWAP',
+        type: 'line',
+        data: {{m5_candle_data.vwaps|safe}},
+        smooth: true,
+        showSymbol: false,
+        color: '#f5a623',
+        lineStyle: {
+          //opacity: 0.5,
+          width: 1,
+        }
+      },
+      {
+        name: 'EMA 9',
+        type: 'line',
+        data: {{m5_candle_data.ema9s|safe}},
+        smooth: true,
+        showSymbol: false,
+        color: '#55aaff',
+        lineStyle: {
+          //opacity: 0.5,
+          width: 1,
+        }
+      },
+      {
+        name: 'Volume',
+        type: 'bar',
+        xAxisIndex: 1,
+        yAxisIndex: 1,
+        data: {{m5_candle_data.volumes|safe}},
+      },
+    ]
+  };
+  m5_candle_chart.setOption(m5_candle_option);
+
   // daily candle chart
   const d1_candle_chart = echarts.init(document.getElementById("d1-candle-chart"));
   const d1_candle_option = {
@@ -853,6 +1007,7 @@
   window.onresize = function() {
     m1_candle_chart.resize();
     m2_candle_chart.resize();
+    m5_candle_chart.resize();
     d1_candle_chart.resize();
   };
 </script>
