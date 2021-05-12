@@ -45,7 +45,7 @@ $ python manage.py runscheduler
 1. Run server:
 
 ```
-$ uwsgi --ini server_uwsgi.ini --touch-reload /tmp/old-ross/deploy.ini --logto /tmp/old-ross/uwsgi.log
+$ uwsgi --ini uwsgi.ini --touch-reload /tmp/old-ross/deploy.ini --logto /tmp/old-ross/uwsgi.log
 ```
 
 2. Hot reload:
