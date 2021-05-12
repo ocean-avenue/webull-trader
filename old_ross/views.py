@@ -254,6 +254,9 @@ def analytics_date_symbol(request, date=None, symbol=None):
     minute_bars = get_list_or_404(
         HistoricalMinuteBar, date=date, symbol=symbol)
 
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
     timestamps = []
     # for load data frame
     m1_data_for_df = {
@@ -410,6 +413,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
     return render(request, 'old_ross/analytics_date_symbol.html', {
         "date": date,
         "symbol": symbol,
+        "account_type": account_type,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
         "m1_trade_records": m1_trade_records,
