@@ -5,6 +5,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = [
     "old-ross.paper.quanturtle.net",
+    "old-ross.paper2.quanturtle.net",
     "old-ross.quanturtle.net",
 ]
 
