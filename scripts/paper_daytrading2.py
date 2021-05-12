@@ -22,7 +22,7 @@ def start():
         time.sleep(10)
 
     print("[{}] Trading started...".format(utils.get_now()))
-
+    print("[{}] Algorithm type: Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.".format(utils.get_now()))
     # load settings
     MIN_SURGE_AMOUNT = trading_settings.min_surge_amount
     print("[{}] Min surge amount: {}".format(
