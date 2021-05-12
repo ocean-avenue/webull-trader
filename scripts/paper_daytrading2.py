@@ -400,7 +400,7 @@ def start():
                     )
                     tracking_tickers[symbol]['exit_note'] = exit_note
                 # update trading stats
-                if symbol in trading_stats:
+                if symbol not in trading_stats:
                     trading_stats[symbol] = {
                         "trades": 0,
                         "win_trades": 0,
