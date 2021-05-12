@@ -14,6 +14,9 @@ def index(request):
     # account type data
     account_type = utils.get_account_type_for_render()
 
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
     # account statistics data
     net_account_value = {
         "value": "$0.0",
@@ -84,6 +87,7 @@ def index(request):
 
     return render(request, 'old_ross/index.html', {
         "account_type": account_type,
+        "algo_type": algo_type,
         "net_account_value": net_account_value,
         "day_profit_loss": day_profit_loss,
         "net_assets": net_assets,
@@ -96,6 +100,9 @@ def analytics(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
 
     # calendar events
     profit_events = {
@@ -147,6 +154,7 @@ def analytics(request):
 
     return render(request, 'old_ross/analytics.html', {
         "account_type": account_type,
+        "algo_type": algo_type,
         "initial_date": today.strftime("%Y-%m-%d"),
         "profit_events": profit_events,
         "loss_events": loss_events,
@@ -159,6 +167,9 @@ def analytics_date(request, date=None):
 
     # account type data
     account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
 
     # day profit loss
     day_profit_loss = utils.get_day_profit_loss_for_render(acc_stat)
@@ -234,6 +245,7 @@ def analytics_date(request, date=None):
 
     return render(request, 'old_ross/analytics_date.html', {
         "account_type": account_type,
+        "algo_type": algo_type,
         "date": date,
         "day_profit_loss": day_profit_loss,
         "trades_count": daytrade_perf.trades,
@@ -256,6 +268,9 @@ def analytics_date_symbol(request, date=None, symbol=None):
 
     # account type data
     account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
 
     timestamps = []
     # for load data frame
@@ -440,6 +455,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "date": date,
         "symbol": symbol,
         "account_type": account_type,
+        "algo_type": algo_type,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
         "m1_trade_price_records": m1_trade_price_records,
@@ -457,6 +473,9 @@ def reports_hourly(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
 
     # only limit orders for day trades
     buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
@@ -509,6 +528,7 @@ def reports_hourly(request):
 
     return render(request, 'old_ross/reports_hourly.html', {
         "account_type": account_type,
+        "algo_type": algo_type,
         "hourly_labels": utils.get_market_hourly_interval_labels(),
         "hourly_profit_loss": hourly_profit_loss,
         "hourly_win_rate": hourly_win_rate,

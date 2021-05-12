@@ -761,6 +761,14 @@ def get_trade_stat_dist_from_trades(day_trades):
     return trades_dist
 
 
+def get_algo_type_description():
+    description = enums.AlgorithmType.tostr(enums.AlgorithmType.DEFAULT)
+    settings = TradingSettings.objects.first()
+    if settings:
+        description = enums.AlgorithmType.tostr(settings.algo_type)
+    return description
+
+
 # utils for render UI
 
 def get_account_type_for_render():
