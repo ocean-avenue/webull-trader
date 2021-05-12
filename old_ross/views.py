@@ -292,70 +292,96 @@ def analytics_date_symbol(request, date=None, symbol=None):
     d1_candle_data = utils.get_last_60d_daily_candle_data_for_render(
         symbol, analytics_date)
     # 1m trade records
-    m1_trade_records = []
+    m1_trade_price_records = []
+    m1_trade_quantity_records = []
     # 2m trade records
-    m2_trade_records = []
+    m2_trade_price_records = []
+    m2_trade_quantity_records = []
     buy_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
                                             filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY).filter(symbol=symbol)
     for buy_order in buy_orders:
-        m1_trade_records.append({
-            # "name": "+{}".format(buy_order.filled_quantity),
+        m1_coord = [
+            utils.local_time_minute_delay(buy_order.filled_time),
+            # use high price avoid block candle
+            utils.get_minute_candle_high_by_time_minute(
+                m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
+        ]
+        m1_trade_price_records.append({
             "name": "{}".format(buy_order.avg_price),
-            "coord": [
-                utils.local_time_minute_delay(buy_order.filled_time),
-                # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(
-                    m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
-            ],
+            "coord": m1_coord,
             "value": buy_order.avg_price,
-            "itemStyle": {
-                "color": config.BUY_COLOR,
-            }
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
         })
-        m2_trade_records.append({
-            # "name": "+{}".format(buy_order.filled_quantity),
-            "name": "{}".format(buy_order.avg_price),
-            "coord": [
-                utils.local_time_minute2(buy_order.filled_time),
-                # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(
-                    m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
-            ],
+        m1_trade_quantity_records.append({
+            "name": "+{}".format(buy_order.filled_quantity),
+            "coord": m1_coord,
             "value": buy_order.avg_price,
-            "itemStyle": {
-                "color": config.BUY_COLOR,
-            }
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
+        })
+        m2_coord = [
+            utils.local_time_minute2(buy_order.filled_time),
+            # use high price avoid block candle
+            utils.get_minute_candle_high_by_time_minute(
+                m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
+        ]
+        m2_trade_price_records.append({
+            "name": "{}".format(buy_order.avg_price),
+            "coord": m2_coord,
+            "value": buy_order.avg_price,
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
+        })
+        m2_trade_quantity_records.append({
+            "name": "+{}".format(buy_order.filled_quantity),
+            "coord": m2_coord,
+            "value": buy_order.avg_price,
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
         })
     sell_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
                                              filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL).filter(symbol=symbol)
     for sell_order in sell_orders:
-        m1_trade_records.append({
-            # "name": "-{}".format(sell_order.filled_quantity),
+        m1_coord = [
+            utils.local_time_minute_delay(sell_order.filled_time),
+            # use high price avoid block candle
+            utils.get_minute_candle_high_by_time_minute(
+                m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
+        ]
+        m1_trade_price_records.append({
             "name": "{}".format(sell_order.avg_price),
-            "coord": [
-                utils.local_time_minute_delay(sell_order.filled_time),
-                # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(
-                    m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
-            ],
+            "coord": m1_coord,
             "value": sell_order.avg_price,
-            "itemStyle": {
-                "color": config.SELL_COLOR,
-            }
+            "itemStyle": {"color": config.SELL_COLOR},
+            "label": {"fontSize": 10},
         })
-        m2_trade_records.append({
-            # "name": "-{}".format(sell_order.filled_quantity),
-            "name": "{}".format(sell_order.avg_price),
-            "coord": [
-                utils.local_time_minute2(sell_order.filled_time),
-                # use high price avoid block candle
-                utils.get_minute_candle_high_by_time_minute(
-                    m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
-            ],
+        m1_trade_quantity_records.append({
+            "name": "-{}".format(sell_order.filled_quantity),
+            "coord": m1_coord,
             "value": sell_order.avg_price,
-            "itemStyle": {
-                "color": config.SELL_COLOR,
-            }
+            "itemStyle": {"color": config.SELL_COLOR},
+            "label": {"fontSize": 10},
+        })
+        m2_coord = [
+            utils.local_time_minute2(sell_order.filled_time),
+            # use high price avoid block candle
+            utils.get_minute_candle_high_by_time_minute(
+                m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
+        ]
+        m2_trade_price_records.append({
+            "name": "{}".format(sell_order.avg_price),
+            "coord": m2_coord,
+            "value": sell_order.avg_price,
+            "itemStyle": {"color": config.SELL_COLOR},
+            "label": {"fontSize": 10},
+        })
+        m2_trade_quantity_records.append({
+            "name": "-{}".format(sell_order.filled_quantity),
+            "coord": m2_coord,
+            "value": sell_order.avg_price,
+            "itemStyle": {"color": config.SELL_COLOR},
+            "label": {"fontSize": 10},
         })
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     trade_records = []
@@ -416,8 +442,10 @@ def analytics_date_symbol(request, date=None, symbol=None):
         "account_type": account_type,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
-        "m1_trade_records": m1_trade_records,
-        "m2_trade_records": m2_trade_records,
+        "m1_trade_price_records": m1_trade_price_records,
+        "m1_trade_quantity_records": m1_trade_quantity_records,
+        "m2_trade_price_records": m2_trade_price_records,
+        "m2_trade_quantity_records": m2_trade_quantity_records,
         "d1_candle_data": d1_candle_data,
         "trade_records": trade_records,
         "trade_stats": trade_stats,

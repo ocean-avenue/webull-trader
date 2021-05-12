@@ -4,7 +4,6 @@
 
 {% load static %}
 
-
 {% block content %}
 
 <div class="container-fluid p-0">
@@ -16,9 +15,14 @@
     </div>
     <div class="col-auto d-none d-sm-block">
       <h3>
-        <a class="link-dark no-underline" href="{% url 'analytics' %}">Analytics</a> /
-        <a class="link-dark no-underline" href="/analytics/{{date|safe}}">{{date|safe}}</a> / 
-        {{symbol|safe}}
+        <a class="link-dark no-underline" href="{% url 'analytics' %}"
+          >Analytics</a
+        >
+        /
+        <a class="link-dark no-underline" href="/analytics/{{date|safe}}"
+          >{{date|safe}}</a
+        >
+        / {{symbol|safe}}
       </h3>
     </div>
   </div>
@@ -48,9 +52,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2 text-success">
-                {{trade_stats.top_gain|safe}}
-              </h3>
+              <h3 class="mb-2 text-success">{{trade_stats.top_gain|safe}}</h3>
               <p class="mb-2">Top Gain Trade</p>
             </div>
             <div class="d-inline-block ms-3">
@@ -67,9 +69,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2 text-danger">
-                {{trade_stats.top_loss|safe}}
-              </h3>
+              <h3 class="mb-2 text-danger">{{trade_stats.top_loss|safe}}</h3>
               <p class="mb-2">Top Loss Trade</p>
             </div>
             <div class="d-inline-block ms-3">
@@ -88,9 +88,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.trades|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.trades|safe}}</h3>
               <p class="mb-2">Trades</p>
             </div>
             <div class="d-inline-block ms-3">
@@ -107,9 +105,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.win_rate|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.win_rate|safe}}</h3>
               <p class="mb-2">Win Rate</p>
             </div>
             <div class="d-inline-block ms-3">
@@ -126,9 +122,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.profit_loss_ratio|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.profit_loss_ratio|safe}}</h3>
               <p class="mb-2">Profit/Loss Ratio</p>
             </div>
             <div class="d-inline-block ms-3">
@@ -148,9 +142,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.avg_price|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.avg_price|safe}}</h3>
               <p class="mb-2">Avg Price</p>
             </div>
           </div>
@@ -162,9 +154,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.mktcap|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.mktcap|safe}}</h3>
               <p class="mb-2">Market Cap</p>
             </div>
           </div>
@@ -176,9 +166,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.float_shares|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.float_shares|safe}}</h3>
               <p class="mb-2">Free Float</p>
             </div>
           </div>
@@ -190,9 +178,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.gap|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.gap|safe}}</h3>
               <p class="mb-2">Gap</p>
             </div>
           </div>
@@ -204,9 +190,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.turnover_rate|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.turnover_rate|safe}}</h3>
               <p class="mb-2">Turnover Rate</p>
             </div>
           </div>
@@ -218,9 +202,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.short_float|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.short_float|safe}}</h3>
               <p class="mb-2">Short Ratio</p>
             </div>
           </div>
@@ -232,9 +214,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.relative_volume|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.relative_volume|safe}}</h3>
               <p class="mb-2">Relative Volume</p>
             </div>
           </div>
@@ -246,9 +226,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">
-                {{trade_stats.news|safe}}
-              </h3>
+              <h3 class="mb-2">{{trade_stats.news|safe}}</h3>
               <p class="mb-2">News</p>
             </div>
           </div>
@@ -278,7 +256,9 @@
       <tbody>
         {% for trade in trade_records %}
         <tr>
-          <td><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></td>
+          <td>
+            <span class="badge badge-soft-dark">{{trade.symbol|safe}}</span>
+          </td>
           <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.entry|safe}}</td>
@@ -286,7 +266,9 @@
           <td class="d-none d-md-table-cell">{{trade.sell_time|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.notes|safe}}</td>
-          <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+          <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
+            {{trade.profit_loss|safe}}
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -297,12 +279,37 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
+          <div class="card-actions float-end">
+            <div class="dropdown show">
+              <a href="#" data-bs-toggle="dropdown" data-bs-display="static">
+                <i class="align-middle" data-feather="more-horizontal"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <button
+                  type="button"
+                  onclick="m1_candle_chart_marker_price()"
+                  class="dropdown-item"
+                >
+                  Marker Price
+                </button>
+                <button
+                  type="button"
+                  onclick="m1_candle_chart_marker_quantity()"
+                  class="dropdown-item"
+                >
+                  Marker Quantity
+                </button>
+              </div>
+            </div>
+          </div>
           <h5 class="card-title mb-0">1 Minute Chart</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="m1-candle-chart" style="width: 100%; min-height: 400px;">
-            </div>
+            <div
+              id="m1-candle-chart"
+              style="width: 100%; min-height: 400px"
+            ></div>
           </div>
         </div>
       </div>
@@ -313,12 +320,37 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
+          <div class="card-actions float-end">
+            <div class="dropdown show">
+              <a href="#" data-bs-toggle="dropdown" data-bs-display="static">
+                <i class="align-middle" data-feather="more-horizontal"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <button
+                  type="button"
+                  onclick="m2_candle_chart_marker_price()"
+                  class="dropdown-item"
+                >
+                  Marker Price
+                </button>
+                <button
+                  type="button"
+                  onclick="m2_candle_chart_marker_quantity()"
+                  class="dropdown-item"
+                >
+                  Marker Quantity
+                </button>
+              </div>
+            </div>
+          </div>
           <h5 class="card-title mb-0">2 Minute Chart</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="m2-candle-chart" style="width: 100%; min-height: 400px;">
-            </div>
+            <div
+              id="m2-candle-chart"
+              style="width: 100%; min-height: 400px"
+            ></div>
           </div>
         </div>
       </div>
@@ -333,8 +365,10 @@
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="d1-candle-chart" style="width: 100%; min-height: 400px;">
-            </div>
+            <div
+              id="d1-candle-chart"
+              style="width: 100%; min-height: 400px"
+            ></div>
           </div>
         </div>
       </div>
@@ -361,17 +395,22 @@
         <tr>
           <td class="d-none d-xl-table-cell">{{news_record.title|safe}}</td>
           <td class="d-none d-xl-table-cell">{{news_record.summary|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{news_record.source_name|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{news_record.collect_source|safe}}</td>
+          <td class="d-none d-xl-table-cell">
+            {{news_record.source_name|safe}}
+          </td>
+          <td class="d-none d-xl-table-cell">
+            {{news_record.collect_source|safe}}
+          </td>
           <td class="d-none d-md-table-cell">{{news_record.news_time|safe}}</td>
-          <td class="d-none d-xl-table-cell"><a href="{{news_record.news_url|safe}}" target="_blank">Click</a></td>
+          <td class="d-none d-xl-table-cell">
+            <a href="{{news_record.news_url|safe}}" target="_blank">Click</a>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-
 {% endblock %}
 
 {% block js %}
@@ -484,7 +523,7 @@
               }
             }
           },
-          data: {{ m1_trade_records|safe }},
+          data: {{ m1_trade_price_records|safe }},
           tooltip: {
             formatter: function (param) {
               return param.name + '<br>' + (param.data.coord || '');
@@ -526,6 +565,16 @@
     ]
   };
   m1_candle_chart.setOption(m1_candle_option);
+
+  function m1_candle_chart_marker_price() {
+    m1_candle_option['series'][0]['markPoint']['data'] = {{ m1_trade_price_records|safe }};
+    m1_candle_chart.setOption(m1_candle_option);
+  }
+
+  function m1_candle_chart_marker_quantity() {
+    m1_candle_option['series'][0]['markPoint']['data'] = {{ m1_trade_quantity_records|safe }};
+    m1_candle_chart.setOption(m1_candle_option);
+  }
 
   // 2 minute candle chart
   const m2_candle_chart = echarts.init(document.getElementById("m2-candle-chart"));
@@ -635,7 +684,7 @@
               }
             }
           },
-          data: {{ m2_trade_records|safe }},
+          data: {{ m2_trade_price_records|safe }},
           tooltip: {
             formatter: function (param) {
               return param.name + '<br>' + (param.data.coord || '');
@@ -677,6 +726,16 @@
     ]
   };
   m2_candle_chart.setOption(m2_candle_option);
+
+  function m2_candle_chart_marker_price() {
+    m2_candle_option['series'][0]['markPoint']['data'] = {{ m2_trade_price_records|safe }};
+    m2_candle_chart.setOption(m2_candle_option);
+  }
+
+  function m2_candle_chart_marker_quantity() {
+    m2_candle_option['series'][0]['markPoint']['data'] = {{ m2_trade_quantity_records|safe }};
+    m2_candle_chart.setOption(m2_candle_option);
+  }
 
   // daily candle chart
   const d1_candle_chart = echarts.init(document.getElementById("d1-candle-chart"));
