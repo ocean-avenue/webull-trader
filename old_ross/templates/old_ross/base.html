@@ -90,20 +90,31 @@
                 <span class="align-middle">Analytics</span>
               </a>
             </li>
+            {% if 'reports' in request.path %}
+            <li class="sidebar-item active">
+            {% else  %}
             <li class="sidebar-item">
+            {% endif %}
               <a
                 data-bs-target="#reports"
                 data-bs-toggle="collapse"
-                class="sidebar-link collapsed"
+                class="sidebar-link"
               >
                 <i class="align-middle" data-feather="pie-chart"></i>
                 <span class="align-middle">Reports</span>
               </a>
               <ul
                 id="reports"
-                class="sidebar-dropdown list-unstyled collapse"
+                class="sidebar-dropdown list-unstyled collapse show"
                 data-bs-parent="#sidebar"
               >
+                {% if request.path == '/reports/hourly' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Hourly</a>
+                </li>
                 <li class="sidebar-item">
                   <a class="sidebar-link" href="ui-buttons.html">Daily</a>
                 </li>
