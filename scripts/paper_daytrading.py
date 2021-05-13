@@ -7,8 +7,8 @@
 def start():
     import time
     from datetime import datetime, timedelta
-    from old_ross.enums import SetupType
-    from old_ross.models import TradingSettings
+    from webull_trader.enums import SetupType
+    from webull_trader.models import TradingSettings
     from sdk import webullsdk
     from scripts import utils
 

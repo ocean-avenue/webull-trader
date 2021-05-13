@@ -38,7 +38,7 @@
 #     return status
 
 def start():
-    from old_ross.models import WebullOrder
+    from webull_trader.models import WebullOrder
     from scripts import utils
 
     orders = WebullOrder.objects.all()

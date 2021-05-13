@@ -4,9 +4,9 @@ from server.settings.common import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "old-ross.paper.quanturtle.net",
-    "old-ross.paper2.quanturtle.net",
-    "old-ross.quanturtle.net",
+    "webull.paper.quanturtle.net",
+    "webull.paper2.quanturtle.net",
+    "webull.quanturtle.net",
 ]
 
 # Database

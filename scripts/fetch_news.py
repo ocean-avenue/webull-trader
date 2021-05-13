@@ -7,7 +7,7 @@ def start():
     from datetime import date
     from sdk import webullsdk
     from scripts import utils
-    from old_ross.models import WebullOrder
+    from webull_trader.models import WebullOrder
 
     paper = utils.check_paper()
     webullsdk.login(paper=paper)

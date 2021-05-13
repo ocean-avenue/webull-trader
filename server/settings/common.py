@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     # third party
     'django_apscheduler',
     # our app
-    'old_ross',
+    'webull_trader',
 ]
 
 MIDDLEWARE = [

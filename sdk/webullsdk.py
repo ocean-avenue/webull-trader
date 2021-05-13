@@ -5,7 +5,7 @@ from webull import webull, paper_webull
 import pandas as pd
 from scripts import utils
 from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
-from old_ross.models import WebullCredentials
+from webull_trader.models import WebullCredentials
 
 wb_instance = None
 

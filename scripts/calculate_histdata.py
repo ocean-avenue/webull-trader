@@ -5,8 +5,8 @@
 def start():
     from datetime import date
     from scripts import utils
-    from old_ross.models import WebullOrder, HistoricalDayTradePerformance
-    from old_ross.enums import OrderType, ActionType
+    from webull_trader.models import WebullOrder, HistoricalDayTradePerformance
+    from webull_trader.enums import OrderType, ActionType
 
     today = date.today()
     # day trade

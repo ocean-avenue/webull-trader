@@ -1,0 +1,229 @@
+{% extends 'webull_trader/base.html' %}
+
+{% block title %} Reports {% endblock %}
+
+{% load static %}
+
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Reports / Entry Price</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">P&L by Entry Price</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="price-profit-loss-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Win Rate by Entry Price</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="price-win-rate-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Profit/Loss Ratio by Entry Price</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="price-pl-ratio-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Trades by Entry Price</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="price-trades-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  // profit loss chart
+  const price_profit_loss_chart = echarts.init(document.getElementById("price-profit-loss-chart"));
+  const price_profit_loss_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{price_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [{
+      data: {{price_profit_loss|safe}},
+      type: 'bar',
+      areaStyle: {}
+    }]
+  };
+  price_profit_loss_chart.setOption(price_profit_loss_option);
+
+  // price win rate chart
+  const price_win_rate_chart = echarts.init(document.getElementById("price-win-rate-chart"));
+  const price_win_rate_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{price_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Win Rate",
+        data: {{price_win_rate|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  price_win_rate_chart.setOption(price_win_rate_option);
+
+  // price profit/loss ratio chart
+  const price_profit_loss_ratio_chart = echarts.init(document.getElementById("price-pl-ratio-chart"));
+  const price_profit_loss_ratio_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{price_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Profit/Loss Ratio",
+        data: {{price_profit_loss_ratio|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  price_profit_loss_ratio_chart.setOption(price_profit_loss_ratio_option);
+
+  // price trades chart
+  const price_trades_chart = echarts.init(document.getElementById("price-trades-chart"));
+  const price_trades_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{price_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Trades",
+        data: {{price_trades|safe}},
+        type: 'bar',
+        smooth: true,
+      }
+    ]
+  };
+  price_trades_chart.setOption(price_trades_option);
+
+  // resize charts
+  window.onresize = function() {
+    price_profit_loss_chart.resize();
+    price_win_rate_chart.resize();
+    price_profit_loss_ratio_chart.resize();
+    price_trades_chart.resize();
+  };
+</script>
+{% endblock %}

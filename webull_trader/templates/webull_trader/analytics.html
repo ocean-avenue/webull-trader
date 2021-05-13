@@ -1,0 +1,55 @@
+{% extends 'webull_trader/base.html' %}
+
+{% block title %} Analytics {% endblock %}
+
+{% load static %}
+
+{% block css %}
+<link
+  class="js-stylesheet"
+  href="{% static 'webull_trader/css/calendar.css' %}"
+  rel="stylesheet"
+/>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Analytics</h3>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div id="fullcalendar"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  var calendarEl = document.getElementById("fullcalendar");
+  var calendar = new FullCalendar.Calendar(calendarEl, {
+    themeSystem: "bootstrap",
+    initialView: "dayGridMonth",
+    initialDate: "{{initial_date|safe}}",
+    eventOrder: "allDay",
+    eventSources: [
+      {{profit_events|safe}},
+      {{loss_events|safe}},
+    ],
+    height: 650,
+  });
+  setTimeout(function () {
+    calendar.render();
+  }, 250);
+</script>
+{% endblock %}

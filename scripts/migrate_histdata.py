@@ -4,8 +4,8 @@
 
 def start():
     from scripts import utils
-    from old_ross.models import WebullOrder, WebullAccountStatistics, HistoricalDayTradePerformance
-    from old_ross.enums import OrderType, ActionType
+    from webull_trader.models import WebullOrder, WebullAccountStatistics, HistoricalDayTradePerformance
+    from webull_trader.enums import OrderType, ActionType
 
     acc_stat_list = WebullAccountStatistics.objects.all()
     for acc_stat in acc_stat_list:

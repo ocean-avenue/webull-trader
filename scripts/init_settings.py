@@ -5,8 +5,8 @@
 
 def start():
     from scripts import utils
-    from old_ross import enums
-    from old_ross.models import TradingSettings
+    from webull_trader import enums
+    from webull_trader.models import TradingSettings
 
     trading_settings = TradingSettings.objects.first()
     if trading_settings:

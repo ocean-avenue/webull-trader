@@ -5,9 +5,9 @@ import math
 from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, date
-from old_ross import enums
+from webull_trader import enums
 from scripts import config
-from old_ross.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
