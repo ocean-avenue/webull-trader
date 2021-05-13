@@ -1,0 +1,229 @@
+{% extends 'old_ross/base.html' %}
+
+{% block title %} Reports {% endblock %}
+
+{% load static %}
+
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Reports / Market Cap</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">P&L by Market Cap</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="mktcap-profit-loss-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Win Rate by Market Cap</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="mktcap-win-rate-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Profit/Loss Ratio by Market Cap</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="mktcap-pl-ratio-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Trades by Market Cap</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="mktcap-trades-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  // profit loss chart
+  const mktcap_profit_loss_chart = echarts.init(document.getElementById("mktcap-profit-loss-chart"));
+  const mktcap_profit_loss_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{mktcap_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [{
+      data: {{mktcap_profit_loss|safe}},
+      type: 'bar',
+      areaStyle: {}
+    }]
+  };
+  mktcap_profit_loss_chart.setOption(mktcap_profit_loss_option);
+
+  // market cap win rate chart
+  const mktcap_win_rate_chart = echarts.init(document.getElementById("mktcap-win-rate-chart"));
+  const mktcap_win_rate_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{mktcap_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Win Rate",
+        data: {{mktcap_win_rate|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  mktcap_win_rate_chart.setOption(mktcap_win_rate_option);
+
+  // mktcap profit/loss ratio chart
+  const mktcap_profit_loss_ratio_chart = echarts.init(document.getElementById("mktcap-pl-ratio-chart"));
+  const mktcap_profit_loss_ratio_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{mktcap_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Profit/Loss Ratio",
+        data: {{mktcap_profit_loss_ratio|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  mktcap_profit_loss_ratio_chart.setOption(mktcap_profit_loss_ratio_option);
+
+  // mktcap trades chart
+  const mktcap_trades_chart = echarts.init(document.getElementById("mktcap-trades-chart"));
+  const mktcap_trades_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{mktcap_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Trades",
+        data: {{mktcap_trades|safe}},
+        type: 'bar',
+        smooth: true,
+      }
+    ]
+  };
+  mktcap_trades_chart.setOption(mktcap_trades_option);
+
+  // resize charts
+  window.onresize = function() {
+    mktcap_profit_loss_chart.resize();
+    mktcap_win_rate_chart.resize();
+    mktcap_profit_loss_ratio_chart.resize();
+    mktcap_trades_chart.resize();
+  };
+</script>
+{% endblock %}

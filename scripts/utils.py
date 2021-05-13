@@ -672,6 +672,34 @@ def get_entry_price_range_index(p):
     return index
 
 
+def get_market_cap_range_labels():
+    return [
+        "0-50M (Nano Cap)",  # 0
+        "50M-300M (Micro Cap)",  # 1
+        "300M-2B (Small Cap)",  # 2
+        "2B-10B (Mid Cap)",  # 3
+        "10B-200B (Large Cap)",  # 4
+        "200B+ (Mega Cap)",  # 5
+    ]
+
+
+def get_market_cap_range_index(mktcap):
+    index = -1
+    if mktcap <= 50000000:
+        index = 0
+    elif mktcap <= 300000000:
+        index = 1
+    elif mktcap <= 2000000000:
+        index = 2
+    elif mktcap <= 10000000000:
+        index = 3
+    elif mktcap <= 200000000000:
+        index = 4
+    else:
+        index = 5
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0

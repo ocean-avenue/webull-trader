@@ -115,8 +115,12 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'reports_price' %}">Entry Price</a>
                 </li>
+                {% if request.path == '/reports/mktcap' %}
+                <li class="sidebar-item active">
+                {% else  %}
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Market Cap</a>
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'reports_mktcap' %}">Market Cap</a>
                 </li>
                 <li class="sidebar-item">
                   <a class="sidebar-link" href="{% url 'reports_hourly' %}">Free Float</a>
