@@ -1,6 +1,6 @@
-# old-ross
+# webull-trader
 
-Day & Swing trading system with Webull platform
+Day & Swing Trading System with Webull Platform
 
 ### Strategy:
 
