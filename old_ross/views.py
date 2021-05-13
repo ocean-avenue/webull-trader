@@ -228,7 +228,7 @@ def analytics_date(request, date=None):
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
         profit_loss_ratio = 0.0
-        if hourly_stat['trades'] > 0:
+        if hourly_stat['trades'] > 0 and avg_loss > 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
@@ -430,6 +430,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
             trade_records.append({
                 "symbol": symbol,
                 "quantity": quantity,
+                "total_cost": "${}".format(round(quantity * buy_price, 2)),
                 "buy_price": "${}".format(buy_price),
                 "sell_price": "${}".format(sell_price),
                 "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
