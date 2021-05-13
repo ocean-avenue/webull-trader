@@ -600,9 +600,9 @@ def get_trades_from_orders(buy_orders, sell_orders):
     return trades
 
 
-def get_market_hourly_interval_empty():
+def get_stats_empty_list(size=8):
     empty_list = []
-    for i in range(0, 32):
+    for i in range(0, size):
         empty_list.append({
             "trades": 0,
             "win_trades": 0,
@@ -612,6 +612,64 @@ def get_market_hourly_interval_empty():
             "profit_loss": 0.0,
         })
     return empty_list
+
+
+def get_entry_price_range_labels():
+    return [
+        "$0-$1",  # 0
+        "$1-$2",  # 1
+        "$2-$3",  # 2
+        "$3-$4",  # 3
+        "$4-$5",  # 4
+        "$5-$6",  # 5
+        "$6-$7",  # 6
+        "$7-$8",  # 7
+        "$8-$9",  # 8
+        "$9-$10",  # 9
+        "$10-$15",  # 10
+        "$15-$20",  # 11
+        "$20-$50",  # 12
+        "$50-$100",  # 13
+        "$100-$200",  # 14
+        "$200+",  # 15
+    ]
+
+
+def get_entry_price_range_index(p):
+    index = -1
+    if p <= 1:
+        index = 0
+    elif p <= 2:
+        index = 1
+    elif p <= 3:
+        index = 2
+    elif p <= 4:
+        index = 3
+    elif p <= 5:
+        index = 4
+    elif p <= 6:
+        index = 5
+    elif p <= 7:
+        index = 6
+    elif p <= 8:
+        index = 7
+    elif p <= 9:
+        index = 8
+    elif p <= 10:
+        index = 9
+    elif p <= 15:
+        index = 10
+    elif p <= 20:
+        index = 11
+    elif p <= 50:
+        index = 12
+    elif p <= 100:
+        index = 13
+    elif p <= 200:
+        index = 14
+    else:
+        index = 15
+    return index
 
 
 def get_market_hourly_interval_labels():

@@ -1,9 +1,9 @@
 import pandas as pd
-from datetime import datetime, date
+from datetime import date
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from scripts import utils, config
 from old_ross.enums import ActionType, OrderType, SetupType
-from old_ross.models import HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
+from old_ross.models import HistoricalDayTradePerformance, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
 
 # Create your views here.
 
@@ -190,7 +190,7 @@ def analytics_date(request, date=None):
                                              filled_time__day=acc_stat.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    hourly_statistics = utils.get_market_hourly_interval_empty()
+    hourly_statistics = utils.get_stats_empty_list(size=32)
     # for hourly P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
         hourly_idx = utils.get_market_hourly_interval_index(
@@ -228,7 +228,7 @@ def analytics_date(request, date=None):
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
         profit_loss_ratio = 0.0
-        if hourly_stat['trades'] > 0 and avg_loss > 0:
+        if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
@@ -477,6 +477,73 @@ def analytics_date_symbol(request, date=None, symbol=None):
     })
 
 
+def reports_price(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
+    # only limit orders for day trades
+    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.SELL)
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    price_statistics = utils.get_stats_empty_list(size=16)
+    # for price range P&L, win rate and profit/loss ratio, trades
+    for day_trade in day_trades:
+        price_idx = utils.get_entry_price_range_index(day_trade['buy_price'])
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                price_statistics[price_idx]['win_trades'] += 1
+                price_statistics[price_idx]['total_profit'] += gain
+            else:
+                price_statistics[price_idx]['loss_trades'] += 1
+                price_statistics[price_idx]['total_loss'] += gain
+            price_statistics[price_idx]['profit_loss'] += gain
+            price_statistics[price_idx]['trades'] += 1
+    price_profit_loss = []
+    price_win_rate = []
+    price_profit_loss_ratio = []
+    price_trades = []
+    # calculate win rate and profit/loss ratio
+    for price_stat in price_statistics:
+        price_trades.append(price_stat['trades'])
+        price_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(price_stat['profit_loss'], 2)))
+        if price_stat['trades'] > 0:
+            price_win_rate.append(
+                round(price_stat['win_trades']/price_stat['trades'] * 100, 2))
+        else:
+            price_win_rate.append(0.0)
+        avg_profit = 1.0
+        if price_stat['win_trades'] > 0:
+            avg_profit = price_stat['total_profit'] / \
+                price_stat['win_trades']
+        avg_loss = 1.0
+        if price_stat['loss_trades'] > 0:
+            avg_loss = price_stat['total_loss'] / price_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if price_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        price_profit_loss_ratio.append(profit_loss_ratio)
+
+    return render(request, 'old_ross/reports_price.html', {
+        "account_type": account_type,
+        "algo_type": algo_type,
+        "price_labels": utils.get_entry_price_range_labels(),
+        "price_profit_loss": price_profit_loss,
+        "price_win_rate": price_win_rate,
+        "price_profit_loss_ratio": price_profit_loss_ratio,
+        "price_trades": price_trades,
+    })
+
+
 def reports_hourly(request):
 
     # account type data
@@ -492,7 +559,7 @@ def reports_hourly(request):
         status="Filled").filter(action=ActionType.SELL)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    hourly_statistics = utils.get_market_hourly_interval_empty()
+    hourly_statistics = utils.get_stats_empty_list(size=32)
     # for hourly P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
         hourly_idx = utils.get_market_hourly_interval_index(
@@ -530,7 +597,7 @@ def reports_hourly(request):
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
         profit_loss_ratio = 0.0
-        if hourly_stat['trades'] > 0 and avg_loss > 0:
+        if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
