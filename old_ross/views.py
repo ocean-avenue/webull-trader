@@ -530,7 +530,7 @@ def reports_hourly(request):
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
         profit_loss_ratio = 0.0
-        if hourly_stat['trades'] > 0:
+        if hourly_stat['trades'] > 0 and avg_loss > 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
