@@ -1,12 +1,12 @@
 # old-ross
 
-Day trading system with Webull (only pre/after market)
+Day & Swing trading system with Webull platform
 
 ### Strategy:
 
-[Gap and Go](https://www.warriortrading.com/gap-go/)
+Day Trading [[Momentum](https://www.warriortrading.com/momentum-day-trading-strategy/)]
 
-[Bull Flag](https://www.warriortrading.com/bull-flag-trading/)
+Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
 
 ### Get Started:
 
@@ -45,11 +45,11 @@ $ python manage.py runscheduler
 1. Run server:
 
 ```
-$ uwsgi --ini uwsgi.ini --touch-reload /tmp/old-ross/deploy.ini --logto /tmp/old-ross/uwsgi.log
+$ uwsgi --ini uwsgi.ini --touch-reload /tmp/webull-trader/deploy.ini --logto /tmp/webull-trader/uwsgi.log
 ```
 
 2. Hot reload:
 
 ```
-$ touch /tmp/old-ross/deploy.ini
+$ touch /tmp/webull-trader/deploy.ini
 ```
