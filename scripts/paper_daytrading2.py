@@ -237,12 +237,12 @@ def start():
                 del tracking_tickers[symbol]
                 return
 
-            if not utils.check_bars_volatility(m1_bars):
-                print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
-                    utils.get_now(), symbol, ticker_id))
-                # remove from monitor
-                del tracking_tickers[symbol]
-                return
+            # if not utils.check_bars_volatility(m1_bars):
+            #     print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
+            #         utils.get_now(), symbol, ticker_id))
+            #     # remove from monitor
+            #     del tracking_tickers[symbol]
+            #     return
 
             # check if last sell time is too short compare current time
             if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
