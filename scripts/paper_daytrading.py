@@ -216,13 +216,20 @@ def start():
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            bars = utils.convert_2m_bars(
-                webullsdk.get_1m_bars(ticker_id, count=60))
+            m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+            bars = utils.convert_2m_bars(m1_bars)
             if bars.empty:
                 return
 
-            if not utils.check_bars_updated(bars):
-                print("[{}] <{}>[{}] charts is not updated, stop trading!".format(
+            if not utils.check_bars_updated(m1_bars):
+                print("[{}] <{}>[{}] Charts is not updated, stop trading!".format(
+                    utils.get_now(), symbol, ticker_id))
+                # remove from monitor
+                del tracking_tickers[symbol]
+                return
+
+            if not utils.check_bars_volatility(m1_bars):
+                print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
                     utils.get_now(), symbol, ticker_id))
                 # remove from monitor
                 del tracking_tickers[symbol]

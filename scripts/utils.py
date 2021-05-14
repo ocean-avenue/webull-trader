@@ -238,6 +238,18 @@ def check_bars_updated(bars):
     return False
 
 
+def check_bars_volatility(bars):
+    """
+    check if has bar's ohlc has different price, not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
+    """
+    volatility = True
+    for _, row in bars.iterrows():
+        if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
+            volatility = False
+            break
+    return volatility
+
+
 def check_bars_current_low_less_than_prev_low(bars):
     """
     check if current low price less than prev low price
