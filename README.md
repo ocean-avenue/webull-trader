@@ -19,7 +19,7 @@ $ pip install -r requirements.txt
 2. Initial settings:
 
 ```
-$ python manage.py shell < scripts/init_settings.py
+python manage.py shell < scripts/init_settings.py
 ```
 
 3. Create webull credentials object and write cred data:
@@ -31,13 +31,13 @@ $ python manage.py shell < scripts/init_settings.py
 4. Run server:
 
 ```
-$ python manage.py runserver
+python manage.py runserver
 ```
 
 5. Run scheduler:
 
 ```
-$ python manage.py runscheduler
+python manage.py runscheduler
 ```
 
 ### Deploy:
@@ -45,11 +45,11 @@ $ python manage.py runscheduler
 1. Run server:
 
 ```
-$ uwsgi --ini uwsgi.ini --touch-reload /tmp/webull-trader/deploy.ini --logto /tmp/webull-trader/uwsgi.log
+uwsgi --ini uwsgi.ini --touch-reload /tmp/webull-trader/deploy.ini --logto /tmp/webull-trader/uwsgi.log
 ```
 
 2. Hot reload:
 
 ```
-$ touch /tmp/webull-trader/deploy.ini
+touch /tmp/webull-trader/deploy.ini
 ```
