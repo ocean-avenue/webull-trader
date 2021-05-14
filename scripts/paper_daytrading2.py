@@ -237,25 +237,18 @@ def start():
                 del tracking_tickers[symbol]
                 return
 
-            # if not utils.check_bars_volatility(m1_bars):
-            #     print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
-            #         utils.get_now(), symbol, ticker_id))
-            #     # remove from monitor
-            #     del tracking_tickers[symbol]
-            #     return
+            if not utils.check_bars_volatility(m1_bars):
+                print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
+                    utils.get_now(), symbol, ticker_id))
+                # remove from monitor
+                del tracking_tickers[symbol]
+                return
 
             # check if last sell time is too short compare current time
             if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
                 print("[{}] Don't buy <{}>[{}] too quick after sold!".format(
                     utils.get_now(), symbol, ticker_id))
                 return
-
-            # if utils.check_bars_price_fixed(bars):
-            #     print("[{}] <{}>[{}] Price is fixed during last 3 candles...".format(
-            #         utils.get_now(), symbol, ticker_id))
-            #     # remove from monitor
-            #     del tracking_tickers[symbol]
-            #     return
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
