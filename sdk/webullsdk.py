@@ -10,6 +10,16 @@ from webull_trader.models import WebullCredentials
 wb_instance = None
 
 
+def _get_instance(paper=True):
+    global wb_instance
+    if wb_instance:
+        return wb_instance
+    if paper:
+        return paper_webull()
+    else:
+        return webull()
+
+
 def login(paper=True):
     global wb_instance
     if paper:
@@ -46,8 +56,8 @@ def login(paper=True):
 
 
 def logout():
-    global wb_instance
-    wb_instance.logout()
+    instance = _get_instance()
+    instance.logout()
 
 
 # {
@@ -103,20 +113,20 @@ def logout():
 # }
 
 def get_account():
-    global wb_instance
-    return wb_instance.get_account()
+    instance = _get_instance()
+    return instance.get_account()
 
 
 # {'totalMarketValue': '0.00', 'usableCash': '4876.63', 'dayProfitLoss': '-133.15'}
 
 def get_portfolio():
-    global wb_instance
-    return wb_instance.get_portfolio()
+    instance = _get_instance()
+    return instance.get_portfolio()
 
 
 def get_trade_token(password=''):
-    global wb_instance
-    return wb_instance.get_trade_token(password=password)
+    instance = _get_instance()
+    return instance.get_trade_token(password=password)
 
 # {
 #    "tickerId":925348770,
@@ -206,8 +216,8 @@ def get_trade_token(password=''):
 def get_quote(ticker_id=None):
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_quote(tId=ticker_id)
+        instance = _get_instance()
+        return instance.get_quote(tId=ticker_id)
     except Exception as e:
         print("[{}] ⚠️  Exception get_quote: {}".format(utils.get_now(), e))
         return None
@@ -216,8 +226,8 @@ def get_quote(ticker_id=None):
 def get_ticker(symbol=None):
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_ticker(stock=symbol)
+        instance = _get_instance()
+        return instance.get_ticker(stock=symbol)
     except Exception as e:
         print("[{}] ⚠️  Exception get_ticker: {}".format(utils.get_now(), e))
         return None
@@ -239,8 +249,8 @@ def get_ticker(symbol=None):
 def get_1m_bars(ticker_id=None, count=20, timestamp=None):
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
+        instance = _get_instance()
+        return instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
     except Exception as e:
         print("[{}] ⚠️  Exception get_1m_bars: {}".format(utils.get_now(), e))
         return pd.DataFrame()
@@ -249,8 +259,8 @@ def get_1m_bars(ticker_id=None, count=20, timestamp=None):
 def get_1d_bars(ticker_id=None, count=20):
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_bars(tId=ticker_id, interval='d1', count=count, extendTrading=1)
+        instance = _get_instance()
+        return instance.get_bars(tId=ticker_id, interval='d1', count=count, extendTrading=1)
     except Exception as e:
         print("[{}] ⚠️  Exception get_1d_bars: {}".format(utils.get_now(), e))
         return pd.DataFrame()
@@ -262,8 +272,8 @@ def get_1d_bars(ticker_id=None, count=20):
 
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):
-    global wb_instance
-    return wb_instance.place_order(
+    instance = _get_instance()
+    return instance.place_order(
         tId=ticker_id,
         price=price,
         action='BUY',
@@ -273,8 +283,8 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
 
 
 def sell_limit_order(ticker_id=None, price=0, quant=0):
-    global wb_instance
-    return wb_instance.place_order(
+    instance = _get_instance()
+    return instance.place_order(
         tId=ticker_id,
         price=price,
         action='SELL',
@@ -284,13 +294,13 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
 
 
 def cancel_order(order_id):
-    global wb_instance
-    return wb_instance.cancel_order(order_id)
+    instance = _get_instance()
+    return instance.cancel_order(order_id)
 
 
 def cancel_all_orders():
-    global wb_instance
-    wb_instance.cancel_all_orders()
+    instance = _get_instance()
+    instance.cancel_all_orders()
 
 
 # [
@@ -335,8 +345,8 @@ def cancel_all_orders():
 def get_positions():
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_positions()
+        instance = _get_instance()
+        return instance.get_positions()
     except Exception as e:
         print("[{}] ⚠️  Exception get_positions: {}".format(utils.get_now(), e))
         return None
@@ -345,8 +355,8 @@ def get_positions():
 def get_current_orders():
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_current_orders()
+        instance = _get_instance()
+        return instance.get_current_orders()
     except Exception as e:
         print("[{}] ⚠️  Exception get_current_orders: {}".format(
             utils.get_now(), e))
@@ -578,8 +588,8 @@ def get_current_orders():
 def get_history_orders(status='All', count=1000):
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_history_orders(status=status, count=count)
+        instance = _get_instance()
+        return instance.get_history_orders(status=status, count=count)
     except Exception as e:
         print("[{}] ⚠️  Exception get_history_orders: {}".format(
             utils.get_now(), e))
@@ -609,8 +619,8 @@ def get_news(stock=None, items=5):
     '''
     time.sleep(1)
     try:
-        global wb_instance
-        return wb_instance.get_news(stock=stock, Id=0, items=items)
+        instance = _get_instance()
+        return instance.get_news(stock=stock, Id=0, items=items)
     except Exception as e:
         print("[{}] ⚠️  Exception get_news: {}".format(
             utils.get_now(), e))
