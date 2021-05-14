@@ -98,14 +98,22 @@
               <a
                 data-bs-target="#reports"
                 data-bs-toggle="collapse"
+                {% if 'reports' in request.path %}
                 class="sidebar-link"
+                {% else  %}
+                class="sidebar-link collapsed"
+                {% endif %}
               >
                 <i class="align-middle" data-feather="pie-chart"></i>
                 <span class="align-middle">Reports</span>
               </a>
               <ul
                 id="reports"
+                {% if 'reports' in request.path %}
                 class="sidebar-dropdown list-unstyled collapse show"
+                {% else  %}
+                class="sidebar-dropdown list-unstyled collapse"
+                {% endif %}
                 data-bs-parent="#sidebar"
               >
                 {% if request.path == '/reports/price' %}
@@ -159,6 +167,12 @@
               <a class="sidebar-link" href="/admin" target="_blank">
                 <i class="align-middle" data-feather="key"></i>
                 <span class="align-middle">Admin</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="https://app.webull.com/account" target="_blank">
+                <i class="align-middle" data-feather="external-link"></i>
+                <span class="align-middle">Webull</span>
               </a>
             </li>
           </ul>
