@@ -31,7 +31,7 @@ def login(paper=True):
     if not credentials:
         print("[{}] Can not load webull credentials, login failed!".format(
             utils.get_now()))
-        return
+        return False
 
     credentials_data = json.loads(credentials.cred)
 
@@ -51,13 +51,16 @@ def login(paper=True):
         utils.save_webull_credentials(json.dumps(credentials_data), paper)
     except Exception as e:
         print("[{}] ⚠️  Exception refresh_login: {}".format(utils.get_now(), e))
+        return False
 
     wb_instance.get_account_id()
+    return True
 
 
 def logout():
     instance = _get_instance()
     instance.logout()
+    return True
 
 
 # {

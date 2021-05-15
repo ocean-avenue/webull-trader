@@ -6,7 +6,8 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import paper_daytrading, paper_daytrading2, fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
+from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
+from trading import daytrading_default, daytrading_optimize
 from webull_trader.enums import AlgorithmType
 from webull_trader.models import TradingSettings
 
@@ -34,13 +35,13 @@ def _check_market_holiday():
     return holiday
 
 
-def paper_daytrading_job():
+def day_trading_job():
     holiday = _check_market_holiday()
     if holiday != None:
-        print("[{}] {}, skip paper day trading job...".format(
+        print("[{}] {}, skip day trading job...".format(
             utils.get_now(), holiday))
         return
-    print("[{}] Start paper day trading job...".format(utils.get_now()))
+    print("[{}] Start day trading job...".format(utils.get_now()))
     # load algo type
     settings = TradingSettings.objects.first()
     if settings == None:
@@ -48,11 +49,12 @@ def paper_daytrading_job():
         return
     if settings.algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
         # dynamic optimize
-        paper_daytrading2.start()
+        daytrading_optimize.start()
+        pass
     else:
         # default
-        paper_daytrading.start()
-    print("[{}] Done paper day trading job!".format(utils.get_now()))
+        daytrading_default.start()
+    print("[{}] Done day trading job!".format(utils.get_now()))
 
 
 def fetch_stats_data_job():
@@ -101,32 +103,26 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        paper = utils.check_paper()
+        # pre-market day trading jobs
+        add_weekday_jobs(
+            job=day_trading_job,
+            job_name="day_trading_job_bmo",
+            hour="04",
+            minute="00")
 
-        if paper:
-            # pre-market paper trading jobs
-            add_weekday_jobs(
-                job=paper_daytrading_job,
-                job_name="paper_daytrading_job_premarket",
-                hour="04",
-                minute="00")
+        # regular hour day trading jobs
+        add_weekday_jobs(
+            job=day_trading_job,
+            job_name="day_trading_job",
+            hour="09",
+            minute="30")
 
-            # regular hour paper trading jobs
-            add_weekday_jobs(
-                job=paper_daytrading_job,
-                job_name="paper_daytrading_job",
-                hour="09",
-                minute="30")
-
-            # post-market paper trading jobs
-            add_weekday_jobs(
-                job=paper_daytrading_job,
-                job_name="paper_daytrading_job_postmarket",
-                hour="16",
-                minute="00")
-        else:
-            # TODO, live trading jobs
-            pass
+        # post-market day trading jobs
+        add_weekday_jobs(
+            job=day_trading_job,
+            job_name="day_trading_job_amc",
+            hour="16",
+            minute="00")
 
         # fetch stats data after trading
         add_weekday_jobs(

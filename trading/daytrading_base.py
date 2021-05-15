@@ -20,8 +20,6 @@ class DayTradingBase:
 
         trading_settings = TradingSettings.objects.first()
         if not trading_settings:
-            print("[{}] Cannot find trading settings, quit!".format(
-                utils.get_now()))
             return False
 
         self.min_surge_amount = trading_settings.min_surge_amount
@@ -189,14 +187,10 @@ class DayTradingBase:
                         utils.get_now(), symbol, ticker_id))
 
     def get_buy_order_limit(self, symbol):
-        buy_position_amount = self.order_amount_limit
-        # check win rate
-        if symbol in self.trading_stats:
-            win_rate = float(
-                self.trading_stats[symbol]['win_trades']) / self.trading_stats[symbol]['trades']
-            buy_position_amount = max(
-                self.order_amount_limit * win_rate, self.order_amount_limit * 0.3)
-        return buy_position_amount
+        return self.order_amount_limit
+
+    def check_continue_3loss(self, symbol):
+        return False
 
     def trade(self, ticker):
 
@@ -221,7 +215,7 @@ class DayTradingBase:
             return
 
         # check if 3 continues loss trades and still in blacklist time
-        if symbol in self.trading_stats and self.trading_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=self.blacklist_timeout_in_sec):
+        if self.check_continue_3loss(symbol=symbol):
             print("[{}] <{}>[{}] all last 3 trade loss, waiting for blacklist timeout, stop trading!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
@@ -478,7 +472,7 @@ class DayTradingBase:
 
     def start(self):
 
-        if self.load_settings():
+        if not self.load_settings():
             print("[{}] Cannot find trading settings, quit!".format(
                 utils.get_now()))
             return
@@ -493,7 +487,10 @@ class DayTradingBase:
             time.sleep(10)
 
         # login
-        webullsdk.login(paper=self.paper)
+        if not webullsdk.login(paper=self.paper):
+            print("[{}] Webull login failed, quit!".format(
+                utils.get_now()))
+            return
         print("[{}] Webull logged in".format(utils.get_now()))
         last_login_refresh_time = datetime.now()
 
