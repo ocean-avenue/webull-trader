@@ -298,6 +298,8 @@ def start():
                         tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
                         tracking_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
+                        # set stop loss at prev low
+                        tracking_tickers[symbol]['stop_loss'] = prev_low
         else:
             positions = webullsdk.get_positions()
             if positions == None:
@@ -329,9 +331,19 @@ def start():
             #     exit_trading = True
             exit_note = None
             # stop loss for STOP_LOSS_RATE
-            if profit_loss_rate <= STOP_LOSS_RATE:
-                exit_note = "Stop loss {}%".format(
-                    round(profit_loss_rate * 100, 2))
+            # if profit_loss_rate <= STOP_LOSS_RATE:
+            #     exit_note = "Stop loss {}%".format(
+            #         round(profit_loss_rate * 100, 2))
+            #     exit_trading = True
+
+            # cancel stop loss if hit 1% profit
+            if profit_loss_rate >= 0.01:
+                tracking_tickers[symbol]['stop_loss'] = None
+
+            # stop loss
+            if ticker['stop_loss'] and ticker_position['lastPrice'] < ticker['stop_loss']:
+                exit_note = "Stop loss at {}!".format(
+                    ticker_position['lastPrice'])
                 exit_trading = True
 
             # check if holding too long
@@ -484,6 +496,7 @@ def start():
                             "last_sell_time": None,
                             "positions": 0,
                             "start_time": datetime.now(),
+                            "stop_loss": None,
                             # paper trade do not have stop trailing order, this value keep track of max P&L
                             "max_profit_loss_rate": 0,
                             "exit_note": None,
