@@ -245,10 +245,10 @@ def start():
             #     return
 
             # check if last sell time is too short compare current time
-            if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
-                print("[{}] Don't buy <{}>[{}] too quick after sold!".format(
-                    utils.get_now(), symbol, ticker_id))
-                return
+            # if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
+            #     print("[{}] Don't buy <{}>[{}] too quick after sold!".format(
+            #         utils.get_now(), symbol, ticker_id))
+            #     return
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
@@ -257,12 +257,14 @@ def start():
 
             # current price data
             current_low = current_candle['low']
+            prev_low = prev_candle['low']
+            current_close = current_candle['close']
             current_vwap = current_candle['vwap']
             current_ema9 = current_candle['ema9']
             current_volume = int(current_candle['volume'])
 
-            # check low price above vwap and ema 9
-            if current_low > current_vwap and current_low > current_ema9:
+            # check current price above vwap and ema 9, current low above prev low
+            if current_close > current_vwap and current_close > current_ema9 and current_low > prev_low:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -292,8 +294,8 @@ def start():
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    print("[{}] Trading <{}>[{}], low: {}, vwap: {}, ema9: {}, volume: {}".format(
-                        utils.get_now(), symbol, ticker_id, current_low, current_vwap, round(current_ema9, 3), current_volume))
+                    print("[{}] Trading <{}>[{}], price: {}, vwap: {}, ema9: {}, volume: {}".format(
+                        utils.get_now(), symbol, ticker_id, current_close, current_vwap, round(current_ema9, 3), current_volume))
                     print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                     if 'msg' in order_response:
