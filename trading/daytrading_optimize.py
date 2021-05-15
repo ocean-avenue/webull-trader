@@ -36,6 +36,10 @@ def start():
 
     paper = utils.check_paper()
     daytrading = DayTradingOptimize(paper=paper)
+    if paper:
+        print("[{}] Start PAPER day trading...".format(utils.get_now()))
+    else:
+        print("[{}] Start LIVE day trading...".format(utils.get_now()))
     daytrading.start()
 
 

@@ -43,11 +43,8 @@ def day_trading_job():
         return
     print("[{}] Start day trading job...".format(utils.get_now()))
     # load algo type
-    settings = TradingSettings.objects.first()
-    if settings == None:
-        print("[{}] Cannot find trading settings, quit!".format(utils.get_now()))
-        return
-    if settings.algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
+    algo_type = utils.get_algo_type()
+    if algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
         # dynamic optimize
         daytrading_optimize.start()
         pass

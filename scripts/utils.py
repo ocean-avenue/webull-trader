@@ -334,12 +334,20 @@ def get_time_in_force_enum(time_in_force_str):
 
 
 def check_paper():
-    trading_settings = TradingSettings.objects.first()
-    if not trading_settings:
+    settings = TradingSettings.objects.first()
+    if not settings:
         print(
             "[{}] Cannot find trading settings, default paper trading!".format(get_now()))
         return False
-    return trading_settings.paper
+    return settings.paper
+
+
+def get_algo_type():
+    settings = TradingSettings.objects.first()
+    if settings == None:
+        print("[{}] Cannot find trading settings, default algo type!".format(get_now()))
+        return enums.AlgorithmType.DEFAULT
+    return settings.algo_type
 
 
 def load_webull_credentials(cred_data, paper=True):
