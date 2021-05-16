@@ -805,6 +805,37 @@ def get_turnover_ratio_range_index(turnover):
     return index
 
 
+def get_short_float_range_labels():
+    return [
+        "0-5%",  # 0
+        "5-10%",  # 1
+        "10-15%",  # 2
+        "15-20%",  # 3
+        "20-25%",  # 4
+        "25-30%",  # 5
+        "30%+",  # 6
+    ]
+
+
+def get_short_float_range_index(short_float):
+    index = -1
+    if short_float <= 5:
+        index = 0
+    elif short_float <= 10:
+        index = 1
+    elif short_float <= 15:
+        index = 2
+    elif short_float <= 20:
+        index = 3
+    elif short_float <= 25:
+        index = 4
+    elif short_float <= 30:
+        index = 5
+    else:
+        index = 6
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0

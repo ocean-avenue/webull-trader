@@ -654,6 +654,40 @@ def reports_turnover(request):
 
 
 @login_required
+def reports_short(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
+    # only limit orders for day trades
+    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.SELL)
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    stat_render = utils.get_value_stat_from_trades_for_render(
+        day_trades,
+        "short_float",
+        utils.get_short_float_range_index,
+        utils.get_short_float_range_labels())
+
+    return render(request, 'webull_trader/reports_field.html', {
+        "account_type": account_type,
+        "algo_type": algo_type,
+        "title": "Short Ratio",
+        "labels": utils.get_short_float_range_labels(),
+        "profit_loss": stat_render['profit_loss'],
+        "win_rate": stat_render['win_rate'],
+        "profit_loss_ratio": stat_render['profit_loss_ratio'],
+        "trades": stat_render['trades'],
+    })
+
+
+@login_required
 def reports_hourly(request):
 
     # account type data
