@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import date
 from django.shortcuts import get_list_or_404, get_object_or_404, render
+from django.contrib.auth.decorators import login_required
 from scripts import utils, config
 from webull_trader.enums import ActionType, OrderType, SetupType
 from webull_trader.models import HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
@@ -8,6 +9,7 @@ from webull_trader.models import HistoricalDayTradePerformance, HistoricalKeySta
 # Create your views here.
 
 
+@login_required
 def index(request):
     today = date.today()
 
@@ -95,6 +97,7 @@ def index(request):
     })
 
 
+@login_required
 def analytics(request):
     today = date.today()
 
@@ -161,6 +164,7 @@ def analytics(request):
     })
 
 
+@login_required
 def analytics_date(request, date=None):
     daytrade_perf = get_object_or_404(HistoricalDayTradePerformance, date=date)
     acc_stat = get_object_or_404(WebullAccountStatistics, date=date)
@@ -262,6 +266,7 @@ def analytics_date(request, date=None):
     })
 
 
+@login_required
 def analytics_date_symbol(request, date=None, symbol=None):
     minute_bars = get_list_or_404(
         HistoricalMinuteBar, date=date, symbol=symbol)
@@ -477,6 +482,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
     })
 
 
+@login_required
 def reports_price(request):
 
     # account type data
@@ -544,6 +550,7 @@ def reports_price(request):
     })
 
 
+@login_required
 def reports_mktcap(request):
 
     # account type data
@@ -616,6 +623,7 @@ def reports_mktcap(request):
     })
 
 
+@login_required
 def reports_hourly(request):
 
     # account type data

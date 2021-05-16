@@ -34,7 +34,6 @@
       href="{% static 'webull_trader/css/light.css' %}"
       rel="stylesheet"
     />
-    <!-- <script src="js/settings.js"></script> -->
     <!-- END SETTINGS -->
     <link
       class="js-stylesheet"
@@ -191,15 +190,12 @@
                   href="#"
                   data-bs-toggle="dropdown"
                 >
-                  <img
-                    src="{% static 'webull_trader/img/avatars/ross.jpg' %}"
-                    class="avatar img-fluid rounded-circle me-1"
-                    alt="Ross Cameron"
-                  />
-                  <span class="text-dark">Ross Cameron</span>
+                  {% if user.is_authenticated %}
+                  <span class="text-dark">{{ user.get_full_name }}</span>
+                  {% endif %}
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
-                  <a class="dropdown-item" href="#">Sign out</a>
+                  <a class="dropdown-item" href="{% url "logout" %}">Sign out</a>
                 </div>
               </li>
             </ul>

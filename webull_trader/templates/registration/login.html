@@ -1,0 +1,123 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="Webull Trader" />
+    <meta name="author" content="Yu Sun" />
+
+    <title>Sign In | Webull Trader</title>
+
+    <link rel="shortcut icon" href="img/favicon.ico" />
+
+    <link
+      rel="shortcut icon"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAAAllBMVEUAAADR2+fR2ufR2ufV3OrV3+zR2+jU3Oj////R2+fS2+jV3uzR2ujS2ujR2+jR2ujT2+jT2+nT3OnR2ujR2ufR2ufR2+jS2ujR2+jS2ufR2ujZ4PDS2+fS2+jS2+jU3OzX4PDb2//S2+fS2+fR2ujS2ujR2+fS2+jS2+nT3erb5erR2+jR2ufS2+nS2+j////S2ufR2ud5q5T7AAAAMXRSTlMA+v3aJBrBLALzWh7r1rOnYVE69vDmyL2dmnAUzn1MKRAHuq6SjIF0QjEM36FmVgSDeyj8tgAAAhdJREFUaN7t19d6ozAQBeARImBccae49xLbe97/5XYdJ5u4RQImV5n/+nwSQtIwkBBCCCGEEEIIIcQv1dqPiNGmurELTjUSYlSGnloFV8CGGPnAH5ucq4AXYnRyoMZkFoN54hKAyBxL2wAqxGgKQKXG2BDg32NgaIzVLjFGB/yjTakKzgbEqA5Y7F6INy1i4zo4Cw2xV7yZkT27EV8NsT4uQmIywkXfeLYuOmNi8dLFRc0Q7ODdnqWITGp41zEkFT5ol2G9A3xQhmgV/1ULH21//2U0Q1bjk1qdCtXopI1P2pD28NWgwKLH10N5hvgS1+Zuzt2NHFxZGtuFG6qRY9XbqI0bZWOtvtc7pJmuUOjhXoUMenhAzQ4Vy1cczhUe6JFJgid0XB6Xvj3F7nFRwxOJ+ZEVngu8eN3cpqWbGSd+c73od/CcsqiDEYycas2b1eeNxrw+82pdBaPY7vvJTlldygjsIrKRVsGsmtr+czAr27dnrOr2tUeDkZ6QNT8Am8DP1KIpMFEjyuTogIVzpIzKDsu8Zcqs2WbY3xHlsO2ioO42Z/vSQyG93K35aeUgN2dVovxaGjnpgl35dNhGDu3hlIqqNBxk5DQqxMFvONmm9YmLGwewFMQucdqFPVjwwh2xc5O+wjdUP3Hph+yaSy/AA0F/2dzRzyqdm+j6QHc7SnW6elBfrJvjEgkhhBBCCCGEEEKIe38B2DF3FMWOTAcAAAAASUVORK5CYII="
+    />
+
+    <!-- Choose your prefered color scheme -->
+    <!-- <link href="css/light.css" rel="stylesheet"> -->
+    <!-- <link href="css/dark.css" rel="stylesheet"> -->
+
+    <!-- BEGIN SETTINGS -->
+    <link
+      class="js-stylesheet"
+      href="{% static 'webull_trader/css/light.css' %}"
+      rel="stylesheet"
+    />
+    <!-- END SETTINGS -->
+  </head>
+  <!--
+  HOW TO USE: 
+  data-theme: default (default), dark, light
+  data-layout: fluid (default), boxed
+  data-sidebar-position: left (default), right
+  data-sidebar-behavior: sticky (default), fixed, compact
+  -->
+
+  <body
+    data-theme="default"
+    data-layout="fluid"
+    data-sidebar-position="left"
+    data-sidebar-behavior="sticky"
+  >
+    <div class="main d-flex justify-content-center w-100">
+      <main class="content d-flex p-0">
+        <div class="container d-flex flex-column">
+          <div class="row h-100">
+            <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
+              <div class="d-table-cell align-middle">
+                <div class="text-center mt-4">
+                  <h1 class="h2">Welcome back</h1>
+                  <p class="lead">Sign in to your account to continue</p>
+                </div>
+
+                <div class="card">
+                  <div class="card-body">
+                    <div class="m-sm-4">
+                      <div class="text-center">
+                        <img
+                          src="{% static 'webull_trader/img/webull-logo.png' %}"
+                          alt="Webull"
+                          class="img-fluid rounded-circle"
+                          width="132"
+                          height="132"
+                        />
+                      </div>
+                      <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                          <label class="form-label" for="username-input"
+                            >Username</label
+                          >
+                          <input
+                            name="username"
+                            type="text"
+                            autocapitalize="none"
+                            autocomplete="username"
+                            required
+                            class="form-control form-control-lg"
+                            placeholder="Enter your email"
+                            id="username-input"
+                          />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label" for="password-input"
+                            >Password</label
+                          >
+                          <input
+                            class="form-control form-control-lg"
+                            type="password"
+                            name="password"
+                            autocomplete="current-password"
+                            placeholder="Enter your password"
+                            id="password-input"
+                          />
+                        </div>
+                        {% if form.errors %}
+                        <p class="text-danger">
+                          Your username and password didn't match. Please try
+                          again.
+                        </p>
+                        {% endif %}
+                        <div class="text-center mt-3">
+                          <button type="submit" class="btn btn-lg btn-primary">Sign in</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
