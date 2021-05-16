@@ -332,20 +332,21 @@ class DayTradingBase:
             # if max_profit_loss_rate - profit_loss_rate >= 0.01:
             #     exit_trading = True
             exit_note = None
-            # stop loss for STOP_LOSS_RATE
-            # if profit_loss_rate <= STOP_LOSS_RATE:
-            #     exit_note = "Stop loss {}%".format(
-            #         round(profit_loss_rate * 100, 2))
-            #     exit_trading = True
 
-            # cancel stop loss if hit 1% profit
+            # cancel buy prev low stop loss if hit 1% profit
             if profit_loss_rate >= 0.01:
                 self.tracking_tickers[symbol]['stop_loss'] = None
 
-            # stop loss
+            # stop loss for buy prev low
             if ticker['stop_loss'] and ticker_position['lastPrice'] < ticker['stop_loss']:
                 exit_note = "Stop loss at {}!".format(
                     ticker_position['lastPrice'])
+                exit_trading = True
+
+             # stop loss for stop_loss_ratio
+            if profit_loss_rate <= self.stop_loss_ratio:
+                exit_note = "Stop loss for {}%".format(
+                    round(profit_loss_rate * 100, 2))
                 exit_trading = True
 
             # check if holding too long without profit
