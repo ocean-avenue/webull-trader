@@ -725,6 +725,46 @@ def get_market_cap_range_index(mktcap):
     return index
 
 
+def get_free_float_range_labels():
+    return [
+        "0-1M",  # 0
+        "1M-5M",  # 1
+        "5M-10M",  # 2
+        "10M-20M",  # 3
+        "20M-50M",  # 4
+        "50M-100M",  # 5
+        "100M-200M",  # 6
+        "200M-500M",  # 7
+        "500M-1B",  # 8
+        "1B+",  # 9
+    ]
+
+
+def get_free_float_range_index(free_float):
+    index = -1
+    if free_float <= 1000000:
+        index = 0
+    elif free_float <= 5000000:
+        index = 1
+    elif free_float <= 10000000:
+        index = 2
+    elif free_float <= 20000000:
+        index = 3
+    elif free_float <= 50000000:
+        index = 4
+    elif free_float <= 100000000:
+        index = 5
+    elif free_float <= 200000000:
+        index = 6
+    elif free_float <= 500000000:
+        index = 7
+    elif free_float <= 1000000000:
+        index = 8
+    else:
+        index = 9
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
