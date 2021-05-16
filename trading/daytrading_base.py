@@ -343,14 +343,14 @@ class DayTradingBase:
                     ticker_position['lastPrice'])
                 exit_trading = True
 
-             # stop loss for stop_loss_ratio
-            if profit_loss_rate <= self.stop_loss_ratio:
+            # stop loss for stop_loss_ratio
+            if not exit_trading and profit_loss_rate <= self.stop_loss_ratio:
                 exit_note = "Stop loss for {}%".format(
                     round(profit_loss_rate * 100, 2))
                 exit_trading = True
 
             # check if holding too long without profit
-            if (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=self.holding_order_timeout_in_sec) and profit_loss_rate < 0.01:
+            if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=self.holding_order_timeout_in_sec) and profit_loss_rate < 0.01:
                 print("[{}] Holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
                 exit_note = "Holding too long!"
@@ -368,8 +368,8 @@ class DayTradingBase:
                     exit_note = "Bars data error!"
                     exit_trading = True
 
-                # check if momentum is stop
-                if not exit_trading and utils.check_bars_current_low_less_than_prev_low(bars):
+                # check if momentum is stop (after hit 1% profit)
+                if not exit_trading and self.tracking_tickers[symbol]['stop_loss'] == None and utils.check_bars_current_low_less_than_prev_low(bars):
                     print("[{}] <{}>[{}] Current low price is less than previous low price.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Current Low < Previous Low."
