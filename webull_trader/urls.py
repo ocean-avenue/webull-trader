@@ -10,5 +10,6 @@ urlpatterns = [
     path('reports/price', views.reports_price, name='reports_price'),
     path('reports/mktcap', views.reports_mktcap, name='reports_mktcap'),
     path('reports/float', views.reports_float, name='reports_float'),
+    path('reports/turnover', views.reports_turnover, name='reports_turnover'),
     path('reports/hourly', views.reports_hourly, name='reports_hourly'),
 ]

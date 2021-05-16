@@ -765,6 +765,46 @@ def get_free_float_range_index(free_float):
     return index
 
 
+def get_turnover_ratio_range_labels():
+    return [
+        "0-10%",  # 0
+        "10-20%",  # 1
+        "20-40%",  # 2
+        "40-60%",  # 3
+        "60-80%",  # 4
+        "80-100%",  # 5
+        "100-200%",  # 6
+        "200-500%",  # 7
+        "500-1000%",  # 8
+        "1000%+",  # 9
+    ]
+
+
+def get_turnover_ratio_range_index(turnover):
+    index = -1
+    if turnover <= 0.1:
+        index = 0
+    elif turnover <= 0.2:
+        index = 1
+    elif turnover <= 0.4:
+        index = 2
+    elif turnover <= 0.6:
+        index = 3
+    elif turnover <= 0.8:
+        index = 4
+    elif turnover <= 1:
+        index = 5
+    elif turnover <= 2:
+        index = 6
+    elif turnover <= 5:
+        index = 7
+    elif turnover <= 10:
+        index = 8
+    else:
+        index = 9
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
@@ -1139,4 +1179,59 @@ def get_trade_stat_record_for_render(symbol, trade, date):
         "turnover_rate": turnover_rate,
         "top_gain": "+${}".format(trade["top_gain"]),
         "top_loss": "-${}".format(abs(trade["top_loss"])),
+    }
+
+
+def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func, value_labels):
+    statistics_list = get_stats_empty_list(size=len(value_labels))
+    # for P&L, win rate and profit/loss ratio, trades by value
+    for day_trade in day_trades:
+        symbol = day_trade['symbol']
+        buy_date = day_trade['buy_time'].date()
+        key_statistics = HistoricalKeyStatistics.objects.filter(
+            symbol=symbol).filter(date=buy_date).first()
+        value = getattr(key_statistics, field_name)
+        value_idx = value_idx_func(value)
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                statistics_list[value_idx]['win_trades'] += 1
+                statistics_list[value_idx]['total_profit'] += gain
+            else:
+                statistics_list[value_idx]['loss_trades'] += 1
+                statistics_list[value_idx]['total_loss'] += gain
+            statistics_list[value_idx]['profit_loss'] += gain
+            statistics_list[value_idx]['trades'] += 1
+    value_profit_loss = []
+    value_win_rate = []
+    value_profit_loss_ratio = []
+    value_trades = []
+    # calculate win rate and profit/loss ratio
+    for stat in statistics_list:
+        value_trades.append(stat['trades'])
+        value_profit_loss.append(get_color_bar_chart_item_for_render(
+            round(stat['profit_loss'], 2)))
+        if stat['trades'] > 0:
+            value_win_rate.append(
+                round(stat['win_trades']/stat['trades'] * 100, 2))
+        else:
+            value_win_rate.append(0.0)
+        avg_profit = 1.0
+        if stat['win_trades'] > 0:
+            avg_profit = stat['total_profit'] / \
+                stat['win_trades']
+        avg_loss = 1.0
+        if stat['loss_trades'] > 0:
+            avg_loss = stat['total_loss'] / stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        value_profit_loss_ratio.append(profit_loss_ratio)
+
+    return {
+        "profit_loss": value_profit_loss,
+        "win_rate": value_win_rate,
+        "profit_loss_ratio": value_profit_loss_ratio,
+        "trades": value_trades,
     }

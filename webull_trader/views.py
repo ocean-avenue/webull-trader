@@ -539,14 +539,15 @@ def reports_price(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         price_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/reports_price.html', {
+    return render(request, 'webull_trader/reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
-        "price_labels": utils.get_entry_price_range_labels(),
-        "price_profit_loss": price_profit_loss,
-        "price_win_rate": price_win_rate,
-        "price_profit_loss_ratio": price_profit_loss_ratio,
-        "price_trades": price_trades,
+        "title": "Entry Price",
+        "labels": utils.get_entry_price_range_labels(),
+        "profit_loss": price_profit_loss,
+        "win_rate": price_win_rate,
+        "profit_loss_ratio": price_profit_loss_ratio,
+        "trades": price_trades,
     })
 
 
@@ -566,60 +567,21 @@ def reports_mktcap(request):
         status="Filled").filter(action=ActionType.SELL)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    mktcap_statistics = utils.get_stats_empty_list(size=6)
-    # for market cap range P&L, win rate and profit/loss ratio, trades
-    for day_trade in day_trades:
-        symbol = day_trade['symbol']
-        buy_date = day_trade['buy_time'].date()
-        key_statistics = HistoricalKeyStatistics.objects.filter(
-            symbol=symbol).filter(date=buy_date).first()
-        mktcap = key_statistics.market_value
-        mktcap_idx = utils.get_market_cap_range_index(mktcap)
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                mktcap_statistics[mktcap_idx]['win_trades'] += 1
-                mktcap_statistics[mktcap_idx]['total_profit'] += gain
-            else:
-                mktcap_statistics[mktcap_idx]['loss_trades'] += 1
-                mktcap_statistics[mktcap_idx]['total_loss'] += gain
-            mktcap_statistics[mktcap_idx]['profit_loss'] += gain
-            mktcap_statistics[mktcap_idx]['trades'] += 1
-    mktcap_profit_loss = []
-    mktcap_win_rate = []
-    mktcap_profit_loss_ratio = []
-    mktcap_trades = []
-    # calculate win rate and profit/loss ratio
-    for mktcap_stat in mktcap_statistics:
-        mktcap_trades.append(mktcap_stat['trades'])
-        mktcap_profit_loss.append(utils.get_color_bar_chart_item_for_render(
-            round(mktcap_stat['profit_loss'], 2)))
-        if mktcap_stat['trades'] > 0:
-            mktcap_win_rate.append(
-                round(mktcap_stat['win_trades']/mktcap_stat['trades'] * 100, 2))
-        else:
-            mktcap_win_rate.append(0.0)
-        avg_profit = 1.0
-        if mktcap_stat['win_trades'] > 0:
-            avg_profit = mktcap_stat['total_profit'] / \
-                mktcap_stat['win_trades']
-        avg_loss = 1.0
-        if mktcap_stat['loss_trades'] > 0:
-            avg_loss = mktcap_stat['total_loss'] / mktcap_stat['loss_trades']
-        profit_loss_ratio = 0.0
-        if mktcap_stat['trades'] > 0 and avg_loss < 0:
-            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
-        mktcap_profit_loss_ratio.append(profit_loss_ratio)
+    stat_render = utils.get_value_stat_from_trades_for_render(
+        day_trades,
+        "market_value",
+        utils.get_market_cap_range_index,
+        utils.get_market_cap_range_labels())
 
-    return render(request, 'webull_trader/reports_mktcap.html', {
+    return render(request, 'webull_trader/reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
-        "mktcap_labels": utils.get_market_cap_range_labels(),
-        "mktcap_profit_loss": mktcap_profit_loss,
-        "mktcap_win_rate": mktcap_win_rate,
-        "mktcap_profit_loss_ratio": mktcap_profit_loss_ratio,
-        "mktcap_trades": mktcap_trades,
+        "title": "Market Cap",
+        "labels": utils.get_market_cap_range_labels(),
+        "profit_loss": stat_render['profit_loss'],
+        "win_rate": stat_render['win_rate'],
+        "profit_loss_ratio": stat_render['profit_loss_ratio'],
+        "trades": stat_render['trades'],
     })
 
 
@@ -639,60 +601,55 @@ def reports_float(request):
         status="Filled").filter(action=ActionType.SELL)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    float_statistics = utils.get_stats_empty_list(size=10)
-    # for free float range P&L, win rate and profit/loss ratio, trades
-    for day_trade in day_trades:
-        symbol = day_trade['symbol']
-        buy_date = day_trade['buy_time'].date()
-        key_statistics = HistoricalKeyStatistics.objects.filter(
-            symbol=symbol).filter(date=buy_date).first()
-        free_float = key_statistics.outstanding_shares
-        free_float_idx = utils.get_free_float_range_index(free_float)
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                float_statistics[free_float_idx]['win_trades'] += 1
-                float_statistics[free_float_idx]['total_profit'] += gain
-            else:
-                float_statistics[free_float_idx]['loss_trades'] += 1
-                float_statistics[free_float_idx]['total_loss'] += gain
-            float_statistics[free_float_idx]['profit_loss'] += gain
-            float_statistics[free_float_idx]['trades'] += 1
-    float_profit_loss = []
-    float_win_rate = []
-    float_profit_loss_ratio = []
-    float_trades = []
-    # calculate win rate and profit/loss ratio
-    for mktcap_stat in float_statistics:
-        float_trades.append(mktcap_stat['trades'])
-        float_profit_loss.append(utils.get_color_bar_chart_item_for_render(
-            round(mktcap_stat['profit_loss'], 2)))
-        if mktcap_stat['trades'] > 0:
-            float_win_rate.append(
-                round(mktcap_stat['win_trades']/mktcap_stat['trades'] * 100, 2))
-        else:
-            float_win_rate.append(0.0)
-        avg_profit = 1.0
-        if mktcap_stat['win_trades'] > 0:
-            avg_profit = mktcap_stat['total_profit'] / \
-                mktcap_stat['win_trades']
-        avg_loss = 1.0
-        if mktcap_stat['loss_trades'] > 0:
-            avg_loss = mktcap_stat['total_loss'] / mktcap_stat['loss_trades']
-        profit_loss_ratio = 0.0
-        if mktcap_stat['trades'] > 0 and avg_loss < 0:
-            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
-        float_profit_loss_ratio.append(profit_loss_ratio)
+    stat_render = utils.get_value_stat_from_trades_for_render(
+        day_trades,
+        "outstanding_shares",
+        utils.get_free_float_range_index,
+        utils.get_free_float_range_labels())
 
-    return render(request, 'webull_trader/reports_float.html', {
+    return render(request, 'webull_trader/reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
-        "float_labels": utils.get_free_float_range_labels(),
-        "float_profit_loss": float_profit_loss,
-        "float_win_rate": float_win_rate,
-        "float_profit_loss_ratio": float_profit_loss_ratio,
-        "float_trades": float_trades,
+        "title": "Free Float",
+        "labels": utils.get_free_float_range_labels(),
+        "profit_loss": stat_render['profit_loss'],
+        "win_rate": stat_render['win_rate'],
+        "profit_loss_ratio": stat_render['profit_loss_ratio'],
+        "trades": stat_render['trades'],
+    })
+
+
+@login_required
+def reports_turnover(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
+    # only limit orders for day trades
+    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.SELL)
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    stat_render = utils.get_value_stat_from_trades_for_render(
+        day_trades,
+        "turnover_rate",
+        utils.get_turnover_ratio_range_index,
+        utils.get_turnover_ratio_range_labels())
+
+    return render(request, 'webull_trader/reports_field.html', {
+        "account_type": account_type,
+        "algo_type": algo_type,
+        "title": "Turnover %",
+        "labels": utils.get_turnover_ratio_range_labels(),
+        "profit_loss": stat_render['profit_loss'],
+        "win_rate": stat_render['win_rate'],
+        "profit_loss_ratio": stat_render['profit_loss_ratio'],
+        "trades": stat_render['trades'],
     })
 
 
@@ -757,6 +714,7 @@ def reports_hourly(request):
     return render(request, 'webull_trader/reports_hourly.html', {
         "account_type": account_type,
         "algo_type": algo_type,
+        "title": "Hourly",
         "hourly_labels": utils.get_market_hourly_interval_labels(),
         "hourly_profit_loss": hourly_profit_loss,
         "hourly_win_rate": hourly_win_rate,
