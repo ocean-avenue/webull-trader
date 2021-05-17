@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
-from trading import daytrading_default, daytrading_optimize
+from trading import daytrading_default, daytrading_reduce
 from webull_trader.enums import AlgorithmType
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -44,8 +44,8 @@ def day_trading_job():
     # load algo type
     algo_type = utils.get_algo_type()
     if algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
-        # dynamic optimize
-        daytrading_optimize.start()
+        # reduce size
+        daytrading_reduce.start()
         pass
     else:
         # default

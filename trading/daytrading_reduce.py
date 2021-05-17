@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Day Trading
-# Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.
+# Reduce Size - Trade based on win rate, reduce size if win rate is low.
 
 
 from scripts import utils
@@ -12,7 +12,7 @@ from trading.daytrading_base import DayTradingBase
 class DayTradingReduceSize(DayTradingBase):
 
     def call_before(self):
-        print("[{}] Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.".format(utils.get_now()))
+        print("[{}] Reduce Size - Trade based on win rate, reduce size if win rate is low.".format(utils.get_now()))
 
     def get_buy_order_limit(self, symbol):
         buy_position_amount = self.order_amount_limit

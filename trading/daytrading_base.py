@@ -124,7 +124,8 @@ class DayTradingBase:
             return
         order_filled = True
         for position in positions:
-            if position['ticker']['symbol'] == symbol:
+            # make sure position is positive
+            if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
                 order_filled = False
         if order_filled:
             # check if have any exit note
