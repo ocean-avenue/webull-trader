@@ -189,8 +189,8 @@ class DayTradingBase:
     def get_buy_order_limit(self, symbol):
         return self.order_amount_limit
 
-    def check_continue_3loss(self, symbol):
-        return False
+    def check_if_track_symbol(self, symbol):
+        return True
 
     def trade(self, ticker, m1_bars=None):
 
@@ -209,14 +209,6 @@ class DayTradingBase:
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
         if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=self.observe_timeout_in_sec):
             print("[{}] Trading <{}>[{}] session timeout!".format(
-                utils.get_now(), symbol, ticker_id))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-            return
-
-        # check if 3 continues loss trades and still in blacklist time
-        if self.check_continue_3loss(symbol=symbol):
-            print("[{}] <{}>[{}] all last 3 trade loss, waiting for blacklist timeout, stop trading!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del self.tracking_tickers[symbol]
@@ -526,7 +518,7 @@ class DayTradingBase:
                 #     utils.get_now(), symbol, ticker_id))
                 change_percentage = gainer["change_percentage"]
                 # check gap change
-                if change_percentage >= self.min_surge_change_ratio:
+                if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
                     m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
                     m2_bars = utils.convert_2m_bars(m1_bars)
                     if m2_bars.empty:
