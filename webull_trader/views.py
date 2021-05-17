@@ -231,7 +231,7 @@ def day_analytics_date(request, date=None):
         avg_loss = 1.0
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
-        profit_loss_ratio = 0.0
+        profit_loss_ratio = 1.0
         if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
@@ -534,7 +534,7 @@ def day_reports_price(request):
         avg_loss = 1.0
         if price_stat['loss_trades'] > 0:
             avg_loss = price_stat['total_loss'] / price_stat['loss_trades']
-        profit_loss_ratio = 0.0
+        profit_loss_ratio = 1.0
         if price_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         price_profit_loss_ratio.append(profit_loss_ratio)
@@ -740,7 +740,7 @@ def day_reports_hourly(request):
         avg_loss = 1.0
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
-        profit_loss_ratio = 0.0
+        profit_loss_ratio = 1.0
         if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
@@ -773,10 +773,12 @@ def day_reports_gap(request):
         status="Filled").filter(action=ActionType.SELL)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
-    gap_statistics = utils.get_stats_empty_list(size=len(utils.get_gap_range_labels()))
+    gap_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_gap_range_labels()))
     # for P&L, win rate and profit/loss ratio, trades by gap
     for day_trade in day_trades:
-        gap = utils.get_gap_by_symbol_date(day_trade['symbol'], day_trade['buy_time'].date())
+        gap = utils.get_gap_by_symbol_date(
+            day_trade['symbol'], day_trade['buy_time'].date())
         gap_idx = utils.get_gap_range_index(gap)
         if 'sell_price' in day_trade:
             gain = (day_trade['sell_price'] -
@@ -810,7 +812,7 @@ def day_reports_gap(request):
         avg_loss = 1.0
         if gap_stat['loss_trades'] > 0:
             avg_loss = gap_stat['total_loss'] / gap_stat['loss_trades']
-        profit_loss_ratio = 0.0
+        profit_loss_ratio = 1.0
         if gap_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         gap_profit_loss_ratio.append(profit_loss_ratio)
@@ -824,4 +826,75 @@ def day_reports_gap(request):
         "win_rate": gap_win_rate,
         "profit_loss_ratio": gap_profit_loss_ratio,
         "trades": gap_trades,
+    })
+
+
+@login_required
+def day_reports_holding(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
+    # only limit orders for day trades
+    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.SELL)
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    holding_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_holding_time_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by holding time
+    for day_trade in day_trades:
+        holding_sec = (day_trade['sell_time'] - day_trade['buy_time']).seconds
+        holding_idx = utils.get_holding_time_index(holding_sec)
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                holding_statistics[holding_idx]['win_trades'] += 1
+                holding_statistics[holding_idx]['total_profit'] += gain
+            else:
+                holding_statistics[holding_idx]['loss_trades'] += 1
+                holding_statistics[holding_idx]['total_loss'] += gain
+            holding_statistics[holding_idx]['profit_loss'] += gain
+            holding_statistics[holding_idx]['trades'] += 1
+    holding_profit_loss = []
+    holding_win_rate = []
+    holding_profit_loss_ratio = []
+    holding_trades = []
+    # calculate win rate and profit/loss ratio
+    for holding_stat in holding_statistics:
+        holding_trades.append(holding_stat['trades'])
+        holding_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(holding_stat['profit_loss'], 2)))
+        if holding_stat['trades'] > 0:
+            holding_win_rate.append(
+                round(holding_stat['win_trades']/holding_stat['trades'] * 100, 2))
+        else:
+            holding_win_rate.append(0.0)
+        avg_profit = 1.0
+        if holding_stat['win_trades'] > 0:
+            avg_profit = holding_stat['total_profit'] / \
+                holding_stat['win_trades']
+        avg_loss = 1.0
+        if holding_stat['loss_trades'] > 0:
+            avg_loss = holding_stat['total_loss'] / holding_stat['loss_trades']
+        profit_loss_ratio = 1.0
+        if holding_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        holding_profit_loss_ratio.append(profit_loss_ratio)
+
+    return render(request, 'webull_trader/day_reports_field.html', {
+        "account_type": account_type,
+        "algo_type": algo_type,
+        "title": "Holding Time",
+        "labels": utils.get_holding_time_labels(),
+        "profit_loss": holding_profit_loss,
+        "win_rate": holding_win_rate,
+        "profit_loss_ratio": holding_profit_loss_ratio,
+        "trades": holding_trades,
     })

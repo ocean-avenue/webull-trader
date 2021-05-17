@@ -888,6 +888,58 @@ def get_gap_range_index(gap):
     return index
 
 
+def get_holding_time_labels():
+    return [
+        "0-30s",  # 0
+        "30-60s",  # 1
+        "1-2m",  # 2
+        "2-3m",  # 3
+        "3-4m",  # 4
+        "4-5m",  # 5
+        "5-6m",  # 6
+        "6-7m",  # 7
+        "7-8m",  # 8
+        "8-9m",  # 9
+        "9-10m",  # 10
+        "10-12m",  # 11
+        "12-15m",  # 12
+        "15m+",  # 13
+    ]
+
+
+def get_holding_time_index(holding_sec):
+    index = -1
+    if holding_sec <= 30:
+        index = 0
+    elif holding_sec <= 60:
+        index = 1
+    elif holding_sec <= 120:
+        index = 2
+    elif holding_sec <= 180:
+        index = 3
+    elif holding_sec <= 240:
+        index = 4
+    elif holding_sec <= 300:
+        index = 5
+    elif holding_sec <= 360:
+        index = 6
+    elif holding_sec <= 420:
+        index = 7
+    elif holding_sec <= 480:
+        index = 8
+    elif holding_sec <= 540:
+        index = 9
+    elif holding_sec <= 600:
+        index = 10
+    elif holding_sec <= 720:
+        index = 11
+    elif holding_sec <= 900:
+        index = 12
+    else:
+        index = 13
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
@@ -1312,7 +1364,7 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
         avg_loss = 1.0
         if stat['loss_trades'] > 0:
             avg_loss = stat['total_loss'] / stat['loss_trades']
-        profit_loss_ratio = 0.0
+        profit_loss_ratio = 1.0
         if stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         value_profit_loss_ratio.append(profit_loss_ratio)

@@ -175,8 +175,12 @@
                 <li class="sidebar-item">
                   <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Relative Volume</a>
                 </li>
+                {% if request.path == '/day-reports/holding' %}
+                <li class="sidebar-item active">
+                {% else  %}
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Holding Time</a>
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_holding' %}">Holding Time</a>
                 </li>
                 {% if request.path == '/day-reports/hourly' %}
                 <li class="sidebar-item active">
