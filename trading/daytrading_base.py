@@ -337,7 +337,7 @@ class DayTradingBase:
                 self.tracking_tickers[symbol]['stop_loss'] = None
 
             # stop loss for buy prev low
-            if ticker['stop_loss'] and ticker_position['lastPrice'] < ticker['stop_loss']:
+            if ticker['stop_loss'] and float(ticker_position['lastPrice']) < ticker['stop_loss']:
                 exit_note = "Stop loss at {}!".format(
                     ticker_position['lastPrice'])
                 exit_trading = True
