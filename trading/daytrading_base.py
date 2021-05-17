@@ -78,16 +78,15 @@ class DayTradingBase:
         positions = webullsdk.get_positions()
         if positions == None:
             return
-        # default setup
-        self.setup = self.setup or SetupType.DAY_FIRST_CANDLE_NEW_HIGH
         order_filled = False
         for position in positions:
             if position['ticker']['symbol'] == symbol:
                 order_filled = True
                 quantity = int(position['position'])
                 cost = float(position['costPrice'])
+                # TODO, support other setup
                 utils.save_webull_order_note(
-                    ticker['pending_order_id'], setup=self.setup, note="Entry point.")
+                    ticker['pending_order_id'], setup=SetupType.DAY_FIRST_CANDLE_NEW_HIGH, note="Entry point.")
                 # update tracking_tickers
                 self.tracking_tickers[symbol]['positions'] = quantity
                 self.tracking_tickers[symbol]['pending_buy'] = False
@@ -461,9 +460,6 @@ class DayTradingBase:
             self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
-
-    def set_setup(self, setup):
-        self.setup = setup
 
     def call_before(self):
         pass
