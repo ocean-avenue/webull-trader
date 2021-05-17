@@ -4,7 +4,7 @@ from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from scripts import utils, config
 from webull_trader.enums import ActionType, OrderType, SetupType
-from webull_trader.models import HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
+from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
 
 # Create your views here.
 
@@ -754,4 +754,74 @@ def day_reports_hourly(request):
         "hourly_win_rate": hourly_win_rate,
         "hourly_profit_loss_ratio": hourly_profit_loss_ratio,
         "hourly_trades": hourly_trades,
+    })
+
+
+@login_required
+def day_reports_gap(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type = utils.get_algo_type_description()
+
+    # only limit orders for day trades
+    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.BUY)
+    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
+        status="Filled").filter(action=ActionType.SELL)
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    gap_statistics = utils.get_stats_empty_list(size=len(utils.get_gap_range_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by gap
+    for day_trade in day_trades:
+        gap = utils.get_gap_by_symbol_date(day_trade['symbol'], day_trade['buy_time'].date())
+        gap_idx = utils.get_gap_range_index(gap)
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                gap_statistics[gap_idx]['win_trades'] += 1
+                gap_statistics[gap_idx]['total_profit'] += gain
+            else:
+                gap_statistics[gap_idx]['loss_trades'] += 1
+                gap_statistics[gap_idx]['total_loss'] += gain
+            gap_statistics[gap_idx]['profit_loss'] += gain
+            gap_statistics[gap_idx]['trades'] += 1
+    gap_profit_loss = []
+    gap_win_rate = []
+    gap_profit_loss_ratio = []
+    gap_trades = []
+    # calculate win rate and profit/loss ratio
+    for gap_stat in gap_statistics:
+        gap_trades.append(gap_stat['trades'])
+        gap_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(gap_stat['profit_loss'], 2)))
+        if gap_stat['trades'] > 0:
+            gap_win_rate.append(
+                round(gap_stat['win_trades']/gap_stat['trades'] * 100, 2))
+        else:
+            gap_win_rate.append(0.0)
+        avg_profit = 1.0
+        if gap_stat['win_trades'] > 0:
+            avg_profit = gap_stat['total_profit'] / \
+                gap_stat['win_trades']
+        avg_loss = 1.0
+        if gap_stat['loss_trades'] > 0:
+            avg_loss = gap_stat['total_loss'] / gap_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if gap_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        gap_profit_loss_ratio.append(profit_loss_ratio)
+
+    return render(request, 'webull_trader/day_reports_field.html', {
+        "account_type": account_type,
+        "algo_type": algo_type,
+        "title": "Gap %",
+        "labels": utils.get_gap_range_labels(),
+        "profit_loss": gap_profit_loss,
+        "win_rate": gap_win_rate,
+        "profit_loss_ratio": gap_profit_loss_ratio,
+        "trades": gap_trades,
     })

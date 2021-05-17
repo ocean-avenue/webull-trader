@@ -12,5 +12,6 @@ urlpatterns = [
     path('day-reports/float', views.day_reports_float, name='day_reports_float'),
     path('day-reports/turnover', views.day_reports_turnover, name='day_reports_turnover'),
     path('day-reports/short', views.day_reports_short, name='day_reports_short'),
+    path('day-reports/gap', views.day_reports_gap, name='day_reports_gap'),
     path('day-reports/hourly', views.day_reports_hourly, name='day_reports_hourly'),
 ]

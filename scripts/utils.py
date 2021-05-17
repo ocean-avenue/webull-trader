@@ -836,6 +836,58 @@ def get_short_float_range_index(short_float):
     return index
 
 
+def get_gap_range_labels():
+    return [
+        "Down 15%+",  # 0
+        "Down 10-15%",  # 1
+        "Down 7-10%",  # 2
+        "Down 5-7%",  # 3
+        "Down 3-5%",  # 4
+        "Down 1-3%",  # 5
+        "Down 0-1%",  # 6
+        "Up 0-1%",  # 7
+        "Up 1-3%",  # 8
+        "Up 3-5%",  # 9
+        "Up 5-7%",  # 10
+        "Up 7-10%",  # 11
+        "Up 10-15%",  # 12
+        "Up 15%+",  # 13
+    ]
+
+
+def get_gap_range_index(gap):
+    index = -1
+    if gap <= -15:
+        index = 0
+    elif gap <= -10:
+        index = 1
+    elif gap <= -7:
+        index = 2
+    elif gap <= -5:
+        index = 3
+    elif gap <= -3:
+        index = 4
+    elif gap <= -1:
+        index = 5
+    elif gap <= 0:
+        index = 6
+    elif gap <= 1:
+        index = 7
+    elif gap <= 3:
+        index = 8
+    elif gap <= 5:
+        index = 9
+    elif gap <= 7:
+        index = 10
+    elif gap <= 10:
+        index = 11
+    elif gap <= 15:
+        index = 12
+    else:
+        index = 13
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
@@ -1009,6 +1061,18 @@ def get_trade_stat_dist_from_trades(day_trades):
     return trades_dist
 
 
+def get_gap_by_symbol_date(symbol, date):
+    hist_daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
+    day_index = 0
+    for i in range(0, len(hist_daily_bars)):
+        if hist_daily_bars[i].date == date:
+            day_index = i
+            break
+    if day_index > 0:
+        return round((hist_daily_bars[day_index].open - hist_daily_bars[day_index - 1].close) / hist_daily_bars[day_index - 1].close * 100, 2)
+    return 0.0
+
+
 def get_algo_type_description():
     description = enums.AlgorithmType.tostr(enums.AlgorithmType.DEFAULT)
     settings = TradingSettings.objects.first()
@@ -1170,20 +1234,13 @@ def get_trade_stat_record_for_render(symbol, trade, date):
     if trade["profit_loss"] < 0:
         profit_loss = "-${}".format(abs(round(trade["profit_loss"], 2)))
         profit_loss_style = "text-danger"
-    hist_daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
-    day_index = 0
-    for i in range(0, len(hist_daily_bars)):
-        if hist_daily_bars[i].date == key_statistics.date:
-            day_index = i
-            break
+    gap_value = get_gap_by_symbol_date(symbol, key_statistics.date)
     gap = "0.0%"
-    if day_index > 0:
-        gap_value = round((hist_daily_bars[day_index].open - hist_daily_bars[day_index -
-                          1].close) / hist_daily_bars[day_index - 1].close * 100, 2)
-        if gap_value > 0:
-            gap = "+{}%".format(gap_value)
-        else:
-            gap = "{}%".format(gap_value)
+    if gap_value > 0:
+        gap = "+{}%".format(gap_value)
+    else:
+        gap = "{}%".format(gap_value)
+
     webull_news = WebullNews.objects.filter(
         symbol=symbol).filter(date=date)
     news_count = 0
