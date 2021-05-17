@@ -9,7 +9,6 @@ from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
 from trading import daytrading_default, daytrading_optimize
 from webull_trader.enums import AlgorithmType
-from webull_trader.models import TradingSettings
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 

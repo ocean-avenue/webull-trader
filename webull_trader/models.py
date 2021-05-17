@@ -9,8 +9,8 @@ class TradingSettings(models.Model):
     ALGO_TYPE_CHOICES = (
         (enums.AlgorithmType.DEFAULT, enums.AlgorithmType.tostr(
             enums.AlgorithmType.DEFAULT)),
-        (enums.AlgorithmType.DYNAMIC_OPTIMIZE, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.DYNAMIC_OPTIMIZE)),
+        (enums.AlgorithmType.REDUCE_SIZE, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.REDUCE_SIZE)),
     )
     algo_type = models.PositiveSmallIntegerField(
         choices=ALGO_TYPE_CHOICES,
@@ -127,6 +127,8 @@ class WebullOrderNote(models.Model):
             enums.SetupType.DAY_BULL_FLAG)),
         (enums.SetupType.DAY_REVERSAL, enums.SetupType.tostr(
             enums.SetupType.DAY_REVERSAL)),
+        (enums.SetupType.DAY_RED_TO_GREEN, enums.SetupType.tostr(
+            enums.SetupType.DAY_RED_TO_GREEN)),
         (enums.SetupType.SWING_20_DAYS_NEW_HIGH, enums.SetupType.tostr(
             enums.SetupType.SWING_20_DAYS_NEW_HIGH)),
     )

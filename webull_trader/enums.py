@@ -57,7 +57,8 @@ class SetupType:
     DAY_GAP_AND_GO = 1
     DAY_BULL_FLAG = 2
     DAY_REVERSAL = 3
-    SWING_20_DAYS_NEW_HIGH = 4
+    DAY_RED_TO_GREEN = 4
+    SWING_20_DAYS_NEW_HIGH = 100
 
     @staticmethod
     def tostr(val):
@@ -69,6 +70,8 @@ class SetupType:
             return '[Day] Bull Flag'
         if val == SetupType.DAY_REVERSAL:
             return '[Day] Reversal'
+        if val == SetupType.DAY_RED_TO_GREEN:
+            return '[Day] Red to Green'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '[Swing] 20 days new high'
         return UNKNOWN
@@ -76,12 +79,12 @@ class SetupType:
 
 class AlgorithmType:
     DEFAULT = 0
-    DYNAMIC_OPTIMIZE = 1
+    REDUCE_SIZE = 1
 
     @staticmethod
     def tostr(val):
         if val == AlgorithmType.DEFAULT:
             return '[Default] Trade as much as possible, mainly for collect data.'
-        if val == AlgorithmType.DYNAMIC_OPTIMIZE:
-            return '[Dynamic Optimize] Trade based on win rate, reduce size if win rate is low.'
+        if val == AlgorithmType.REDUCE_SIZE:
+            return '[Reduce Size] Trade based on win rate, reduce size if win rate is low.'
         return UNKNOWN

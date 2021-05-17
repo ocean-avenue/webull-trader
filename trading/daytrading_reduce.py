@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from trading.daytrading_base import DayTradingBase
 
 
-class DayTradingOptimize(DayTradingBase):
+class DayTradingReduceSize(DayTradingBase):
 
     def call_before(self):
         print("[{}] Dynamic Optimize - Trade based on win rate, reduce size if win rate is low.".format(utils.get_now()))
@@ -33,10 +33,10 @@ class DayTradingOptimize(DayTradingBase):
 
 def start():
     from scripts import utils
-    from trading.daytrading_optimize import DayTradingOptimize
+    from trading.daytrading_reduce import DayTradingReduceSize
 
     paper = utils.check_paper()
-    daytrading = DayTradingOptimize(paper=paper)
+    daytrading = DayTradingReduceSize(paper=paper)
     if paper:
         print("[{}] Start PAPER day trading...".format(utils.get_now()))
     else:
