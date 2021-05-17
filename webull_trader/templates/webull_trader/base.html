@@ -94,7 +94,7 @@
             <li class="sidebar-header">
               Day Trading
             </li>
-            {% if 'analytics' in request.path %}
+            {% if 'day-analytics' in request.path %}
             <li class="sidebar-item active">
             {% else  %}
             <li class="sidebar-item">
@@ -191,6 +191,16 @@
             </li>
             <li class="sidebar-header">
               Swing Trading
+            </li>
+            {% if 'swing-positions' in request.path %}
+            <li class="sidebar-item active">
+            {% else  %}
+            <li class="sidebar-item">
+            {% endif %}
+              <a class="sidebar-link" href="{% url 'day_analytics' %}">
+                <i class="align-middle" data-feather="layers"></i>
+                <span class="align-middle">Positions</span>
+              </a>
             </li>
           </ul>
         </div>
