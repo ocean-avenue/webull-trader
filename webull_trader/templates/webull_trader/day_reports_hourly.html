@@ -1,6 +1,6 @@
 {% extends 'webull_trader/base.html' %}
 
-{% block title %} Reports {% endblock %}
+{% block title %} Day Trading Reports {% endblock %}
 
 {% load static %}
 
@@ -15,7 +15,7 @@
       </span>
     </div>
     <div class="col-auto d-none d-sm-block">
-      <h3>Reports / {{title|safe}}</h3>
+      <h3>Day Trading Reports / Hourly</h3>
     </div>
   </div>
 
@@ -23,11 +23,11 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
-          <h5 class="card-title mb-0">P&L by {{title|safe}}</h5>
+          <h5 class="card-title mb-0">Hourly P&L</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="profit-loss-chart" style="width: 100%; min-height: 300px;">
+            <div id="hourly-profit-loss-chart" style="width: 100%; min-height: 300px;">
             </div>
           </div>
         </div>
@@ -39,11 +39,11 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
-          <h5 class="card-title mb-0">Win Rate by {{title|safe}}</h5>
+          <h5 class="card-title mb-0">Hourly Win Rate</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="win-rate-chart" style="width: 100%; min-height: 300px;">
+            <div id="hourly-win-rate-chart" style="width: 100%; min-height: 300px;">
             </div>
           </div>
         </div>
@@ -55,11 +55,11 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
-          <h5 class="card-title mb-0">Profit/Loss Ratio by {{title|safe}}</h5>
+          <h5 class="card-title mb-0">Hourly Profit/Loss Ratio</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="pl-ratio-chart" style="width: 100%; min-height: 300px;">
+            <div id="hourly-pl-ratio-chart" style="width: 100%; min-height: 300px;">
             </div>
           </div>
         </div>
@@ -71,11 +71,11 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
-          <h5 class="card-title mb-0">Trades by {{title|safe}}</h5>
+          <h5 class="card-title mb-0">Hourly Trades</h5>
         </div>
         <div class="card-body d-flex w-100">
           <div class="align-self-center chart chart-md">
-            <div id="trades-chart" style="width: 100%; min-height: 300px;">
+            <div id="hourly-trades-chart" style="width: 100%; min-height: 300px;">
             </div>
           </div>
         </div>
@@ -89,9 +89,9 @@
 
 {% block js %}
 <script>
-  // profit loss chart
-  const profit_loss_chart = echarts.init(document.getElementById("profit-loss-chart"));
-  const profit_loss_option = {
+  // hourly profit loss chart
+  const hourly_profit_loss_chart = echarts.init(document.getElementById("hourly-profit-loss-chart"));
+  const hourly_profit_loss_option = {
     tooltip: {
       trigger: 'axis'
     },
@@ -103,7 +103,7 @@
     },
     xAxis: {
       type: 'category',
-      data: {{labels|safe}}
+      data: {{hourly_labels|safe}}
     },
     yAxis: {
       type: 'value',
@@ -112,16 +112,16 @@
       }
     },
     series: [{
-      data: {{profit_loss|safe}},
+      data: {{hourly_profit_loss|safe}},
       type: 'bar',
       areaStyle: {}
     }]
   };
-  profit_loss_chart.setOption(profit_loss_option);
+  hourly_profit_loss_chart.setOption(hourly_profit_loss_option);
 
-  // win rate chart
-  const win_rate_chart = echarts.init(document.getElementById("win-rate-chart"));
-  const win_rate_option = {
+  // hourly win rate chart
+  const hourly_win_rate_chart = echarts.init(document.getElementById("hourly-win-rate-chart"));
+  const hourly_win_rate_option = {
     tooltip: {
       trigger: 'axis'
     },
@@ -133,7 +133,7 @@
     },
     xAxis: {
       type: 'category',
-      data: {{labels|safe}}
+      data: {{hourly_labels|safe}}
     },
     yAxis: {
       type: 'value',
@@ -144,17 +144,17 @@
     series: [
       {
         name: "Win Rate",
-        data: {{win_rate|safe}},
+        data: {{hourly_win_rate|safe}},
         type: 'bar',
         smooth: true,
       },
     ]
   };
-  win_rate_chart.setOption(win_rate_option);
+  hourly_win_rate_chart.setOption(hourly_win_rate_option);
 
-  // profit/loss ratio chart
-  const profit_loss_ratio_chart = echarts.init(document.getElementById("pl-ratio-chart"));
-  const profit_loss_ratio_option = {
+  // hourly profit/loss ratio chart
+  const hourly_profit_loss_ratio_chart = echarts.init(document.getElementById("hourly-pl-ratio-chart"));
+  const hourly_profit_loss_ratio_option = {
     tooltip: {
       trigger: 'axis'
     },
@@ -166,7 +166,7 @@
     },
     xAxis: {
       type: 'category',
-      data: {{labels|safe}}
+      data: {{hourly_labels|safe}}
     },
     yAxis: {
       type: 'value',
@@ -177,17 +177,17 @@
     series: [
       {
         name: "Profit/Loss Ratio",
-        data: {{profit_loss_ratio|safe}},
+        data: {{hourly_profit_loss_ratio|safe}},
         type: 'bar',
         smooth: true,
       },
     ]
   };
-  profit_loss_ratio_chart.setOption(profit_loss_ratio_option);
+  hourly_profit_loss_ratio_chart.setOption(hourly_profit_loss_ratio_option);
 
-  // trades chart
-  const trades_chart = echarts.init(document.getElementById("trades-chart"));
-  const trades_option = {
+  // hourly trades chart
+  const hourly_trades_chart = echarts.init(document.getElementById("hourly-trades-chart"));
+  const hourly_trades_option = {
     tooltip: {
       trigger: 'axis'
     },
@@ -199,7 +199,7 @@
     },
     xAxis: {
       type: 'category',
-      data: {{labels|safe}}
+      data: {{hourly_labels|safe}}
     },
     yAxis: {
       type: 'value',
@@ -210,20 +210,20 @@
     series: [
       {
         name: "Trades",
-        data: {{trades|safe}},
+        data: {{hourly_trades|safe}},
         type: 'bar',
         smooth: true,
       }
     ]
   };
-  trades_chart.setOption(trades_option);
+  hourly_trades_chart.setOption(hourly_trades_option);
 
   // resize charts
   window.onresize = function() {
-    profit_loss_chart.resize();
-    win_rate_chart.resize();
-    profit_loss_ratio_chart.resize();
-    trades_chart.resize();
+    hourly_profit_loss_chart.resize();
+    hourly_win_rate_chart.resize();
+    hourly_profit_loss_ratio_chart.resize();
+    hourly_trades_chart.resize();
   };
 </script>
 {% endblock %}

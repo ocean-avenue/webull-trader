@@ -1,6 +1,6 @@
 {% extends 'webull_trader/base.html' %}
 
-{% block title %} Analytics {% endblock %}
+{% block title %} Day Trading Analytics {% endblock %}
 
 {% load static %}
 
@@ -15,11 +15,11 @@
     </div>
     <div class="col-auto d-none d-sm-block">
       <h3>
-        <a class="link-dark no-underline" href="{% url 'analytics' %}"
-          >Analytics</a
+        <a class="link-dark no-underline" href="{% url 'day_analytics' %}"
+          >Day Trading Analytics</a
         >
         /
-        <a class="link-dark no-underline" href="/analytics/{{date|safe}}"
+        <a class="link-dark no-underline" href="/day-analytics/{{date|safe}}"
           >{{date|safe}}</a
         >
         / {{symbol|safe}}

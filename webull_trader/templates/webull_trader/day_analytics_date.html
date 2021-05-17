@@ -1,6 +1,6 @@
 {% extends 'webull_trader/base.html' %}
 
-{% block title %} Analytics {% endblock %}
+{% block title %} Day Trading Analytics {% endblock %}
 
 {% load static %}
 
@@ -15,7 +15,7 @@
       </span>
     </div>
     <div class="col-auto d-none d-sm-block">
-      <h3><a class="link-dark no-underline" href="{% url 'analytics' %}">Analytics</a> / {{date|safe}}</h3>
+      <h3><a class="link-dark no-underline" href="{% url 'day_analytics' %}">Day Trading Analytics</a> / {{date|safe}}</h3>
     </div>
   </div>
   <div class="row">
@@ -77,7 +77,7 @@
               </h3>
               <p class="mb-2">Top Gain Trade</p>
               <div class="mb-0">
-                <a href="/analytics/{{date|safe}}/{{day_top_gain.symbol|safe}}">
+                <a href="/day-analytics/{{date|safe}}/{{day_top_gain.symbol|safe}}">
                   <span
                     class="badge badge-soft-dark me-2"
                   >
@@ -106,7 +106,7 @@
               </h3>
               <p class="mb-2">Top Loss Trade</p>
               <div class="mb-0">
-                <a href="/analytics/{{date|safe}}/{{day_top_loss.symbol|safe}}">
+                <a href="/day-analytics/{{date|safe}}/{{day_top_loss.symbol|safe}}">
                   <span
                     class="badge badge-soft-dark me-2"
                   >
@@ -218,7 +218,7 @@
       <tbody>
         {% for trade in trade_records %}
         <tr>
-          <td><a href="/analytics/{{date|safe}}/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+          <td><a href="/day-analytics/{{date|safe}}/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
           <td class="d-none d-xl-table-cell">{{trade.avg_price|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.mktcap|safe}}</td>
           <td class="d-none d-md-table-cell">{{trade.float_shares|safe}}</td>

@@ -98,7 +98,7 @@ def index(request):
 
 
 @login_required
-def analytics(request):
+def day_analytics(request):
     today = date.today()
 
     # account type data
@@ -123,7 +123,7 @@ def analytics(request):
     for daytrade_perf in daytrade_perfs:
         # calendar events
         event_date = daytrade_perf.date.strftime("%Y-%m-%d")
-        event_url = "/analytics/{}".format(event_date)
+        event_url = "/day-analytics/{}".format(event_date)
         target_events = None
         if daytrade_perf.day_profit_loss < 0:
             loss_events['events'].append({
@@ -155,7 +155,7 @@ def analytics(request):
             "url": event_url,
         })
 
-    return render(request, 'webull_trader/analytics.html', {
+    return render(request, 'webull_trader/day_analytics.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "initial_date": today.strftime("%Y-%m-%d"),
@@ -165,7 +165,7 @@ def analytics(request):
 
 
 @login_required
-def analytics_date(request, date=None):
+def day_analytics_date(request, date=None):
     daytrade_perf = get_object_or_404(HistoricalDayTradePerformance, date=date)
     acc_stat = get_object_or_404(WebullAccountStatistics, date=date)
 
@@ -247,7 +247,7 @@ def analytics_date(request, date=None):
     # sort trade records
     trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
 
-    return render(request, 'webull_trader/analytics_date.html', {
+    return render(request, 'webull_trader/day_analytics_date.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "date": date,
@@ -267,7 +267,7 @@ def analytics_date(request, date=None):
 
 
 @login_required
-def analytics_date_symbol(request, date=None, symbol=None):
+def day_analytics_date_symbol(request, date=None, symbol=None):
     minute_bars = get_list_or_404(
         HistoricalMinuteBar, date=date, symbol=symbol)
 
@@ -463,7 +463,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
             'news_url': webull_new.news_url,
         })
 
-    return render(request, 'webull_trader/analytics_date_symbol.html', {
+    return render(request, 'webull_trader/day_analytics_date_symbol.html', {
         "date": date,
         "symbol": symbol,
         "account_type": account_type,
@@ -483,7 +483,7 @@ def analytics_date_symbol(request, date=None, symbol=None):
 
 
 @login_required
-def reports_price(request):
+def day_reports_price(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -539,7 +539,7 @@ def reports_price(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         price_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/reports_field.html', {
+    return render(request, 'webull_trader/day_reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Entry Price",
@@ -552,7 +552,7 @@ def reports_price(request):
 
 
 @login_required
-def reports_mktcap(request):
+def day_reports_mktcap(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -573,7 +573,7 @@ def reports_mktcap(request):
         utils.get_market_cap_range_index,
         utils.get_market_cap_range_labels())
 
-    return render(request, 'webull_trader/reports_field.html', {
+    return render(request, 'webull_trader/day_reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Market Cap",
@@ -586,7 +586,7 @@ def reports_mktcap(request):
 
 
 @login_required
-def reports_float(request):
+def day_reports_float(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -607,7 +607,7 @@ def reports_float(request):
         utils.get_free_float_range_index,
         utils.get_free_float_range_labels())
 
-    return render(request, 'webull_trader/reports_field.html', {
+    return render(request, 'webull_trader/day_reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Free Float",
@@ -620,7 +620,7 @@ def reports_float(request):
 
 
 @login_required
-def reports_turnover(request):
+def day_reports_turnover(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -641,7 +641,7 @@ def reports_turnover(request):
         utils.get_turnover_ratio_range_index,
         utils.get_turnover_ratio_range_labels())
 
-    return render(request, 'webull_trader/reports_field.html', {
+    return render(request, 'webull_trader/day_reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Turnover %",
@@ -654,7 +654,7 @@ def reports_turnover(request):
 
 
 @login_required
-def reports_short(request):
+def day_reports_short(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -675,7 +675,7 @@ def reports_short(request):
         utils.get_short_float_range_index,
         utils.get_short_float_range_labels())
 
-    return render(request, 'webull_trader/reports_field.html', {
+    return render(request, 'webull_trader/day_reports_field.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Short Ratio",
@@ -688,7 +688,7 @@ def reports_short(request):
 
 
 @login_required
-def reports_hourly(request):
+def day_reports_hourly(request):
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -745,7 +745,7 @@ def reports_hourly(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/reports_hourly.html', {
+    return render(request, 'webull_trader/day_reports_hourly.html', {
         "account_type": account_type,
         "algo_type": algo_type,
         "title": "Hourly",

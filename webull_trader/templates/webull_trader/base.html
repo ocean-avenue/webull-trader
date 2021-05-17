@@ -79,25 +79,40 @@
                 <span class="align-middle">Dashboard</span>
               </a>
             </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="https://app.webull.com/account" target="_blank">
+                <i class="align-middle" data-feather="external-link"></i>
+                <span class="align-middle">Webull</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="/admin" target="_blank">
+                <i class="align-middle" data-feather="key"></i>
+                <span class="align-middle">Admin</span>
+              </a>
+            </li>
+            <li class="sidebar-header">
+              Day Trading
+            </li>
             {% if 'analytics' in request.path %}
             <li class="sidebar-item active">
             {% else  %}
             <li class="sidebar-item">
             {% endif %}
-              <a class="sidebar-link" href="{% url 'analytics' %}">
+              <a class="sidebar-link" href="{% url 'day_analytics' %}">
                 <i class="align-middle" data-feather="calendar"></i>
                 <span class="align-middle">Analytics</span>
               </a>
             </li>
-            {% if 'reports' in request.path %}
+            {% if 'day-reports' in request.path %}
             <li class="sidebar-item active">
             {% else  %}
             <li class="sidebar-item">
             {% endif %}
               <a
-                data-bs-target="#reports"
+                data-bs-target="#day-reports"
                 data-bs-toggle="collapse"
-                {% if 'reports' in request.path %}
+                {% if 'day-reports' in request.path %}
                 class="sidebar-link"
                 {% else  %}
                 class="sidebar-link collapsed"
@@ -107,84 +122,75 @@
                 <span class="align-middle">Reports</span>
               </a>
               <ul
-                id="reports"
-                {% if 'reports' in request.path %}
+                id="day-reports"
+                {% if 'day-reports' in request.path %}
                 class="sidebar-dropdown list-unstyled collapse show"
                 {% else  %}
                 class="sidebar-dropdown list-unstyled collapse"
                 {% endif %}
                 data-bs-parent="#sidebar"
               >
-                {% if request.path == '/reports/price' %}
+                {% if request.path == '/day-reports/price' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_price' %}">Entry Price</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_price' %}">Entry Price</a>
                 </li>
-                {% if request.path == '/reports/mktcap' %}
+                {% if request.path == '/day-reports/mktcap' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_mktcap' %}">Market Cap</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_mktcap' %}">Market Cap</a>
                 </li>
-                {% if request.path == '/reports/float' %}
+                {% if request.path == '/day-reports/float' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_float' %}">Free Float</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_float' %}">Free Float</a>
                 </li>
-                {% if request.path == '/reports/turnover' %}
+                {% if request.path == '/day-reports/turnover' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_turnover' %}">Turnover %</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_turnover' %}">Turnover %</a>
                 </li>
-                {% if request.path == '/reports/short' %}
+                {% if request.path == '/day-reports/short' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_short' %}">Short %</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_short' %}">Short %</a>
                 </li>
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Relative Volume</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Relative Volume</a>
                 </li>
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Holding Time</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Holding Time</a>
                 </li>
-                {% if request.path == '/reports/hourly' %}
+                {% if request.path == '/day-reports/hourly' %}
                 <li class="sidebar-item active">
                 {% else  %}
                 <li class="sidebar-item">
                 {% endif %}
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Hourly</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Hourly</a>
                 </li>
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Daily</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Daily</a>
                 </li>
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Weekly</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Weekly</a>
                 </li>
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'reports_hourly' %}">Monthly</a>
+                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Monthly</a>
                 </li>
               </ul>
             </li>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="/admin" target="_blank">
-                <i class="align-middle" data-feather="key"></i>
-                <span class="align-middle">Admin</span>
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="https://app.webull.com/account" target="_blank">
-                <i class="align-middle" data-feather="external-link"></i>
-                <span class="align-middle">Webull</span>
-              </a>
+            <li class="sidebar-header">
+              Swing Trading
             </li>
           </ul>
         </div>
