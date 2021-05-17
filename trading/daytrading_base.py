@@ -262,7 +262,7 @@ class DayTradingBase:
             current_volume = int(current_candle['volume'])
 
             # check entry: current price above vwap and ema 9, current low above prev low
-            if current_close > current_vwap and current_close > current_ema9 and current_low > prev_low:
+            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low:
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
