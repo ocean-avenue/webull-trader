@@ -362,8 +362,8 @@ class DayTradingBase:
                     exit_note = "Bars data error!"
                     exit_trading = True
 
-                # check if momentum is stop (after hit 1% profit)
-                if not exit_trading and self.tracking_tickers[symbol]['stop_loss'] == None and utils.check_bars_current_low_less_than_prev_low(m2_bars):
+                # check if momentum is stop
+                if not exit_trading and utils.check_bars_current_low_less_than_prev_low(m2_bars):
                     print("[{}] <{}>[{}] Current low price is less than previous low price.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Current Low < Previous Low."
