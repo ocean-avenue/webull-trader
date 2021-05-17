@@ -2,6 +2,7 @@
 
 # Base day trading class
 
+from re import M
 import time
 from datetime import datetime, timedelta
 from webull_trader.enums import SetupType
@@ -191,7 +192,7 @@ class DayTradingBase:
     def check_continue_3loss(self, symbol):
         return False
 
-    def trade(self, ticker):
+    def trade(self, ticker, m1_bars=None):
 
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
@@ -223,9 +224,10 @@ class DayTradingBase:
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-            bars = utils.convert_2m_bars(m1_bars)
-            if bars.empty:
+            if m1_bars == None:
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+            m2_bars = utils.convert_2m_bars(m1_bars)
+            if m2_bars.empty:
                 return
 
             if not utils.check_bars_updated(m1_bars):
@@ -249,9 +251,9 @@ class DayTradingBase:
             #     return
 
             # calculate and fill ema 9 data
-            bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
-            current_candle = bars.iloc[-1]
-            prev_candle = bars.iloc[-2]
+            m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
+            current_candle = m2_bars.iloc[-1]
+            prev_candle = m2_bars.iloc[-2]
 
             # current price data
             current_low = current_candle['low']
@@ -356,26 +358,26 @@ class DayTradingBase:
                 exit_trading = True
 
             if not exit_trading:
-                # fetch 1m bar charts
-                bars = utils.convert_2m_bars(
+                # get 2m bar charts
+                m2_bars = utils.convert_2m_bars(
                     webullsdk.get_1m_bars(ticker_id, count=20))
 
                 # get bars error
-                if bars.empty:
+                if m2_bars.empty:
                     print("[{}] <{}>[{}] Bars data error!".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Bars data error!"
                     exit_trading = True
 
                 # check if momentum is stop (after hit 1% profit)
-                if not exit_trading and self.tracking_tickers[symbol]['stop_loss'] == None and utils.check_bars_current_low_less_than_prev_low(bars):
+                if not exit_trading and self.tracking_tickers[symbol]['stop_loss'] == None and utils.check_bars_current_low_less_than_prev_low(m2_bars):
                     print("[{}] <{}>[{}] Current low price is less than previous low price.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Current Low < Previous Low."
                     exit_trading = True
 
                 # check if price fixed in last 3 candles
-                if not exit_trading and utils.check_bars_price_fixed(bars):
+                if not exit_trading and utils.check_bars_price_fixed(m2_bars):
                     print("[{}] <{}>[{}] Price is fixed during last 3 candles.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Price fixed during last 3 candles."
@@ -500,6 +502,7 @@ class DayTradingBase:
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
+                # do trade
                 self.trade(ticker)
 
             # find trading ticker in top gainers
@@ -524,12 +527,13 @@ class DayTradingBase:
                 change_percentage = gainer["change_percentage"]
                 # check gap change
                 if change_percentage >= self.min_surge_change_ratio:
-                    bars = utils.convert_2m_bars(
-                        webullsdk.get_1m_bars(ticker_id, count=60))
-                    if bars.empty:
+                    m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+                    m2_bars = utils.convert_2m_bars(m1_bars)
+                    if m2_bars.empty:
                         continue
-                    latest_candle = bars.iloc[-1]
-                    if utils.check_bars_updated(bars):
+                    # use latest formed candle
+                    latest_candle = m2_bars.iloc[-2]
+                    if utils.check_bars_updated(m2_bars):
                         latest_close = latest_candle["close"]
                         latest_vwap = latest_candle["vwap"]
                         volume = int(latest_candle["volume"])
@@ -556,6 +560,8 @@ class DayTradingBase:
                             self.tracking_tickers[symbol] = ticker
                             print("[{}] Found <{}>[{}] to trade!".format(
                                 utils.get_now(), symbol, ticker_id))
+                            # do trade
+                            self.trade(ticker, m1_bars=m1_bars)
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
