@@ -1364,7 +1364,9 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
         avg_loss = 1.0
         if stat['loss_trades'] > 0:
             avg_loss = stat['total_loss'] / stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         value_profit_loss_ratio.append(profit_loss_ratio)
