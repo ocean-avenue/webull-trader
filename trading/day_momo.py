@@ -393,9 +393,6 @@ class DayTradingMomo(TradingBase):
 
         print("[{}] Trading ended!".format(utils.get_now()))
 
-        # call after function
-        self.call_after()
-
         # output today's proft loss
         portfolio = webullsdk.get_portfolio()
         day_profit_loss = "-"
