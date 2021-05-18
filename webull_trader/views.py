@@ -231,7 +231,9 @@ def day_analytics_date(request, date=None):
         avg_loss = 1.0
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
@@ -534,7 +536,9 @@ def day_reports_price(request):
         avg_loss = 1.0
         if price_stat['loss_trades'] > 0:
             avg_loss = price_stat['total_loss'] / price_stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if price_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         price_profit_loss_ratio.append(profit_loss_ratio)
@@ -740,7 +744,9 @@ def day_reports_hourly(request):
         avg_loss = 1.0
         if hourly_stat['loss_trades'] > 0:
             avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if hourly_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         hourly_profit_loss_ratio.append(profit_loss_ratio)
@@ -812,7 +818,9 @@ def day_reports_gap(request):
         avg_loss = 1.0
         if gap_stat['loss_trades'] > 0:
             avg_loss = gap_stat['total_loss'] / gap_stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if gap_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         gap_profit_loss_ratio.append(profit_loss_ratio)
@@ -883,7 +891,9 @@ def day_reports_holding(request):
         avg_loss = 1.0
         if holding_stat['loss_trades'] > 0:
             avg_loss = holding_stat['total_loss'] / holding_stat['loss_trades']
-        profit_loss_ratio = 1.0
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
         if holding_stat['trades'] > 0 and avg_loss < 0:
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         holding_profit_loss_ratio.append(profit_loss_ratio)
