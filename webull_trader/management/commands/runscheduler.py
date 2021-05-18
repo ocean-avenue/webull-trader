@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
-from trading import daytrading_default, daytrading_reduce
+from trading import day_momo, day_momo_reduce
 from webull_trader.enums import AlgorithmType
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -45,10 +45,10 @@ def day_trading_job():
     algo_type = utils.get_algo_type()
     if algo_type == AlgorithmType.DAY_MOMENTUM:
         # momo trade
-        daytrading_default.start()
+        day_momo.start()
     elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
         # momo trade with reduce size
-        daytrading_reduce.start()
+        day_momo_reduce.start()
     else:
         print("[{}] No day trading job found, skip...".format(utils.get_now()))
     print("[{}] Done day trading job!".format(utils.get_now()))

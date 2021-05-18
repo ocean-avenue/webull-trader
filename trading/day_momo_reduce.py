@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# Day Trading
-# Reduce Size - Trade based on win rate, reduce size if win rate is low.
-
+# Momo day trading based on win rate, reduce size if win rate is low
 
 from scripts import utils
+from webull_trader.enums import AlgorithmType
 from datetime import datetime, timedelta
-from trading.daytrading_base import DayTradingBase
+from trading.day_momo import DayTradingMomo
 
 
-class DayTradingReduceSize(DayTradingBase):
+class DayTradingMomoReduceSize(DayTradingMomo):
 
-    def call_before(self):
-        print("[{}] Reduce Size - Trade based on win rate, reduce size if win rate is low.".format(utils.get_now()))
+    def print_algo_name(self):
+        print("[{}] {}".format(utils.get_now(),
+              AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)))
 
     def get_buy_order_limit(self, symbol):
         buy_position_amount = self.order_amount_limit
@@ -33,14 +33,10 @@ class DayTradingReduceSize(DayTradingBase):
 
 def start():
     from scripts import utils
-    from trading.daytrading_reduce import DayTradingReduceSize
+    from trading.day_momo_reduce import DayTradingMomoReduceSize
 
     paper = utils.check_paper()
-    daytrading = DayTradingReduceSize(paper=paper)
-    if paper:
-        print("[{}] Start PAPER day trading...".format(utils.get_now()))
-    else:
-        print("[{}] Start LIVE day trading...".format(utils.get_now()))
+    daytrading = DayTradingMomoReduceSize(paper=paper)
     daytrading.start()
 
 
