@@ -3,6 +3,7 @@
 # Momo day trading class
 
 import time
+import pandas as pd
 from datetime import datetime, timedelta
 from trading.base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
@@ -15,7 +16,7 @@ class DayTradingMomo(TradingBase):
     def get_setup(self):
         return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
 
-    def trade(self, ticker, m1_bars=None):
+    def trade(self, ticker, m1_bars=pd.DataFrame()):
 
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
@@ -39,7 +40,7 @@ class DayTradingMomo(TradingBase):
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            if m1_bars == None:
+            if m1_bars.empty:
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
             m2_bars = utils.convert_2m_bars(m1_bars)
             if m2_bars.empty:
