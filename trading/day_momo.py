@@ -3,7 +3,6 @@
 # Momo day trading class
 
 import time
-import pandas as pd
 from datetime import datetime, timedelta
 from trading.base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
@@ -12,6 +11,8 @@ from scripts import utils
 
 
 class DayTradingMomo(TradingBase):
+
+    import pandas as pd
 
     def get_setup(self):
         return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
