@@ -1125,12 +1125,20 @@ def get_gap_by_symbol_date(symbol, date):
     return 0.0
 
 
-def get_algo_type_description():
-    description = enums.AlgorithmType.tostr(enums.AlgorithmType.DAY_MOMENTUM)
+def get_algo_type_desc():
+    description = enums.AlgorithmType.todesc(enums.AlgorithmType.DAY_MOMENTUM)
     settings = TradingSettings.objects.first()
     if settings:
-        description = enums.AlgorithmType.tostr(settings.algo_type)
+        description = enums.AlgorithmType.todesc(settings.algo_type)
     return description
+
+
+def get_algo_type_tag():
+    tag = enums.AlgorithmType.totag(enums.AlgorithmType.DAY_MOMENTUM)
+    settings = TradingSettings.objects.first()
+    if settings:
+        tag = enums.AlgorithmType.totag(settings.algo_type)
+    return tag
 
 
 # utils for render UI

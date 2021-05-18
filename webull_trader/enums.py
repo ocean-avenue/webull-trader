@@ -86,14 +86,32 @@ class AlgorithmType:
 
     @staticmethod
     def tostr(val):
+        return '[{}] {}'.format(AlgorithmType.totag(val), AlgorithmType.todesc(val))
+
+    @staticmethod
+    def todesc(val):
         if val == AlgorithmType.DAY_MOMENTUM:
-            return '[DAY/MOMO] Momo day trade as much as possible, mainly for collect data.'
+            return 'Momo day trade as much as possible, mainly for collect data.'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
-            return '[DAY/MOMO REDUCE] Momo day trade based on win rate, reduce size when win rate low.'
+            return 'Momo day trade based on win rate, reduce size when win rate low.'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
-            return '[DAY/RED GREEN] Day trade based on red to green strategy.'
+            return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.SWING_TURTLE:
-            return '[SWING/TURTLE] Swing trade based on turtle trading rules.'
+            return 'Swing trade based on turtle trading rules.'
         if val == AlgorithmType.LIVE:
-            return '[LIVE] High success rate strategy day trade and swing trade based on history records.'
+            return 'High success rate strategy day trade and swing trade based on history records.'
+        return UNKNOWN
+
+    @staticmethod
+    def totag(val):
+        if val == AlgorithmType.DAY_MOMENTUM:
+            return 'DAY/MOMO'
+        if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
+            return 'DAY/MOMO REDUCE'
+        if val == AlgorithmType.DAY_RED_TO_GREEN:
+            return 'DAY/RED GREEN'
+        if val == AlgorithmType.SWING_TURTLE:
+            return 'SWING/TURTLE'
+        if val == AlgorithmType.LIVE:
+            return 'LIVE'
         return UNKNOWN
