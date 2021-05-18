@@ -28,7 +28,7 @@ def start():
         stop_loss_ratio=-0.01,
         refresh_login_interval_in_min=10,
         blacklist_timeout_in_sec=1800,
-        algo_type=enums.AlgorithmType.DEFAULT,
+        algo_type=enums.AlgorithmType.DAY_MOMENTUM,
     )
     trading_settings.save()
 

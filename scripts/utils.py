@@ -346,7 +346,7 @@ def get_algo_type():
     settings = TradingSettings.objects.first()
     if settings == None:
         print("[{}] Cannot find trading settings, default algo type!".format(get_now()))
-        return enums.AlgorithmType.DEFAULT
+        return enums.AlgorithmType.DAY_MOMENTUM
     return settings.algo_type
 
 
@@ -1126,7 +1126,7 @@ def get_gap_by_symbol_date(symbol, date):
 
 
 def get_algo_type_description():
-    description = enums.AlgorithmType.tostr(enums.AlgorithmType.DEFAULT)
+    description = enums.AlgorithmType.tostr(enums.AlgorithmType.DAY_MOMENTUM)
     settings = TradingSettings.objects.first()
     if settings:
         description = enums.AlgorithmType.tostr(settings.algo_type)
@@ -1136,13 +1136,16 @@ def get_algo_type_description():
 # utils for render UI
 
 def get_account_type_for_render():
-    account_type = {
-        "value": "LIVE",
-        "value_style": "bg-success",
-    }
     if check_paper():
-        account_type["value"] = "PAPER"
-        account_type["value_style"] = "bg-warning"
+        account_type = {
+            "value": "PAPER",
+            "value_style": "bg-warning",
+        }
+    else:
+        account_type = {
+            "value": "LIVE",
+            "value_style": "bg-success",
+        }
     return account_type
 
 

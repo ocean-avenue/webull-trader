@@ -7,14 +7,20 @@ from webull_trader import enums
 class TradingSettings(models.Model):
     paper = models.BooleanField(default=True)
     ALGO_TYPE_CHOICES = (
-        (enums.AlgorithmType.DEFAULT, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.DEFAULT)),
-        (enums.AlgorithmType.REDUCE_SIZE, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.REDUCE_SIZE)),
+        (enums.AlgorithmType.DAY_MOMENTUM, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.DAY_MOMENTUM)),
+        (enums.AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
+        (enums.AlgorithmType.DAY_RED_TO_GREEN, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.DAY_RED_TO_GREEN)),
+        (enums.AlgorithmType.SWING_TURTLE, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.SWING_TURTLE)),
+        (enums.AlgorithmType.LIVE, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.LIVE)),
     )
     algo_type = models.PositiveSmallIntegerField(
         choices=ALGO_TYPE_CHOICES,
-        default=enums.AlgorithmType.DEFAULT
+        default=enums.AlgorithmType.DAY_MOMENTUM
     )
     # position amount
     order_amount_limit = models.FloatField()

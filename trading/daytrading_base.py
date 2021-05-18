@@ -2,7 +2,6 @@
 
 # Base day trading class
 
-from re import M
 import time
 from datetime import datetime, timedelta
 from webull_trader.enums import SetupType

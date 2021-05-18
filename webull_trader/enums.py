@@ -78,13 +78,22 @@ class SetupType:
 
 
 class AlgorithmType:
-    DEFAULT = 0
-    REDUCE_SIZE = 1
+    DAY_MOMENTUM = 0
+    DAY_MOMENTUM_REDUCE_SIZE = 1
+    DAY_RED_TO_GREEN = 2
+    SWING_TURTLE = 100
+    LIVE = 200
 
     @staticmethod
     def tostr(val):
-        if val == AlgorithmType.DEFAULT:
-            return '[Default] Trade as much as possible, mainly for collect data.'
-        if val == AlgorithmType.REDUCE_SIZE:
-            return '[Reduce Size] Trade based on win rate, reduce size if win rate is low.'
+        if val == AlgorithmType.DAY_MOMENTUM:
+            return '[DAY/MOMO] Momo day trade as much as possible, mainly for collect data.'
+        if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
+            return '[DAY/MOMO REDUCE] Momo day trade based on win rate, reduce size when win rate low.'
+        if val == AlgorithmType.DAY_RED_TO_GREEN:
+            return '[DAY/RED GREEN] Day trade based on red to green strategy.'
+        if val == AlgorithmType.SWING_TURTLE:
+            return '[SWING/TURTLE] Swing trade based on turtle trading rules.'
+        if val == AlgorithmType.LIVE:
+            return '[LIVE] High success rate strategy day trade and swing trade based on history records.'
         return UNKNOWN

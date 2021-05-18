@@ -43,14 +43,33 @@ def day_trading_job():
     print("[{}] Start day trading job...".format(utils.get_now()))
     # load algo type
     algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.DYNAMIC_OPTIMIZE:
-        # reduce size
+    if algo_type == AlgorithmType.DAY_MOMENTUM:
+        # momo trade
+        daytrading_default.start()
+    elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
+        # momo trade with reduce size
         daytrading_reduce.start()
+    else:
+        print("[{}] No day trading job found, skip...".format(utils.get_now()))
+    print("[{}] Done day trading job!".format(utils.get_now()))
+
+
+def swing_trading_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip swing trading job...".format(
+            utils.get_now(), holiday))
+        return
+    print("[{}] Start swing trading job...".format(utils.get_now()))
+    # load algo type
+    algo_type = utils.get_algo_type()
+    if algo_type == AlgorithmType.SWING_TURTLE:
+        # turtle trading
+        # TODO
         pass
     else:
-        # default
-        daytrading_default.start()
-    print("[{}] Done day trading job!".format(utils.get_now()))
+        print("[{}] No swing trading job found, skip...".format(utils.get_now()))
+    print("[{}] Done swing trading job!".format(utils.get_now()))
 
 
 def fetch_stats_data_job():
