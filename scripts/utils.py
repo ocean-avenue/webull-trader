@@ -1429,3 +1429,56 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
         "profit_loss_ratio": value_profit_loss_ratio,
         "trades": value_trades,
     }
+
+
+def get_hourly_stat_from_trades_for_render(day_trades):
+    hourly_statistics = get_stats_empty_list(size=32)
+    # for hourly P&L, win rate and profit/loss ratio, trades
+    for day_trade in day_trades:
+        hourly_idx = get_market_hourly_interval_index(
+            local_datetime(day_trade['buy_time']))
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                hourly_statistics[hourly_idx]['win_trades'] += 1
+                hourly_statistics[hourly_idx]['total_profit'] += gain
+            else:
+                hourly_statistics[hourly_idx]['loss_trades'] += 1
+                hourly_statistics[hourly_idx]['total_loss'] += gain
+            hourly_statistics[hourly_idx]['profit_loss'] += gain
+            hourly_statistics[hourly_idx]['trades'] += 1
+    hourly_profit_loss = []
+    hourly_win_rate = []
+    hourly_profit_loss_ratio = []
+    hourly_trades = []
+    # calculate win rate and profit/loss ratio
+    for hourly_stat in hourly_statistics:
+        hourly_trades.append(hourly_stat['trades'])
+        hourly_profit_loss.append(get_color_bar_chart_item_for_render(
+            round(hourly_stat['profit_loss'], 2)))
+        if hourly_stat['trades'] > 0:
+            hourly_win_rate.append(
+                round(hourly_stat['win_trades']/hourly_stat['trades'] * 100, 2))
+        else:
+            hourly_win_rate.append(0.0)
+        avg_profit = 1.0
+        if hourly_stat['win_trades'] > 0:
+            avg_profit = hourly_stat['total_profit'] / \
+                hourly_stat['win_trades']
+        avg_loss = 1.0
+        if hourly_stat['loss_trades'] > 0:
+            avg_loss = hourly_stat['total_loss'] / hourly_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if hourly_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if hourly_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        hourly_profit_loss_ratio.append(profit_loss_ratio)
+
+    return {
+        "profit_loss": hourly_profit_loss,
+        "win_rate": hourly_win_rate,
+        "profit_loss_ratio": hourly_profit_loss_ratio,
+        "trades": hourly_trades,
+    }
