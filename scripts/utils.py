@@ -304,6 +304,12 @@ def calculate_charts_ema9(charts):
     return charts
 
 
+def get_hist_key_stat(symbol, date):
+    key_statistics = HistoricalKeyStatistics.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return key_statistics
+
+
 def get_order_action_enum(action_str):
     action = enums.ActionType.BUY
     if action_str == "SELL":
@@ -484,8 +490,7 @@ def save_hist_key_statistics(quote_data, date):
     symbol = quote_data['symbol']
     print("[{}] Importing key statistics for {}...".format(
         get_now(), symbol))
-    key_statistics = HistoricalKeyStatistics.objects.filter(
-        symbol=symbol, date=date)
+    key_statistics = get_hist_key_stat(symbol, date)
     if not key_statistics:
         pe = None
         if 'pe' in quote_data:
@@ -943,6 +948,40 @@ def get_holding_time_index(holding_sec):
     return index
 
 
+def get_relative_volume_labels():
+    return [
+        "0-0.5",  # 0
+        "0.5-1",  # 1
+        "1-1.5",  # 2
+        "1.5-2",  # 3
+        "2-3",  # 4
+        "3-5",  # 5
+        "5-10",  # 6
+        "10+",  # 7
+    ]
+
+
+def get_relative_volume_index(rel_vol):
+    index = -1
+    if rel_vol <= 0.5:
+        index = 0
+    elif rel_vol <= 1:
+        index = 1
+    elif rel_vol <= 1.5:
+        index = 2
+    elif rel_vol <= 2:
+        index = 3
+    elif rel_vol <= 3:
+        index = 4
+    elif rel_vol <= 5:
+        index = 5
+    elif rel_vol <= 10:
+        index = 6
+    else:
+        index = 7
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
@@ -1265,8 +1304,7 @@ def get_last_60d_daily_candle_data_for_render(symbol, date):
 
 
 def get_trade_stat_record_for_render(symbol, trade, date):
-    key_statistics = HistoricalKeyStatistics.objects.filter(
-        symbol=symbol).filter(date=date).first()
+    key_statistics = get_hist_key_stat(symbol, date)
     mktcap = 0
     short_float = None
     float_shares = 0
@@ -1342,21 +1380,21 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
     for day_trade in day_trades:
         symbol = day_trade['symbol']
         buy_date = day_trade['buy_time'].date()
-        key_statistics = HistoricalKeyStatistics.objects.filter(
-            symbol=symbol).filter(date=buy_date).first()
-        value = getattr(key_statistics, field_name)
-        value_idx = value_idx_func(value)
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                statistics_list[value_idx]['win_trades'] += 1
-                statistics_list[value_idx]['total_profit'] += gain
-            else:
-                statistics_list[value_idx]['loss_trades'] += 1
-                statistics_list[value_idx]['total_loss'] += gain
-            statistics_list[value_idx]['profit_loss'] += gain
-            statistics_list[value_idx]['trades'] += 1
+        key_statistics = get_hist_key_stat(symbol, buy_date)
+        if key_statistics:
+            value = getattr(key_statistics, field_name)
+            value_idx = value_idx_func(value)
+            if 'sell_price' in day_trade:
+                gain = (day_trade['sell_price'] -
+                        day_trade['buy_price']) * day_trade['quantity']
+                if gain > 0:
+                    statistics_list[value_idx]['win_trades'] += 1
+                    statistics_list[value_idx]['total_profit'] += gain
+                else:
+                    statistics_list[value_idx]['loss_trades'] += 1
+                    statistics_list[value_idx]['total_loss'] += gain
+                statistics_list[value_idx]['profit_loss'] += gain
+                statistics_list[value_idx]['trades'] += 1
     value_profit_loss = []
     value_win_rate = []
     value_profit_loss_ratio = []
