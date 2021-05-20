@@ -973,3 +973,40 @@ def day_reports_hourly(request):
         "hourly_profit_loss_ratio": hourly_stat['profit_loss_ratio'],
         "hourly_trades": hourly_stat['trades'],
     })
+
+
+@login_required
+def day_reports_daily(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_desc = utils.get_algo_type_desc()
+    algo_tag = utils.get_algo_type_tag()
+
+    daily_labels = []
+    daily_profit_loss = []
+    daily_win_rate = []
+    daily_profit_loss_ratio = []
+    daily_trades = []
+    daytrade_perfs = HistoricalDayTradePerformance.objects.all()
+    for daytrade_perf in daytrade_perfs:
+        daily_labels.append(daytrade_perf.date.strftime("%Y/%m/%d"))
+        daily_profit_loss.append(
+            utils.get_color_bar_chart_item_for_render(daytrade_perf.day_profit_loss))
+        daily_win_rate.append(daytrade_perf.win_rate)
+        daily_profit_loss_ratio.append(daytrade_perf.profit_loss_ratio)
+        daily_trades.append(daytrade_perf.trades)
+
+    return render(request, 'webull_trader/day_reports_daily.html', {
+        "account_type": account_type,
+        "algo_desc": algo_desc,
+        "algo_tag": algo_tag,
+        "title": "Hourly",
+        "daily_labels": daily_labels,
+        "daily_profit_loss": daily_profit_loss,
+        "daily_win_rate": daily_win_rate,
+        "daily_profit_loss_ratio": daily_profit_loss_ratio,
+        "daily_trades": daily_trades,
+    })

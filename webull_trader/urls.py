@@ -16,4 +16,5 @@ urlpatterns = [
     path('day-reports/relvol', views.day_reports_relvol, name='day_reports_relvol'),
     path('day-reports/holding', views.day_reports_holding, name='day_reports_holding'),
     path('day-reports/hourly', views.day_reports_hourly, name='day_reports_hourly'),
+    path('day-reports/daily', views.day_reports_daily, name='day_reports_daily'),
 ]

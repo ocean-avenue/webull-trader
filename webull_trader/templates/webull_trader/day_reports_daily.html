@@ -1,0 +1,229 @@
+{% extends 'webull_trader/base.html' %}
+
+{% block title %} Day Trading Reports {% endblock %}
+
+{% load static %}
+
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Day Trading Reports / Daily</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Daily P&L</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="daily-profit-loss-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Daily Win Rate</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="daily-win-rate-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Daily Profit/Loss Ratio</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="daily-pl-ratio-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Daily Trades</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="daily-trades-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  // daily profit loss chart
+  const daily_profit_loss_chart = echarts.init(document.getElementById("daily-profit-loss-chart"));
+  const daily_profit_loss_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{daily_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [{
+      data: {{daily_profit_loss|safe}},
+      type: 'bar',
+      areaStyle: {}
+    }]
+  };
+  daily_profit_loss_chart.setOption(daily_profit_loss_option);
+
+  // daily win rate chart
+  const daily_win_rate_chart = echarts.init(document.getElementById("daily-win-rate-chart"));
+  const daily_win_rate_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{daily_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Win Rate",
+        data: {{daily_win_rate|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  daily_win_rate_chart.setOption(daily_win_rate_option);
+
+  // daily profit/loss ratio chart
+  const daily_profit_loss_ratio_chart = echarts.init(document.getElementById("daily-pl-ratio-chart"));
+  const daily_profit_loss_ratio_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{daily_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Profit/Loss Ratio",
+        data: {{daily_profit_loss_ratio|safe}},
+        type: 'bar',
+        smooth: true,
+      },
+    ]
+  };
+  daily_profit_loss_ratio_chart.setOption(daily_profit_loss_ratio_option);
+
+  // daily trades chart
+  const daily_trades_chart = echarts.init(document.getElementById("daily-trades-chart"));
+  const daily_trades_option = {
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{daily_labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: "Trades",
+        data: {{daily_trades|safe}},
+        type: 'bar',
+        smooth: true,
+      }
+    ]
+  };
+  daily_trades_chart.setOption(daily_trades_option);
+
+  // resize charts
+  window.onresize = function() {
+    daily_profit_loss_chart.resize();
+    daily_win_rate_chart.resize();
+    daily_profit_loss_ratio_chart.resize();
+    daily_trades_chart.resize();
+  };
+</script>
+{% endblock %}

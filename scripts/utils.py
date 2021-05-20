@@ -632,7 +632,7 @@ def get_trades_from_orders(buy_orders, sell_orders):
 
 def get_stats_empty_list(size=8):
     empty_list = []
-    for i in range(0, size):
+    for _ in range(0, size):
         empty_list.append({
             "trades": 0,
             "win_trades": 0,

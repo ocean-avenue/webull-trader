@@ -193,8 +193,12 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Hourly</a>
                 </li>
+                {% if request.path == '/day-reports/daily' %}
+                <li class="sidebar-item active">
+                {% else  %}
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Daily</a>
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_daily' %}">Daily</a>
                 </li>
                 <li class="sidebar-item">
                   <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Weekly</a>
