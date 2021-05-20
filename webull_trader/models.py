@@ -176,6 +176,32 @@ class WebullAccountStatistics(models.Model):
         return "[{}] day P&L: {}".format(self.date, self.day_profit_loss)
 
 
+class HistoricalTopGainer(models.Model):
+    symbol = models.CharField(max_length=64)
+    ticker_id = models.CharField(max_length=128)
+    change = models.FloatField()
+    change_percentage = models.FloatField()
+    price = models.FloatField()
+
+    date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] <{}> top gainer: +{}%".format(self.date, self.symbol, round(self.change_percentage * 100, 2))
+
+
+class HistoricalTopLoser(models.Model):
+    symbol = models.CharField(max_length=64)
+    ticker_id = models.CharField(max_length=128)
+    change = models.FloatField()
+    change_percentage = models.FloatField()
+    price = models.FloatField()
+
+    date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] <{}> top loser: {}%".format(self.date, self.symbol, round(self.change_percentage * 100, 2))
+
+
 class HistoricalKeyStatistics(models.Model):
     symbol = models.CharField(max_length=64)
     open = models.FloatField()

@@ -671,12 +671,12 @@ def get_1m_charts(ticker_id, count=20):
     return ret_list
 
 
-def get_pre_market_gainers():
+def get_pre_market_gainers(count=10):
     time.sleep(1)
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_PRE_MARKET_GAINERS_URL,
+            WEBULL_PRE_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         obj_list = res_json["data"]
@@ -706,12 +706,12 @@ def get_pre_market_gainers():
         return []
 
 
-def get_top_gainers():
+def get_top_gainers(count=10):
     time.sleep(1)
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_TOP_GAINERS_URL,
+            WEBULL_TOP_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         obj_list = res_json["data"]
@@ -740,12 +740,12 @@ def get_top_gainers():
         return []
 
 
-def get_after_market_gainers():
+def get_after_market_gainers(count=10):
     time.sleep(1)
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_AFTER_MARKET_GAINERS_URL,
+            WEBULL_AFTER_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         obj_list = res_json["data"]
@@ -775,12 +775,12 @@ def get_after_market_gainers():
         return []
 
 
-def get_top_losers():
+def get_top_losers(count=10):
     time.sleep(1)
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_TOP_LOSERS_URL,
+            WEBULL_TOP_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         obj_list = res_json["data"]
@@ -809,12 +809,12 @@ def get_top_losers():
         return []
 
 
-def get_after_market_losers():
+def get_after_market_losers(count=10):
     time.sleep(1)
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_AFTER_MARKET_LOSERS_URL,
+            WEBULL_AFTER_MARKET_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         obj_list = res_json["data"]

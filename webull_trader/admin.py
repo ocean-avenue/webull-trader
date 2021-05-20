@@ -109,6 +109,36 @@ admin.site.register(models.WebullAccountStatistics,
                     WebullAccountStatisticsAdmin)
 
 
+class HistoricalTopGainerAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'date',
+        'symbol',
+        'change',
+        'change_percentage',
+        'price',
+    ]
+
+
+admin.site.register(models.HistoricalTopGainer,
+                    HistoricalTopGainerAdmin)
+
+
+class HistoricalTopLoserAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'date',
+        'symbol',
+        'change',
+        'change_percentage',
+        'price',
+    ]
+
+
+admin.site.register(models.HistoricalTopLoser,
+                    HistoricalTopLoserAdmin)
+
+
 class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):
 
     list_display = [
