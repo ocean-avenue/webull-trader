@@ -2,12 +2,14 @@
 
 # fetch minute/daily historical candle data into database
 
+
 def start():
     import time
     from datetime import date
     from sdk import webullsdk, finvizsdk
     from scripts import utils
     from webull_trader.models import WebullOrder
+    from webull_trader.enums import AlgorithmType
 
     paper = utils.check_paper()
     webullsdk.login(paper=paper)
@@ -93,6 +95,38 @@ def start():
 
         # rest for 5 sec
         time.sleep(5)
+
+    algo_type = utils.get_algo_type()
+    if algo_type == AlgorithmType.DAY_RED_TO_GREEN:
+        # save top gainers
+        top_gainers = webullsdk.get_top_gainers(count=30)
+        for gainer_data in top_gainers:
+            symbol = gainer_data['symbol']
+            ticker_id = gainer_data['ticker_id']
+            utils.save_hist_top_gainer(gainer_data, today)
+            key_statistics = utils.get_hist_key_stat(symbol, today)
+            if not key_statistics:
+                # fetch historical quote
+                quote_data = webullsdk.get_quote(ticker_id=ticker_id)
+                additional_quote_data = finvizsdk.get_quote(symbol)
+                quote_data['shortFloat'] = additional_quote_data['shortFloat']
+                # save historical quote
+                utils.save_hist_key_statistics(quote_data, today)
+
+        # save top losers
+        top_losers = webullsdk.get_top_losers(count=30)
+        for loser_data in top_losers:
+            symbol = loser_data['symbol']
+            ticker_id = loser_data['ticker_id']
+            utils.save_hist_top_loser(loser_data, today)
+            key_statistics = utils.get_hist_key_stat(symbol, today)
+            if not key_statistics:
+                # fetch historical quote
+                quote_data = webullsdk.get_quote(ticker_id=ticker_id)
+                additional_quote_data = finvizsdk.get_quote(symbol)
+                quote_data['shortFloat'] = additional_quote_data['shortFloat']
+                # save historical quote
+                utils.save_hist_key_statistics(quote_data, today)
 
 
 if __name__ == "django.core.management.commands.shell":

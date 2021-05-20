@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import datetime, date
 from webull_trader import enums
 from scripts import config
-from webull_trader.models import HistoricalKeyStatistics, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
@@ -310,6 +310,18 @@ def get_hist_key_stat(symbol, date):
     return key_statistics
 
 
+def get_hist_top_gainer(symbol, date):
+    top_gainer = HistoricalTopGainer.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return top_gainer
+
+
+def get_hist_top_loser(symbol, date):
+    top_loser = HistoricalTopLoser.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return top_loser
+
+
 def get_order_action_enum(action_str):
     action = enums.ActionType.BUY
     if action_str == "SELL":
@@ -557,6 +569,40 @@ def save_hist_key_statistics(quote_data, date):
             date=date,
         )
         key_statistics.save()
+
+
+def save_hist_top_gainer(gainer_data, date):
+    symbol = gainer_data['symbol']
+    print("[{}] Importing top gainer for {}...".format(
+        get_now(), symbol))
+    top_gainer = get_hist_top_gainer(symbol, date)
+    if not top_gainer:
+        top_gainer = HistoricalTopGainer(
+            symbol=symbol,
+            ticker_id=gainer_data['ticker_id'],
+            change=gainer_data['change'],
+            change_percentage=gainer_data['change_percentage'],
+            price=gainer_data['price'],
+            date=date,
+        )
+        top_gainer.save()
+
+
+def save_hist_top_loser(loser_data, date):
+    symbol = loser_data['symbol']
+    print("[{}] Importing top loser for {}...".format(
+        get_now(), symbol))
+    top_loser = get_hist_top_loser(symbol, date)
+    if not top_loser:
+        top_loser = HistoricalTopLoser(
+            symbol=symbol,
+            ticker_id=loser_data['ticker_id'],
+            change=loser_data['change'],
+            change_percentage=loser_data['change_percentage'],
+            price=loser_data['price'],
+            date=date,
+        )
+        top_loser.save()
 
 
 def save_hist_minute_bar_list(bar_list):

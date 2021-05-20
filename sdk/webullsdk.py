@@ -706,6 +706,18 @@ def get_pre_market_gainers(count=10):
         return []
 
 
+# [
+#    {
+#       "symbol":"MOSY",
+#       "ticker_id":913323981,
+#       "change":1.67,
+#       "change_percentage":0.4406,
+#       "price":5.15
+#    },
+#   ...
+# ]
+
+
 def get_top_gainers(count=10):
     time.sleep(1)
     try:
@@ -773,6 +785,18 @@ def get_after_market_gainers(count=10):
         print("[{}] ⚠️  Exception get_after_market_gainers: {}".format(
             utils.get_now(), e))
         return []
+
+
+# [
+#    {
+#       "symbol":"JZXN",
+#       "ticker_id":950172499,
+#       "change":-8.67,
+#       "change_percentage":-0.4656,
+#       "price":9.61
+#    },
+#   ...
+# ]
 
 
 def get_top_losers(count=10):
