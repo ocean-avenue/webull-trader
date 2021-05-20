@@ -213,6 +213,7 @@ class HistoricalKeyStatistics(models.Model):
     market_value = models.FloatField()
     volume = models.FloatField()
     turnover_rate = models.FloatField()
+    # range %
     vibrate_ratio = models.FloatField()
     avg_vol_10d = models.FloatField()
     avg_vol_3m = models.FloatField()
