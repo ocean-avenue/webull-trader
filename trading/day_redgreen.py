@@ -4,7 +4,7 @@
 
 import time
 from datetime import datetime, timedelta
-from trading.base import TradingBase
+from trading.trading_base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 from sdk import webullsdk
@@ -13,14 +13,73 @@ from scripts import utils
 
 class DayTradingRedGreen(TradingBase):
 
-    import pandas as pd
-
     def get_setup(self):
         return SetupType.DAY_RED_TO_GREEN
 
-    def trade(self, ticker, m1_bars=pd.DataFrame()):
-        # TODO
-        pass
+    def trade(self, ticker):
+
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        prev_close = ticker['prev_close']
+
+        # if ticker['pending_buy']:
+        #     self.check_buy_order_filled(ticker)
+        #     return
+
+        # if ticker['pending_sell']:
+        #     self.check_sell_order_filled(ticker)
+        #     return
+
+        holding_quantity = ticker['positions']
+
+        # fetch 1m bar charts
+        m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+        m2_bars = utils.convert_2m_bars(m1_bars)
+        if m2_bars.empty:
+            return
+
+        current_candle = m2_bars.iloc[-1]
+        prev_candle = m2_bars.iloc[-2]
+        preprev_candle = m2_bars.iloc[-3]
+
+        # current price data
+        current_close = current_candle['close']
+        current_low = current_candle['low']
+        prev_low = prev_candle['low']
+        preprev_volume = preprev_candle['volume']
+
+        if holding_quantity == 0:
+
+            # check entry: current price above prev close
+            if current_low >= prev_close and prev_low <= prev_close:
+                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_quant = (int)(buy_position_amount / current_close)
+                print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                    utils.get_now(), symbol, ticker_id, buy_quant, current_close))
+                # TODO
+                self.tracking_tickers[symbol]['positions'] = buy_quant
+        else:
+
+            # check stop loss
+            if current_close < prev_close:
+                print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {} (STOP LOSS)".format(
+                    utils.get_now(), symbol, ticker_id, holding_quantity, current_close))
+                # TODO
+                self.tracking_tickers[symbol]['positions'] = 0
+                return
+
+            # check taking profit
+            take_profit = True
+            for _, row in m2_bars.iterrows():
+                if row['volume'] > preprev_volume:
+                    take_profit = False
+                    break
+            if take_profit:
+                print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {} (TAKE PROFIT)".format(
+                    utils.get_now(), symbol, ticker_id, holding_quantity, current_close))
+                # TODO
+                self.tracking_tickers[symbol]['positions'] = 0
+                return
 
     def print_algo_name(self):
         print("[{}] {}".format(utils.get_now(),
