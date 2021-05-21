@@ -313,23 +313,7 @@ class DayTradingMomo(TradingBase):
                         # check if trasaction amount meets requirement
                         if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
                             # found trading ticker
-                            ticker = {
-                                "symbol": symbol,
-                                "ticker_id": ticker_id,
-                                "pending_buy": False,
-                                "pending_sell": False,
-                                "pending_order_id": None,
-                                "pending_order_time": None,
-                                "order_filled_time": None,
-                                "last_profit_loss_rate": None,
-                                "last_sell_time": None,
-                                "positions": 0,
-                                "start_time": datetime.now(),
-                                "stop_loss": None,
-                                # paper trade do not have stop trailing order, this value keep track of max P&L
-                                "max_profit_loss_rate": 0,
-                                "exit_note": None,
-                            }
+                            ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                             self.tracking_tickers[symbol] = ticker
                             print("[{}] Found <{}>[{}] to trade!".format(
                                 utils.get_now(), symbol, ticker_id))

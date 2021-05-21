@@ -73,6 +73,26 @@ class TradingBase:
 
         return True
 
+    def get_init_tracking_ticker(self, symbol, ticker_id, prev_close=None):
+        return {
+            "symbol": symbol,
+            "ticker_id": ticker_id,
+            "pending_buy": False,
+            "pending_sell": False,
+            "pending_order_id": None,
+            "pending_order_time": None,
+            "order_filled_time": None,
+            "last_profit_loss_rate": None,
+            "last_sell_time": None,
+            "positions": 0,
+            "start_time": datetime.now(),
+            "stop_loss": None,
+            # paper trade do not have stop trailing order, this value keep track of max P&L
+            "max_profit_loss_rate": 0,
+            "exit_note": None,
+            "prev_close": prev_close,
+        }
+
     def check_buy_order_filled(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
