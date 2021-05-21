@@ -10,12 +10,12 @@ from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingMomo(TradingBase):
+class DayTradingRedGreen(TradingBase):
 
     import pandas as pd
 
     def get_setup(self):
-        return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
+        return SetupType.DAY_RED_TO_GREEN
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
@@ -245,7 +245,7 @@ class DayTradingMomo(TradingBase):
 
     def print_algo_name(self):
         print("[{}] {}".format(utils.get_now(),
-              AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM)))
+              AlgorithmType.tostr(AlgorithmType.DAY_RED_TO_GREEN)))
 
     def start(self):
 
@@ -258,7 +258,7 @@ class DayTradingMomo(TradingBase):
 
         self.print_algo_name()
 
-        while not utils.is_market_hour():
+        while not utils.is_regular_market_hour():
             print("[{}] Waiting for market hour...".format(utils.get_now()))
             time.sleep(10)
 
@@ -271,7 +271,7 @@ class DayTradingMomo(TradingBase):
         last_login_refresh_time = datetime.now()
 
         # main loop
-        while utils.is_market_hour():
+        while utils.is_regular_market_hour():
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
@@ -370,10 +370,10 @@ class DayTradingMomo(TradingBase):
 
 def start():
     from scripts import utils
-    from trading.day_momo import DayTradingMomo
+    from trading.day_redgreen import DayTradingRedGreen
 
     paper = utils.check_paper()
-    daytrading = DayTradingMomo(paper=paper)
+    daytrading = DayTradingRedGreen(paper=paper)
     daytrading.start()
 
 

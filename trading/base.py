@@ -188,6 +188,43 @@ class TradingBase:
                     print("[{}] Failed to cancel timeout sell order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
+    def complete_order(self, ticker):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+
+        if ticker['pending_buy']:
+            self.check_buy_order_filled(ticker)
+            return
+
+        if ticker['pending_sell']:
+            self.check_sell_order_filled(ticker)
+            return
+
+        holding_quantity = ticker['positions']
+        if holding_quantity == 0:
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            return
+
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        if quote == None:
+            return
+        bid_price = float(quote['depth']['ntvAggBidList'][0]['price'])
+        order_response = webullsdk.sell_limit_order(
+            ticker_id=ticker_id,
+            price=bid_price,
+            quant=holding_quantity)
+        print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+            utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
+        if 'msg' in order_response:
+            print("[{}] {}".format(utils.get_now(), order_response['msg']))
+        else:
+            # mark pending sell
+            self.tracking_tickers[symbol]['pending_sell'] = True
+            self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+            )
+
     def get_setup(self):
         return 999
 
