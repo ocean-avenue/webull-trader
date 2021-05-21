@@ -4,7 +4,7 @@
 
 import time
 from datetime import datetime, timedelta
-from trading.base import TradingBase
+from trading.trading_base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
 from sdk import webullsdk
 from scripts import utils
