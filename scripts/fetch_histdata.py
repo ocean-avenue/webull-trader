@@ -11,8 +11,8 @@ def start():
     from webull_trader.models import WebullOrder
     from webull_trader.enums import AlgorithmType
 
-    paper = utils.check_paper()
-    webullsdk.login(paper=paper)
+    # paper = utils.check_paper()
+    # webullsdk.login(paper=paper)
 
     today = date.today()
     # get all symbols orders in today's orders
