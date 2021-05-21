@@ -101,12 +101,13 @@ class DayTradingRedGreen(TradingBase):
             time.sleep(10)
 
         # login
-        if not webullsdk.login(paper=self.paper):
-            print("[{}] Webull login failed, quit!".format(
-                utils.get_now()))
-            return
-        print("[{}] Webull logged in".format(utils.get_now()))
-        last_login_refresh_time = datetime.now()
+        # TODO
+        # if not webullsdk.login(paper=self.paper):
+        #     print("[{}] Webull login failed, quit!".format(
+        #         utils.get_now()))
+        #     return
+        # print("[{}] Webull logged in".format(utils.get_now()))
+        # last_login_refresh_time = datetime.now()
 
         today = datetime.today().date()
         last_market_day = today - timedelta(days=1)
@@ -142,10 +143,11 @@ class DayTradingRedGreen(TradingBase):
                 self.trade(ticker)
 
             # refresh login
-            if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
-                webullsdk.login(paper=self.paper)
-                print("[{}] Refresh webull login".format(utils.get_now()))
-                last_login_refresh_time = datetime.now()
+            # TODO
+            # if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
+            #     webullsdk.login(paper=self.paper)
+            #     print("[{}] Refresh webull login".format(utils.get_now()))
+            #     last_login_refresh_time = datetime.now()
 
             # at least slepp 1 sec
             time.sleep(1)
