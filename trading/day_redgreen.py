@@ -44,6 +44,7 @@ class DayTradingRedGreen(TradingBase):
 
         # current price data
         current_close = current_candle['close']
+        current_high = current_candle['high']
         current_low = current_candle['low']
         prev_low = prev_candle['low']
         preprev_volume = preprev_candle['volume']
@@ -61,7 +62,7 @@ class DayTradingRedGreen(TradingBase):
         else:
 
             # check stop loss
-            if current_close < prev_close:
+            if current_high < prev_close:
                 print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {} (STOP LOSS)".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, current_close))
                 # TODO
