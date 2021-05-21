@@ -206,6 +206,30 @@ class TradingBase:
                     print("[{}] Failed to cancel timeout sell order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
+    def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
+        if 'msg' in order_response:
+            print("[{}] {}".format(
+                utils.get_now(), order_response['msg']))
+        elif 'orderId' in order_response:
+            # mark pending buy
+            self.tracking_tickers[symbol]['pending_buy'] = True
+            self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+            )
+            # set stop loss at prev low
+            self.tracking_tickers[symbol]['stop_loss'] = stop_loss
+
+    def update_pending_sell_order(self, symbol, order_response, exit_note=""):
+        if 'msg' in order_response:
+            print("[{}] {}".format(utils.get_now(), order_response['msg']))
+        elif 'orderId' in order_response:
+            # mark pending sell
+            self.tracking_tickers[symbol]['pending_sell'] = True
+            self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
+            )
+            self.tracking_tickers[symbol]['exit_note'] = exit_note
+
     def complete_order(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']

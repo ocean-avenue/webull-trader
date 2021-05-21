@@ -109,17 +109,9 @@ class DayTradingMomo(TradingBase):
                         utils.get_now(), symbol, ticker_id, current_close, current_vwap, round(current_ema9, 3), current_volume))
                     print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
-                    if 'msg' in order_response:
-                        print("[{}] {}".format(
-                            utils.get_now(), order_response['msg']))
-                    else:
-                        # mark pending buy
-                        self.tracking_tickers[symbol]['pending_buy'] = True
-                        self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
-                        self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
-                        )
-                        # set stop loss at prev low
-                        self.tracking_tickers[symbol]['stop_loss'] = prev_low
+                    # update pending buy
+                    self.update_pending_buy_order(
+                        symbol, order_response, stop_loss=prev_low)
         else:
             positions = webullsdk.get_positions()
             if positions == None:
@@ -215,16 +207,9 @@ class DayTradingMomo(TradingBase):
                     utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
                 print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
-                if 'msg' in order_response:
-                    print("[{}] {}".format(
-                        utils.get_now(), order_response['msg']))
-                else:
-                    # mark pending sell
-                    self.tracking_tickers[symbol]['pending_sell'] = True
-                    self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
-                    self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
-                    )
-                    self.tracking_tickers[symbol]['exit_note'] = exit_note
+                # update pending sell
+                self.update_pending_sell_order(
+                    symbol, order_response, exit_note=exit_note)
                 # update trading stats
                 if symbol not in self.trading_stats:
                     self.trading_stats[symbol] = {
@@ -313,7 +298,8 @@ class DayTradingMomo(TradingBase):
                         # check if trasaction amount meets requirement
                         if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
                             # found trading ticker
-                            ticker = self.get_init_tracking_ticker(symbol, ticker_id)
+                            ticker = self.get_init_tracking_ticker(
+                                symbol, ticker_id)
                             self.tracking_tickers[symbol] = ticker
                             print("[{}] Found <{}>[{}] to trade!".format(
                                 utils.get_now(), symbol, ticker_id))
