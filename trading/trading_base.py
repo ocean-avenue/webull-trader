@@ -29,10 +29,13 @@ class TradingBase:
         self.min_surge_volume = trading_settings.min_surge_volume
         print("[{}] Min surge volume: {}".format(
             utils.get_now(), self.min_surge_volume))
-        # at least 8% change for surge
+        # at least 4% change for surge
         self.min_surge_change_ratio = trading_settings.min_surge_change_ratio
         print("[{}] Min gap change: {}%".format(
             utils.get_now(), round(self.min_surge_change_ratio * 100, 2)))
+        self.avg_confirm_volume = trading_settings.avg_confirm_volume
+        print("[{}] Avg confirm volume: {}".format(
+            utils.get_now(), self.avg_confirm_volume))
         self.order_amount_limit = trading_settings.order_amount_limit
         print("[{}] Buy order limit: {}".format(
             utils.get_now(), self.order_amount_limit))
@@ -275,3 +278,22 @@ class TradingBase:
 
     def check_if_track_symbol(self, symbol):
         return True
+
+    def check_if_has_enough_volume(self, bars):
+        enough_volume = True
+        # only check for regular hour now
+        if utils.is_regular_market_hour():
+            total_volume = 0
+            total_count = 0
+            for index, row in bars.iterrows():
+                time = index.to_pydatetime()
+                if (time.hour == 9 and time.minute > 30) or time.hour > 9:
+                    volume = row["volume"]
+                    total_volume += volume
+                    total_count += 1
+            if total_count > 0:
+                avg_volume = total_volume / total_count
+                confirm_avg_volume = utils.get_avg_confirm_volume()
+                if avg_volume < confirm_avg_volume:
+                    enough_volume = False
+        return enough_volume

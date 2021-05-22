@@ -291,7 +291,7 @@ class DayTradingMomo(TradingBase):
                         continue
                     # use latest formed candle
                     latest_candle = m2_bars.iloc[-2]
-                    if utils.check_bars_updated(m2_bars):
+                    if utils.check_bars_updated(m2_bars) and self.check_if_has_enough_volume(m2_bars):
                         latest_close = latest_candle["close"]
                         latest_vwap = latest_candle["vwap"]
                         volume = int(latest_candle["volume"])

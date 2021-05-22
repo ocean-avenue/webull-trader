@@ -368,6 +368,15 @@ def get_algo_type():
     return settings.algo_type
 
 
+def get_avg_confirm_volume():
+    settings = TradingSettings.objects.first()
+    if settings == None:
+        print(
+            "[{}] Cannot find trading settings, default confirm volume!".format(get_now()))
+        return 6000
+    return settings.avg_confirm_volume
+
+
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:

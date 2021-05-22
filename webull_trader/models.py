@@ -30,6 +30,8 @@ class TradingSettings(models.Model):
     min_surge_volume = models.FloatField()
     # min gap ratio
     min_surge_change_ratio = models.FloatField()
+    # average confirm volume in regular market
+    avg_confirm_volume = models.FloatField()
     # trading observe timeout in seconds
     observe_timeout_in_sec = models.IntegerField()
     # buy after sell interval in seconds
