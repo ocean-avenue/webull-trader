@@ -6,6 +6,7 @@ DEBUG = False
 ALLOWED_HOSTS = [
     "webull.paper.quanturtle.net",
     "webull.paper2.quanturtle.net",
+    "webull.paper3.quanturtle.net",
     "webull.quanturtle.net",
 ]
 
