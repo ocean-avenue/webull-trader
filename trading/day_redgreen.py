@@ -124,6 +124,11 @@ class DayTradingRedGreen(TradingBase):
                 utils.get_now()))
             return
 
+        if utils.is_extended_market_hour():
+            print("[{}] Skip pre and after market session, quit!".format(
+                utils.get_now()))
+            return
+
         print("[{}] Trading started...".format(utils.get_now()))
 
         self.print_algo_name()
