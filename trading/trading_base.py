@@ -74,7 +74,7 @@ class TradingBase:
 
         return True
 
-    def get_init_tracking_ticker(self, symbol, ticker_id, prev_close=None):
+    def get_init_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
         return {
             "symbol": symbol,
             "ticker_id": ticker_id,
@@ -92,6 +92,7 @@ class TradingBase:
             "max_profit_loss_rate": 0,
             "exit_note": None,
             "prev_close": prev_close,
+            "prev_high": prev_high,
         }
 
     def check_buy_order_filled(self, ticker):
@@ -233,7 +234,19 @@ class TradingBase:
             )
             self.tracking_tickers[symbol]['exit_note'] = exit_note
 
-    def complete_order(self, ticker):
+    def get_position(self, ticker):
+        symbol = ticker['symbol']
+        positions = webullsdk.get_positions()
+        if positions == None:
+            return None
+        ticker_position = None
+        for position in positions:
+            if position['ticker']['symbol'] == symbol:
+                ticker_position = position
+                break
+        return ticker_position
+
+    def clear_position(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
 

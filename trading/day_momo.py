@@ -113,14 +113,7 @@ class DayTradingMomo(TradingBase):
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=prev_low)
         else:
-            positions = webullsdk.get_positions()
-            if positions == None:
-                return
-            ticker_position = None
-            for position in positions:
-                if position['ticker']['symbol'] == symbol:
-                    ticker_position = position
-                    break
+            ticker_position = self.get_position(ticker)
             if not ticker_position:
                 print("[{}] Finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
@@ -319,7 +312,7 @@ class DayTradingMomo(TradingBase):
         while len(list(self.tracking_tickers)) > 0:
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
-                self.complete_order(ticker)
+                self.clear_position(ticker)
 
             # at least slepp 1 sec
             time.sleep(1)
