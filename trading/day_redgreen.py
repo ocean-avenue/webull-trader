@@ -86,7 +86,7 @@ class DayTradingRedGreen(TradingBase):
             self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
             # check if exit trading
             exit_trading = False
-            last_price = ticker_position['lastPrice']
+            last_price = float(ticker_position['lastPrice'])
             # check stop loss, prev day close
             if current_high < ticker['stop_loss']:
                 exit_note = "Stop loss at {}!".format(last_price)
