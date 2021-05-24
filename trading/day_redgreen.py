@@ -124,7 +124,7 @@ class DayTradingRedGreen(TradingBase):
                 utils.get_now()))
             return
 
-        if utils.is_extended_market_hour():
+        if datetime.now().hour < 9 or datetime.now().hour >= 16:
             print("[{}] Skip pre and after market session, quit!".format(
                 utils.get_now()))
             return
