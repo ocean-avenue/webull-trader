@@ -157,7 +157,7 @@ class DayTradingRedGreen(TradingBase):
         for gainer in top_gainers:
             quote = webullsdk.get_quote(ticker_id=gainer.ticker_id)
             # weak open
-            if float(quote['open']) <= gainer.price:
+            if 'open' in quote and float(quote['open']) <= gainer.price:
                 key_stat = utils.get_hist_key_stat(
                     gainer.symbol, last_market_day)
                 ticker = self.get_init_tracking_ticker(
@@ -171,7 +171,7 @@ class DayTradingRedGreen(TradingBase):
         for loser in top_losers:
             quote = webullsdk.get_quote(ticker_id=loser.ticker_id)
             # weak open
-            if float(quote['open']) <= loser.price:
+            if 'open' in quote and float(quote['open']) <= loser.price:
                 key_stat = utils.get_hist_key_stat(
                     loser.symbol, last_market_day)
                 ticker = self.get_init_tracking_ticker(
