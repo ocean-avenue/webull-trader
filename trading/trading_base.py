@@ -290,6 +290,9 @@ class TradingBase:
         return self.order_amount_limit
 
     def check_if_track_symbol(self, symbol):
+        # check if sell not long ago
+        if symbol in self.trading_stats and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
+            return False
         return True
 
     def check_if_has_enough_volume(self, bars):
