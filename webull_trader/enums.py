@@ -59,6 +59,7 @@ class SetupType:
     DAY_REVERSAL = 3
     DAY_RED_TO_GREEN = 4
     SWING_20_DAYS_NEW_HIGH = 100
+    SWING_55_DAYS_NEW_HIGH = 101
 
     @staticmethod
     def tostr(val):
@@ -74,6 +75,8 @@ class SetupType:
             return '[Day] Red to Green'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '[Swing] 20 days new high'
+        if val == SetupType.SWING_55_DAYS_NEW_HIGH:
+            return '[Swing] 55 days new high'
         return UNKNOWN
 
 
@@ -81,7 +84,8 @@ class AlgorithmType:
     DAY_MOMENTUM = 0
     DAY_MOMENTUM_REDUCE_SIZE = 1
     DAY_RED_TO_GREEN = 2
-    SWING_TURTLE = 100
+    SWING_TURTLE_20 = 100
+    SWING_TURTLE_55 = 101
     LIVE = 200
 
     @staticmethod
@@ -96,10 +100,12 @@ class AlgorithmType:
             return 'Momo day trade based on win rate, reduce size when win rate low.'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'Day trade based on red to green strategy.'
-        if val == AlgorithmType.SWING_TURTLE:
-            return 'Swing trade based on turtle trading rules.'
+        if val == AlgorithmType.SWING_TURTLE_20:
+            return 'Swing trade based on turtle trading rules (20 days).'
+        if val == AlgorithmType.SWING_TURTLE_55:
+            return 'Swing trade based on turtle trading rules (55 days).'
         if val == AlgorithmType.LIVE:
-            return 'High success rate strategy day trade and swing trade based on history records.'
+            return 'Live day/swing trade based on history statistics data.'
         return UNKNOWN
 
     @staticmethod
@@ -110,8 +116,10 @@ class AlgorithmType:
             return 'DAY/MOMO REDUCE'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'DAY/RED GREEN'
-        if val == AlgorithmType.SWING_TURTLE:
-            return 'SWING/TURTLE'
+        if val == AlgorithmType.SWING_TURTLE_20:
+            return 'SWING/TURTLE (20 DAYS)'
+        if val == AlgorithmType.SWING_TURTLE_55:
+            return 'SWING/TURTLE (55 DAYS)'
         if val == AlgorithmType.LIVE:
             return 'LIVE'
         return UNKNOWN

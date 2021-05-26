@@ -13,8 +13,10 @@ class TradingSettings(models.Model):
             enums.AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
         (enums.AlgorithmType.DAY_RED_TO_GREEN, enums.AlgorithmType.tostr(
             enums.AlgorithmType.DAY_RED_TO_GREEN)),
-        (enums.AlgorithmType.SWING_TURTLE, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.SWING_TURTLE)),
+        (enums.AlgorithmType.SWING_TURTLE_20, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.SWING_TURTLE_20)),
+        (enums.AlgorithmType.SWING_TURTLE_55, enums.AlgorithmType.tostr(
+            enums.AlgorithmType.SWING_TURTLE_55)),
         (enums.AlgorithmType.LIVE, enums.AlgorithmType.tostr(
             enums.AlgorithmType.LIVE)),
     )
@@ -139,6 +141,8 @@ class WebullOrderNote(models.Model):
             enums.SetupType.DAY_RED_TO_GREEN)),
         (enums.SetupType.SWING_20_DAYS_NEW_HIGH, enums.SetupType.tostr(
             enums.SetupType.SWING_20_DAYS_NEW_HIGH)),
+        (enums.SetupType.SWING_55_DAYS_NEW_HIGH, enums.SetupType.tostr(
+            enums.SetupType.SWING_55_DAYS_NEW_HIGH)),
     )
     setup = models.PositiveSmallIntegerField(
         choices=SETUP_CHOICES,
