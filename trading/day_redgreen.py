@@ -41,20 +41,20 @@ class DayTradingRedGreen(TradingBase):
 
         current_candle = m2_bars.iloc[-1]
         prev_candle = m2_bars.iloc[-2]
-        preprev_candle = m2_bars.iloc[-3]
 
         # current price data
         current_close = current_candle['close']
         current_high = current_candle['high']
         current_low = current_candle['low']
         prev_low = prev_candle['low']
-        preprev_volume = preprev_candle['volume']
         current_volume = int(current_candle['volume'])
 
         if holding_quantity == 0:
 
-            # check entry, current price above prev day close
-            if current_low >= prev_day_close and prev_low <= prev_day_close:
+            now = datetime.now()
+
+            # check entry, current price above prev day close with (prev price below or not long after market open)
+            if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30).second <= 300)):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None or 'depth' not in quote:
                     return
