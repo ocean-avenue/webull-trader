@@ -36,7 +36,7 @@ class DayTradingMomoReduceSize(DayTradingMomo):
 
 def start():
     from scripts import utils
-    from trading.day_momo_reduce import DayTradingMomoReduceSize
+    from trading.day_momo_reducesize import DayTradingMomoReduceSize
 
     paper = utils.check_paper()
     daytrading = DayTradingMomoReduceSize(paper=paper)
