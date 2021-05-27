@@ -228,3 +228,16 @@ class HistoricalDayTradePerformanceAdmin(admin.ModelAdmin):
 
 admin.site.register(models.HistoricalDayTradePerformance,
                     HistoricalDayTradePerformanceAdmin)
+
+
+class SwingWatchlistAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'screener_type',
+        'updated_date',
+        'created_date',
+    ]
+
+
+admin.site.register(models.SwingWatchlist,
+                    SwingWatchlistAdmin)

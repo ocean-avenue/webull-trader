@@ -289,3 +289,29 @@ class HistoricalDayTradePerformance(models.Model):
 
     def __str__(self):
         return "[{}] P&L: {}, {} trades".format(self.date, self.day_profit_loss, self.trades)
+
+
+class SwingWatchlist(models.Model):
+    symbol = models.CharField(max_length=64)
+    SCREENER_TYPE_CHOICES = (
+        (enums.ScreenerType.MANUAL, enums.ScreenerType.tostr(
+            enums.ScreenerType.MANUAL)),
+        (enums.ScreenerType.EARNING_DAY, enums.ScreenerType.tostr(
+            enums.ScreenerType.EARNING_DAY)),
+        (enums.ScreenerType.UNUSUAL_VOLUME, enums.ScreenerType.tostr(
+            enums.ScreenerType.UNUSUAL_VOLUME)),
+        (enums.ScreenerType.CHANNEL_UP, enums.ScreenerType.tostr(
+            enums.ScreenerType.CHANNEL_UP)),
+        (enums.ScreenerType.DOUBLE_BOTTOM, enums.ScreenerType.tostr(
+            enums.ScreenerType.DOUBLE_BOTTOM)),
+    )
+    screener_type = models.PositiveSmallIntegerField(
+        choices=SCREENER_TYPE_CHOICES,
+        default=enums.ScreenerType.MANUAL
+    )
+
+    created_date = models.DateField(auto_now_add=True)
+    updated_date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] <{}> ({})".format(self.updated_date, self.symbol, enums.ScreenerType.tostr(self.screener_type))

@@ -123,3 +123,25 @@ class AlgorithmType:
         if val == AlgorithmType.LIVE:
             return 'LIVE'
         return UNKNOWN
+
+
+class ScreenerType:
+    MANUAL = 0
+    EARNING_DAY = 1
+    UNUSUAL_VOLUME = 2
+    CHANNEL_UP = 3
+    DOUBLE_BOTTOM = 4
+
+    @staticmethod
+    def tostr(val):
+        if val == ScreenerType.MANUAL:
+            return 'Manual'
+        elif val == ScreenerType.EARNING_DAY:
+            return 'Earning Day'
+        elif val == ScreenerType.UNUSUAL_VOLUME:
+            return 'Unusual Volume'
+        elif val == ScreenerType.CHANNEL_UP:
+            return 'Channel Up'
+        elif val == ScreenerType.DOUBLE_BOTTOM:
+            return 'Double Bottom'
+        return UNKNOWN
