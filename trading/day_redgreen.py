@@ -54,7 +54,7 @@ class DayTradingRedGreen(TradingBase):
             now = datetime.now()
 
             # check entry, current price above prev day close with (prev price below or not long after market open)
-            if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30).second <= 300)):
+            if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30)).second <= 300):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None or 'depth' not in quote:
                     return
