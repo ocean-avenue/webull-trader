@@ -74,6 +74,19 @@ class TradingBase:
 
         return True
 
+    def init_ticker_stats(self, ticker):
+        symbol = ticker['symbol']
+        # init trading stats
+        if symbol not in self.trading_stats:
+            self.trading_stats[symbol] = {
+                "trades": 0,
+                "win_trades": 0,
+                "lose_trades": 0,
+                "continue_lose_trades": 0,
+                "last_high_price": None,
+                "last_trade_time": None,
+            }
+
     def get_init_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
         return {
             "symbol": symbol,
@@ -289,12 +302,6 @@ class TradingBase:
 
     def get_buy_order_limit(self, symbol):
         return self.order_amount_limit
-
-    def check_if_track_symbol(self, symbol):
-        # # check if sell not long ago
-        # if symbol in self.trading_stats and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
-        #     return False
-        return True
 
     def check_if_has_enough_volume(self, bars):
         enough_volume = True

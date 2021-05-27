@@ -81,7 +81,7 @@ class DayTradingMomo(TradingBase):
             current_volume = int(current_candle['volume'])
 
             # check entry: current price above vwap and ema 9, current low above prev low
-            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low:
+            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low and self.check_if_price_new_high(symbol, current_close):
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -140,10 +140,12 @@ class DayTradingMomo(TradingBase):
             if profit_loss_rate >= 0.01:
                 self.tracking_tickers[symbol]['stop_loss'] = None
 
+            last_price = float(ticker_position['lastPrice'])
+            cost_price = float(ticker_position['costPrice'])
+
             # stop loss for buy prev low
-            if ticker['stop_loss'] and float(ticker_position['lastPrice']) < ticker['stop_loss']:
-                exit_note = "Stop loss at {}!".format(
-                    ticker_position['lastPrice'])
+            if ticker['stop_loss'] and last_price < ticker['stop_loss']:
+                exit_note = "Stop loss at {}!".format(last_price)
                 exit_trading = True
 
             # stop loss for stop_loss_ratio
@@ -204,22 +206,25 @@ class DayTradingMomo(TradingBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                if symbol not in self.trading_stats:
-                    self.trading_stats[symbol] = {
-                        "trades": 0,
-                        "win_trades": 0,
-                        "lose_trades": 0,
-                        "continue_lose_trades": 0,
-                        "last_trade_time": None,
-                    }
                 self.trading_stats[symbol]['trades'] += 1
                 self.trading_stats[symbol]['last_trade_time'] = datetime.now()
+                self.trading_stats[symbol]['last_high_price'] = max(
+                    cost_price, last_price)
                 if profit_loss_rate > 0:
                     self.trading_stats[symbol]['win_trades'] += 1
                     self.trading_stats[symbol]['continue_lose_trades'] = 0
                 else:
                     self.trading_stats[symbol]['lose_trades'] += 1
                     self.trading_stats[symbol]['continue_lose_trades'] += 1
+
+    def check_if_price_new_high(self, symbol, price):
+        return True
+
+    def check_if_track_symbol(self, symbol):
+        # # check if sell not long ago
+        # if symbol in self.trading_stats and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
+        #     return False
+        return True
 
     def print_algo_name(self):
         print("[{}] {}".format(utils.get_now(),
@@ -253,6 +258,8 @@ class DayTradingMomo(TradingBase):
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
+                # init stats
+                self.init_ticker_stats(ticker)
                 # do trade
                 self.trade(ticker)
 
