@@ -6,22 +6,8 @@ from webull_trader import enums
 
 class TradingSettings(models.Model):
     paper = models.BooleanField(default=True)
-    ALGO_TYPE_CHOICES = (
-        (enums.AlgorithmType.DAY_MOMENTUM, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.DAY_MOMENTUM)),
-        (enums.AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
-        (enums.AlgorithmType.DAY_RED_TO_GREEN, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.DAY_RED_TO_GREEN)),
-        (enums.AlgorithmType.SWING_TURTLE_20, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.SWING_TURTLE_20)),
-        (enums.AlgorithmType.SWING_TURTLE_55, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.SWING_TURTLE_55)),
-        (enums.AlgorithmType.LIVE, enums.AlgorithmType.tostr(
-            enums.AlgorithmType.LIVE)),
-    )
     algo_type = models.PositiveSmallIntegerField(
-        choices=ALGO_TYPE_CHOICES,
+        choices=enums.AlgorithmType.tochoices(),
         default=enums.AlgorithmType.DAY_MOMENTUM
     )
     # position amount
@@ -84,15 +70,8 @@ class WebullOrder(models.Model):
     filled_quantity = models.PositiveIntegerField(default=1)
     price = models.FloatField()
     avg_price = models.FloatField()
-    ORDER_TYPE_CHOICES = (
-        (enums.OrderType.LMT, enums.OrderType.tostr(enums.OrderType.LMT)),
-        (enums.OrderType.MKT, enums.OrderType.tostr(enums.OrderType.MKT)),
-        (enums.OrderType.STP, enums.OrderType.tostr(enums.OrderType.STP)),
-        (enums.OrderType.STP_LMT, enums.OrderType.tostr(enums.OrderType.STP_LMT)),
-        (enums.OrderType.STP_TRAIL, enums.OrderType.tostr(enums.OrderType.STP_TRAIL)),
-    )
     order_type = models.PositiveSmallIntegerField(
-        choices=ORDER_TYPE_CHOICES,
+        choices=enums.OrderType.tochoices(),
         default=enums.OrderType.LMT
     )
 
@@ -100,16 +79,8 @@ class WebullOrder(models.Model):
         auto_now_add=False, auto_now=False, null=True, blank=True)
     placed_time = models.DateTimeField(
         auto_now_add=False, auto_now=False, null=True, blank=True)
-    TIME_IN_FORCE_TYPE_CHOICES = (
-        (enums.TimeInForceType.GTC, enums.TimeInForceType.tostr(
-            enums.TimeInForceType.GTC)),
-        (enums.TimeInForceType.DAY, enums.TimeInForceType.tostr(
-            enums.TimeInForceType.DAY)),
-        (enums.TimeInForceType.IOC, enums.TimeInForceType.tostr(
-            enums.TimeInForceType.IOC)),
-    )
     time_in_force = models.PositiveSmallIntegerField(
-        choices=TIME_IN_FORCE_TYPE_CHOICES,
+        choices=enums.TimeInForceType.tochoices(),
         default=enums.TimeInForceType.GTC
     )
     paper = models.BooleanField(default=True)
@@ -128,24 +99,8 @@ class WebullOrder(models.Model):
 class WebullOrderNote(models.Model):
     order_id = models.CharField(max_length=128)
     note = models.TextField(null=True, blank=True)
-    SETUP_CHOICES = (
-        (enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH, enums.SetupType.tostr(
-            enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH)),
-        (enums.SetupType.DAY_GAP_AND_GO, enums.SetupType.tostr(
-            enums.SetupType.DAY_GAP_AND_GO)),
-        (enums.SetupType.DAY_BULL_FLAG, enums.SetupType.tostr(
-            enums.SetupType.DAY_BULL_FLAG)),
-        (enums.SetupType.DAY_REVERSAL, enums.SetupType.tostr(
-            enums.SetupType.DAY_REVERSAL)),
-        (enums.SetupType.DAY_RED_TO_GREEN, enums.SetupType.tostr(
-            enums.SetupType.DAY_RED_TO_GREEN)),
-        (enums.SetupType.SWING_20_DAYS_NEW_HIGH, enums.SetupType.tostr(
-            enums.SetupType.SWING_20_DAYS_NEW_HIGH)),
-        (enums.SetupType.SWING_55_DAYS_NEW_HIGH, enums.SetupType.tostr(
-            enums.SetupType.SWING_55_DAYS_NEW_HIGH)),
-    )
     setup = models.PositiveSmallIntegerField(
-        choices=SETUP_CHOICES,
+        choices=enums.SetupType.tochoices(),
         default=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH
     )
 
@@ -293,20 +248,8 @@ class HistoricalDayTradePerformance(models.Model):
 
 class SwingWatchlist(models.Model):
     symbol = models.CharField(max_length=64)
-    SCREENER_TYPE_CHOICES = (
-        (enums.ScreenerType.MANUAL, enums.ScreenerType.tostr(
-            enums.ScreenerType.MANUAL)),
-        (enums.ScreenerType.EARNING_DAY, enums.ScreenerType.tostr(
-            enums.ScreenerType.EARNING_DAY)),
-        (enums.ScreenerType.UNUSUAL_VOLUME, enums.ScreenerType.tostr(
-            enums.ScreenerType.UNUSUAL_VOLUME)),
-        (enums.ScreenerType.CHANNEL_UP, enums.ScreenerType.tostr(
-            enums.ScreenerType.CHANNEL_UP)),
-        (enums.ScreenerType.DOUBLE_BOTTOM, enums.ScreenerType.tostr(
-            enums.ScreenerType.DOUBLE_BOTTOM)),
-    )
     screener_type = models.PositiveSmallIntegerField(
-        choices=SCREENER_TYPE_CHOICES,
+        choices=enums.ScreenerType.tochoices(),
         default=enums.ScreenerType.MANUAL
     )
 

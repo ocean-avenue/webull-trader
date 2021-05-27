@@ -35,6 +35,16 @@ class OrderType:
             return 'STP TRAIL'
         return UNKNOWN
 
+    @staticmethod
+    def tochoices():
+        return (
+            (OrderType.LMT, OrderType.tostr(OrderType.LMT)),
+            (OrderType.MKT, OrderType.tostr(OrderType.MKT)),
+            (OrderType.STP, OrderType.tostr(OrderType.STP)),
+            (OrderType.STP_LMT, OrderType.tostr(OrderType.STP_LMT)),
+            (OrderType.STP_TRAIL, OrderType.tostr(OrderType.STP_TRAIL)),
+        )
+
 
 class TimeInForceType:
     GTC = 0
@@ -50,6 +60,17 @@ class TimeInForceType:
         if val == TimeInForceType.IOC:
             return 'IOC'
         return UNKNOWN
+
+    @staticmethod
+    def tochoices():
+        return (
+            (TimeInForceType.GTC, TimeInForceType.tostr(
+                TimeInForceType.GTC)),
+            (TimeInForceType.DAY, TimeInForceType.tostr(
+                TimeInForceType.DAY)),
+            (TimeInForceType.IOC, TimeInForceType.tostr(
+                TimeInForceType.IOC)),
+        )
 
 
 class SetupType:
@@ -79,11 +100,31 @@ class SetupType:
             return '[Swing] 55 days new high'
         return UNKNOWN
 
+    @staticmethod
+    def tochoices():
+        return (
+            (SetupType.DAY_FIRST_CANDLE_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_FIRST_CANDLE_NEW_HIGH)),
+            (SetupType.DAY_GAP_AND_GO, SetupType.tostr(
+                SetupType.DAY_GAP_AND_GO)),
+            (SetupType.DAY_BULL_FLAG, SetupType.tostr(
+                SetupType.DAY_BULL_FLAG)),
+            (SetupType.DAY_REVERSAL, SetupType.tostr(
+                SetupType.DAY_REVERSAL)),
+            (SetupType.DAY_RED_TO_GREEN, SetupType.tostr(
+                SetupType.DAY_RED_TO_GREEN)),
+            (SetupType.SWING_20_DAYS_NEW_HIGH, SetupType.tostr(
+                SetupType.SWING_20_DAYS_NEW_HIGH)),
+            (SetupType.SWING_55_DAYS_NEW_HIGH, SetupType.tostr(
+                SetupType.SWING_55_DAYS_NEW_HIGH)),
+        )
+
 
 class AlgorithmType:
     DAY_MOMENTUM = 0
     DAY_MOMENTUM_REDUCE_SIZE = 1
     DAY_RED_TO_GREEN = 2
+    DAY_MOMENTUM_NEW_HIGH = 3
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     LIVE = 200
@@ -100,6 +141,8 @@ class AlgorithmType:
             return 'Momo day trade based on win rate, reduce size when win rate low.'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'Day trade based on red to green strategy.'
+        if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
+            return 'Momo day trade, no entry if the price not break max of last high price.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -113,7 +156,9 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_MOMENTUM:
             return 'DAY/MOMO'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
-            return 'DAY/MOMO REDUCE'
+            return 'DAY/MOMO (REDUCE SIZE)'
+        if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
+            return 'DAY/MOMO (NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'DAY/RED GREEN'
         if val == AlgorithmType.SWING_TURTLE_20:
@@ -123,6 +168,25 @@ class AlgorithmType:
         if val == AlgorithmType.LIVE:
             return 'LIVE'
         return UNKNOWN
+
+    @staticmethod
+    def tochoices():
+        return (
+            (AlgorithmType.DAY_MOMENTUM, AlgorithmType.tostr(
+                AlgorithmType.DAY_MOMENTUM)),
+            (AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, AlgorithmType.tostr(
+                AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
+            (AlgorithmType.DAY_MOMENTUM_NEW_HIGH, AlgorithmType.tostr(
+                AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
+            (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.tostr(
+                AlgorithmType.DAY_RED_TO_GREEN)),
+            (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
+                AlgorithmType.SWING_TURTLE_20)),
+            (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
+                AlgorithmType.SWING_TURTLE_55)),
+            (AlgorithmType.LIVE, AlgorithmType.tostr(
+                AlgorithmType.LIVE)),
+        )
 
 
 class ScreenerType:
@@ -145,3 +209,18 @@ class ScreenerType:
         elif val == ScreenerType.DOUBLE_BOTTOM:
             return 'Double Bottom'
         return UNKNOWN
+
+    @staticmethod
+    def tochoices():
+        return (
+            (ScreenerType.MANUAL, ScreenerType.tostr(
+                ScreenerType.MANUAL)),
+            (ScreenerType.EARNING_DAY, ScreenerType.tostr(
+                ScreenerType.EARNING_DAY)),
+            (ScreenerType.UNUSUAL_VOLUME, ScreenerType.tostr(
+                ScreenerType.UNUSUAL_VOLUME)),
+            (ScreenerType.CHANNEL_UP, ScreenerType.tostr(
+                ScreenerType.CHANNEL_UP)),
+            (ScreenerType.DOUBLE_BOTTOM, ScreenerType.tostr(
+                ScreenerType.DOUBLE_BOTTOM)),
+        )
