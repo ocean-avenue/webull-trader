@@ -60,6 +60,11 @@ class DayTradingRedGreen(TradingBase):
                     return
                 ask_price = float(
                     quote['depth']['ntvAggAskList'][0]['price'])
+                # check if ask_price is too high above prev day close
+                if (ask_price - prev_day_close) / prev_day_close > 0.02:
+                    print("[{}] <{}>[{}] gap too large, ask: {}, prev day close: {}, stop trading!".format(
+                        utils.get_now(), symbol, ticker_id, ask_price, prev_day_close))
+                    return
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
                 # submit limit order at ask price
