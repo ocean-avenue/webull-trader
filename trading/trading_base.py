@@ -137,7 +137,7 @@ class TradingBase:
                     print("[{}] Failed to cancel timeout buy order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
-    def check_sell_order_filled(self, ticker):
+    def check_sell_order_filled(self, ticker, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         print("[{}] Checking sell order <{}>[{}] filled...".format(
@@ -167,7 +167,8 @@ class TradingBase:
             # # keep in track if > 10% profit, prevent buy back too quick
             # if last_profit_loss_rate != None and last_profit_loss_rate < 0.1:
             # remove from monitor
-            del self.tracking_tickers[symbol]
+            if stop_tracking:
+                del self.tracking_tickers[symbol]
             print("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
             # update account status

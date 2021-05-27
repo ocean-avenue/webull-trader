@@ -28,7 +28,7 @@ class DayTradingRedGreen(TradingBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker)
+            self.check_sell_order_filled(ticker, stop_tracking=False)
             return
 
         holding_quantity = ticker['positions']
