@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
-from trading import day_momo, day_momo_reducesize, day_momo_newhigh, day_redgreen
+from trading import trading_executor
 from webull_trader.enums import AlgorithmType
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -34,54 +34,15 @@ def _check_market_holiday():
     return holiday
 
 
-def day_trading_job():
+def trading_job():
     holiday = _check_market_holiday()
     if holiday != None:
-        print("[{}] {}, skip day trading job...".format(
+        print("[{}] {}, skip trading job...".format(
             utils.get_now(), holiday))
         return
-    print("[{}] Start day trading job...".format(utils.get_now()))
-    # load algo type
-    algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.DAY_MOMENTUM:
-        # momo trade
-        day_momo.start()
-    elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
-        # momo trade with reduce size
-        day_momo_reducesize.start()
-    elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
-        # momo trade with new high confirm
-        day_momo_newhigh.start()
-    elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
-        # red/green trade
-        day_redgreen.start()
-    elif algo_type == AlgorithmType.LIVE:
-        # TODO
-        pass
-    else:
-        print("[{}] No day trading job found, skip...".format(utils.get_now()))
-    print("[{}] Done day trading job!".format(utils.get_now()))
-
-
-def swing_trading_job():
-    holiday = _check_market_holiday()
-    if holiday != None:
-        print("[{}] {}, skip swing trading job...".format(
-            utils.get_now(), holiday))
-        return
-    print("[{}] Start swing trading job...".format(utils.get_now()))
-    # load algo type
-    algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.SWING_TURTLE_55:
-        # turtle trading
-        # TODO
-        pass
-    elif algo_type == AlgorithmType.LIVE:
-        # TODO
-        pass
-    else:
-        print("[{}] No swing trading job found, skip...".format(utils.get_now()))
-    print("[{}] Done swing trading job!".format(utils.get_now()))
+    print("[{}] Start trading job...".format(utils.get_now()))
+    trading_executor.start()
+    print("[{}] Done trading job!".format(utils.get_now()))
 
 
 def fetch_stats_data_job():
@@ -130,24 +91,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        # pre-market day trading jobs
+        # pre-market trading jobs
         add_weekday_jobs(
-            job=day_trading_job,
-            job_name="day_trading_job_bmo",
+            job=trading_job,
+            job_name="trading_job_bmo",
             hour="04",
             minute="00")
 
-        # regular hour day trading jobs
+        # regular hour trading jobs
         add_weekday_jobs(
-            job=day_trading_job,
-            job_name="day_trading_job",
+            job=trading_job,
+            job_name="trading_job",
             hour="09",
             minute="30")
 
-        # post-market day trading jobs
+        # post-market trading jobs
         add_weekday_jobs(
-            job=day_trading_job,
-            job_name="day_trading_job_amc",
+            job=trading_job,
+            job_name="trading_job_amc",
             hour="16",
             minute="00")
 

@@ -44,10 +44,11 @@ class TradingSettings(models.Model):
 
 class TradingLog(models.Model):
     date = models.DateField()
+    tag = models.CharField(max_length=128)
     log_text = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return "[{}] {}".format(self.date, self.log_text)
+        return "[{}] {}: {}".format(self.date, self.tag, self.log_text)
 
 
 class WebullCredentials(models.Model):

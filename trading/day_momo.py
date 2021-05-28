@@ -4,15 +4,18 @@
 
 import time
 from datetime import datetime, date, timedelta
-from trading.trading_base import TradingBase
+from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType, AlgorithmType
 from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingMomo(TradingBase):
+class DayTradingMomo(StrategyBase):
 
     import pandas as pd
+
+    def get_tag(self):
+        return "DayTradingMomo"
 
     def get_setup(self):
         return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
@@ -226,97 +229,60 @@ class DayTradingMomo(TradingBase):
         #     return False
         return True
 
-    def print_algo_name(self):
-        self.print_log("[{}] {}".format(utils.get_now(),
-                                        AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM)))
+    def on_update(self):
+        # trading tickers
+        for symbol in list(self.tracking_tickers):
+            ticker = self.tracking_tickers[symbol]
+            # init stats
+            self.init_ticker_stats(ticker)
+            # do trade
+            self.trade(ticker)
 
-    def start(self):
+        # find trading ticker in top gainers
+        top_gainers = []
+        if utils.is_regular_market_hour():
+            top_gainers = webullsdk.get_top_gainers()
+        elif utils.is_pre_market_hour():
+            top_gainers = webullsdk.get_pre_market_gainers()
+        elif utils.is_after_market_hour():
+            top_gainers = webullsdk.get_after_market_gainers()
 
-        if not self.load_settings():
-            self.print_log("[{}] Cannot find trading settings, quit!".format(
-                utils.get_now()))
-            return
-
-        self.print_log("[{}] Trading started...".format(utils.get_now()))
-
-        self.print_algo_name()
-
-        while not utils.is_market_hour():
-            self.print_log(
-                "[{}] Waiting for market hour...".format(utils.get_now()))
-            time.sleep(2)
-
-        # login
-        if not webullsdk.login(paper=self.paper):
-            self.print_log("[{}] Webull login failed, quit!".format(
-                utils.get_now()))
-            return
-        self.print_log("[{}] Webull logged in".format(utils.get_now()))
-        last_login_refresh_time = datetime.now()
-
-        # main loop
-        while utils.is_market_hour():
-            # trading tickers
-            for symbol in list(self.tracking_tickers):
-                ticker = self.tracking_tickers[symbol]
-                # init stats
-                self.init_ticker_stats(ticker)
-                # do trade
-                self.trade(ticker)
-
-            # find trading ticker in top gainers
-            top_gainers = []
-            if utils.is_regular_market_hour():
-                top_gainers = webullsdk.get_top_gainers()
-            elif utils.is_pre_market_hour():
-                top_gainers = webullsdk.get_pre_market_gainers()
-            elif utils.is_after_market_hour():
-                top_gainers = webullsdk.get_after_market_gainers()
-
-            # self.print_log("[{}] Scanning top gainers [{}]...".format(
-            #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
-            for gainer in top_gainers:
-                symbol = gainer["symbol"]
-                # check if ticker already in monitor
-                if symbol in self.tracking_tickers:
+        # self.print_log("[{}] Scanning top gainers [{}]...".format(
+        #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
+        for gainer in top_gainers:
+            symbol = gainer["symbol"]
+            # check if ticker already in monitor
+            if symbol in self.tracking_tickers:
+                continue
+            ticker_id = gainer["ticker_id"]
+            # self.print_log("[{}] Scanning <{}>[{}]...".format(
+            #     utils.get_now(), symbol, ticker_id))
+            change_percentage = gainer["change_percentage"]
+            # check gap change
+            if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+                m2_bars = utils.convert_2m_bars(m1_bars)
+                if m2_bars.empty:
                     continue
-                ticker_id = gainer["ticker_id"]
-                # self.print_log("[{}] Scanning <{}>[{}]...".format(
-                #     utils.get_now(), symbol, ticker_id))
-                change_percentage = gainer["change_percentage"]
-                # check gap change
-                if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
-                    m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-                    m2_bars = utils.convert_2m_bars(m1_bars)
-                    if m2_bars.empty:
-                        continue
-                    # use latest formed candle
-                    latest_candle = m2_bars.iloc[-2]
-                    if utils.check_bars_updated(m2_bars) and self.check_if_has_enough_volume(m2_bars):
-                        latest_close = latest_candle["close"]
-                        latest_vwap = latest_candle["vwap"]
-                        volume = int(latest_candle["volume"])
-                        # check if trasaction amount meets requirement
-                        if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
-                            # found trading ticker
-                            ticker = self.get_init_tracking_ticker(
-                                symbol, ticker_id)
-                            self.tracking_tickers[symbol] = ticker
-                            self.print_log("[{}] Found <{}>[{}] to trade!".format(
-                                utils.get_now(), symbol, ticker_id))
-                            # do trade
-                            self.trade(ticker, m1_bars=m1_bars)
+                # use latest formed candle
+                latest_candle = m2_bars.iloc[-2]
+                if utils.check_bars_updated(m2_bars) and self.check_if_has_enough_volume(m2_bars):
+                    latest_close = latest_candle["close"]
+                    latest_vwap = latest_candle["vwap"]
+                    volume = int(latest_candle["volume"])
+                    # check if trasaction amount meets requirement
+                    if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
+                        # found trading ticker
+                        ticker = self.get_init_tracking_ticker(
+                            symbol, ticker_id)
+                        self.tracking_tickers[symbol] = ticker
+                        self.print_log("[{}] Found <{}>[{}] to trade!".format(
+                            utils.get_now(), symbol, ticker_id))
+                        # do trade
+                        self.trade(ticker, m1_bars=m1_bars)
 
-            # refresh login
-            if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
-                webullsdk.login(paper=self.paper)
-                self.print_log(
-                    "[{}] Refresh webull login".format(utils.get_now()))
-                last_login_refresh_time = datetime.now()
-
-            # at least slepp 1 sec
-            time.sleep(1)
-
+    def on_end(self):
+        self.trading_end = True
         # check if still holding any positions before exit
         while len(list(self.tracking_tickers)) > 0:
             for symbol in list(self.tracking_tickers):
@@ -327,30 +293,5 @@ class DayTradingMomo(TradingBase):
             time.sleep(1)
 
         # save trading logs
-        utils.save_trading_log("\n".join(self.trading_logs), date.today())
-
-        self.print_log("[{}] Trading ended!".format(utils.get_now()))
-
-        # output today's proft loss
-        portfolio = webullsdk.get_portfolio()
-        day_profit_loss = "-"
-        if "dayProfitLoss" in portfolio:
-            day_profit_loss = portfolio['dayProfitLoss']
-        self.print_log("[{}] Today's P&L: {}".format(
-            utils.get_now(), day_profit_loss))
-
-        # webullsdk.logout()
-        # self.print_log("[{}] Webull logged out".format(utils.get_now()))
-
-
-def start():
-    from scripts import utils
-    from trading.day_momo import DayTradingMomo
-
-    paper = utils.check_paper()
-    daytrading = DayTradingMomo(paper=paper)
-    daytrading.start()
-
-
-if __name__ == "django.core.management.commands.shell":
-    start()
+        utils.save_trading_log("\n".join(self.trading_logs),
+                               self.get_tag(), date.today())

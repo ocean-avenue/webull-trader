@@ -3,78 +3,96 @@
 # Base trading class
 
 from datetime import datetime, timedelta
-from webull_trader.models import TradingSettings
 from sdk import webullsdk
 from scripts import utils
 
 
-class TradingBase:
+class StrategyBase:
 
     def __init__(self, paper=True):
         self.paper = paper
+        self.trading_end = False
         # init trading variables
         self.tracking_tickers = {}
         self.trading_stats = {}
         self.trading_logs = []
 
+    def on_begin(self):
+        pass
+
+    def on_update(self):
+        pass
+
+    def on_end(self):
+        pass
+
+    def get_tag(self):
+        return ""
+
     def print_log(self, text):
-        self.trading_logs.append(text)
+        self.trading_logs.append(
+            "[{}] {}".format(utils.get_now(), text))
         # output
         print(text)
 
     # load settings
-    def load_settings(self):
+    def load_settings(self,
+                      min_surge_amount,
+                      min_surge_volume,
+                      min_surge_change_ratio,
+                      avg_confirm_volume,
+                      order_amount_limit,
+                      observe_timeout_in_sec,
+                      trade_interval_in_sec,
+                      pending_order_timeout_in_sec,
+                      holding_order_timeout_in_sec,
+                      max_bid_ask_gap_ratio,
+                      target_profit_ratio,
+                      stop_loss_ratio,
+                      blacklist_timeout_in_sec):
 
-        trading_settings = TradingSettings.objects.first()
-        if not trading_settings:
-            return False
-
-        self.min_surge_amount = trading_settings.min_surge_amount
+        self.min_surge_amount = min_surge_amount
         self.print_log("[{}] Min surge amount: {}".format(
             utils.get_now(), self.min_surge_amount))
-        self.min_surge_volume = trading_settings.min_surge_volume
+        self.min_surge_volume = min_surge_volume
         self.print_log("[{}] Min surge volume: {}".format(
             utils.get_now(), self.min_surge_volume))
         # at least 4% change for surge
-        self.min_surge_change_ratio = trading_settings.min_surge_change_ratio
+        self.min_surge_change_ratio = min_surge_change_ratio
         self.print_log("[{}] Min gap change: {}%".format(
             utils.get_now(), round(self.min_surge_change_ratio * 100, 2)))
-        self.avg_confirm_volume = trading_settings.avg_confirm_volume
+        self.avg_confirm_volume = avg_confirm_volume
         self.print_log("[{}] Avg confirm volume: {}".format(
             utils.get_now(), self.avg_confirm_volume))
-        self.order_amount_limit = trading_settings.order_amount_limit
+        self.order_amount_limit = order_amount_limit
         self.print_log("[{}] Buy order limit: {}".format(
             utils.get_now(), self.order_amount_limit))
         # observe timeout in seconds
-        self.observe_timeout_in_sec = trading_settings.observe_timeout_in_sec
+        self.observe_timeout_in_sec = observe_timeout_in_sec
         self.print_log("[{}] Observe timeout: {} sec".format(
             utils.get_now(), self.observe_timeout_in_sec))
         # buy after sell interval in seconds
-        self.trade_interval_in_sec = trading_settings.trade_interval_in_sec
+        self.trade_interval_in_sec = trade_interval_in_sec
         self.print_log("[{}] Trade interval: {} sec".format(
             utils.get_now(), self.trade_interval_in_sec))
         # pending order timeout in seconds
-        self.pending_order_timeout_in_sec = trading_settings.pending_order_timeout_in_sec
+        self.pending_order_timeout_in_sec = pending_order_timeout_in_sec
         self.print_log("[{}] Pending order timeout: {} sec".format(
             utils.get_now(), self.pending_order_timeout_in_sec))
         # holding order timeout in seconds
-        self.holding_order_timeout_in_sec = trading_settings.holding_order_timeout_in_sec
+        self.holding_order_timeout_in_sec = holding_order_timeout_in_sec
         self.print_log("[{}] Holding order timeout: {} sec".format(
             utils.get_now(), self.holding_order_timeout_in_sec))
-        # refresh login interval minutes
-        self.refresh_login_interval_in_min = trading_settings.refresh_login_interval_in_min
-        self.print_log("[{}] Refresh login timeout: {} min".format(
-            utils.get_now(), self.refresh_login_interval_in_min))
-        self.max_bid_ask_gap_ratio = trading_settings.max_bid_ask_gap_ratio
+        self.max_bid_ask_gap_ratio = max_bid_ask_gap_ratio
         self.print_log("[{}] Max bid ask gap: {}%".format(
             utils.get_now(), round(self.max_bid_ask_gap_ratio * 100, 2)))
-        self.target_profit_ratio = trading_settings.target_profit_ratio
+        self.target_profit_ratio = target_profit_ratio
         self.print_log("[{}] Target profit rate: {}%".format(
             utils.get_now(), round(self.target_profit_ratio * 100, 2)))
-        self.stop_loss_ratio = trading_settings.stop_loss_ratio
+        self.stop_loss_ratio = stop_loss_ratio
         self.print_log("[{}] Stop loss rate: {}%".format(
             utils.get_now(), round(self.stop_loss_ratio * 100, 2)))
-        self.blacklist_timeout_in_sec = trading_settings.blacklist_timeout_in_sec
+        self.blacklist_timeout_in_sec = blacklist_timeout_in_sec
         self.print_log("[{}] Blacklist timeout: {} sec".format(
             utils.get_now(), self.blacklist_timeout_in_sec))
 

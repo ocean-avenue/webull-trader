@@ -4,14 +4,17 @@
 
 import time
 from datetime import datetime, date, timedelta
-from trading.trading_base import TradingBase
-from webull_trader.enums import SetupType, AlgorithmType
+from trading.strategy_base import StrategyBase
+from webull_trader.enums import SetupType
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingRedGreen(TradingBase):
+class DayTradingRedGreen(StrategyBase):
+
+    def get_tag(self):
+        return "DayTradingRedGreen"
 
     def get_setup(self):
         return SetupType.DAY_RED_TO_GREEN
@@ -118,38 +121,18 @@ class DayTradingRedGreen(TradingBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
 
-    def print_algo_name(self):
-        self.print_log("[{}] {}".format(utils.get_now(),
-                                        AlgorithmType.tostr(AlgorithmType.DAY_RED_TO_GREEN)))
-
-    def start(self):
-
-        if not self.load_settings():
-            self.print_log("[{}] Cannot find trading settings, quit!".format(
-                utils.get_now()))
-            return
-
+    def check_trading_hour(self):
+        valid_time = True
         if datetime.now().hour < 9 or datetime.now().hour >= 16:
-            self.print_log("[{}] Skip pre and after market session, quit!".format(
-                utils.get_now()))
+            # self.print_log("[{}] Skip pre and after market session, quit!".format(
+            #     utils.get_now()))
+            valid_time = False
+        return valid_time
+
+    def on_begin(self):
+
+        if not self.check_trading_hour():
             return
-
-        self.print_log("[{}] Trading started...".format(utils.get_now()))
-
-        self.print_algo_name()
-
-        while not utils.is_regular_market_hour():
-            self.print_log(
-                "[{}] Waiting for market hour...".format(utils.get_now()))
-            time.sleep(2)
-
-        # login
-        if not webullsdk.login(paper=self.paper):
-            self.print_log("[{}] Webull login failed, quit!".format(
-                utils.get_now()))
-            return
-        self.print_log("[{}] Webull logged in".format(utils.get_now()))
-        last_login_refresh_time = datetime.now()
 
         today = datetime.today().date()
         last_market_day = today - timedelta(days=1)
@@ -186,55 +169,29 @@ class DayTradingRedGreen(TradingBase):
                 self.print_log("[{}] Add loser <{}>[{}] to trade!".format(
                     utils.get_now(), loser.symbol, loser.ticker_id))
 
-        # main loop
-        while utils.is_regular_market_hour() and datetime.now().hour <= 11:
+    def on_update(self):
+        if not self.check_trading_hour():
+            return
+
+        # only trade regular market hour before 13:00
+        if utils.is_regular_market_hour() and datetime.now().hour <= 12:
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
+                # init stats
+                self.init_ticker_stats(ticker)
                 # do trade
                 self.trade(ticker)
+        elif not self.trading_end:
+            # check if still holding any positions before exit
+            while len(list(self.tracking_tickers)) > 0:
+                for symbol in list(self.tracking_tickers):
+                    ticker = self.tracking_tickers[symbol]
+                    self.clear_position(ticker)
 
-            # refresh login
-            if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
-                webullsdk.login(paper=self.paper)
-                self.print_log(
-                    "[{}] Refresh webull login".format(utils.get_now()))
-                last_login_refresh_time = datetime.now()
-
-            # at least slepp 1 sec
-            time.sleep(1)
-
-        # check if still holding any positions before exit
-        while len(list(self.tracking_tickers)) > 0:
-            for symbol in list(self.tracking_tickers):
-                ticker = self.tracking_tickers[symbol]
-                self.clear_position(ticker)
-
-            # at least slepp 1 sec
-            time.sleep(1)
-        
-        # save trading logs
-        utils.save_trading_log("\n".join(self.trading_logs), date.today())
-
-        self.print_log("[{}] Trading ended!".format(utils.get_now()))
-
-        # output today's proft loss
-        portfolio = webullsdk.get_portfolio()
-        day_profit_loss = "-"
-        if "dayProfitLoss" in portfolio:
-            day_profit_loss = portfolio['dayProfitLoss']
-        self.print_log("[{}] Today's P&L: {}".format(
-            utils.get_now(), day_profit_loss))
-
-
-def start():
-    from scripts import utils
-    from trading.day_redgreen import DayTradingRedGreen
-
-    paper = utils.check_paper()
-    daytrading = DayTradingRedGreen(paper=paper)
-    daytrading.start()
-
-
-if __name__ == "django.core.management.commands.shell":
-    start()
+                # at least slepp 1 sec
+                time.sleep(1)
+            # save trading logs
+            utils.save_trading_log(
+                "\n".join(self.trading_logs), self.get_tag(), date.today())
+            self.trading_end = True

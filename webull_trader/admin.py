@@ -31,6 +31,7 @@ admin.site.register(models.TradingSettings, TradingSettingsAdmin)
 class TradingLogAdmin(admin.ModelAdmin):
     list_display = [
         'date',
+        'tag',
         'log_text',
     ]
 

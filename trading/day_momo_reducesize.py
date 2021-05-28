@@ -2,17 +2,14 @@
 
 # Momo day trading based on win rate, reduce size if win rate is low
 
-from scripts import utils
-from webull_trader.enums import AlgorithmType
 from datetime import datetime, timedelta
 from trading.day_momo import DayTradingMomo
 
 
 class DayTradingMomoReduceSize(DayTradingMomo):
 
-    def print_algo_name(self):
-        self.print_log("[{}] {}".format(utils.get_now(),
-              AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)))
+    def get_tag(self):
+        return "DayTradingMomoReduceSize"
 
     def get_buy_order_limit(self, symbol):
         buy_position_amount = self.order_amount_limit
@@ -32,16 +29,3 @@ class DayTradingMomoReduceSize(DayTradingMomo):
         if symbol in self.trading_stats and self.trading_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=self.blacklist_timeout_in_sec):
             return False
         return True
-
-
-def start():
-    from scripts import utils
-    from trading.day_momo_reducesize import DayTradingMomoReduceSize
-
-    paper = utils.check_paper()
-    daytrading = DayTradingMomoReduceSize(paper=paper)
-    daytrading.start()
-
-
-if __name__ == "django.core.management.commands.shell":
-    start()
