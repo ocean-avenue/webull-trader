@@ -98,11 +98,11 @@ class WebullOrder(models.Model):
 
 class WebullOrderNote(models.Model):
     order_id = models.CharField(max_length=128)
-    note = models.TextField(null=True, blank=True)
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
         default=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH
     )
+    note = models.TextField(null=True, blank=True)
 
     def __str__(self):
         setup_str = enums.SetupType.tostr(self.setup)
@@ -254,7 +254,43 @@ class SwingWatchlist(models.Model):
     )
 
     created_date = models.DateField(auto_now_add=True)
-    updated_date = models.DateField(auto_now=False, auto_now_add=False)
+    updated_date = models.DateField(auto_now=True)
 
     def __str__(self):
         return "[{}] <{}> ({})".format(self.updated_date, self.symbol, enums.ScreenerType.tostr(self.screener_type))
+
+
+class SwingPosition(models.Model):
+    order_id = models.CharField(max_length=128)
+    symbol = models.CharField(max_length=64)
+    cost = models.FloatField()
+    quantity = models.PositiveIntegerField(default=0)
+    buy_date = models.DateField()
+    buy_time = models.DateTimeField()
+
+    def __str__(self):
+        return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
+
+
+class SwingTrade(models.Model):
+    symbol = models.CharField(max_length=64)
+    quantity = models.PositiveIntegerField()
+
+    buy_date = models.DateField()
+    buy_time = models.DateTimeField()
+    buy_price = models.FloatField()
+    buy_order_id = models.CharField(max_length=128)
+
+    sell_date = models.DateField()
+    sell_time = models.DateTimeField()
+    sell_price = models.FloatField()
+    sell_order_id = models.CharField(max_length=128)
+
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
+    )
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)

@@ -241,3 +241,39 @@ class SwingWatchlistAdmin(admin.ModelAdmin):
 
 admin.site.register(models.SwingWatchlist,
                     SwingWatchlistAdmin)
+
+
+class SwingPositionAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'order_id',
+        'quantity',
+        'cost',
+        'buy_date',
+        'buy_time',
+    ]
+
+
+admin.site.register(models.SwingPosition,
+                    SwingPositionAdmin)
+
+
+class SwingTradeAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'quantity',
+        'buy_date',
+        'buy_price',
+        'buy_order_id',
+        'sell_date',
+        'sell_price',
+        'sell_order_id',
+        'setup',
+        'note',
+        'buy_time',
+        'sell_time',
+    ]
+
+
+admin.site.register(models.SwingTrade,
+                    SwingTradeAdmin)
