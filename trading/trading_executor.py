@@ -139,9 +139,9 @@ def start():
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         # red/green trade
         strategies.append(DayTradingRedGreen(paper=paper))
-    elif algo_type == AlgorithmType.LIVE:
-        # TODO
-        pass
+    elif algo_type == AlgorithmType.DAY_SWING:
+        strategies.append(DayTradingMomo(paper=paper))
+        # strategies.append(DayTradingMomo(paper=paper))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return

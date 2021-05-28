@@ -127,7 +127,7 @@ class AlgorithmType:
     DAY_MOMENTUM_NEW_HIGH = 3
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
-    LIVE = 200
+    DAY_SWING = 200
 
     @staticmethod
     def tostr(val):
@@ -147,8 +147,8 @@ class AlgorithmType:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'Swing trade based on turtle trading rules (55 days).'
-        if val == AlgorithmType.LIVE:
-            return 'Live day/swing trade based on history statistics data.'
+        if val == AlgorithmType.DAY_SWING:
+            return 'Day/Swing trade based on history statistics data.'
         return UNKNOWN
 
     @staticmethod
@@ -165,8 +165,8 @@ class AlgorithmType:
             return 'SWING/TURTLE (20 DAYS)'
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'SWING/TURTLE (55 DAYS)'
-        if val == AlgorithmType.LIVE:
-            return 'LIVE'
+        if val == AlgorithmType.DAY_SWING:
+            return 'DAY/SWING'
         return UNKNOWN
 
     @staticmethod
@@ -184,8 +184,8 @@ class AlgorithmType:
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_55)),
-            (AlgorithmType.LIVE, AlgorithmType.tostr(
-                AlgorithmType.LIVE)),
+            (AlgorithmType.DAY_SWING, AlgorithmType.tostr(
+                AlgorithmType.DAY_SWING)),
         )
 
 
