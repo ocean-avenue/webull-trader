@@ -209,8 +209,9 @@ class DayTradingMomo(StrategyBase):
                 # update trading stats
                 self.trading_stats[symbol]['trades'] += 1
                 self.trading_stats[symbol]['last_trade_time'] = datetime.now()
+                last_high_price = self.trading_stats[symbol]['last_high_price'] or 0
                 self.trading_stats[symbol]['last_high_price'] = max(
-                    cost_price, last_price)
+                    cost_price, last_price, last_high_price)
                 if profit_loss_rate > 0:
                     self.trading_stats[symbol]['win_trades'] += 1
                     self.trading_stats[symbol]['continue_lose_trades'] = 0
@@ -273,7 +274,8 @@ class DayTradingMomo(StrategyBase):
                         ticker = self.get_init_tracking_ticker(
                             symbol, ticker_id)
                         self.tracking_tickers[symbol] = ticker
-                        self.print_log("Found <{}>[{}] to trade!".format(symbol, ticker_id))
+                        self.print_log(
+                            "Found <{}>[{}] to trade!".format(symbol, ticker_id))
                         # do trade
                         self.trade(ticker, m1_bars=m1_bars)
 
