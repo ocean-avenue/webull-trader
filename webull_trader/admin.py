@@ -288,3 +288,19 @@ class SwingTradeAdmin(admin.ModelAdmin):
 
 admin.site.register(models.SwingTrade,
                     SwingTradeAdmin)
+
+
+class FMPHistoricalDailyBarAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'symbol',
+        'date',
+        'open',
+        'high',
+        'low',
+        'close',
+        'volume',
+    ]
+
+
+admin.site.register(models.FMPHistoricalDailyBar, FMPHistoricalDailyBarAdmin)

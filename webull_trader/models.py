@@ -303,3 +303,20 @@ class SwingTrade(models.Model):
 
     def __str__(self):
         return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
+
+
+class FMPHistoricalDailyBar(models.Model):
+    symbol = models.CharField(max_length=64)
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    open = models.FloatField()
+    high = models.FloatField()
+    low = models.FloatField()
+    close = models.FloatField()
+    volume = models.FloatField()
+
+    rsi_10 = models.FloatField()
+    sma_55 = models.FloatField()
+    sma_120 = models.FloatField()
+
+    def __str__(self):
+        return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
