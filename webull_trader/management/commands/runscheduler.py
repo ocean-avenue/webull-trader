@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
-from trading import day_momo, day_momo_reducesize, day_redgreen
+from trading import day_momo, day_momo_reducesize, day_momo_newhigh, day_redgreen
 from webull_trader.enums import AlgorithmType
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -49,8 +49,15 @@ def day_trading_job():
     elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
         # momo trade with reduce size
         day_momo_reducesize.start()
+    elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
+        # momo trade with new high confirm
+        day_momo_newhigh.start()
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
+        # red/green trade
         day_redgreen.start()
+    elif algo_type == AlgorithmType.LIVE:
+        # TODO
+        pass
     else:
         print("[{}] No day trading job found, skip...".format(utils.get_now()))
     print("[{}] Done day trading job!".format(utils.get_now()))
@@ -65,8 +72,11 @@ def swing_trading_job():
     print("[{}] Start swing trading job...".format(utils.get_now()))
     # load algo type
     algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.SWING_TURTLE:
+    if algo_type == AlgorithmType.SWING_TURTLE_55:
         # turtle trading
+        # TODO
+        pass
+    elif algo_type == AlgorithmType.LIVE:
         # TODO
         pass
     else:
