@@ -3,7 +3,7 @@
 # Momo day trading class
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from trading.trading_base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
@@ -62,7 +62,7 @@ class DayTradingRedGreen(TradingBase):
                     quote['depth']['ntvAggAskList'][0]['price'])
                 # check if ask_price is too high above prev day close
                 if (ask_price - prev_day_close) / prev_day_close > 0.02:
-                    print("[{}] <{}>[{}] gap too large, ask: {}, prev day close: {}, stop trading!".format(
+                    self.print_log("[{}] <{}>[{}] gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         utils.get_now(), symbol, ticker_id, ask_price, prev_day_close))
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
@@ -72,9 +72,9 @@ class DayTradingRedGreen(TradingBase):
                     ticker_id=ticker_id,
                     price=ask_price,
                     quant=buy_quant)
-                print("[{}] Trading <{}>[{}], price: {}, volume: {}".format(
+                self.print_log("[{}] Trading <{}>[{}], price: {}, volume: {}".format(
                     utils.get_now(), symbol, ticker_id, current_close, current_volume))
-                print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                self.print_log("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                 # update pending buy
                 self.update_pending_buy_order(
@@ -82,7 +82,7 @@ class DayTradingRedGreen(TradingBase):
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                print("[{}] Finding <{}>[{}] position error!".format(
+                self.print_log("[{}] Finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
                 return
             # profit loss rate
@@ -110,44 +110,45 @@ class DayTradingRedGreen(TradingBase):
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                print("[{}] 📈 Exit trading <{}>[{}] P&L: {}%".format(
+                self.print_log("[{}] 📈 Exit trading <{}>[{}] P&L: {}%".format(
                     utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
-                print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                self.print_log("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
 
     def print_algo_name(self):
-        print("[{}] {}".format(utils.get_now(),
-              AlgorithmType.tostr(AlgorithmType.DAY_RED_TO_GREEN)))
+        self.print_log("[{}] {}".format(utils.get_now(),
+                                        AlgorithmType.tostr(AlgorithmType.DAY_RED_TO_GREEN)))
 
     def start(self):
 
         if not self.load_settings():
-            print("[{}] Cannot find trading settings, quit!".format(
+            self.print_log("[{}] Cannot find trading settings, quit!".format(
                 utils.get_now()))
             return
 
         if datetime.now().hour < 9 or datetime.now().hour >= 16:
-            print("[{}] Skip pre and after market session, quit!".format(
+            self.print_log("[{}] Skip pre and after market session, quit!".format(
                 utils.get_now()))
             return
 
-        print("[{}] Trading started...".format(utils.get_now()))
+        self.print_log("[{}] Trading started...".format(utils.get_now()))
 
         self.print_algo_name()
 
         while not utils.is_regular_market_hour():
-            print("[{}] Waiting for market hour...".format(utils.get_now()))
-            time.sleep(10)
+            self.print_log(
+                "[{}] Waiting for market hour...".format(utils.get_now()))
+            time.sleep(2)
 
         # login
         if not webullsdk.login(paper=self.paper):
-            print("[{}] Webull login failed, quit!".format(
+            self.print_log("[{}] Webull login failed, quit!".format(
                 utils.get_now()))
             return
-        print("[{}] Webull logged in".format(utils.get_now()))
+        self.print_log("[{}] Webull logged in".format(utils.get_now()))
         last_login_refresh_time = datetime.now()
 
         today = datetime.today().date()
@@ -168,7 +169,7 @@ class DayTradingRedGreen(TradingBase):
                 ticker = self.get_init_tracking_ticker(
                     gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
                 self.tracking_tickers[gainer.symbol] = ticker
-                print("[{}] Add gainer <{}>[{}] to trade!".format(
+                self.print_log("[{}] Add gainer <{}>[{}] to trade!".format(
                     utils.get_now(), gainer.symbol, gainer.ticker_id))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
@@ -182,7 +183,7 @@ class DayTradingRedGreen(TradingBase):
                 ticker = self.get_init_tracking_ticker(
                     loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
                 self.tracking_tickers[loser.symbol] = ticker
-                print("[{}] Add loser <{}>[{}] to trade!".format(
+                self.print_log("[{}] Add loser <{}>[{}] to trade!".format(
                     utils.get_now(), loser.symbol, loser.ticker_id))
 
         # main loop
@@ -196,7 +197,8 @@ class DayTradingRedGreen(TradingBase):
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
                 webullsdk.login(paper=self.paper)
-                print("[{}] Refresh webull login".format(utils.get_now()))
+                self.print_log(
+                    "[{}] Refresh webull login".format(utils.get_now()))
                 last_login_refresh_time = datetime.now()
 
             # at least slepp 1 sec
@@ -210,15 +212,18 @@ class DayTradingRedGreen(TradingBase):
 
             # at least slepp 1 sec
             time.sleep(1)
+        
+        # save trading logs
+        utils.save_trading_log("\n".join(self.trading_logs), date.today())
 
-        print("[{}] Trading ended!".format(utils.get_now()))
+        self.print_log("[{}] Trading ended!".format(utils.get_now()))
 
         # output today's proft loss
         portfolio = webullsdk.get_portfolio()
         day_profit_loss = "-"
         if "dayProfitLoss" in portfolio:
             day_profit_loss = portfolio['dayProfitLoss']
-        print("[{}] Today's P&L: {}".format(
+        self.print_log("[{}] Today's P&L: {}".format(
             utils.get_now(), day_profit_loss))
 
 

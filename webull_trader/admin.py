@@ -28,6 +28,16 @@ class TradingSettingsAdmin(admin.ModelAdmin):
 admin.site.register(models.TradingSettings, TradingSettingsAdmin)
 
 
+class TradingLogAdmin(admin.ModelAdmin):
+    list_display = [
+        'date',
+        'log_text',
+    ]
+
+
+admin.site.register(models.TradingLog, TradingLogAdmin)
+
+
 class WebullCredentialsAdmin(admin.ModelAdmin):
 
     list_display = [

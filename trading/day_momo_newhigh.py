@@ -10,7 +10,7 @@ from trading.day_momo import DayTradingMomo
 class DayTradingMomoNewHigh(DayTradingMomo):
 
     def print_algo_name(self):
-        print("[{}] {}".format(utils.get_now(),
+        self.print_log("[{}] {}".format(utils.get_now(),
               AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM_NEW_HIGH)))
 
     def check_if_price_new_high(self, symbol, price):

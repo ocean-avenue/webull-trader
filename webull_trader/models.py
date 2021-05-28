@@ -42,6 +42,14 @@ class TradingSettings(models.Model):
             self.paper, self.order_amount_limit, enums.AlgorithmType.tostr(self.algo_type))
 
 
+class TradingLog(models.Model):
+    date = models.DateField()
+    log_text = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return "[{}] {}".format(self.date, self.log_text)
+
+
 class WebullCredentials(models.Model):
     cred = models.TextField(null=True, blank=True)
     paper = models.BooleanField(default=True)

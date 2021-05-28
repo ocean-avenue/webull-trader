@@ -3,7 +3,7 @@
 # Momo day trading class
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from trading.trading_base import TradingBase
 from webull_trader.enums import SetupType, AlgorithmType
 from sdk import webullsdk
@@ -33,7 +33,7 @@ class DayTradingMomo(TradingBase):
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
         if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=self.observe_timeout_in_sec):
-            print("[{}] Trading <{}>[{}] session timeout!".format(
+            self.print_log("[{}] Trading <{}>[{}] session timeout!".format(
                 utils.get_now(), symbol, ticker_id))
             # remove from monitor
             del self.tracking_tickers[symbol]
@@ -48,14 +48,14 @@ class DayTradingMomo(TradingBase):
                 return
 
             if not utils.check_bars_updated(m1_bars):
-                print("[{}] <{}>[{}] Charts is not updated, stop trading!".format(
+                self.print_log("[{}] <{}>[{}] Charts is not updated, stop trading!".format(
                     utils.get_now(), symbol, ticker_id))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             # if not utils.check_bars_volatility(m1_bars):
-            #     print("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
+            #     self.print_log("[{}] <{}>[{}] Charts is not volatility, stop trading!".format(
             #         utils.get_now(), symbol, ticker_id))
             #     # remove from monitor
             #     del tracking_tickers[symbol]
@@ -63,7 +63,7 @@ class DayTradingMomo(TradingBase):
 
             # check if last sell time is too short compare current time
             # if ticker['last_sell_time'] != None and (datetime.now() - ticker['last_sell_time']) < timedelta(seconds=TRADE_INTERVAL):
-            #     print("[{}] Don't buy <{}>[{}] too quick after sold!".format(
+            #     self.print_log("[{}] Don't buy <{}>[{}] too quick after sold!".format(
             #         utils.get_now(), symbol, ticker_id))
             #     return
 
@@ -93,7 +93,7 @@ class DayTradingMomo(TradingBase):
                         quote['depth']['ntvAggBidList'][0]['price'])
                     gap = (ask_price - bid_price) / bid_price
                     if gap > self.max_bid_ask_gap_ratio:
-                        print("[{}] <{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
+                        self.print_log("[{}] <{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
                             utils.get_now(), symbol, ticker_id, ask_price, bid_price))
                         # remove from monitor
                         del self.tracking_tickers[symbol]
@@ -105,9 +105,9 @@ class DayTradingMomo(TradingBase):
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    print("[{}] Trading <{}>[{}], price: {}, vwap: {}, ema9: {}, volume: {}".format(
+                    self.print_log("[{}] Trading <{}>[{}], price: {}, vwap: {}, ema9: {}, volume: {}".format(
                         utils.get_now(), symbol, ticker_id, current_close, current_vwap, round(current_ema9, 3), current_volume))
-                    print("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                    self.print_log("[{}] 🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(
@@ -115,7 +115,7 @@ class DayTradingMomo(TradingBase):
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                print("[{}] Finding <{}>[{}] position error!".format(
+                self.print_log("[{}] Finding <{}>[{}] position error!".format(
                     utils.get_now(), symbol, ticker_id))
                 return
             # cost = float(ticker_position['cost'])
@@ -128,7 +128,7 @@ class DayTradingMomo(TradingBase):
             if profit_loss_rate > max_profit_loss_rate:
                 self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
             # quantity = int(ticker_position['position'])
-            # print("[{}] Checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
+            # self.print_log("[{}] Checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
             #     utils.get_now(), symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
             exit_trading = False
             # sell if drawdown 1% from max P&L rate
@@ -156,7 +156,7 @@ class DayTradingMomo(TradingBase):
 
             # check if holding too long without profit
             if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=self.holding_order_timeout_in_sec) and profit_loss_rate < 0.01:
-                print("[{}] Holding <{}>[{}] too long!".format(
+                self.print_log("[{}] Holding <{}>[{}] too long!".format(
                     utils.get_now(), symbol, ticker_id))
                 exit_note = "Holding too long!"
                 exit_trading = True
@@ -168,21 +168,21 @@ class DayTradingMomo(TradingBase):
 
                 # get bars error
                 if m2_bars.empty:
-                    print("[{}] <{}>[{}] Bars data error!".format(
+                    self.print_log("[{}] <{}>[{}] Bars data error!".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Bars data error!"
                     exit_trading = True
 
                 # check if momentum is stop
                 if not exit_trading and utils.check_bars_current_low_less_than_prev_low(m2_bars):
-                    print("[{}] <{}>[{}] Current low price is less than previous low price.".format(
+                    self.print_log("[{}] <{}>[{}] Current low price is less than previous low price.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Current Low < Previous Low."
                     exit_trading = True
 
                 # check if price fixed in last 3 candles
                 if not exit_trading and utils.check_bars_price_fixed(m2_bars):
-                    print("[{}] <{}>[{}] Price is fixed during last 3 candles.".format(
+                    self.print_log("[{}] <{}>[{}] Price is fixed during last 3 candles.".format(
                         utils.get_now(), symbol, ticker_id))
                     exit_note = "Price fixed during last 3 candles."
                     exit_trading = True
@@ -198,9 +198,9 @@ class DayTradingMomo(TradingBase):
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                print("[{}] 📈 Exit trading <{}>[{}] P&L: {}%".format(
+                self.print_log("[{}] 📈 Exit trading <{}>[{}] P&L: {}%".format(
                     utils.get_now(), symbol, ticker_id, round(profit_loss_rate * 100, 2)))
-                print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                self.print_log("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
                     utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
@@ -227,30 +227,31 @@ class DayTradingMomo(TradingBase):
         return True
 
     def print_algo_name(self):
-        print("[{}] {}".format(utils.get_now(),
-              AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM)))
+        self.print_log("[{}] {}".format(utils.get_now(),
+                                        AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM)))
 
     def start(self):
 
         if not self.load_settings():
-            print("[{}] Cannot find trading settings, quit!".format(
+            self.print_log("[{}] Cannot find trading settings, quit!".format(
                 utils.get_now()))
             return
 
-        print("[{}] Trading started...".format(utils.get_now()))
+        self.print_log("[{}] Trading started...".format(utils.get_now()))
 
         self.print_algo_name()
 
         while not utils.is_market_hour():
-            print("[{}] Waiting for market hour...".format(utils.get_now()))
-            time.sleep(10)
+            self.print_log(
+                "[{}] Waiting for market hour...".format(utils.get_now()))
+            time.sleep(2)
 
         # login
         if not webullsdk.login(paper=self.paper):
-            print("[{}] Webull login failed, quit!".format(
+            self.print_log("[{}] Webull login failed, quit!".format(
                 utils.get_now()))
             return
-        print("[{}] Webull logged in".format(utils.get_now()))
+        self.print_log("[{}] Webull logged in".format(utils.get_now()))
         last_login_refresh_time = datetime.now()
 
         # main loop
@@ -272,7 +273,7 @@ class DayTradingMomo(TradingBase):
             elif utils.is_after_market_hour():
                 top_gainers = webullsdk.get_after_market_gainers()
 
-            # print("[{}] Scanning top gainers [{}]...".format(
+            # self.print_log("[{}] Scanning top gainers [{}]...".format(
             #     utils.get_now(), ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
             for gainer in top_gainers:
                 symbol = gainer["symbol"]
@@ -280,7 +281,7 @@ class DayTradingMomo(TradingBase):
                 if symbol in self.tracking_tickers:
                     continue
                 ticker_id = gainer["ticker_id"]
-                # print("[{}] Scanning <{}>[{}]...".format(
+                # self.print_log("[{}] Scanning <{}>[{}]...".format(
                 #     utils.get_now(), symbol, ticker_id))
                 change_percentage = gainer["change_percentage"]
                 # check gap change
@@ -301,7 +302,7 @@ class DayTradingMomo(TradingBase):
                             ticker = self.get_init_tracking_ticker(
                                 symbol, ticker_id)
                             self.tracking_tickers[symbol] = ticker
-                            print("[{}] Found <{}>[{}] to trade!".format(
+                            self.print_log("[{}] Found <{}>[{}] to trade!".format(
                                 utils.get_now(), symbol, ticker_id))
                             # do trade
                             self.trade(ticker, m1_bars=m1_bars)
@@ -309,7 +310,8 @@ class DayTradingMomo(TradingBase):
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
                 webullsdk.login(paper=self.paper)
-                print("[{}] Refresh webull login".format(utils.get_now()))
+                self.print_log(
+                    "[{}] Refresh webull login".format(utils.get_now()))
                 last_login_refresh_time = datetime.now()
 
             # at least slepp 1 sec
@@ -324,18 +326,21 @@ class DayTradingMomo(TradingBase):
             # at least slepp 1 sec
             time.sleep(1)
 
-        print("[{}] Trading ended!".format(utils.get_now()))
+        # save trading logs
+        utils.save_trading_log("\n".join(self.trading_logs), date.today())
+
+        self.print_log("[{}] Trading ended!".format(utils.get_now()))
 
         # output today's proft loss
         portfolio = webullsdk.get_portfolio()
         day_profit_loss = "-"
         if "dayProfitLoss" in portfolio:
             day_profit_loss = portfolio['dayProfitLoss']
-        print("[{}] Today's P&L: {}".format(
+        self.print_log("[{}] Today's P&L: {}".format(
             utils.get_now(), day_profit_loss))
 
         # webullsdk.logout()
-        # print("[{}] Webull logged out".format(utils.get_now()))
+        # self.print_log("[{}] Webull logged out".format(utils.get_now()))
 
 
 def start():

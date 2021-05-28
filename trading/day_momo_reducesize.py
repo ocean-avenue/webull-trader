@@ -11,7 +11,7 @@ from trading.day_momo import DayTradingMomo
 class DayTradingMomoReduceSize(DayTradingMomo):
 
     def print_algo_name(self):
-        print("[{}] {}".format(utils.get_now(),
+        self.print_log("[{}] {}".format(utils.get_now(),
               AlgorithmType.tostr(AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)))
 
     def get_buy_order_limit(self, symbol):

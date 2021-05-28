@@ -15,6 +15,12 @@ class TradingBase:
         # init trading variables
         self.tracking_tickers = {}
         self.trading_stats = {}
+        self.trading_logs = []
+
+    def print_log(self, text):
+        self.trading_logs.append(text)
+        # output
+        print(text)
 
     # load settings
     def load_settings(self):
@@ -24,52 +30,52 @@ class TradingBase:
             return False
 
         self.min_surge_amount = trading_settings.min_surge_amount
-        print("[{}] Min surge amount: {}".format(
+        self.print_log("[{}] Min surge amount: {}".format(
             utils.get_now(), self.min_surge_amount))
         self.min_surge_volume = trading_settings.min_surge_volume
-        print("[{}] Min surge volume: {}".format(
+        self.print_log("[{}] Min surge volume: {}".format(
             utils.get_now(), self.min_surge_volume))
         # at least 4% change for surge
         self.min_surge_change_ratio = trading_settings.min_surge_change_ratio
-        print("[{}] Min gap change: {}%".format(
+        self.print_log("[{}] Min gap change: {}%".format(
             utils.get_now(), round(self.min_surge_change_ratio * 100, 2)))
         self.avg_confirm_volume = trading_settings.avg_confirm_volume
-        print("[{}] Avg confirm volume: {}".format(
+        self.print_log("[{}] Avg confirm volume: {}".format(
             utils.get_now(), self.avg_confirm_volume))
         self.order_amount_limit = trading_settings.order_amount_limit
-        print("[{}] Buy order limit: {}".format(
+        self.print_log("[{}] Buy order limit: {}".format(
             utils.get_now(), self.order_amount_limit))
         # observe timeout in seconds
         self.observe_timeout_in_sec = trading_settings.observe_timeout_in_sec
-        print("[{}] Observe timeout: {} sec".format(
+        self.print_log("[{}] Observe timeout: {} sec".format(
             utils.get_now(), self.observe_timeout_in_sec))
         # buy after sell interval in seconds
         self.trade_interval_in_sec = trading_settings.trade_interval_in_sec
-        print("[{}] Trade interval: {} sec".format(
+        self.print_log("[{}] Trade interval: {} sec".format(
             utils.get_now(), self.trade_interval_in_sec))
         # pending order timeout in seconds
         self.pending_order_timeout_in_sec = trading_settings.pending_order_timeout_in_sec
-        print("[{}] Pending order timeout: {} sec".format(
+        self.print_log("[{}] Pending order timeout: {} sec".format(
             utils.get_now(), self.pending_order_timeout_in_sec))
         # holding order timeout in seconds
         self.holding_order_timeout_in_sec = trading_settings.holding_order_timeout_in_sec
-        print("[{}] Holding order timeout: {} sec".format(
+        self.print_log("[{}] Holding order timeout: {} sec".format(
             utils.get_now(), self.holding_order_timeout_in_sec))
         # refresh login interval minutes
         self.refresh_login_interval_in_min = trading_settings.refresh_login_interval_in_min
-        print("[{}] Refresh login timeout: {} min".format(
+        self.print_log("[{}] Refresh login timeout: {} min".format(
             utils.get_now(), self.refresh_login_interval_in_min))
         self.max_bid_ask_gap_ratio = trading_settings.max_bid_ask_gap_ratio
-        print("[{}] Max bid ask gap: {}%".format(
+        self.print_log("[{}] Max bid ask gap: {}%".format(
             utils.get_now(), round(self.max_bid_ask_gap_ratio * 100, 2)))
         self.target_profit_ratio = trading_settings.target_profit_ratio
-        print("[{}] Target profit rate: {}%".format(
+        self.print_log("[{}] Target profit rate: {}%".format(
             utils.get_now(), round(self.target_profit_ratio * 100, 2)))
         self.stop_loss_ratio = trading_settings.stop_loss_ratio
-        print("[{}] Stop loss rate: {}%".format(
+        self.print_log("[{}] Stop loss rate: {}%".format(
             utils.get_now(), round(self.stop_loss_ratio * 100, 2)))
         self.blacklist_timeout_in_sec = trading_settings.blacklist_timeout_in_sec
-        print("[{}] Blacklist timeout: {} sec".format(
+        self.print_log("[{}] Blacklist timeout: {} sec".format(
             utils.get_now(), self.blacklist_timeout_in_sec))
 
         return True
@@ -111,7 +117,7 @@ class TradingBase:
     def check_buy_order_filled(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        print("[{}] Checking buy order <{}>[{}] filled...".format(
+        self.print_log("[{}] Checking buy order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
@@ -131,7 +137,7 @@ class TradingBase:
                 self.tracking_tickers[symbol]['pending_order_time'] = None
                 self.tracking_tickers[symbol]['order_filled_time'] = datetime.now(
                 )
-                print("[{}] Buy order <{}>[{}] filled, cost: {}".format(
+                self.print_log("[{}] Buy order <{}>[{}] filled, cost: {}".format(
                     utils.get_now(), symbol, ticker_id, cost))
                 break
         if not order_filled:
@@ -141,19 +147,19 @@ class TradingBase:
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(
                         ticker['pending_order_id'], note="Buy order timeout, canceled!")
-                    print("[{}] Buy order <{}>[{}] timeout, canceled!".format(
+                    self.print_log("[{}] Buy order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     self.tracking_tickers[symbol]['pending_buy'] = False
                     self.tracking_tickers[symbol]['pending_order_id'] = None
                     self.tracking_tickers[symbol]['pending_order_time'] = None
                 else:
-                    print("[{}] Failed to cancel timeout buy order <{}>[{}]!".format(
+                    self.print_log("[{}] Failed to cancel timeout buy order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
     def check_sell_order_filled(self, ticker, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        print("[{}] Checking sell order <{}>[{}] filled...".format(
+        self.print_log("[{}] Checking sell order <{}>[{}] filled...".format(
             utils.get_now(), symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
@@ -182,7 +188,7 @@ class TradingBase:
             # remove from monitor
             if stop_tracking:
                 del self.tracking_tickers[symbol]
-            print("[{}] Sell order <{}>[{}] filled".format(
+            self.print_log("[{}] Sell order <{}>[{}] filled".format(
                 utils.get_now(), symbol, ticker_id))
             # update account status
             account_data = webullsdk.get_account()
@@ -194,7 +200,7 @@ class TradingBase:
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(
                         ticker['pending_order_id'], note="Sell order timeout, canceled!")
-                    print("[{}] Sell order <{}>[{}] timeout, canceled!".format(
+                    self.print_log("[{}] Sell order <{}>[{}] timeout, canceled!".format(
                         utils.get_now(), symbol, ticker_id))
                     # resubmit sell order
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -207,10 +213,10 @@ class TradingBase:
                         ticker_id=ticker_id,
                         price=bid_price,
                         quant=holding_quantity)
-                    print("[{}] Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                    self.print_log("[{}] Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
                         utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
                     if 'msg' in order_response:
-                        print("[{}] {}".format(
+                        self.print_log("[{}] {}".format(
                             utils.get_now(), order_response['msg']))
                     else:
                         utils.save_webull_order_note(
@@ -221,12 +227,12 @@ class TradingBase:
                         self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
                 else:
-                    print("[{}] Failed to cancel timeout sell order <{}>[{}]!".format(
+                    self.print_log("[{}] Failed to cancel timeout sell order <{}>[{}]!".format(
                         utils.get_now(), symbol, ticker_id))
 
     def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
         if 'msg' in order_response:
-            print("[{}] {}".format(
+            self.print_log("[{}] {}".format(
                 utils.get_now(), order_response['msg']))
         elif 'orderId' in order_response:
             # mark pending buy
@@ -239,7 +245,8 @@ class TradingBase:
 
     def update_pending_sell_order(self, symbol, order_response, exit_note=""):
         if 'msg' in order_response:
-            print("[{}] {}".format(utils.get_now(), order_response['msg']))
+            self.print_log("[{}] {}".format(
+                utils.get_now(), order_response['msg']))
         elif 'orderId' in order_response:
             # mark pending sell
             self.tracking_tickers[symbol]['pending_sell'] = True
@@ -286,10 +293,11 @@ class TradingBase:
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        print("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
+        self.print_log("[{}] 🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
             utils.get_now(), symbol, ticker_id, holding_quantity, bid_price))
         if 'msg' in order_response:
-            print("[{}] {}".format(utils.get_now(), order_response['msg']))
+            self.print_log("[{}] {}".format(
+                utils.get_now(), order_response['msg']))
         else:
             # mark pending sell
             self.tracking_tickers[symbol]['pending_sell'] = True

@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import datetime, date
 from webull_trader import enums
 from scripts import config
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
@@ -505,6 +505,14 @@ def save_webull_news(news_data, symbol, date):
             date=date,
         )
         news.save()
+
+
+def save_trading_log(text, date):
+    log = TradingLog.objects.filter(date=date).first()
+    if log == None:
+        log = TradingLog(date=date)
+    log.log_text = text
+    log.save()
 
 
 def save_hist_key_statistics(quote_data, date):

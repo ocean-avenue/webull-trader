@@ -30,7 +30,7 @@ class TradingExecutor:
 
         while not utils.is_market_hour():
             print("[{}] Waiting for market hour...".format(utils.get_now()))
-            time.sleep(1)
+            time.sleep(2)
 
         # login
         if not webullsdk.login(paper=self.paper):
