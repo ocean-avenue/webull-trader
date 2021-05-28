@@ -305,7 +305,7 @@ class SwingTrade(models.Model):
         return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
 
 
-class FMPHistoricalDailyBar(models.Model):
+class SwingHistoricalDailyBar(models.Model):
     symbol = models.CharField(max_length=64)
     date = models.DateField(auto_now=False, auto_now_add=False)
     open = models.FloatField()

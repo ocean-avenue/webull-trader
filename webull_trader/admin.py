@@ -290,7 +290,7 @@ admin.site.register(models.SwingTrade,
                     SwingTradeAdmin)
 
 
-class FMPHistoricalDailyBarAdmin(admin.ModelAdmin):
+class SwingHistoricalDailyBarAdmin(admin.ModelAdmin):
 
     list_display = [
         'symbol',
@@ -303,4 +303,5 @@ class FMPHistoricalDailyBarAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(models.FMPHistoricalDailyBar, FMPHistoricalDailyBarAdmin)
+admin.site.register(models.SwingHistoricalDailyBar,
+                    SwingHistoricalDailyBarAdmin)
