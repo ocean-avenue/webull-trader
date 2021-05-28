@@ -173,9 +173,9 @@ class HistoricalKeyStatistics(models.Model):
     change_ratio = models.FloatField()
     market_value = models.FloatField()
     volume = models.FloatField()
-    turnover_rate = models.FloatField()
+    turnover_rate = models.FloatField(null=True, blank=True)
     # range %
-    vibrate_ratio = models.FloatField()
+    vibrate_ratio = models.FloatField(null=True, blank=True)
     avg_vol_10d = models.FloatField()
     avg_vol_3m = models.FloatField()
     pe = models.FloatField(null=True, blank=True)
@@ -188,9 +188,9 @@ class HistoricalKeyStatistics(models.Model):
     bps = models.FloatField(null=True, blank=True)
     short_float = models.FloatField(null=True, blank=True)
     # shares outstand
-    total_shares = models.FloatField()
+    total_shares = models.FloatField(null=True, blank=True)
     # free float
-    outstanding_shares = models.FloatField()
+    outstanding_shares = models.FloatField(null=True, blank=True)
     fifty_two_wk_high = models.FloatField()
     fifty_two_wk_low = models.FloatField()
     latest_earnings_date = models.CharField(max_length=128)

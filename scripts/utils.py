@@ -537,12 +537,24 @@ def save_hist_key_statistics(quote_data, date):
         bps = None
         if 'bps' in quote_data:
             bps = float(quote_data['bps'])
+        turnover_rate = None
+        if 'turnoverRate' in quote_data and quote_data['turnoverRate'] != "-" and quote_data['turnoverRate'] != None:
+            turnover_rate = float(quote_data['turnoverRate'])
+        vibrate_ratio = None
+        if 'vibrateRatio' in quote_data and quote_data['vibrateRatio'] != "-" and quote_data['vibrateRatio'] != None:
+            vibrate_ratio = float(quote_data['vibrateRatio'])
         latest_earnings_date = ''
         if 'latestEarningsDate' in quote_data:
             latest_earnings_date = quote_data['latestEarningsDate']
         estimate_earnings_date = ''
         if 'estimateEarningsDate' in quote_data:
             estimate_earnings_date = quote_data['estimateEarningsDate']
+        total_shares = None
+        if 'totalShares' in quote_data and quote_data['totalShares'] != "-" and quote_data['totalShares'] != None:
+            total_shares = float(quote_data['totalShares'])
+        outstanding_shares = None
+        if 'outstandingShares' in quote_data and quote_data['outstandingShares'] != "-" and quote_data['outstandingShares'] != None:
+            outstanding_shares = float(quote_data['outstandingShares'])
         short_float = None
         if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-" and quote_data['shortFloat'] != None:
             short_float = float(quote_data['shortFloat'])
@@ -556,8 +568,8 @@ def save_hist_key_statistics(quote_data, date):
             change_ratio=float(quote_data['changeRatio']),
             market_value=float(quote_data['marketValue']),
             volume=float(quote_data['volume']),
-            turnover_rate=float(quote_data['turnoverRate']),
-            vibrate_ratio=float(quote_data['vibrateRatio']),
+            turnover_rate=turnover_rate,
+            vibrate_ratio=vibrate_ratio,
             avg_vol_10d=float(quote_data['avgVol10D']),
             avg_vol_3m=float(quote_data['avgVol3M']),
             pe=pe,
@@ -569,8 +581,8 @@ def save_hist_key_statistics(quote_data, date):
             ps=ps,
             bps=bps,
             short_float=short_float,
-            total_shares=float(quote_data['totalShares']),
-            outstanding_shares=float(quote_data['outstandingShares']),
+            total_shares=total_shares,
+            outstanding_shares=outstanding_shares,
             fifty_two_wk_high=float(quote_data['fiftyTwoWkHigh']),
             fifty_two_wk_low=float(quote_data['fiftyTwoWkLow']),
             latest_earnings_date=latest_earnings_date,
