@@ -15,6 +15,7 @@ def start():
 
     trading_settings = TradingSettings(
         paper=True,
+        algo_type=enums.AlgorithmType.DAY_MOMENTUM,
         order_amount_limit=1000.0,
         min_surge_amount=15000.0,
         min_surge_volume=3000,
@@ -29,7 +30,7 @@ def start():
         stop_loss_ratio=-0.01,
         refresh_login_interval_in_min=10,
         blacklist_timeout_in_sec=1800,
-        algo_type=enums.AlgorithmType.DAY_MOMENTUM,
+        swing_position_amount_limit=2000.0,
     )
     trading_settings.save()
 

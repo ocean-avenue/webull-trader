@@ -121,6 +121,7 @@ def start():
     from trading.day_momo_reducesize import DayTradingMomoReduceSize
     from trading.day_momo_newhigh import DayTradingMomoNewHigh
     from trading.day_redgreen import DayTradingRedGreen
+    from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
     strategies = []
@@ -139,9 +140,22 @@ def start():
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         # red/green trade
         strategies.append(DayTradingRedGreen(paper=paper))
-    elif algo_type == AlgorithmType.DAY_SWING:
+    elif algo_type == AlgorithmType.SWING_TURTLE_20:
+        # turtle trade 20 days
+        strategies.append(SwingTurtle(paper=paper, entry=20, exit=10))
+    elif algo_type == AlgorithmType.SWING_TURTLE_55:
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(paper=paper, entry=55, exit=20))
+    elif algo_type == AlgorithmType.DAY_SWING_MOMO_TURTLE:
+        # momo trade
         strategies.append(DayTradingMomo(paper=paper))
-        # strategies.append(DayTradingMomo(paper=paper))
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(paper=paper, entry=55, exit=20))
+    elif algo_type == AlgorithmType.DAY_SWING_RG_TURTLE:
+        # red/green trade
+        strategies.append(DayTradingRedGreen(paper=paper))
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(paper=paper, entry=55, exit=20))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return

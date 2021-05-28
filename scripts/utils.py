@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import datetime, date
 from webull_trader import enums
 from scripts import config
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
@@ -678,6 +678,32 @@ def save_hist_daily_bar(bar_data):
             low=bar_data['low'],
             close=bar_data['close'],
             volume=bar_data['volume'],
+        )
+        bar.save()
+
+
+def save_swing_hist_daily_bar_list(bar_list):
+    print("[{}] Importing swing daily bar for {}...".format(
+        get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_swing_hist_daily_bar(bar_data)
+
+
+def save_swing_hist_daily_bar(bar_data):
+    bar = SwingHistoricalDailyBar.objects.filter(
+        symbol=bar_data['symbol'], date=bar_data['date']).first()
+    if not bar:
+        bar = SwingHistoricalDailyBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+            rsi_10=bar_data['rsi_10'],
+            sma_55=bar_data['sma_55'],
+            sma_120=bar_data['sma_120'],
         )
         bar.save()
 

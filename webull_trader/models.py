@@ -36,6 +36,8 @@ class TradingSettings(models.Model):
     refresh_login_interval_in_min = models.IntegerField()
     # trading blacklist timeout in seconds
     blacklist_timeout_in_sec = models.IntegerField()
+    # swing buy order limit
+    swing_position_amount_limit = models.FloatField()
 
     def __str__(self):
         return "Trading settings, paper: {}, order amount limit: {}, algo: {}".format(

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Momo day trading class
+# Turtle trading
 
 import time
 from datetime import datetime, date, timedelta
@@ -11,13 +11,20 @@ from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingRedGreen(StrategyBase):
+class SwingTurtle(StrategyBase):
+
+    def __init__(self, paper, entry=55, exit=20):
+        super().__init__(paper=paper)
+        self.entry_period = entry
+        self.exit_period = exit
 
     def get_tag(self):
-        return "DayTradingRedGreen"
+        return "SwingTurtle"
 
     def get_setup(self):
-        return SetupType.DAY_RED_TO_GREEN
+        if self.entry_period == 20:
+            return SetupType.SWING_20_DAYS_NEW_HIGH
+        return SetupType.SWING_55_DAYS_NEW_HIGH
 
     def trade(self, ticker):
 
@@ -57,7 +64,7 @@ class DayTradingRedGreen(StrategyBase):
             now = datetime.now()
 
             # check entry, current price above prev day close with (prev price below or not long after market open)
-            if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30)).seconds <= 300):
+            if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30)).second <= 300):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None or 'depth' not in quote:
                     return

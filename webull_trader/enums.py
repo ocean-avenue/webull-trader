@@ -127,7 +127,8 @@ class AlgorithmType:
     DAY_MOMENTUM_NEW_HIGH = 3
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
-    DAY_SWING = 200
+    DAY_SWING_MOMO_TURTLE = 200
+    DAY_SWING_RG_TURTLE = 201
 
     @staticmethod
     def tostr(val):
@@ -147,26 +148,30 @@ class AlgorithmType:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'Swing trade based on turtle trading rules (55 days).'
-        if val == AlgorithmType.DAY_SWING:
-            return 'Day/Swing trade based on history statistics data.'
+        if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
+            return 'Day/Swing trade with momentum and turtle (55 days) strategy.'
+        if val == AlgorithmType.DAY_SWING_RG_TURTLE:
+            return 'Day/Swing trade with red to green and turtle (55 days) strategy.'
         return UNKNOWN
 
     @staticmethod
     def totag(val):
         if val == AlgorithmType.DAY_MOMENTUM:
-            return 'DAY/MOMO'
+            return 'DAY (MOMO)'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
-            return 'DAY/MOMO (REDUCE SIZE)'
+            return 'DAY (MOMO REDUCE SIZE)'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
-            return 'DAY/MOMO (NEW HIGH)'
+            return 'DAY (MOMO NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
-            return 'DAY/RED GREEN'
+            return 'DAY (RED GREEN)'
         if val == AlgorithmType.SWING_TURTLE_20:
-            return 'SWING/TURTLE (20 DAYS)'
+            return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
-            return 'SWING/TURTLE (55 DAYS)'
-        if val == AlgorithmType.DAY_SWING:
-            return 'DAY/SWING'
+            return 'SWING (TURTLE 55)'
+        if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
+            return 'DAY/SWING (MOMO/TURTLE)'
+        if val == AlgorithmType.DAY_SWING_RG_TURTLE:
+            return 'DAY/SWING (RG/TURTLE)'
         return UNKNOWN
 
     @staticmethod
@@ -184,8 +189,8 @@ class AlgorithmType:
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_55)),
-            (AlgorithmType.DAY_SWING, AlgorithmType.tostr(
-                AlgorithmType.DAY_SWING)),
+            (AlgorithmType.DAY_SWING_RG_TURTLE, AlgorithmType.tostr(
+                AlgorithmType.DAY_SWING_RG_TURTLE)),
         )
 
 

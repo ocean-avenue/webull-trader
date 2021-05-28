@@ -8,7 +8,7 @@ def start():
     from datetime import date
     from sdk import webullsdk, finvizsdk
     from scripts import utils
-    from webull_trader.models import WebullOrder
+    from webull_trader.models import WebullOrder, SwingWatchlist
     from webull_trader.enums import AlgorithmType
 
     # paper = utils.check_paper()
@@ -97,7 +97,8 @@ def start():
         time.sleep(5)
 
     algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.DAY_RED_TO_GREEN:
+
+    if algo_type == AlgorithmType.DAY_RED_TO_GREEN or algo_type == AlgorithmType.DAY_SWING_RG_TURTLE:
         # save top gainers
         top_gainers = webullsdk.get_top_gainers(count=30)
         for gainer_data in top_gainers:
@@ -127,6 +128,11 @@ def start():
                 quote_data['shortFloat'] = additional_quote_data['shortFloat']
                 # save historical quote
                 utils.save_hist_key_statistics(quote_data, today)
+
+    # fetch watchlist symbol daily data
+    swing_watchlist = SwingWatchlist.objects.all()
+    for swing_watch in swing_watchlist:
+        symbol = swing_watch.symbol
 
 
 if __name__ == "django.core.management.commands.shell":

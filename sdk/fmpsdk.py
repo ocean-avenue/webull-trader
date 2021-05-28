@@ -51,8 +51,25 @@ def get_quotes(symbol_list):
 
 def get_quote_short(symbol):
     return _get_jsonparsed_data(
-        "{}/quote-short/{}?apikey={}".format(FMP_API_BASE_URL, symbol, FMP_API_KEY)
+        "{}/quote-short/{}?apikey={}".format(FMP_API_BASE_URL,
+                                             symbol, FMP_API_KEY)
     )[0]
+
+
+def get_daily_sma(symbol, period):
+    return _get_jsonparsed_data(
+        "{}/technical_indicator/daily/{}?period={}&type=sma&apikey={}".format(
+            FMP_API_BASE_URL, symbol, period, FMP_API_KEY
+        )
+    )
+
+
+def get_daily_rsi(symbol, period):
+    return _get_jsonparsed_data(
+        "{}/technical_indicator/daily/{}?period={}&type=rsi&apikey={}".format(
+            FMP_API_BASE_URL, symbol, period, FMP_API_KEY
+        )
+    )
 
 
 def get_intraday_sma(symbol, interval, period):
@@ -61,6 +78,7 @@ def get_intraday_sma(symbol, interval, period):
             FMP_API_BASE_URL, interval, symbol, period, FMP_API_KEY
         )
     )
+
 
 def get_market_hour():
     return _get_jsonparsed_data(
