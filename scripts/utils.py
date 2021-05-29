@@ -858,7 +858,7 @@ def get_free_float_range_index(free_float):
     index = -1
     if free_float == None:
         index = 0
-    if free_float <= 1000000:
+    elif free_float <= 1000000:
         index = 1
     elif free_float <= 5000000:
         index = 2
