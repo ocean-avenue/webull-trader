@@ -133,11 +133,11 @@ class DayTradingRedGreen(StrategyBase):
         if not self.check_trading_hour():
             return
 
-        today = datetime.today().date()
-        last_market_day = today - timedelta(days=1)
-        if today.weekday() == 0:
-            # if monday
-            last_market_day = today - timedelta(days=3)
+        # default today
+        last_market_day = datetime.today().date()
+        first_gainer = HistoricalTopGainer.objects.last()
+        if first_gainer:
+            last_market_day = first_gainer.date
 
         # hist top gainers
         top_gainers = HistoricalTopGainer.objects.filter(date=last_market_day)
