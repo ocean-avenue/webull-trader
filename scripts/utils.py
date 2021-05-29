@@ -14,6 +14,8 @@ MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
 
 def millify(n):
+    if not n:
+        return n
     n = float(n)
     millidx = max(0, min(len(MILLNAMES)-1,
                          int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
@@ -838,41 +840,44 @@ def get_market_cap_range_index(mktcap):
 
 def get_free_float_range_labels():
     return [
-        "0-1M",  # 0
-        "1M-5M",  # 1
-        "5M-10M",  # 2
-        "10M-20M",  # 3
-        "20M-50M",  # 4
-        "50M-100M",  # 5
-        "100M-200M",  # 6
-        "200M-500M",  # 7
-        "500M-1B",  # 8
-        "1B+",  # 9
+        "None", # 0
+        "0-1M",  # 1
+        "1M-5M",  # 2
+        "5M-10M",  # 3
+        "10M-20M",  # 4
+        "20M-50M",  # 5
+        "50M-100M",  # 6
+        "100M-200M",  # 7
+        "200M-500M",  # 8
+        "500M-1B",  # 9
+        "1B+",  # 10
     ]
 
 
 def get_free_float_range_index(free_float):
     index = -1
-    if free_float <= 1000000:
+    if free_float == None:
         index = 0
-    elif free_float <= 5000000:
+    if free_float <= 1000000:
         index = 1
-    elif free_float <= 10000000:
+    elif free_float <= 5000000:
         index = 2
-    elif free_float <= 20000000:
+    elif free_float <= 10000000:
         index = 3
-    elif free_float <= 50000000:
+    elif free_float <= 20000000:
         index = 4
-    elif free_float <= 100000000:
+    elif free_float <= 50000000:
         index = 5
-    elif free_float <= 200000000:
+    elif free_float <= 100000000:
         index = 6
-    elif free_float <= 500000000:
+    elif free_float <= 200000000:
         index = 7
-    elif free_float <= 1000000000:
+    elif free_float <= 500000000:
         index = 8
-    else:
+    elif free_float <= 1000000000:
         index = 9
+    else:
+        index = 10
     return index
 
 
