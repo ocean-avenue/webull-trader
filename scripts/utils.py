@@ -840,7 +840,7 @@ def get_market_cap_range_index(mktcap):
 
 def get_free_float_range_labels():
     return [
-        "None", # 0
+        "None",  # 0
         "0-1M",  # 1
         "1M-5M",  # 2
         "5M-10M",  # 3
