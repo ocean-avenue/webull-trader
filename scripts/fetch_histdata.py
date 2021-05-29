@@ -6,7 +6,7 @@
 def start():
     import time
     from datetime import date
-    from sdk import webullsdk, finvizsdk
+    from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
     from webull_trader.models import WebullOrder, SwingWatchlist
     from webull_trader.enums import AlgorithmType
@@ -133,6 +133,38 @@ def start():
     swing_watchlist = SwingWatchlist.objects.all()
     for swing_watch in swing_watchlist:
         symbol = swing_watch.symbol
+        try:
+            # fetch sma 120
+            hist_sma120 = fmpsdk.get_daily_sma(symbol, 120)
+            # fetch sma 55
+            hist_sma55 = fmpsdk.get_daily_sma(symbol, 55)
+            # fetch rsi 10
+            hist_rsi10 = fmpsdk.get_daily_rsi(symbol, 10)
+        except:
+            print("[{}] Fetch daily data for <{}> error!".format(
+                utils.get_now(), symbol))
+            continue
+        # insert 120 days data
+        sma120_120_days = hist_sma120[0:120][::-1]
+        sma55_120_days = hist_sma55[0:120][::-1]
+        rsi10_120_days = hist_rsi10[0:120][::-1]
+        for i in range(0, len(sma120_120_days)):
+            sma120_data = sma120_120_days[i]
+            sma55_data = sma55_120_days[i]
+            rsi10_data = rsi10_120_days[i]
+            bar_data = {
+                'symbol': symbol,
+                'date': sma120_data['date'],
+                'open': sma120_data['open'],
+                'high': sma120_data['high'],
+                'low': sma120_data['low'],
+                'close': sma120_data['close'],
+                'volume': sma120_data['volume'],
+                'sma_120': sma120_data['sma'],
+                'sma_55': sma55_data['sma'],
+                'rsi_10': rsi10_data['rsi'],
+            }
+            utils.save_swing_hist_daily_bar(bar_data)
 
 
 if __name__ == "django.core.management.commands.shell":
