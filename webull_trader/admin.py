@@ -32,6 +32,7 @@ class TradingLogAdmin(admin.ModelAdmin):
     list_display = [
         'date',
         'tag',
+        'trading_hour',
         'log_text',
     ]
 

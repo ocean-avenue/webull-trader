@@ -47,6 +47,10 @@ class TradingSettings(models.Model):
 class TradingLog(models.Model):
     date = models.DateField()
     tag = models.CharField(max_length=128)
+    trading_hour = models.PositiveSmallIntegerField(
+        choices=enums.TradingHourType.tochoices(),
+        default=enums.TradingHourType.REGULAR
+    )
     log_text = models.TextField(null=True, blank=True)
 
     def __str__(self):

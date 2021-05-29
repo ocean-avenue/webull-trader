@@ -192,5 +192,5 @@ class DayTradingRedGreen(StrategyBase):
                 time.sleep(1)
             # save trading logs
             utils.save_trading_log(
-                "\n".join(self.trading_logs), self.get_tag(), date.today())
+                "\n".join(self.trading_logs), self.get_tag(), self.get_trading_hour(), date.today())
             self.trading_end = True

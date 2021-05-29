@@ -507,10 +507,15 @@ def save_webull_news(news_data, symbol, date):
         news.save()
 
 
-def save_trading_log(text, tag, date):
-    log = TradingLog.objects.filter(date=date).filter(tag=tag).first()
+def save_trading_log(text, tag, trading_hour, date):
+    log = TradingLog.objects.filter(date=date).filter(
+        tag=tag).filter(trading_hour=trading_hour).first()
     if log == None:
-        log = TradingLog(date=date, tag=tag)
+        log = TradingLog(
+            date=date,
+            tag=tag,
+            trading_hour=trading_hour,
+        )
     log.log_text = text
     log.save()
 

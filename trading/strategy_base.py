@@ -3,6 +3,7 @@
 # Base trading class
 
 from datetime import datetime, timedelta
+from webull_trader.enums import TradingHourType
 from sdk import webullsdk
 from scripts import utils
 
@@ -28,6 +29,14 @@ class StrategyBase:
 
     def get_tag(self):
         return ""
+
+    def get_trading_hour(self):
+        now = datetime.now()
+        if now.hour < 9 or now.hour == 9 and now.minute < 30:
+            return TradingHourType.BEFORE_MARKET_OPEN
+        if now.hour >= 16:
+            return TradingHourType.AFTER_MARKET_CLOSE
+        return TradingHourType.REGULAR
 
     def print_log(self, text):
         self.trading_logs.append(

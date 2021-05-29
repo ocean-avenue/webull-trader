@@ -229,3 +229,30 @@ class ScreenerType:
             (ScreenerType.DOUBLE_BOTTOM, ScreenerType.tostr(
                 ScreenerType.DOUBLE_BOTTOM)),
         )
+
+
+class TradingHourType:
+    REGULAR = 0
+    BEFORE_MARKET_OPEN = 1
+    AFTER_MARKET_CLOSE = 2
+
+    @staticmethod
+    def tostr(val):
+        if val == TradingHourType.REGULAR:
+            return 'Regular Hour'
+        if val == TradingHourType.BEFORE_MARKET_OPEN:
+            return 'Before Market Open'
+        elif val == TradingHourType.AFTER_MARKET_CLOSE:
+            return "After Market Close"
+        return UNKNOWN
+
+    @staticmethod
+    def tochoices():
+        return (
+            (TradingHourType.REGULAR, TradingHourType.tostr(
+                TradingHourType.REGULAR)),
+            (TradingHourType.BEFORE_MARKET_OPEN, TradingHourType.tostr(
+                TradingHourType.BEFORE_MARKET_OPEN)),
+            (TradingHourType.AFTER_MARKET_CLOSE, TradingHourType.tostr(
+                TradingHourType.AFTER_MARKET_CLOSE)),
+        )
