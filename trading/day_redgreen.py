@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Momo day trading class
+# Red to green day trading class
 
 import time
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
@@ -144,52 +144,64 @@ class DayTradingRedGreen(StrategyBase):
         # update tracking_tickers
         for gainer in top_gainers:
             quote = webullsdk.get_quote(ticker_id=gainer.ticker_id)
-            # weak open
-            if 'open' in quote and float(quote['open']) <= gainer.price:
-                key_stat = utils.get_hist_key_stat(
-                    gainer.symbol, last_market_day)
-                ticker = self.get_init_tracking_ticker(
-                    gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
-                self.tracking_tickers[gainer.symbol] = ticker
-                self.print_log("Add gainer <{}>[{}] to trade!".format(
+            if 'open' in quote:
+                # weak open
+                if float(quote['open']) <= gainer.price:
+                    key_stat = utils.get_hist_key_stat(
+                        gainer.symbol, last_market_day)
+                    ticker = self.get_init_tracking_ticker(
+                        gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
+                    self.tracking_tickers[gainer.symbol] = ticker
+                    self.print_log("Add gainer <{}>[{}] to trade!".format(
+                        gainer.symbol, gainer.ticker_id))
+            else:
+                self.print_log("Cannot find <{}>[{}] open price!".format(
                     gainer.symbol, gainer.ticker_id))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
         # update tracking_tickers
         for loser in top_losers:
             quote = webullsdk.get_quote(ticker_id=loser.ticker_id)
-            # weak open
-            if 'open' in quote and float(quote['open']) <= loser.price:
-                key_stat = utils.get_hist_key_stat(
-                    loser.symbol, last_market_day)
-                ticker = self.get_init_tracking_ticker(
-                    loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
-                self.tracking_tickers[loser.symbol] = ticker
-                self.print_log("Add loser <{}>[{}] to trade!".format(
+            if 'open' in quote:
+                # weak open
+                if float(quote['open']) <= loser.price:
+                    key_stat = utils.get_hist_key_stat(
+                        loser.symbol, last_market_day)
+                    ticker = self.get_init_tracking_ticker(
+                        loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
+                    self.tracking_tickers[loser.symbol] = ticker
+                    self.print_log("Add loser <{}>[{}] to trade!".format(
+                        loser.symbol, loser.ticker_id))
+            else:
+                self.print_log("Cannot find <{}>[{}] open price!".format(
                     loser.symbol, loser.ticker_id))
+
+    def is_power_hour(self):
+        now = datetime.now()
+        if now.hour <= 12:
+            return True
+        return False
 
     def on_update(self):
         if not self.check_trading_hour():
+            self.trading_end = False
             return
 
         # only trade regular market hour before 13:00
-        if utils.is_regular_market_hour() and datetime.now().hour <= 12:
+        if utils.is_regular_market_hour() and self.is_power_hour():
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
-                # init stats
-                self.init_ticker_stats(ticker)
+                # init stats if not
+                self.init_tracking_stats_if_not(ticker)
                 # do trade
                 self.trade(ticker)
-        elif not self.trading_end:
+        elif len(list(self.tracking_tickers)) > 0:
             # check if still holding any positions before exit
-            while len(list(self.tracking_tickers)) > 0:
-                for symbol in list(self.tracking_tickers):
-                    ticker = self.tracking_tickers[symbol]
-                    self.clear_position(ticker)
-
-                # at least slepp 1 sec
-                time.sleep(1)
+            for symbol in list(self.tracking_tickers):
+                ticker = self.tracking_tickers[symbol]
+                self.clear_position(ticker)
+        else:
             # save trading logs
             utils.save_trading_log(
                 "\n".join(self.trading_logs), self.get_tag(), self.get_trading_hour(), date.today())

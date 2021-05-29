@@ -207,24 +207,24 @@ class DayTradingMomo(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                self.trading_stats[symbol]['trades'] += 1
-                self.trading_stats[symbol]['last_trade_time'] = datetime.now()
-                last_high_price = self.trading_stats[symbol]['last_high_price'] or 0
-                self.trading_stats[symbol]['last_high_price'] = max(
+                self.tracking_stats[symbol]['trades'] += 1
+                self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
+                last_high_price = self.tracking_stats[symbol]['last_high_price'] or 0
+                self.tracking_stats[symbol]['last_high_price'] = max(
                     cost_price, last_price, last_high_price)
                 if profit_loss_rate > 0:
-                    self.trading_stats[symbol]['win_trades'] += 1
-                    self.trading_stats[symbol]['continue_lose_trades'] = 0
+                    self.tracking_stats[symbol]['win_trades'] += 1
+                    self.tracking_stats[symbol]['continue_lose_trades'] = 0
                 else:
-                    self.trading_stats[symbol]['lose_trades'] += 1
-                    self.trading_stats[symbol]['continue_lose_trades'] += 1
+                    self.tracking_stats[symbol]['lose_trades'] += 1
+                    self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
     def check_if_price_new_high(self, symbol, price):
         return True
 
     def check_if_track_symbol(self, symbol):
         # # check if sell not long ago
-        # if symbol in self.trading_stats and (datetime.now() - self.trading_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
+        # if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
         #     return False
         return True
 
@@ -232,8 +232,8 @@ class DayTradingMomo(StrategyBase):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats
-            self.init_ticker_stats(ticker)
+            # init stats if not
+            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 

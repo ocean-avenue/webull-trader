@@ -737,6 +737,7 @@ def get_top_gainers(count=10):
                 change = float(values_obj["change"])
                 change_percentage = float(values_obj["changeRatio"])
                 price = float(ticker_obj["pprice"])
+                close = float(ticker_obj["close"])
                 gainers.append(
                     {
                         "symbol": symbol,
@@ -744,6 +745,7 @@ def get_top_gainers(count=10):
                         "change": change,
                         "change_percentage": change_percentage,
                         "price": price,
+                        "close": close,
                     }
                 )
         return gainers
@@ -818,6 +820,7 @@ def get_top_losers(count=10):
                 change = float(values_obj["change"])
                 change_percentage = float(values_obj["changeRatio"])
                 price = float(ticker_obj["pprice"])
+                close = float(ticker_obj["close"])
                 losers.append(
                     {
                         "symbol": symbol,
@@ -825,6 +828,7 @@ def get_top_losers(count=10):
                         "change": change,
                         "change_percentage": change_percentage,
                         "price": price,
+                        "close": close,
                     }
                 )
         return losers

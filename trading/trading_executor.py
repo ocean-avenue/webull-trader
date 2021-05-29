@@ -53,7 +53,8 @@ class TradingExecutor:
         while utils.is_market_hour():
             # go through strategies trades
             for strategy in self.strategies:
-                strategy.on_update()
+                if not strategy.trading_end:
+                    strategy.on_update()
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):

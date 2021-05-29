@@ -615,13 +615,13 @@ def save_hist_top_gainer(gainer_data, date):
     if not top_gainer:
         top_gainer = HistoricalTopGainer(
             symbol=symbol,
-            ticker_id=gainer_data['ticker_id'],
-            change=gainer_data['change'],
-            change_percentage=gainer_data['change_percentage'],
-            price=gainer_data['price'],
             date=date,
         )
-        top_gainer.save()
+    top_gainer.ticker_id = gainer_data['ticker_id']
+    top_gainer.change = gainer_data['change']
+    top_gainer.change_percentage = gainer_data['change_percentage']
+    top_gainer.price = gainer_data['close']
+    top_gainer.save()
 
 
 def save_hist_top_loser(loser_data, date):
@@ -632,13 +632,13 @@ def save_hist_top_loser(loser_data, date):
     if not top_loser:
         top_loser = HistoricalTopLoser(
             symbol=symbol,
-            ticker_id=loser_data['ticker_id'],
-            change=loser_data['change'],
-            change_percentage=loser_data['change_percentage'],
-            price=loser_data['price'],
             date=date,
         )
-        top_loser.save()
+    top_loser.ticker_id = loser_data['ticker_id']
+    top_loser.change = loser_data['change']
+    top_loser.change_percentage = loser_data['change_percentage']
+    top_loser.price = loser_data['close']
+    top_loser.save()
 
 
 def save_hist_minute_bar_list(bar_list):

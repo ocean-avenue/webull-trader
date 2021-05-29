@@ -15,7 +15,9 @@ class StrategyBase:
         self.trading_end = False
         # init trading variables
         self.tracking_tickers = {}
-        self.trading_stats = {}
+        self.tracking_stats = {}
+        # for swing trade
+        self.trading_symbols = []
         self.trading_logs = []
 
     def on_begin(self):
@@ -104,11 +106,11 @@ class StrategyBase:
 
         return True
 
-    def init_ticker_stats(self, ticker):
+    def init_tracking_stats_if_not(self, ticker):
         symbol = ticker['symbol']
         # init trading stats
-        if symbol not in self.trading_stats:
-            self.trading_stats[symbol] = {
+        if symbol not in self.tracking_stats:
+            self.tracking_stats[symbol] = {
                 "trades": 0,
                 "win_trades": 0,
                 "lose_trades": 0,
@@ -137,6 +139,9 @@ class StrategyBase:
             "prev_close": prev_close,
             "prev_high": prev_high,
         }
+
+    def check_trading_hour(self):
+        return True
 
     def check_buy_order_filled(self, ticker):
         symbol = ticker['symbol']

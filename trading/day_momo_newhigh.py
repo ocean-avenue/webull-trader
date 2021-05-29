@@ -11,7 +11,7 @@ class DayTradingMomoNewHigh(DayTradingMomo):
         return "DayTradingMomoNewHigh"
 
     def check_if_price_new_high(self, symbol, price):
-        if symbol in self.trading_stats and self.trading_stats[symbol]['last_high_price'] != None:
-            last_high_price = self.trading_stats[symbol]['last_high_price']
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['last_high_price'] != None:
+            last_high_price = self.tracking_stats[symbol]['last_high_price']
             return price > last_high_price
         return True
