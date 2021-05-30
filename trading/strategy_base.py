@@ -17,6 +17,8 @@ class StrategyBase:
         # init trading variables
         self.tracking_tickers = {}
         self.tracking_stats = {}
+        # may have error short sell due to latency
+        self.error_short_tickers = {}
         self.trading_logs = []
         # for swing trade
         self.trading_symbols = []
@@ -145,8 +147,73 @@ class StrategyBase:
             "prev_high": prev_high,
         }
 
+    def get_init_error_short_ticker(self, symbol, ticker_id):
+        return {
+            "symbol": symbol,
+            "ticker_id": ticker_id,
+            # pending buy back order id
+            "pending_order_id": None,
+            # pending buy back order time
+            "pending_order_time": None,
+        }
+
     def check_trading_hour(self):
         return True
+
+    def check_error_short_order(self, positions):
+        # check if short order covered
+        for symbol in list(self.error_short_tickers):
+            ticker = self.error_short_tickers[symbol]
+            ticker_id = ticker['ticker_id']
+            order_filled = True
+            for position in positions:
+                # make sure is short position
+                if position['ticker']['symbol'] == symbol and float(position['position']) < 0:
+                    order_filled = False
+            if order_filled:
+                # remove
+                del self.error_short_tickers[symbol]
+                self.print_log(
+                    "Short cover order <{}>[{}] filled".format(symbol, ticker_id))
+            else:
+                # check order timeout
+                if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+                    # cancel timeout order
+                    if webullsdk.cancel_order(ticker['pending_order_id']):
+                        # remove, let function re-submit again
+                        del self.error_short_tickers[symbol]
+                    else:
+                        self.print_log(
+                            "Failed to cancel timeout short cover order <{}>[{}]!".format(symbol, ticker_id))
+        for position in positions:
+            # if short position
+            position_size = int(position['position'])
+            if position_size < 0:
+                symbol = position['ticker']['symbol']
+                ticker_id = position['ticker']['tickerId']
+                if symbol not in self.error_short_tickers:
+                    self.error_short_tickers[symbol] = self.get_init_tracking_ticker(
+                        symbol, ticker_id)
+                    last_price = float(position['lastPrice'])
+                    # in order to buy, increase 1% to buy
+                    buy_price = round(last_price*1.01, 2)
+                    # submit buy back order
+                    order_response = webullsdk.buy_limit_order(
+                        ticker_id=ticker_id,
+                        price=buy_price,
+                        quant=abs(position_size))
+                    self.print_log("🟢 Submit short cover order <{}>[{}], quant: {}, limit price: {}".format(
+                        symbol, ticker_id, abs(position_size), buy_price))
+                    if 'msg' in order_response:
+                        self.print_log(order_response['msg'])
+                    elif 'orderId' in order_response:
+                        self.error_short_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                        self.error_short_tickers[symbol]['pending_order_time'] = datetime.now(
+                        )
+                    else:
+                        self.print_log(
+                            "⚠️  Invalid short cover order response: {}".format(order_response))
+
 
     def check_buy_order_filled(self, ticker):
         symbol = ticker['symbol']
@@ -189,6 +256,9 @@ class StrategyBase:
                 else:
                     self.print_log(
                         "Failed to cancel timeout buy order <{}>[{}]!".format(symbol, ticker_id))
+
+        # check short order
+        self.check_error_short_order(positions)
 
     def check_sell_order_filled(self, ticker, stop_tracking=True):
         symbol = ticker['symbol']
@@ -256,6 +326,9 @@ class StrategyBase:
                 else:
                     self.print_log(
                         "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))
+
+        # check short order
+        self.check_error_short_order(positions)
 
     def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
         if 'msg' in order_response:
