@@ -12,10 +12,10 @@ from scripts import utils
 
 class SwingTurtle(StrategyBase):
 
-    def __init__(self, paper, entry=55, exit=20):
+    def __init__(self, paper, entry_period=55, exit_period=20):
         super().__init__(paper=paper)
-        self.entry_period = entry
-        self.exit_period = exit
+        self.entry_period = entry_period
+        self.exit_period = exit_period
 
     def get_tag(self):
         return "SwingTurtle"
