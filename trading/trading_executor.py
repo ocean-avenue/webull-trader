@@ -110,6 +110,7 @@ class TradingExecutor:
                 target_profit_ratio=trading_settings.target_profit_ratio,
                 stop_loss_ratio=trading_settings.stop_loss_ratio,
                 blacklist_timeout_in_sec=trading_settings.blacklist_timeout_in_sec,
+                swing_position_amount_limit=trading_settings.swing_position_amount_limit,
             )
         return True
 

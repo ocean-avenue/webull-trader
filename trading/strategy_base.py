@@ -3,6 +3,7 @@
 # Base trading class
 
 from datetime import datetime, timedelta
+from webull_trader.models import SwingPosition, SwingTrade
 from webull_trader.enums import TradingHourType
 from sdk import webullsdk
 from scripts import utils
@@ -16,9 +17,9 @@ class StrategyBase:
         # init trading variables
         self.tracking_tickers = {}
         self.tracking_stats = {}
+        self.trading_logs = []
         # for swing trade
         self.trading_symbols = []
-        self.trading_logs = []
 
     def on_begin(self):
         pass
@@ -60,7 +61,8 @@ class StrategyBase:
                       max_bid_ask_gap_ratio,
                       target_profit_ratio,
                       stop_loss_ratio,
-                      blacklist_timeout_in_sec):
+                      blacklist_timeout_in_sec,
+                      swing_position_amount_limit):
 
         self.min_surge_amount = min_surge_amount
         self.print_log("Min surge amount: {}".format(self.min_surge_amount))
@@ -103,6 +105,9 @@ class StrategyBase:
         self.blacklist_timeout_in_sec = blacklist_timeout_in_sec
         self.print_log("Blacklist timeout: {} sec".format(
             self.blacklist_timeout_in_sec))
+        self.swing_position_amount_limit = swing_position_amount_limit
+        self.print_log("Swing position amount limit: {}".format(
+            self.swing_position_amount_limit))
 
         return True
 
@@ -280,6 +285,43 @@ class StrategyBase:
         else:
             self.print_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
+
+    def add_swing_position(self, symbol, order_response):
+        if 'msg' in order_response:
+            self.print_log(order_response['msg'])
+        elif 'orderId' in order_response:
+            # create swing position
+            # TODO, check order response object
+            position = SwingPosition(
+                symbol=symbol,
+                order_id=order_response['orderId'],
+                # TODO
+            )
+            position.save()
+        else:
+            self.print_log(
+                "⚠️  Invalid swing buy order response: {}".format(order_response))
+
+    def add_swing_trade(self, symbol, buy_order_id, buy_price, quant, buy_time, order_response):
+        if 'msg' in order_response:
+            self.print_log(order_response['msg'])
+        elif 'orderId' in order_response:
+            # create swing position
+            # TODO, check order response object
+            trade = SwingTrade(
+                symbol=symbol,
+                buy_order_id=buy_order_id,
+                buy_price=buy_price,
+                quantity=quant,
+                buy_time=buy_time,
+                buy_date=buy_time.date(),
+                sell_order_id=order_response['orderId'],
+                # TODO
+            )
+            trade.save()
+        else:
+            self.print_log(
+                "⚠️  Invalid swing sell order response: {}".format(order_response))
 
     def get_position(self, ticker):
         symbol = ticker['symbol']

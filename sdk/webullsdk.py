@@ -285,6 +285,16 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
     )
 
 
+def buy_market_order(ticker_id=None, quant=0):
+    instance = _get_instance()
+    return instance.place_order(
+        tId=ticker_id,
+        action='BUY',
+        orderType='MKT',
+        quant=quant,
+    )
+
+
 def sell_limit_order(ticker_id=None, price=0, quant=0):
     instance = _get_instance()
     return instance.place_order(
@@ -292,6 +302,16 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
         price=price,
         action='SELL',
         orderType='LMT',
+        quant=quant,
+    )
+
+
+def sell_market_order(ticker_id=None, quant=0):
+    instance = _get_instance()
+    return instance.place_order(
+        tId=ticker_id,
+        action='SELL',
+        orderType='MKT',
         quant=quant,
     )
 

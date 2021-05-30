@@ -125,10 +125,12 @@ class AlgorithmType:
     DAY_MOMENTUM_REDUCE_SIZE = 1
     DAY_RED_TO_GREEN = 2
     DAY_MOMENTUM_NEW_HIGH = 3
+    DAY_BREAKOUT = 4
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
     DAY_SWING_RG_TURTLE = 201
+    DAY_SWING_BREAKOUT_TURTLE = 202
 
     @staticmethod
     def tostr(val):
@@ -144,6 +146,8 @@ class AlgorithmType:
             return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
             return 'Momo day trade, no entry if the price not break max of last high price.'
+        if val == AlgorithmType.DAY_BREAKOUT:
+            return 'Breakout day trade, entry if price reach 20 minutes new high.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -152,6 +156,8 @@ class AlgorithmType:
             return 'Day/Swing trade with momentum and turtle (55 days) strategy.'
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return 'Day/Swing trade with red to green and turtle (55 days) strategy.'
+        if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
+            return 'Day/Swing trade with breakout (20 minutes) and turtle (55 days) strategy.'
         return UNKNOWN
 
     @staticmethod
@@ -164,6 +170,8 @@ class AlgorithmType:
             return 'DAY (MOMO NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'DAY (RED GREEN)'
+        if val == AlgorithmType.DAY_BREAKOUT:
+            return 'DAY (BREAKOUT)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -172,6 +180,8 @@ class AlgorithmType:
             return 'DAY/SWING (MOMO/TURTLE)'
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return 'DAY/SWING (RG/TURTLE)'
+        if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
+            return 'DAY/SWING (BREAKOUT/TURTLE)'
         return UNKNOWN
 
     @staticmethod
@@ -185,12 +195,16 @@ class AlgorithmType:
                 AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
             (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.tostr(
                 AlgorithmType.DAY_RED_TO_GREEN)),
+            (AlgorithmType.DAY_BREAKOUT, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_55)),
             (AlgorithmType.DAY_SWING_RG_TURTLE, AlgorithmType.tostr(
                 AlgorithmType.DAY_SWING_RG_TURTLE)),
+            (AlgorithmType.DAY_SWING_BREAKOUT_TURTLE, AlgorithmType.tostr(
+                AlgorithmType.DAY_SWING_BREAKOUT_TURTLE)),
         )
 
 
