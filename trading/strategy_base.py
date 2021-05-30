@@ -122,7 +122,7 @@ class StrategyBase:
                 "win_trades": 0,
                 "lose_trades": 0,
                 "continue_lose_trades": 0,
-                "last_high_price": None,
+                "last_trade_high": None,
                 "last_trade_time": None,
             }
 
@@ -213,7 +213,6 @@ class StrategyBase:
                     else:
                         self.print_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
-
 
     def check_buy_order_filled(self, ticker):
         symbol = ticker['symbol']
@@ -330,6 +329,20 @@ class StrategyBase:
         # check short order
         self.check_error_short_order(positions)
 
+    def update_trading_stats(self, symbol, price, cost, profit_loss_rate):
+        # after perform 1 trade
+        self.tracking_stats[symbol]['trades'] += 1
+        self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
+        last_trade_high = self.tracking_stats[symbol]['last_trade_high'] or 0
+        self.tracking_stats[symbol]['last_trade_high'] = max(
+            cost, price, last_trade_high)
+        if profit_loss_rate > 0:
+            self.tracking_stats[symbol]['win_trades'] += 1
+            self.tracking_stats[symbol]['continue_lose_trades'] = 0
+        else:
+            self.tracking_stats[symbol]['lose_trades'] += 1
+            self.tracking_stats[symbol]['continue_lose_trades'] += 1
+
     def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
@@ -444,22 +457,3 @@ class StrategyBase:
 
     def get_buy_order_limit(self, symbol):
         return self.order_amount_limit
-
-    def check_if_has_enough_volume(self, bars):
-        enough_volume = True
-        # only check for regular hour now
-        if utils.is_regular_market_hour():
-            total_volume = 0
-            total_count = 0
-            for index, row in bars.iterrows():
-                time = index.to_pydatetime()
-                if (time.hour == 9 and time.minute > 30) or time.hour > 9:
-                    volume = row["volume"]
-                    total_volume += volume
-                    total_count += 1
-            if total_count > 0:
-                avg_volume = total_volume / total_count
-                confirm_avg_volume = utils.get_avg_confirm_volume()
-                if avg_volume < confirm_avg_volume:
-                    enough_volume = False
-        return enough_volume

@@ -5,7 +5,7 @@
 import time
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
-from webull_trader.enums import SetupType, AlgorithmType
+from webull_trader.enums import SetupType
 from sdk import webullsdk
 from scripts import utils
 
@@ -82,7 +82,7 @@ class DayTradingMomo(StrategyBase):
             current_volume = int(current_candle['volume'])
 
             # check entry: current price above vwap and ema 9, current low above prev low
-            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low and self.check_if_price_new_high(symbol, current_close):
+            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low and self.check_if_trade_price_new_high(symbol, current_close):
                 # check first candle make new high
                 if current_candle['high'] > prev_candle['high']:
                     quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -207,19 +207,10 @@ class DayTradingMomo(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                self.tracking_stats[symbol]['trades'] += 1
-                self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
-                last_high_price = self.tracking_stats[symbol]['last_high_price'] or 0
-                self.tracking_stats[symbol]['last_high_price'] = max(
-                    cost_price, last_price, last_high_price)
-                if profit_loss_rate > 0:
-                    self.tracking_stats[symbol]['win_trades'] += 1
-                    self.tracking_stats[symbol]['continue_lose_trades'] = 0
-                else:
-                    self.tracking_stats[symbol]['lose_trades'] += 1
-                    self.tracking_stats[symbol]['continue_lose_trades'] += 1
+                self.update_trading_stats(
+                    symbol, last_price, cost_price, profit_loss_rate)
 
-    def check_if_price_new_high(self, symbol, price):
+    def check_if_trade_price_new_high(self, symbol, price):
         return True
 
     def check_if_track_symbol(self, symbol):
@@ -264,7 +255,7 @@ class DayTradingMomo(StrategyBase):
                     continue
                 # use latest formed candle
                 latest_candle = m2_bars.iloc[-2]
-                if utils.check_bars_updated(m2_bars) and self.check_if_has_enough_volume(m2_bars):
+                if utils.check_bars_updated(m2_bars) and utils.check_bars_has_volume(m2_bars):
                     latest_close = latest_candle["close"]
                     latest_vwap = latest_candle["vwap"]
                     volume = int(latest_candle["volume"])

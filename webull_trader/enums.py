@@ -79,6 +79,7 @@ class SetupType:
     DAY_BULL_FLAG = 2
     DAY_REVERSAL = 3
     DAY_RED_TO_GREEN = 4
+    DAY_20_MINUTES_NEW_HIGH = 5
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
 
@@ -94,6 +95,8 @@ class SetupType:
             return '[Day] Reversal'
         if val == SetupType.DAY_RED_TO_GREEN:
             return '[Day] Red to Green'
+        if val == SetupType.DAY_20_MINUTES_NEW_HIGH:
+            return '[Day] 20 minutes new high'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '[Swing] 20 days new high'
         if val == SetupType.SWING_55_DAYS_NEW_HIGH:

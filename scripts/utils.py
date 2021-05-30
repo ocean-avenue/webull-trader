@@ -240,6 +240,29 @@ def check_bars_updated(bars):
     return False
 
 
+def check_bars_has_volume(bars):
+    """
+    check if bar chart has enough volume
+    """
+    enough_volume = True
+    # only check for regular hour now
+    if is_regular_market_hour():
+        total_volume = 0
+        total_count = 0
+        for index, row in bars.iterrows():
+            time = index.to_pydatetime()
+            if (time.hour == 9 and time.minute > 30) or time.hour > 9:
+                volume = row["volume"]
+                total_volume += volume
+                total_count += 1
+        if total_count > 0:
+            avg_volume = total_volume / total_count
+            confirm_avg_volume = get_avg_confirm_volume()
+            if avg_volume < confirm_avg_volume:
+                enough_volume = False
+    return enough_volume
+
+
 def check_bars_volatility(bars):
     """
     check if has bar's ohlc has different price, not like open: 7.35, high: 7.35, low: 7.35, close: 7.35

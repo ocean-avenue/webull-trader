@@ -123,6 +123,7 @@ def start():
     from trading.day_momo_reducesize import DayTradingMomoReduceSize
     from trading.day_momo_newhigh import DayTradingMomoNewHigh
     from trading.day_redgreen import DayTradingRedGreen
+    from trading.day_breakout import DayTradingBreakout
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
@@ -131,33 +132,43 @@ def start():
     algo_type = utils.get_algo_type()
     # load strategies
     if algo_type == AlgorithmType.DAY_MOMENTUM:
-        # momo trade
+        # DAY_MOMENTUM: momo trade
         strategies.append(DayTradingMomo(paper=paper))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
-        # momo trade with reduce size
+        # DAY_MOMENTUM_REDUCE_SIZE: momo trade with reduce size
         strategies.append(DayTradingMomoReduceSize(paper=paper))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
-        # momo trade with new high confirm
+        # DAY_MOMENTUM_NEW_HIGH: momo trade with new high confirm
         strategies.append(DayTradingMomoNewHigh(paper=paper))
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
-        # red/green trade
+        # DAY_RED_TO_GREEN: red/green trade
         strategies.append(DayTradingRedGreen(paper=paper))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT:
+        # DAY_BREAKOUT: breakout trade
+        strategies.append(DayTradingBreakout(
+            paper=paper, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
-        # turtle trade 20 days
-        strategies.append(SwingTurtle(paper=paper, entry_period=20, exit_period=10))
+        # SWING_TURTLE_20: turtle trade 20 days
+        strategies.append(SwingTurtle(
+            paper=paper, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.SWING_TURTLE_55:
-        # turtle trade 55 days
-        strategies.append(SwingTurtle(paper=paper, entry_period=55, exit_period=20))
+        # SWING_TURTLE_55: turtle trade 55 days
+        strategies.append(SwingTurtle(
+            paper=paper, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_SWING_MOMO_TURTLE:
+        # DAY_SWING_MOMO_TURTLE:
         # momo trade
         strategies.append(DayTradingMomo(paper=paper))
         # turtle trade 55 days
-        strategies.append(SwingTurtle(paper=paper, entry_period=55, exit_period=20))
+        strategies.append(SwingTurtle(
+            paper=paper, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_SWING_RG_TURTLE:
+        # DAY_SWING_RG_TURTLE
         # red/green trade
         strategies.append(DayTradingRedGreen(paper=paper))
         # turtle trade 55 days
-        strategies.append(SwingTurtle(paper=paper, entry_period=55, exit_period=20))
+        strategies.append(SwingTurtle(
+            paper=paper, entry_period=55, exit_period=20))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return
