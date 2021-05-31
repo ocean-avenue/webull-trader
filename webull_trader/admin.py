@@ -276,6 +276,7 @@ class SwingPositionAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
         'order_id',
+        'setup',
         'quantity',
         'cost',
         'buy_date',
@@ -323,3 +324,40 @@ class SwingHistoricalDailyBarAdmin(admin.ModelAdmin):
 
 admin.site.register(models.SwingHistoricalDailyBar,
                     SwingHistoricalDailyBarAdmin)
+
+
+class OvernightPositionAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'order_id',
+        'setup',
+        'quantity',
+        'cost',
+        'buy_date',
+        'buy_time',
+    ]
+
+
+admin.site.register(models.OvernightPosition,
+                    OvernightPositionAdmin)
+
+
+class OvernightTradeAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'quantity',
+        'buy_date',
+        'buy_price',
+        'buy_order_id',
+        'sell_date',
+        'sell_price',
+        'sell_order_id',
+        'setup',
+        'note',
+        'buy_time',
+        'sell_time',
+    ]
+
+
+admin.site.register(models.OvernightTrade,
+                    OvernightTradeAdmin)

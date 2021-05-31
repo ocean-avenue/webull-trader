@@ -30,7 +30,8 @@ class SwingTurtle(StrategyBase):
 
     def trade(self, symbol):
         # check if already has possition
-        position = SwingPosition.objects.filter(symbol=symbol)
+        position = SwingPosition.objects.filter(
+            symbol=symbol, setup=self.get_setup())
         if position:
             # check if sell
             # get exit_period+1 daily bars
@@ -61,6 +62,7 @@ class SwingTurtle(StrategyBase):
                     buy_price=position.cost,
                     quant=position.quantity,
                     buy_time=position.buy_time,
+                    setup=position.setup,
                     order_response=order_response)
                 # clear position
                 position.delete()

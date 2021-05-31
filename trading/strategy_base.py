@@ -64,52 +64,80 @@ class StrategyBase:
                       target_profit_ratio,
                       stop_loss_ratio,
                       blacklist_timeout_in_sec,
-                      swing_position_amount_limit):
+                      swing_position_amount_limit,
+                      max_prev_day_close_gap_ratio,
+                      min_relative_volume,
+                      min_earning_gap_ratio):
 
         self.min_surge_amount = min_surge_amount
         self.print_log("Min surge amount: {}".format(self.min_surge_amount))
+
         self.min_surge_volume = min_surge_volume
         self.print_log("Min surge volume: {}".format(self.min_surge_volume))
+
         # at least 4% change for surge
         self.min_surge_change_ratio = min_surge_change_ratio
         self.print_log("Min gap change: {}%".format(
             round(self.min_surge_change_ratio * 100, 2)))
+
         self.avg_confirm_volume = avg_confirm_volume
         self.print_log("Avg confirm volume: {}".format(
             self.avg_confirm_volume))
+
         self.order_amount_limit = order_amount_limit
         self.print_log("Buy order limit: {}".format(self.order_amount_limit))
+
         # observe timeout in seconds
         self.observe_timeout_in_sec = observe_timeout_in_sec
         self.print_log("Observe timeout: {} sec".format(
             self.observe_timeout_in_sec))
+
         # buy after sell interval in seconds
         self.trade_interval_in_sec = trade_interval_in_sec
         self.print_log("Trade interval: {} sec".format(
             self.trade_interval_in_sec))
+
         # pending order timeout in seconds
         self.pending_order_timeout_in_sec = pending_order_timeout_in_sec
         self.print_log("Pending order timeout: {} sec".format(
             self.pending_order_timeout_in_sec))
+
         # holding order timeout in seconds
         self.holding_order_timeout_in_sec = holding_order_timeout_in_sec
         self.print_log("Holding order timeout: {} sec".format(
             self.holding_order_timeout_in_sec))
+
         self.max_bid_ask_gap_ratio = max_bid_ask_gap_ratio
         self.print_log("Max bid ask gap: {}%".format(
             round(self.max_bid_ask_gap_ratio * 100, 2)))
+
         self.target_profit_ratio = target_profit_ratio
         self.print_log("Target profit rate: {}%".format(
             round(self.target_profit_ratio * 100, 2)))
+
         self.stop_loss_ratio = stop_loss_ratio
         self.print_log("Stop loss rate: {}%".format(
             round(self.stop_loss_ratio * 100, 2)))
+
         self.blacklist_timeout_in_sec = blacklist_timeout_in_sec
         self.print_log("Blacklist timeout: {} sec".format(
             self.blacklist_timeout_in_sec))
+
         self.swing_position_amount_limit = swing_position_amount_limit
         self.print_log("Swing position amount limit: {}".format(
             self.swing_position_amount_limit))
+
+        self.max_prev_day_close_gap_ratio = max_prev_day_close_gap_ratio
+        self.print_log("Max prev day close gap ratio: {}".format(
+            self.max_prev_day_close_gap_ratio))
+
+        self.min_relative_volume = min_relative_volume
+        self.print_log("Relative volume for entry: {}".format(
+            self.min_relative_volume))
+
+        self.min_earning_gap_ratio = min_earning_gap_ratio
+        self.print_log("Earning gap ratio for entry: {}".format(
+            self.min_earning_gap_ratio))
 
         return True
 
@@ -254,8 +282,8 @@ class StrategyBase:
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
-                    utils.save_webull_order_note(
-                        ticker['pending_order_id'], note="Buy order timeout, canceled!")
+                    utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
+                    ), note="Buy order timeout, canceled!")
                     self.print_log(
                         "Buy order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
                     self.tracking_tickers[symbol]['pending_buy'] = False
@@ -286,7 +314,7 @@ class StrategyBase:
             exit_note = self.tracking_tickers[symbol]['exit_note']
             if exit_note:
                 utils.save_webull_order_note(
-                    self.tracking_tickers[symbol]['pending_order_id'], note=exit_note)
+                    self.tracking_tickers[symbol]['pending_order_id'], setup=self.get_setup(), note=exit_note)
             # update tracking_tickers
             self.tracking_tickers[symbol]['positions'] = 0
             self.tracking_tickers[symbol]['pending_sell'] = False
@@ -310,8 +338,8 @@ class StrategyBase:
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
-                    utils.save_webull_order_note(
-                        ticker['pending_order_id'], note="Sell order timeout, canceled!")
+                    utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
+                    ), note="Sell order timeout, canceled!")
                     self.print_log(
                         "Sell order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
                     # resubmit sell order
@@ -330,7 +358,7 @@ class StrategyBase:
                     self.update_pending_sell_order(symbol, order_response)
                     if 'orderId' in order_response:
                         utils.save_webull_order_note(
-                            order_response['orderId'], note="Resubmit sell order.")
+                            order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
                 else:
                     self.print_log(
                         "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))
@@ -397,7 +425,7 @@ class StrategyBase:
             self.print_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
-    def add_swing_trade(self, symbol, buy_order_id, buy_price, quant, buy_time, order_response):
+    def add_swing_trade(self, symbol, buy_order_id, buy_price, quant, buy_time, setup, order_response):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
         elif 'orderId' in order_response:
@@ -410,6 +438,7 @@ class StrategyBase:
                 quantity=quant,
                 buy_time=buy_time,
                 buy_date=buy_time.date(),
+                setup=setup,
                 sell_order_id=order_response['orderId'],
                 # TODO
             )

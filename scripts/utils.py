@@ -265,7 +265,7 @@ def check_bars_has_volume(bars):
     last_candle3 = bars[-3]
     last_candle4 = bars[-4]
     last_candle5 = bars[-5]
-    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= 3:
+    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
         # relative volume not enough
         enough_volume = False
     return enough_volume
@@ -408,6 +408,15 @@ def get_avg_confirm_volume():
             "[{}] Cannot find trading settings, default confirm volume!".format(get_now()))
         return 6000
     return settings.avg_confirm_volume
+
+
+def get_min_relative_volume():
+    settings = TradingSettings.objects.first()
+    if settings == None:
+        print(
+            "[{}] Cannot find trading settings, default relative volume!".format(get_now()))
+        return 3
+    return settings.min_relative_volume
 
 
 def load_webull_credentials(cred_data, paper=True):

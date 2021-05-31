@@ -2,7 +2,6 @@
 
 # Red to green day trading class
 
-import time
 from datetime import datetime, date
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
@@ -64,7 +63,7 @@ class DayTradingRedGreen(StrategyBase):
                 ask_price = float(
                     quote['depth']['ntvAggAskList'][0]['price'])
                 # check if ask_price is too high above prev day close
-                if (ask_price - prev_day_close) / prev_day_close > 0.02:
+                if (ask_price - prev_day_close) / prev_day_close > self.max_prev_day_close_gap_ratio:
                     self.print_log("<{}>[{}] gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         symbol, ticker_id, ask_price, prev_day_close))
                     return

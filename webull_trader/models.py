@@ -10,13 +10,13 @@ class TradingSettings(models.Model):
         choices=enums.AlgorithmType.tochoices(),
         default=enums.AlgorithmType.DAY_MOMENTUM
     )
-    # position amount
+    # position amount for day trade
     order_amount_limit = models.FloatField()
     # surge amount = surge volume x price
     min_surge_amount = models.FloatField()
-    # min surge volume
+    # min surge volume for momo strategy
     min_surge_volume = models.FloatField()
-    # min gap ratio
+    # min gap ratio for momo strategy
     min_surge_change_ratio = models.FloatField()
     # average confirm volume in regular market
     avg_confirm_volume = models.FloatField()
@@ -31,6 +31,7 @@ class TradingSettings(models.Model):
     # level 2, (ask - bid) / bid
     max_bid_ask_gap_ratio = models.FloatField()
     target_profit_ratio = models.FloatField()
+    # stop loss ratio
     stop_loss_ratio = models.FloatField()
     # refresh login interval minutes
     refresh_login_interval_in_min = models.IntegerField()
@@ -38,6 +39,12 @@ class TradingSettings(models.Model):
     blacklist_timeout_in_sec = models.IntegerField()
     # swing buy order limit
     swing_position_amount_limit = models.FloatField()
+    # max previous day close gap ratio for red/green strategy
+    max_prev_day_close_gap_ratio = models.FloatField()
+    # relative volume required for entry
+    min_relative_volume = models.FloatField()
+    # earning gap ratio for earning strategy
+    min_earning_gap_ratio = models.FloatField()
 
     def __str__(self):
         return "Trading settings, paper: {}, order amount limit: {}, algo: {}".format(
@@ -312,6 +319,11 @@ class SwingPosition(models.Model):
     buy_date = models.DateField()
     buy_time = models.DateTimeField()
 
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
+    )
+
     def __str__(self):
         return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
 
@@ -355,3 +367,45 @@ class SwingHistoricalDailyBar(models.Model):
 
     def __str__(self):
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
+
+
+class OvernightPosition(models.Model):
+    order_id = models.CharField(max_length=128)
+    symbol = models.CharField(max_length=64)
+    ticker_id = models.CharField(max_length=128)
+    cost = models.FloatField()
+    quantity = models.PositiveIntegerField(default=0)
+    buy_date = models.DateField()
+    buy_time = models.DateTimeField()
+
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.DAY_EARNING_GAP
+    )
+
+    def __str__(self):
+        return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
+
+
+class OvernightTrade(models.Model):
+    symbol = models.CharField(max_length=64)
+    quantity = models.PositiveIntegerField()
+
+    buy_date = models.DateField()
+    buy_time = models.DateTimeField()
+    buy_price = models.FloatField()
+    buy_order_id = models.CharField(max_length=128)
+
+    sell_date = models.DateField()
+    sell_time = models.DateTimeField()
+    sell_price = models.FloatField()
+    sell_order_id = models.CharField(max_length=128)
+
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.DAY_EARNING_GAP
+    )
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
