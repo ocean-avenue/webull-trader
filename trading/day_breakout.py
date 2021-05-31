@@ -23,8 +23,11 @@ class DayTradingBreakout(StrategyBase):
     def get_setup(self):
         return SetupType.DAY_20_MINUTES_NEW_HIGH
 
-    def check_entry(self, ticker, bars, price, vwap):
-        if price < vwap:
+    def check_entry(self, ticker, bars):
+        current_candle = bars.iloc[-1]
+        current_price = current_candle['close']
+        # check if above vwap
+        if current_price < current_candle['vwap']:
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
@@ -33,25 +36,28 @@ class DayTradingBreakout(StrategyBase):
             if close_price > period_high_price:
                 period_high_price = close_price
         # check if new high
-        if price < period_high_price:
+        if current_price < period_high_price:
             return False
         # check if gap too large
-        if period_high_price * 1.01 < price:
+        if period_high_price * 1.01 < current_price:
             self.print_log("<{}>[{}] new high price gap too large, new high: {}, period high: {}, no entry!".format(
-                ticker['symbol'], ticker['ticker_id'], price, period_high_price))
+                ticker['symbol'], ticker['ticker_id'], current_price, period_high_price))
             return False
         return True
 
-    def check_stop_loss(self, ticker, price):
+    def check_stop_loss(self, ticker, position):
         exit_trading = False
         exit_note = None
+        last_price = float(position['lastPrice'])
         # stop loss for buy prev low
-        if ticker['stop_loss'] and price < ticker['stop_loss']:
+        if ticker['stop_loss'] and last_price < ticker['stop_loss']:
             exit_trading = True
-            exit_note = "Stop loss at {}!".format(price)
+            exit_note = "Stop loss at {}!".format(last_price)
         return (exit_trading, exit_note)
 
-    def check_exit(self, ticker, bars, price):
+    def check_exit(self, ticker, bars):
+        current_candle = bars.iloc[-1]
+        current_price = current_candle['close']
         period_bars = bars.head(len(bars) - 1).tail(self.exit_period)
         period_low_price = 99999
         for _, row in period_bars.iterrows():
@@ -59,11 +65,11 @@ class DayTradingBreakout(StrategyBase):
             if close_price < period_low_price:
                 period_low_price = close_price
         # check if new low
-        if price > period_low_price:
+        if current_price > period_low_price:
             return (False, None)
         self.print_log("<{}>[{}] new period low price, new low: {}, period low: {}, exit!".format(
-            ticker['symbol'], ticker['ticker_id'], price, period_low_price))
-        return (True, "New {} candles low.".format(self.exit_period))
+            ticker['symbol'], ticker['ticker_id'], current_price, period_low_price))
+        return (True, "{} candles new low.".format(self.exit_period))
 
     def trade(self, ticker):
 
@@ -111,14 +117,9 @@ class DayTradingBreakout(StrategyBase):
             # candle data
             current_candle = m2_bars.iloc[-1]
             prev_candle = m2_bars.iloc[-2]
-            # price data
-            prev_low = prev_candle['low']
-            current_close = current_candle['close']
-            current_vwap = current_candle['vwap']
-            current_volume = int(current_candle['volume'])
 
             # check entry: current price above vwap, entry period minutes new high
-            if self.check_entry(ticker, m2_bars, current_close, current_vwap):
+            if self.check_entry(ticker, m2_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None or 'depth' not in quote:
                     return
@@ -131,12 +132,12 @@ class DayTradingBreakout(StrategyBase):
                     price=ask_price,
                     quant=buy_quant)
                 self.print_log("Trading <{}>[{}], price: {}, vwap: {}, volume: {}".format(
-                    symbol, ticker_id, current_close, current_vwap, current_volume))
+                    symbol, ticker_id, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                 self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
                     symbol, ticker_id, buy_quant, ask_price))
                 # update pending buy
                 self.update_pending_buy_order(
-                    symbol, order_response, stop_loss=prev_low)
+                    symbol, order_response, stop_loss=prev_candle['low'])
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -153,11 +154,9 @@ class DayTradingBreakout(StrategyBase):
             if profit_loss_rate > max_profit_loss_rate:
                 self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
 
-            last_price = float(ticker_position['lastPrice'])
-            cost_price = float(ticker_position['costPrice'])
-
             # check stop loss
-            exit_trading, exit_note = self.check_stop_loss(ticker, last_price)
+            exit_trading, exit_note = self.check_stop_loss(
+                ticker, ticker_position)
 
             if not exit_trading:
                 # get 2m bar charts
@@ -173,7 +172,7 @@ class DayTradingBreakout(StrategyBase):
                 else:
                     # check exit trade
                     exit_trading, exit_note = self.check_exit(
-                        ticker, m2_bars, last_price)
+                        ticker, m2_bars, ticker_position)
 
             # exit trading
             if exit_trading:
@@ -194,8 +193,8 @@ class DayTradingBreakout(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                self.update_trading_stats(
-                    symbol, last_price, cost_price, profit_loss_rate)
+                self.update_trading_stats(symbol, float(ticker_position['lastPrice']), float(
+                    ticker_position['costPrice']), profit_loss_rate)
 
     def on_update(self):
         # trading tickers

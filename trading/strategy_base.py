@@ -157,6 +157,15 @@ class StrategyBase:
             "pending_order_time": None,
         }
 
+    def check_entry(self):
+        return False
+
+    def check_stop_loss(self):
+        return False
+
+    def check_exit(self):
+        return False
+
     def check_trading_hour(self):
         return True
 

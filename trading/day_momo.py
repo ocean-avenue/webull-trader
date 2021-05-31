@@ -20,6 +20,49 @@ class DayTradingMomo(StrategyBase):
     def get_setup(self):
         return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
 
+    def check_entry(self, ticker, bars):
+        current_candle = bars.iloc[-1]
+        prev_candle = bars.iloc[-2]
+        # current price data
+        current_price = current_candle['close']
+        # check current price above vwap, ema9 and first candle make new high
+        if current_price > current_candle['vwap'] and current_price > current_candle['ema9'] \
+                and current_candle['high'] > prev_candle['high'] \
+                and self.check_if_trade_price_new_high(ticker['symbol'], current_price):
+            return True
+        return False
+
+    def check_stop_loss(self, ticker, position):
+        exit_trading = False
+        exit_note = None
+        last_price = float(position['lastPrice'])
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        # stop loss for buy prev low
+        if ticker['stop_loss'] and last_price < ticker['stop_loss']:
+            exit_trading = True
+            exit_note = "Stop loss at {}!".format(last_price)
+        # stop loss for stop_loss_ratio
+        elif profit_loss_rate <= self.stop_loss_ratio:
+            exit_note = "Stop loss for {}%".format(
+                round(profit_loss_rate * 100, 2))
+            exit_trading = True
+        return (exit_trading, exit_note)
+
+    def check_exit(self, ticker, bars):
+        # check if momentum is stop
+        if utils.check_bars_current_low_less_than_prev_low(bars):
+            self.print_log("<{}>[{}] Current low price is less than previous low price.".format(
+                ticker['symbol'], ticker['ticker_id']))
+            exit_trading = True
+            exit_note = "Current Low < Previous Low."
+        # check if price fixed in last 3 candles
+        elif utils.check_bars_price_fixed(bars):
+            self.print_log(
+                "<{}>[{}] Price is fixed during last 3 candles.".format(ticker['symbol'], ticker['ticker_id']))
+            exit_trading = True
+            exit_note = "Price fixed during last 3 candles."
+        return (exit_trading, exit_note)
+
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
         symbol = ticker['symbol']
@@ -73,46 +116,36 @@ class DayTradingMomo(StrategyBase):
             current_candle = m2_bars.iloc[-1]
             prev_candle = m2_bars.iloc[-2]
 
-            # current price data
-            current_low = current_candle['low']
-            prev_low = prev_candle['low']
-            current_close = current_candle['close']
-            current_vwap = current_candle['vwap']
-            current_ema9 = current_candle['ema9']
-            current_volume = int(current_candle['volume'])
-
-            # check entry: current price above vwap and ema 9, current low above prev low
-            if current_low > current_vwap and current_low > current_ema9 and current_low > prev_low and self.check_if_trade_price_new_high(symbol, current_close):
-                # check first candle make new high
-                if current_candle['high'] > prev_candle['high']:
-                    quote = webullsdk.get_quote(ticker_id=ticker_id)
-                    if quote == None or 'depth' not in quote:
-                        return
-                    ask_price = float(
-                        quote['depth']['ntvAggAskList'][0]['price'])
-                    bid_price = float(
-                        quote['depth']['ntvAggBidList'][0]['price'])
-                    gap = (ask_price - bid_price) / bid_price
-                    if gap > self.max_bid_ask_gap_ratio:
-                        self.print_log("<{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
-                            symbol, ticker_id, ask_price, bid_price))
-                        # remove from monitor
-                        del self.tracking_tickers[symbol]
-                        return
-                    buy_position_amount = self.get_buy_order_limit(symbol)
-                    buy_quant = (int)(buy_position_amount / ask_price)
-                    # submit limit order at ask price
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=ask_price,
-                        quant=buy_quant)
-                    self.print_log("Trading <{}>[{}], price: {}, vwap: {}, ema9: {}, volume: {}".format(
-                        symbol, ticker_id, current_close, current_vwap, round(current_ema9, 3), current_volume))
-                    self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
-                        symbol, ticker_id, buy_quant, ask_price))
-                    # update pending buy
-                    self.update_pending_buy_order(
-                        symbol, order_response, stop_loss=prev_low)
+            # check entry: current price above vwap and ema 9, entry if first candle make new high
+            if self.check_entry(ticker, m2_bars):
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                if quote == None or 'depth' not in quote:
+                    return
+                ask_price = float(
+                    quote['depth']['ntvAggAskList'][0]['price'])
+                # bid_price = float(
+                #     quote['depth']['ntvAggBidList'][0]['price'])
+                # gap = (ask_price - bid_price) / bid_price
+                # if gap > self.max_bid_ask_gap_ratio:
+                #     self.print_log("<{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
+                #         symbol, ticker_id, ask_price, bid_price))
+                #     # remove from monitor
+                #     del self.tracking_tickers[symbol]
+                #     return
+                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_quant = (int)(buy_position_amount / ask_price)
+                # submit limit order at ask price
+                order_response = webullsdk.buy_limit_order(
+                    ticker_id=ticker_id,
+                    price=ask_price,
+                    quant=buy_quant)
+                self.print_log("Trading <{}>[{}], price: {}, vwap: {}, ema9: {}, volume: {}".format(
+                    symbol, ticker_id, current_candle['close'], current_candle['vwap'], round(current_candle['ema9'], 3), int(current_candle['volume'])))
+                self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                    symbol, ticker_id, buy_quant, ask_price))
+                # update pending buy
+                self.update_pending_buy_order(
+                    symbol, order_response, stop_loss=prev_candle['low'])
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -131,11 +164,6 @@ class DayTradingMomo(StrategyBase):
             # quantity = int(ticker_position['position'])
             # self.print_log("Checking <{}>[{}], cost: {}, last: {}, change: {}%".format(
             #     symbol, ticker_id, cost, last_price, round(profit_loss_rate * 100, 2)))
-            exit_trading = False
-            # sell if drawdown 1% from max P&L rate
-            # if max_profit_loss_rate - profit_loss_rate >= 0.01:
-            #     exit_trading = True
-            exit_note = None
 
             # cancel buy prev low stop loss if hit 1% profit
             if profit_loss_rate >= 0.01:
@@ -144,16 +172,13 @@ class DayTradingMomo(StrategyBase):
             last_price = float(ticker_position['lastPrice'])
             cost_price = float(ticker_position['costPrice'])
 
-            # stop loss for buy prev low
-            if ticker['stop_loss'] and last_price < ticker['stop_loss']:
-                exit_note = "Stop loss at {}!".format(last_price)
-                exit_trading = True
+            # check stop loss
+            exit_trading, exit_note = self.check_stop_loss(
+                ticker, ticker_position)
 
-            # stop loss for stop_loss_ratio
-            if not exit_trading and profit_loss_rate <= self.stop_loss_ratio:
-                exit_note = "Stop loss for {}%".format(
-                    round(profit_loss_rate * 100, 2))
-                exit_trading = True
+            # sell if drawdown 1% from max P&L rate
+            # if max_profit_loss_rate - profit_loss_rate >= 0.01:
+            #     exit_trading = True
 
             # check if holding too long without profit
             if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=self.holding_order_timeout_in_sec) and profit_loss_rate < 0.01:
@@ -173,20 +198,9 @@ class DayTradingMomo(StrategyBase):
                         "<{}>[{}] Bars data error!".format(symbol, ticker_id))
                     exit_note = "Bars data error!"
                     exit_trading = True
-
-                # check if momentum is stop
-                if not exit_trading and utils.check_bars_current_low_less_than_prev_low(m2_bars):
-                    self.print_log("<{}>[{}] Current low price is less than previous low price.".format(
-                        symbol, ticker_id))
-                    exit_note = "Current Low < Previous Low."
-                    exit_trading = True
-
-                # check if price fixed in last 3 candles
-                if not exit_trading and utils.check_bars_price_fixed(m2_bars):
-                    self.print_log(
-                        "<{}>[{}] Price is fixed during last 3 candles.".format(symbol, ticker_id))
-                    exit_note = "Price fixed during last 3 candles."
-                    exit_trading = True
+                else:
+                    # check exit trade
+                    exit_trading, exit_note = self.check_exit(ticker, m2_bars)
 
             # exit trading
             if exit_trading:
