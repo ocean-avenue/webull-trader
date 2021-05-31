@@ -54,9 +54,9 @@ admin.site.register(models.WebullCredentials, WebullCredentialsAdmin)
 class WebullOrderAdmin(admin.ModelAdmin):
 
     list_display = [
+        'symbol',
         'order_id',
         'ticker_id',
-        'symbol',
         'action',
         'status',
         'total_quantity',
@@ -92,9 +92,9 @@ class WebullNewsAdmin(admin.ModelAdmin):
         return format_html('<a href="{}" target="_blank">{}</a>'.format(obj.news_url, obj.news_url))
 
     list_display = [
-        'date',
-        'news_id',
         'symbol',
+        'news_id',
+        'date',
         'title',
         'source_name',
         'collect_source',
@@ -122,11 +122,28 @@ admin.site.register(models.WebullAccountStatistics,
                     WebullAccountStatisticsAdmin)
 
 
+class EarningCalendarAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'symbol',
+        'earning_date',
+        'earning_time',
+        'eps',
+        'eps_estimated',
+        'revenue',
+        'revenue_estimated'
+    ]
+
+
+admin.site.register(models.EarningCalendar,
+                    EarningCalendarAdmin)
+
+
 class HistoricalTopGainerAdmin(admin.ModelAdmin):
 
     list_display = [
-        'date',
         'symbol',
+        'date',
         'change',
         'change_percentage',
         'price',
@@ -140,8 +157,8 @@ admin.site.register(models.HistoricalTopGainer,
 class HistoricalTopLoserAdmin(admin.ModelAdmin):
 
     list_display = [
-        'date',
         'symbol',
+        'date',
         'change',
         'change_percentage',
         'price',
@@ -155,8 +172,8 @@ admin.site.register(models.HistoricalTopLoser,
 class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):
 
     list_display = [
-        'date',
         'symbol',
+        'date',
         'open',
         'high',
         'low',

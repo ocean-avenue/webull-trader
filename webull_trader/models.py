@@ -152,6 +152,35 @@ class WebullAccountStatistics(models.Model):
         return "[{}] day P&L: {}".format(self.date, self.day_profit_loss)
 
 
+class EarningCalendar(models.Model):
+    symbol = models.CharField(max_length=64)
+    earning_date = models.DateField()
+    earning_time = models.CharField(max_length=32)
+    eps = models.FloatField(null=True, blank=True, default=None)
+    eps_estimated = models.FloatField(null=True, blank=True, default=None)
+    revenue = models.FloatField(default=0)
+    revenue_estimated = models.FloatField(default=0)
+
+    price = models.FloatField()
+    change = models.FloatField()
+    change_percentage = models.FloatField()
+    year_high = models.FloatField()
+    year_low = models.FloatField()
+    market_value = models.FloatField()
+    avg_price_50d = models.FloatField()
+    avg_price_200d = models.FloatField()
+    volume = models.FloatField()
+    avg_volume = models.FloatField()
+    exchange = models.CharField(max_length=64)
+    outstanding_shares = models.FloatField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "[{}] <{}> ({})".format(self.earning_date, self.symbol, self.earning_time)
+
+
 class HistoricalTopGainer(models.Model):
     symbol = models.CharField(max_length=64)
     ticker_id = models.CharField(max_length=128)

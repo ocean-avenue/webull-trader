@@ -27,16 +27,15 @@ def get_most_gainers():
     )
 
 
-def get_earning_calendar():
+def get_earning_calendar(from_date=None, to_date=None):
+    from_to_date = ""
+    if from_date:
+        from_to_date += "from={}&".format(from_date)
+    if to_date:
+        from_to_date += "to={}&".format(to_date)
     return _get_jsonparsed_data(
-        "{}/earning_calendar?apikey={}".format(FMP_API_BASE_URL, FMP_API_KEY)
-    )
-
-
-def get_earning_calendar(from_date, to_date):
-    return _get_jsonparsed_data(
-        "{}/earning_calendar?from={}&to={}&apikey={}".format(
-            FMP_API_BASE_URL, from_date, to_date, FMP_API_KEY
+        "{}/earning_calendar?{}apikey={}".format(
+            FMP_API_BASE_URL, from_to_date, FMP_API_KEY
         )
     )
 
