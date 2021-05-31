@@ -245,7 +245,7 @@ def check_bars_has_volume(bars):
     check if bar chart has enough volume
     """
     enough_volume = True
-    # only check for regular hour now
+    # only check regular hour for average volume
     if is_regular_market_hour():
         total_volume = 0
         total_count = 0
@@ -260,6 +260,14 @@ def check_bars_has_volume(bars):
             confirm_avg_volume = get_avg_confirm_volume()
             if avg_volume < confirm_avg_volume:
                 enough_volume = False
+    # check relative volume over 3
+    last_candle2 = bars[-2]
+    last_candle3 = bars[-3]
+    last_candle4 = bars[-4]
+    last_candle5 = bars[-5]
+    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= 3:
+        # relative volume not enough
+        enough_volume = False
     return enough_volume
 
 
