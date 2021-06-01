@@ -56,6 +56,8 @@ class DayTradingBreakout(StrategyBase):
         return (exit_trading, exit_note)
 
     def check_exit(self, ticker, bars):
+        exit_trading = False
+        exit_note = None
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
         period_bars = bars.head(len(bars) - 1).tail(self.exit_period)
@@ -65,11 +67,12 @@ class DayTradingBreakout(StrategyBase):
             if close_price < period_low_price:
                 period_low_price = close_price
         # check if new low
-        if current_price > period_low_price:
-            return (False, None)
-        self.print_log("<{}>[{}] new period low price, new low: {}, period low: {}, exit!".format(
-            ticker['symbol'], ticker['ticker_id'], current_price, period_low_price))
-        return (True, "{} candles new low.".format(self.exit_period))
+        if current_price < period_low_price:
+            exit_trading = True
+            exit_note = "{} candles new low.".format(self.exit_period)
+            self.print_log("<{}>[{}] new period low price, new low: {}, period low: {}, exit!".format(
+                ticker['symbol'], ticker['ticker_id'], current_price, period_low_price))
+        return (exit_trading, exit_note)
 
     def trade(self, ticker):
 

@@ -49,6 +49,8 @@ class DayTradingMomo(StrategyBase):
         return (exit_trading, exit_note)
 
     def check_exit(self, ticker, bars):
+        exit_trading = False
+        exit_note = None
         # check if momentum is stop
         if utils.check_bars_current_low_less_than_prev_low(bars):
             self.print_log("<{}>[{}] Current low price is less than previous low price.".format(
