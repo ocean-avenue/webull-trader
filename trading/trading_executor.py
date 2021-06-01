@@ -111,6 +111,9 @@ class TradingExecutor:
                 stop_loss_ratio=trading_settings.stop_loss_ratio,
                 blacklist_timeout_in_sec=trading_settings.blacklist_timeout_in_sec,
                 swing_position_amount_limit=trading_settings.swing_position_amount_limit,
+                max_prev_day_close_gap_ratio=trading_settings.max_prev_day_close_gap_ratio,
+                min_relative_volume=trading_settings.min_relative_volume,
+                min_earning_gap_ratio=trading_settings.trading_settings,
             )
         return True
 
