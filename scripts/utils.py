@@ -261,10 +261,10 @@ def check_bars_has_volume(bars):
             if avg_volume < confirm_avg_volume:
                 enough_volume = False
     # check relative volume over 3
-    last_candle2 = bars[-2]
-    last_candle3 = bars[-3]
-    last_candle4 = bars[-4]
-    last_candle5 = bars[-5]
+    last_candle2 = bars.iloc[-2]
+    last_candle3 = bars.iloc[-3]
+    last_candle4 = bars.iloc[-4]
+    last_candle5 = bars.iloc[-5]
     if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
         # relative volume not enough
         enough_volume = False
