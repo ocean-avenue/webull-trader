@@ -174,8 +174,7 @@ class DayTradingBreakout(StrategyBase):
                     exit_note = "Bars data error!"
                 else:
                     # check exit trade
-                    exit_trading, exit_note = self.check_exit(
-                        ticker, m2_bars, ticker_position)
+                    exit_trading, exit_note = self.check_exit(ticker, m2_bars)
 
             # exit trading
             if exit_trading:
