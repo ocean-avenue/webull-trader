@@ -33,7 +33,7 @@ def start():
         swing_position_amount_limit=2000.0,
         max_prev_day_close_gap_ratio=0.02,
         min_relative_volume=3.0,
-        min_earning_gap_ratio=0.04,
+        min_earning_gap_ratio=0.05,
     )
     trading_settings.save()
 
