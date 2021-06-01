@@ -273,6 +273,8 @@ def get_1d_bars(ticker_id=None, count=20):
 # symbol = 'AAPL'
 # ticker_id = 913256135
 
+# {'orderId': 41947352}
+
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):
     instance = _get_instance()
@@ -293,6 +295,8 @@ def buy_market_order(ticker_id=None, quant=0):
         orderType='MKT',
         quant=quant,
     )
+
+# {'orderId': 41947378}
 
 
 def sell_limit_order(ticker_id=None, price=0, quant=0):
@@ -315,6 +319,8 @@ def sell_market_order(ticker_id=None, quant=0):
         quant=quant,
     )
 
+
+# True
 
 def cancel_order(order_id):
     instance = _get_instance()
