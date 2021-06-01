@@ -772,7 +772,7 @@ def get_day_trade_orders(date=None, symbol=None):
     if date:
         lmt_buy_orders = lmt_buy_orders.filter(filled_time__year=date.year,
                                                filled_time__month=date.month, filled_time__day=date.day)
-        lmt_sell_orders = lmt_buy_orders.filter(filled_time__year=date.year, filled_time__month=date.month,
+        lmt_sell_orders = lmt_sell_orders.filter(filled_time__year=date.year, filled_time__month=date.month,
                                                 filled_time__day=date.day)
     if symbol:
         lmt_buy_orders = lmt_buy_orders.filter(symbol=symbol)
