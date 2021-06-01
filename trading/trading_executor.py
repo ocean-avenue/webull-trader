@@ -113,7 +113,7 @@ class TradingExecutor:
                 swing_position_amount_limit=trading_settings.swing_position_amount_limit,
                 max_prev_day_close_gap_ratio=trading_settings.max_prev_day_close_gap_ratio,
                 min_relative_volume=trading_settings.min_relative_volume,
-                min_earning_gap_ratio=trading_settings.trading_settings,
+                min_earning_gap_ratio=trading_settings.min_earning_gap_ratio,
             )
         return True
 
