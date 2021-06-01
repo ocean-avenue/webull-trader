@@ -755,6 +755,43 @@ def save_swing_hist_daily_bar(bar_data):
         bar.save()
 
 
+def check_day_trade_order(setup):
+    if setup == enums.SetupType.DAY_20_MINUTES_NEW_HIGH or setup == enums.SetupType.DAY_BULL_FLAG or \
+        setup == enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH or setup == enums.SetupType.DAY_GAP_AND_GO or \
+            setup == enums.SetupType.DAY_RED_TO_GREEN or setup == enums.SetupType.DAY_REVERSAL:
+        return True
+    return False
+
+
+def get_day_trade_orders(date=None, symbol=None):
+    # only limit orders for day trades
+    lmt_buy_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
+        status="Filled").filter(action=enums.ActionType.BUY)
+    lmt_sell_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
+        status="Filled").filter(action=enums.ActionType.SELL)
+    if date:
+        lmt_buy_orders = lmt_buy_orders.filter(filled_time__year=date.year,
+                                               filled_time__month=date.month, filled_time__day=date.day)
+        lmt_sell_orders = lmt_buy_orders.filter(filled_time__year=date.year, filled_time__month=date.month,
+                                                filled_time__day=date.day)
+    if symbol:
+        lmt_buy_orders = lmt_buy_orders.filter(symbol=symbol)
+        lmt_sell_orders = lmt_sell_orders.filter(symbol=symbol)
+    buy_orders = []
+    for order in lmt_buy_orders:
+        order_note = WebullOrderNote.objects.filter(
+            order_id=order.order_id).first()
+        if check_day_trade_order(order_note.setup):
+            buy_orders.append(order)
+    sell_orders = []
+    for order in lmt_sell_orders:
+        order_note = WebullOrderNote.objects.filter(
+            order_id=order.order_id).first()
+        if check_day_trade_order(order_note.setup):
+            sell_orders.append(order)
+    return (buy_orders, sell_orders)
+
+
 def get_trades_from_orders(buy_orders, sell_orders):
     trades = []
     for buy_order in buy_orders:

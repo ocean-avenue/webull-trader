@@ -192,11 +192,7 @@ def day_analytics_date(request, date=None):
         "symbol": daytrade_perf.top_loss_symbol
     }
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(filled_time__year=acc_stat.date.year, filled_time__month=acc_stat.date.month,
-                                            filled_time__day=acc_stat.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(filled_time__year=acc_stat.date.year, filled_time__month=acc_stat.date.month,
-                                             filled_time__day=acc_stat.date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders(date=acc_stat.date)
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     hourly_statistics = utils.get_stats_empty_list(size=32)
@@ -332,8 +328,9 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     # 2m trade records
     m2_trade_price_records = []
     m2_trade_quantity_records = []
-    buy_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
-                                            filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY).filter(symbol=symbol)
+
+    buy_orders, sell_orders = utils.get_day_trade_orders(
+        date=analytics_date.date, symbol=symbol)
     for buy_order in buy_orders:
         m1_coord = [
             utils.local_time_minute_delay(buy_order.filled_time),
@@ -375,8 +372,6 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             "itemStyle": {"color": config.BUY_COLOR},
             "label": {"fontSize": 10},
         })
-    sell_orders = WebullOrder.objects.filter(filled_time__year=analytics_date.year, filled_time__month=analytics_date.month,
-                                             filled_time__day=analytics_date.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL).filter(symbol=symbol)
     for sell_order in sell_orders:
         m1_coord = [
             utils.local_time_minute_delay(sell_order.filled_time),
@@ -506,11 +501,7 @@ def day_reports_price(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     price_statistics = utils.get_stats_empty_list(size=16)
@@ -579,11 +570,7 @@ def day_reports_mktcap(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     stat_render = utils.get_value_stat_from_trades_for_render(
@@ -615,11 +602,7 @@ def day_reports_float(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     stat_render = utils.get_value_stat_from_trades_for_render(
@@ -651,11 +634,7 @@ def day_reports_turnover(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     stat_render = utils.get_value_stat_from_trades_for_render(
@@ -687,11 +666,7 @@ def day_reports_short(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     stat_render = utils.get_value_stat_from_trades_for_render(
@@ -723,11 +698,7 @@ def day_reports_gap(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     gap_statistics = utils.get_stats_empty_list(
@@ -798,11 +769,7 @@ def day_reports_relvol(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     relvol_statistics = utils.get_stats_empty_list(
@@ -878,11 +845,7 @@ def day_reports_holding(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     holding_statistics = utils.get_stats_empty_list(
@@ -953,11 +916,7 @@ def day_reports_hourly(request):
     algo_desc = utils.get_algo_type_desc()
     algo_tag = utils.get_algo_type_tag()
 
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(order_type=OrderType.LMT).filter(
-        status="Filled").filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     hourly_stat = utils.get_hourly_stat_from_trades_for_render(day_trades)

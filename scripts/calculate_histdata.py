@@ -5,16 +5,11 @@
 def start():
     from datetime import date
     from scripts import utils
-    from webull_trader.models import WebullOrder, HistoricalDayTradePerformance
-    from webull_trader.enums import OrderType, ActionType
+    from webull_trader.models import HistoricalDayTradePerformance
 
     today = date.today()
     # day trade
-    # only limit orders for day trades
-    buy_orders = WebullOrder.objects.filter(filled_time__year=today.year, filled_time__month=today.month,
-                                            filled_time__day=today.day).filter(order_type=OrderType.LMT).filter(action=ActionType.BUY)
-    sell_orders = WebullOrder.objects.filter(filled_time__year=today.year, filled_time__month=today.month,
-                                             filled_time__day=today.day).filter(order_type=OrderType.LMT).filter(action=ActionType.SELL)
+    buy_orders, sell_orders = utils.get_day_trade_orders(date=today)
     # trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     # trade count
@@ -32,6 +27,13 @@ def start():
     total_loss = 0.0
     # day profit loss
     day_profit_loss = 0.0
+    total_buy_amount = 0.0
+    total_sell_amount = 0.0
+    for order in buy_orders:
+        total_buy_amount += (order.avg_price * order.filled_quantity)
+    for order in sell_orders:
+        total_sell_amount += (order.avg_price * order.filled_quantity)
+    day_profit_loss = total_sell_amount - total_buy_amount
     # trade records
     trades_dist = {}
     for trade in day_trades:
@@ -54,7 +56,7 @@ def start():
                 top_loss_symbol = symbol
                 top_loss_amount = gain
             # calculate day profit loss
-            day_profit_loss += gain
+            # day_profit_loss += gain
             # build trades_dist
             if symbol not in trades_dist:
                 trades_dist[symbol] = {
