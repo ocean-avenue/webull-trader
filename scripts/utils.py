@@ -781,13 +781,13 @@ def get_day_trade_orders(date=None, symbol=None):
     for order in lmt_buy_orders:
         order_note = WebullOrderNote.objects.filter(
             order_id=order.order_id).first()
-        if check_day_trade_order(order_note.setup):
+        if order_note and check_day_trade_order(order_note.setup):
             buy_orders.append(order)
     sell_orders = []
     for order in lmt_sell_orders:
         order_note = WebullOrderNote.objects.filter(
             order_id=order.order_id).first()
-        if check_day_trade_order(order_note.setup):
+        if order_note and check_day_trade_order(order_note.setup):
             sell_orders.append(order)
     return (buy_orders, sell_orders)
 
