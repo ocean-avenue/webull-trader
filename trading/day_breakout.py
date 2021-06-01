@@ -231,6 +231,7 @@ class DayTradingBreakout(StrategyBase):
             if change_percentage >= self.min_surge_change_ratio:
                 # found trading ticker
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
+                self.tracking_tickers[symbol] = ticker
                 self.print_log(
                     "Found <{}>[{}] to trade!".format(symbol, ticker_id))
                 # do trade
