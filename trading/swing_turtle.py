@@ -29,6 +29,8 @@ class SwingTurtle(StrategyBase):
         return self.swing_position_amount_limit
 
     def check_period_high(self, daily_bars):
+        if len(daily_bars) <= self.entry_period:
+            return False
         latest_bar = daily_bars[-1]
         latest_close = latest_bar.close
         latest_sma120 = latest_bar.sma_120
@@ -46,7 +48,9 @@ class SwingTurtle(StrategyBase):
         return False
 
     def check_period_low(self, daily_bars):
-        latest_bar = daily_bars.last()
+        if len(daily_bars) <= self.exit_period:
+            return False
+        latest_bar = daily_bars[-1]
         latest_close = latest_bar.close
         # get exit_period lowest
         exit_period_lowest = 99999
@@ -62,7 +66,7 @@ class SwingTurtle(StrategyBase):
     def trade(self, symbol):
         # check if already has possition
         position = SwingPosition.objects.filter(
-            symbol=symbol, setup=self.get_setup())
+            symbol=symbol, setup=self.get_setup()).first()
         if position:
             # check if sell
             # get exit_period+1 daily bars
