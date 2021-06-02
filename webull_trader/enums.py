@@ -194,7 +194,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
             return 'DAY/SWING (MOMO/TURTLE)'
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
-            return 'DAY/SWING (RG/TURTLE)'
+            return 'DAY/SWING (R-G/TURTLE)'
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
             return 'DAY/SWING (BREAKOUT/TURTLE)'
         return UNKNOWN
