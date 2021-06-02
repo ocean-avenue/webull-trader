@@ -105,7 +105,10 @@ class SwingTurtle(StrategyBase):
                 # buy swing position amount
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / latest_close)
-                if buy_quant > 0:
+                # make sure usable cash is enough
+                portfolio = webullsdk.get_portfolio()
+                usable_cash = float(portfolio['usableCash'])
+                if buy_quant > 0 and usable_cash > 5000: # TODO, settings
                     ticker_id = webullsdk.get_ticker(symbol)
                     # submit market buy order
                     order_response = webullsdk.buy_market_order(
