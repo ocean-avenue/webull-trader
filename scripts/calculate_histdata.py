@@ -27,13 +27,13 @@ def start():
     total_loss = 0.0
     # day profit loss
     day_profit_loss = 0.0
-    total_buy_amount = 0.0
-    total_sell_amount = 0.0
-    for order in buy_orders:
-        total_buy_amount += (order.avg_price * order.filled_quantity)
-    for order in sell_orders:
-        total_sell_amount += (order.avg_price * order.filled_quantity)
-    day_profit_loss = total_sell_amount - total_buy_amount
+    # total_buy_amount = 0.0
+    # total_sell_amount = 0.0
+    # for order in buy_orders:
+    #     total_buy_amount += (order.avg_price * order.filled_quantity)
+    # for order in sell_orders:
+    #     total_sell_amount += (order.avg_price * order.filled_quantity)
+    # day_profit_loss = total_sell_amount - total_buy_amount
     # trade records
     trades_dist = {}
     for trade in day_trades:
@@ -56,7 +56,7 @@ def start():
                 top_loss_symbol = symbol
                 top_loss_amount = gain
             # calculate day profit loss
-            # day_profit_loss += gain
+            day_profit_loss += gain
             # build trades_dist
             if symbol not in trades_dist:
                 trades_dist[symbol] = {

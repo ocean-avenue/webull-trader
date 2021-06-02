@@ -1503,8 +1503,11 @@ def get_trade_stat_record_for_render(symbol, trade, date):
         if key_statistics.short_float:
             short_float = "{}%".format(key_statistics.short_float)
         float_shares = millify(key_statistics.outstanding_shares)
-        turnover_rate = "{}%".format(
-            round(key_statistics.turnover_rate * 100, 2))
+        if key_statistics.turnover_rate:
+            turnover_rate = "{}%".format(
+                round(key_statistics.turnover_rate * 100, 2))
+        else:
+            turnover_rate = None
         relative_volume = round(
             key_statistics.volume / key_statistics.avg_vol_3m, 2)
     win_rate = "0.0%"

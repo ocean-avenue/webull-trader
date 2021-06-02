@@ -330,7 +330,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     m2_trade_quantity_records = []
 
     buy_orders, sell_orders = utils.get_day_trade_orders(
-        date=analytics_date.date, symbol=symbol)
+        date=analytics_date, symbol=symbol)
     for buy_order in buy_orders:
         m1_coord = [
             utils.local_time_minute_delay(buy_order.filled_time),
