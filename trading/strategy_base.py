@@ -409,38 +409,42 @@ class StrategyBase:
             self.print_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
-    def add_swing_position(self, symbol, order_response):
+    def add_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
         elif 'orderId' in order_response:
             # create swing position
-            # TODO, check order response object
             position = SwingPosition(
                 symbol=symbol,
                 order_id=order_response['orderId'],
-                # TODO
+                cost=cost,
+                quantity=quant,
+                buy_time=buy_time,
+                buy_date=buy_time.date(),
+                setup=setup,
             )
             position.save()
         else:
             self.print_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
-    def add_swing_trade(self, symbol, buy_order_id, buy_price, quant, buy_time, setup, order_response):
+    def add_swing_trade(self, symbol, order_response, position, price, sell_time):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
         elif 'orderId' in order_response:
             # create swing position
-            # TODO, check order response object
             trade = SwingTrade(
                 symbol=symbol,
-                buy_order_id=buy_order_id,
-                buy_price=buy_price,
-                quantity=quant,
-                buy_time=buy_time,
-                buy_date=buy_time.date(),
-                setup=setup,
+                buy_order_id=position.order_id,
+                buy_price=position.cost,
+                quantity=position.quantity,
+                buy_time=position.buy_time,
+                buy_date=position.buy_date,
+                setup=position.setup,
                 sell_order_id=order_response['orderId'],
-                # TODO
+                sell_price=price,
+                sell_time=sell_time,
+                sell_date=sell_time.date(),
             )
             trade.save()
         else:

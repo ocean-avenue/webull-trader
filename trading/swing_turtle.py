@@ -55,15 +55,12 @@ class SwingTurtle(StrategyBase):
                 self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, latest close price: {}".format(
                     symbol, ticker_id, position.quantity, latest_close))
                 # add swing trade
-                # TODO, check order response object
                 self.add_swing_trade(
                     symbol=symbol,
-                    buy_order_id=position.order_id,
-                    buy_price=position.cost,
-                    quant=position.quantity,
-                    buy_time=position.buy_time,
-                    setup=position.setup,
-                    order_response=order_response)
+                    order_response=order_response,
+                    position=position,
+                    price=latest_close,
+                    sell_time=datetime.now())
                 # clear position
                 position.delete()
         else:
@@ -96,8 +93,13 @@ class SwingTurtle(StrategyBase):
                         self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, latest close price: {}".format(
                             symbol, ticker_id, buy_quant, latest_close))
                         # add swing position
-                        # TODO, check order response object
-                        self.add_swing_position(symbol, order_response)
+                        self.add_swing_position(
+                            symbol,
+                            order_response,
+                            cost=latest_close,
+                            quant=buy_quant,
+                            buy_time=datetime.now(),
+                            setup=self.get_setup())
 
     def check_trading_hour(self):
         valid_time = True
