@@ -964,41 +964,44 @@ def get_free_float_range_index(free_float):
 
 def get_turnover_ratio_range_labels():
     return [
-        "0-10%",  # 0
-        "10-20%",  # 1
-        "20-40%",  # 2
-        "40-60%",  # 3
-        "60-80%",  # 4
-        "80-100%",  # 5
-        "100-200%",  # 6
-        "200-500%",  # 7
-        "500-1000%",  # 8
-        "1000%+",  # 9
+        "None",  # 0
+        "0-10%",  # 1
+        "10-20%",  # 2
+        "20-40%",  # 3
+        "40-60%",  # 4
+        "60-80%",  # 5
+        "80-100%",  # 6
+        "100-200%",  # 7
+        "200-500%",  # 8
+        "500-1000%",  # 9
+        "1000%+",  # 10
     ]
 
 
 def get_turnover_ratio_range_index(turnover):
     index = -1
-    if turnover <= 0.1:
+    if turnover == None:
         index = 0
-    elif turnover <= 0.2:
+    elif turnover <= 0.1:
         index = 1
-    elif turnover <= 0.4:
+    elif turnover <= 0.2:
         index = 2
-    elif turnover <= 0.6:
+    elif turnover <= 0.4:
         index = 3
-    elif turnover <= 0.8:
+    elif turnover <= 0.6:
         index = 4
-    elif turnover <= 1:
+    elif turnover <= 0.8:
         index = 5
-    elif turnover <= 2:
+    elif turnover <= 1:
         index = 6
-    elif turnover <= 5:
+    elif turnover <= 2:
         index = 7
-    elif turnover <= 10:
+    elif turnover <= 5:
         index = 8
-    else:
+    elif turnover <= 10:
         index = 9
+    else:
+        index = 10
     return index
 
 
