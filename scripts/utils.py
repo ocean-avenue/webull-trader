@@ -245,29 +245,33 @@ def check_bars_has_volume(bars):
     check if bar chart has enough volume
     """
     enough_volume = True
-    # only check regular hour for average volume
-    if is_regular_market_hour():
-        total_volume = 0
-        total_count = 0
-        for index, row in bars.iterrows():
-            time = index.to_pydatetime()
-            if (time.hour == 9 and time.minute > 30) or time.hour > 9:
-                volume = row["volume"]
-                total_volume += volume
-                total_count += 1
-        if total_count > 0:
-            avg_volume = total_volume / total_count
-            confirm_avg_volume = get_avg_confirm_volume()
-            if avg_volume < confirm_avg_volume:
-                enough_volume = False
-    # check relative volume over 3
-    last_candle2 = bars.iloc[-2]
-    last_candle3 = bars.iloc[-3]
-    last_candle4 = bars.iloc[-4]
-    last_candle5 = bars.iloc[-5]
-    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
-        # relative volume not enough
-        enough_volume = False
+    # extended hour is 1/3 of regular hour
+    confirm_avg_volume = get_avg_confirm_volume()
+    if is_extended_market_hour():
+        confirm_avg_volume /= 3
+    total_volume = 0
+    total_count = 0
+    for index, row in bars.iterrows():
+        time = index.to_pydatetime()
+        if (time.hour == 9 and time.minute > 30) or time.hour > 9:
+            volume = row["volume"]
+            total_volume += volume
+            total_count += 1
+    if total_count > 0:
+        avg_volume = total_volume / total_count
+        confirm_avg_volume = get_avg_confirm_volume()
+        if avg_volume < confirm_avg_volume:
+            enough_volume = False
+
+    if enough_volume:
+        # check relative volume over 3
+        last_candle2 = bars.iloc[-2]
+        last_candle3 = bars.iloc[-3]
+        last_candle4 = bars.iloc[-4]
+        last_candle5 = bars.iloc[-5]
+        if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
+            # relative volume not enough
+            enough_volume = False
     return enough_volume
 
 
@@ -773,7 +777,7 @@ def get_day_trade_orders(date=None, symbol=None):
         lmt_buy_orders = lmt_buy_orders.filter(filled_time__year=date.year,
                                                filled_time__month=date.month, filled_time__day=date.day)
         lmt_sell_orders = lmt_sell_orders.filter(filled_time__year=date.year, filled_time__month=date.month,
-                                                filled_time__day=date.day)
+                                                 filled_time__day=date.day)
     if symbol:
         lmt_buy_orders = lmt_buy_orders.filter(symbol=symbol)
         lmt_sell_orders = lmt_sell_orders.filter(symbol=symbol)
