@@ -60,7 +60,7 @@ def start():
             stop_loss_ratio=-0.01,
             refresh_login_interval_in_min=10,
             blacklist_timeout_in_sec=1800,
-            swing_position_amount_limit=2000.0,
+            swing_position_amount_limit=1000.0,
             max_prev_day_close_gap_ratio=0.02,
             min_relative_volume=3.0,
             min_earning_gap_ratio=0.05,
