@@ -286,6 +286,8 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
         quant=quant,
     )
 
+# {'orderId': 41995367}
+
 
 def buy_market_order(ticker_id=None, quant=0):
     instance = _get_instance()
@@ -310,6 +312,8 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
         quant=quant,
     )
 
+
+# {'orderId': 41995648}
 
 def sell_market_order(ticker_id=None, quant=0):
     instance = _get_instance()

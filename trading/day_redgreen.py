@@ -53,6 +53,20 @@ class DayTradingRedGreen(StrategyBase):
 
         if holding_quantity == 0:
 
+            if not utils.check_bars_updated(m2_bars):
+                self.print_log(
+                    "<{}>[{}] Charts is not updated, stop trading!".format(symbol, ticker_id))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
+
+            if not utils.check_bars_has_volume(m2_bars):
+                self.print_log(
+                    "<{}>[{}] Charts has not enough volume, stop trading!".format(symbol, ticker_id))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
+
             now = datetime.now()
 
             # check entry, current price above prev day close with (prev price below or not long after market open)
