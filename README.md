@@ -4,7 +4,7 @@ Day & Swing Trading System with Webull Platform
 
 ### Strategy:
 
-Day Trading [[Momentum](https://www.warriortrading.com/momentum-day-trading-strategy/)]
+Day Trading [[Momentum](https://www.warriortrading.com/momentum-day-trading-strategy/)] [[R-to-G](https://community.humbledtrader.com/products/video-library/categories/4074208/posts/13662620)]
 
 Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
 
@@ -16,10 +16,10 @@ Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
 $ pip install -r requirements.txt
 ```
 
-2. Initial settings:
+2. Initialize:
 
 ```
-python manage.py shell < scripts/init_settings.py
+python manage.py shell < scripts/initialize.py
 ```
 
 3. Create webull credentials object and write cred data:
@@ -42,13 +42,20 @@ python manage.py runscheduler
 
 ### Deploy:
 
-1. Run server:
+1. Prepare:
+
+```
+mkdir /tmp/webull-trader/
+touch /tmp/webull-trader/deploy.ini
+```
+
+2. Run server:
 
 ```
 uwsgi --ini uwsgi.ini --touch-reload /tmp/webull-trader/deploy.ini --logto /tmp/webull-trader/uwsgi.log
 ```
 
-2. Hot reload:
+3. Hot reload:
 
 ```
 touch /tmp/webull-trader/deploy.ini
