@@ -141,6 +141,8 @@ def start():
             print("[{}] Fetch daily data for <{}> error!".format(
                 utils.get_now(), symbol))
             continue
+        print("[{}] Insert daily data for <{}>...".format(
+            utils.get_now(), symbol))
         # insert 120 days data
         sma120_120_days = hist_sma120[0:120][::-1]
         sma55_120_days = hist_sma55[0:120][::-1]
