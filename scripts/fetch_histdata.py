@@ -8,18 +8,15 @@ def start():
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
-    from webull_trader.models import WebullOrder, SwingWatchlist
+    from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade
     from webull_trader.enums import AlgorithmType
 
-    # paper = utils.check_paper()
-    # webullsdk.login(paper=paper)
-
     today = date.today()
+    today_orders = WebullOrder.objects.filter(placed_time__year=str(
+        today.year), placed_time__month=str(today.month), placed_time__day=str(today.day))
     # get all symbols orders in today's orders
     symbol_list = []
     ticker_id_list = []
-    today_orders = WebullOrder.objects.filter(placed_time__year=str(
-        today.year), placed_time__month=str(today.month), placed_time__day=str(today.day))
     for order in today_orders:
         symbol = order.symbol
         ticker_id = int(order.ticker_id)
@@ -165,6 +162,32 @@ def start():
                 'rsi_10': rsi10_data['rsi'],
             }
             utils.save_swing_hist_daily_bar(bar_data)
+
+    # fill swing position and trade data
+    for order in today_orders:
+        # check swing position
+        swing_position = SwingPosition.objects.filter(
+            order_id=order.order_id).first()
+        if swing_position:
+            swing_position.cost = order.avg_price
+            swing_position.quantity = order.filled_quantity
+            swing_position.buy_time = order.filled_time
+            swing_position.buy_date = order.filled_time.date()
+            # save
+            swing_position.save()
+            continue
+
+        # check swing trade
+        swing_trade = SwingTrade.objects.filter(
+            sell_order_id=order.order_id).first()
+        if swing_trade:
+            swing_trade.sell_price = order.avg_price
+            swing_trade.quantity = order.filled_quantity
+            swing_trade.sell_time = order.filled_time
+            swing_trade.sell_date = order.filled_time.date()
+            # save
+            swing_trade.save()
+            continue
 
 
 if __name__ == "django.core.management.commands.shell":
