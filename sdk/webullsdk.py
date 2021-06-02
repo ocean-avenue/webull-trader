@@ -294,6 +294,7 @@ def buy_market_order(ticker_id=None, quant=0):
         action='BUY',
         orderType='MKT',
         quant=quant,
+        enforce="DAY",
     )
 
 # {'orderId': 41947378}
@@ -317,6 +318,7 @@ def sell_market_order(ticker_id=None, quant=0):
         action='SELL',
         orderType='MKT',
         quant=quant,
+        enforce="DAY",
     )
 
 
