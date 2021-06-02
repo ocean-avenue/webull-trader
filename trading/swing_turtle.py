@@ -28,6 +28,37 @@ class SwingTurtle(StrategyBase):
     def get_buy_order_limit(self, symbol):
         return self.swing_position_amount_limit
 
+    def check_period_high(self, daily_bars):
+        latest_bar = daily_bars[-1]
+        latest_close = latest_bar.close
+        latest_sma120 = latest_bar.sma_120
+        # make sure is uptrend
+        if latest_close > latest_sma120:
+            # get entry_period highest
+            entry_period_highest = 0
+            for i in range(len(daily_bars) - self.entry_period - 1, len(daily_bars) - 1):
+                daily_bar = daily_bars[i]
+                if daily_bar.close > entry_period_highest:
+                    entry_period_highest = daily_bar.close
+            # check if entry_period new high
+            if latest_close > entry_period_highest:
+                return True
+        return False
+
+    def check_period_low(self, daily_bars):
+        latest_bar = daily_bars.last()
+        latest_close = latest_bar.close
+        # get exit_period lowest
+        exit_period_lowest = 99999
+        for i in range(len(daily_bars) - self.exit_period - 1, len(daily_bars) - 1):
+            daily_bar = daily_bars[i]
+            if daily_bar.close < exit_period_lowest:
+                exit_period_lowest = daily_bar.close
+        # check if exit_period new low
+        if latest_close < exit_period_lowest:
+            return True
+        return False
+
     def trade(self, symbol):
         # check if already has possition
         position = SwingPosition.objects.filter(
@@ -37,22 +68,15 @@ class SwingTurtle(StrategyBase):
             # get exit_period+1 daily bars
             hist_daily_bars = SwingHistoricalDailyBar.objects.filter(
                 symbol=symbol)
-            latest_bar = hist_daily_bars.last()
-            latest_close = latest_bar.close
-            # get exit_period lowest
-            exit_period_lowest = 99999
-            for i in range(len(hist_daily_bars) - self.exit_period - 1, len(hist_daily_bars) - 1):
-                daily_bar = hist_daily_bars[i]
-                if daily_bar.close < exit_period_lowest:
-                    exit_period_lowest = daily_bar.close
-            # check if exit_period new low
-            if latest_close < exit_period_lowest:
+            current_daily_bars = list(hist_daily_bars)
+            if self.check_period_low(current_daily_bars):
+                latest_close = current_daily_bars[-1].close
                 ticker_id = webullsdk.get_ticker(symbol)
                 # submit market sell order
                 order_response = webullsdk.sell_market_order(
                     ticker_id=ticker_id,
                     quant=position.quantity)
-                self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, latest close price: {}".format(
+                self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, latest price: {}".format(
                     symbol, ticker_id, position.quantity, latest_close))
                 # add swing trade
                 self.add_swing_trade(
@@ -68,38 +92,31 @@ class SwingTurtle(StrategyBase):
             # get entry_period+1 daily bars
             hist_daily_bars = SwingHistoricalDailyBar.objects.filter(
                 symbol=symbol)
-            latest_bar = hist_daily_bars.last()
-            latest_close = latest_bar.close
-            latest_sma120 = latest_bar.sma_120
-            # make sure is uptrend
-            if latest_close > latest_sma120:
-                # get entry_period highest
-                entry_period_highest = 0
-                for i in range(len(hist_daily_bars) - self.entry_period - 1, len(hist_daily_bars) - 1):
-                    daily_bar = hist_daily_bars[i]
-                    if daily_bar.close > entry_period_highest:
-                        entry_period_highest = daily_bar.close
-                # check if entry_period new high
-                if latest_close > entry_period_highest:
-                    # buy swing position amount
-                    buy_position_amount = self.get_buy_order_limit(symbol)
-                    buy_quant = (int)(buy_position_amount / latest_close)
-                    if buy_quant > 0:
-                        ticker_id = webullsdk.get_ticker(symbol)
-                        # submit market buy order
-                        order_response = webullsdk.buy_market_order(
-                            ticker_id=ticker_id,
-                            quant=buy_quant)
-                        self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, latest close price: {}".format(
-                            symbol, ticker_id, buy_quant, latest_close))
-                        # add swing position
-                        self.add_swing_position(
-                            symbol,
-                            order_response,
-                            cost=latest_close,
-                            quant=buy_quant,
-                            buy_time=datetime.now(),
-                            setup=self.get_setup())
+            current_daily_bars = list(hist_daily_bars)
+            prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
+
+            # first period high
+            if self.check_period_high(current_daily_bars) and not self.check_period_high(prev_daily_bars):
+                latest_close = current_daily_bars[-1].close
+                # buy swing position amount
+                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_quant = (int)(buy_position_amount / latest_close)
+                if buy_quant > 0:
+                    ticker_id = webullsdk.get_ticker(symbol)
+                    # submit market buy order
+                    order_response = webullsdk.buy_market_order(
+                        ticker_id=ticker_id,
+                        quant=buy_quant)
+                    self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, latest price: {}".format(
+                        symbol, ticker_id, buy_quant, latest_close))
+                    # add swing position
+                    self.add_swing_position(
+                        symbol,
+                        order_response,
+                        cost=latest_close,
+                        quant=buy_quant,
+                        buy_time=datetime.now(),
+                        setup=self.get_setup())
 
     def check_trading_hour(self):
         valid_time = True
