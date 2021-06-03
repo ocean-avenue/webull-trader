@@ -41,6 +41,7 @@ class TradingExecutor:
         if not webullsdk.login(paper=self.paper):
             print("[{}] Webull login failed, quit!".format(
                 utils.get_now()))
+            # TODO, send message
             return
         print("[{}] Webull logged in".format(utils.get_now()))
         last_login_refresh_time = datetime.now()
@@ -58,9 +59,14 @@ class TradingExecutor:
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
-                webullsdk.login(paper=self.paper)
-                print("[{}] Refresh webull login".format(utils.get_now()))
-                last_login_refresh_time = datetime.now()
+                if webullsdk.login(paper=self.paper):
+                    print("[{}] Refresh webull login".format(utils.get_now()))
+                    last_login_refresh_time = datetime.now()
+                else:
+                    print("[{}] Webull refresh login failed, quit!".format(
+                        utils.get_now()))
+                    # TODO, send message
+                    break
 
             # at least slepp 1 sec
             time.sleep(1)
