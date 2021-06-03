@@ -572,6 +572,9 @@ def save_hist_key_statistics(quote_data, date):
         get_now(), symbol))
     key_statistics = get_hist_key_stat(symbol, date)
     if not key_statistics:
+        market_value = 0
+        if 'marketValue' in quote_data:
+            market_value = float(quote_data['marketValue'])
         pe = None
         if 'pe' in quote_data:
             pe = float(quote_data['pe'])
@@ -625,7 +628,7 @@ def save_hist_key_statistics(quote_data, date):
             close=float(quote_data['close']),
             change=float(quote_data['change']),
             change_ratio=float(quote_data['changeRatio']),
-            market_value=float(quote_data['marketValue']),
+            market_value=market_value,
             volume=float(quote_data['volume']),
             turnover_rate=turnover_rate,
             vibrate_ratio=vibrate_ratio,
