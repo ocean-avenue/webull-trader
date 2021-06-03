@@ -6,7 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import fetch_account, fetch_orders, fetch_news, fetch_histdata, calculate_histdata, utils
+from scripts import fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, utils
 from trading import trading_executor
 from webull_trader.enums import AlgorithmType
 
@@ -63,6 +63,10 @@ def fetch_stats_data_job():
     print("[{}] Start fetch news job...".format(utils.get_now()))
     fetch_news.start()
     print("[{}] Done fetch news job!".format(utils.get_now()))
+
+    print("[{}] Start fetch earnings job...".format(utils.get_now()))
+    fetch_earnings.start()
+    print("[{}] Done fetch earnings job!".format(utils.get_now()))
 
     print("[{}] Start fetch hist data job...".format(utils.get_now()))
     fetch_histdata.start()
