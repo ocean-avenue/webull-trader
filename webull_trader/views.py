@@ -6,7 +6,7 @@ from django.core.cache import cache
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, SwingHistoricalDailyBar, SwingPosition, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -423,11 +423,9 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             sell_price = day_trade["sell_price"]
             quantity = day_trade["quantity"]
             gain = round((sell_price - buy_price) * quantity, 2)
-            profit_loss_style = "text-success"
-            profit_loss = "+${}".format(gain)
-            if gain < 0:
-                profit_loss = "-${}".format(abs(gain))
-                profit_loss_style = "text-danger"
+            profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+                gain)
+
             entries = []
             buy_order_notes = WebullOrderNote.objects.filter(
                 order_id=day_trade["buy_order_id"])
@@ -1053,3 +1051,66 @@ def day_reports_daily(request):
     cache.set('day_reports_daily_cache', context, CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_daily.html', context)
+
+
+@login_required
+def swing_positions(request):
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_desc = utils.get_algo_type_desc()
+    algo_tag = utils.get_algo_type_tag()
+
+    positions = SwingPosition.objects.all()
+    last_acc_stat = WebullAccountStatistics.objects.last()
+    net_liquidation = last_acc_stat.net_liquidation
+
+    swing_positions = []
+    for position in positions:
+        symbol = position.symbol
+        setup = SetupType.tostr(position.setup)
+        buy_date = position.buy_date
+        unit_cost = position.cost
+        quantity = position.quantity
+        total_cost = unit_cost * quantity
+
+        last_price = 0.0
+        last_bar = SwingHistoricalDailyBar.objects.filter(symbol=symbol).last()
+        if last_bar:
+            last_price = last_bar.close
+
+        total_value = last_price * quantity
+
+        portfolio_percent = total_value / net_liquidation
+
+        unrealized_pl = total_value - total_cost
+        unrealized_pl_percent = (total_value - total_cost) / total_cost
+
+        profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+            round(unrealized_pl, 2))
+
+        swing_positions.append({
+            "symbol": symbol,
+            "unit_cost": "${}".format(unit_cost),
+            "total_cost": "${}".format(round(total_cost, 2)),
+            "total_value": "${}".format(round(total_value, 2)),
+            "quantity": quantity,
+            "buy_date": buy_date,
+            "setup": setup,
+            "price": "${}".format(last_price),
+            "profit_loss": profit_loss,
+            "profit_loss_percent": "{}%".format(round(unrealized_pl_percent * 100, 2)),
+            "profit_loss_style": profit_loss_style,
+            "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
+        })
+
+    context = {
+        "account_type": account_type,
+        "algo_desc": algo_desc,
+        "algo_tag": algo_tag,
+        "swing_positions": swing_positions,
+    }
+
+    return render(request, 'webull_trader/swing_positions.html', context)

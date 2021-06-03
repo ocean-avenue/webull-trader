@@ -1441,6 +1441,15 @@ def get_color_bar_chart_item_for_render(value):
     }
 
 
+def get_color_profit_loss_style_for_render(value):
+    profit_loss = "+${}".format(value)
+    profit_loss_style = "text-success"
+    if value < 0:
+        profit_loss = "-${}".format(abs(value))
+        profit_loss_style = "text-danger"
+    return (profit_loss, profit_loss_style)
+
+
 def get_day_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",

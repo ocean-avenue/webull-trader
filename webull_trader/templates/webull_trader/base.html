@@ -216,9 +216,15 @@
             {% else  %}
             <li class="sidebar-item">
             {% endif %}
-              <a class="sidebar-link" href="{% url 'day_analytics' %}">
+              <a class="sidebar-link" href="{% url 'swing_positions' %}">
                 <i class="align-middle" data-feather="layers"></i>
                 <span class="align-middle">Positions</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="{% url 'swing_positions' %}">
+                <i class="align-middle" data-feather="code"></i>
+                <span class="align-middle">Trades</span>
               </a>
             </li>
           </ul>

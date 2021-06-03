@@ -1,0 +1,58 @@
+{% extends 'webull_trader/base.html' %}
+
+{% block title %} Swing Trading Positions {% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Swing Trading Positions</h3>
+    </div>
+  </div>
+  <div class="card flex-fill">
+    <table class="table table-striped my-0">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th class="d-none d-xl-table-cell">Buy Date</th>
+          <th class="d-none d-xl-table-cell">Setup</th>
+          <th class="d-none d-xl-table-cell">Unit Cost</th>
+          <th class="d-none d-xl-table-cell">Price</th>
+          <th class="d-none d-xl-table-cell">Quantity</th>
+          <th class="d-none d-xl-table-cell">Cost</th>
+          <th class="d-none d-xl-table-cell">Value</th>
+          <th class="d-none d-xl-table-cell">Unrealized P&L</th>
+          <th class="d-none d-xl-table-cell">Unrealized P&L %</th>
+          <th class="d-none d-xl-table-cell">Portfolio %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for position in swing_positions %}
+        <tr>
+          <td><a href="/swing-positions/{{position.symbol|safe}}"><span class="badge badge-soft-dark">{{position.symbol|safe}}</span></a></td>
+          <td class="d-none d-xl-table-cell">{{position.buy_date|safe}}</td>
+          <td class="d-none d-md-table-cell">{{position.setup|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.unit_cost|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.price|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.quantity|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.total_cost|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.total_value|safe}}</td>
+          <td class="d-none d-md-table-cell {{position.profit_loss_style|safe}}">{{position.profit_loss|safe}}</td>
+          <td class="d-none d-md-table-cell {{position.profit_loss_style|safe}}">{{position.profit_loss_percent|safe}}</td>
+          <td class="d-none d-md-table-cell">{{position.portfolio_percent|safe}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
