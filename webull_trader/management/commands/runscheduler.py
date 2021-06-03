@@ -8,7 +8,6 @@ from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, utils
 from trading import trading_executor
-from webull_trader.enums import AlgorithmType
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 

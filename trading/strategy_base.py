@@ -256,18 +256,19 @@ class StrategyBase:
                         self.print_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
-    def check_buy_order_filled(self, ticker, resubmit=False):
+    def check_buy_order_filled(self, ticker, resubmit=False, stop_tracking=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         self.print_log(
             "Checking buy order <{}>[{}] filled...".format(symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
-            return
+            return False
         order_filled = False
         for position in positions:
             if position['ticker']['symbol'] == symbol:
                 order_filled = True
+                # order filled
                 quantity = int(position['position'])
                 cost = float(position['costPrice'])
                 utils.save_webull_order_note(
@@ -281,6 +282,9 @@ class StrategyBase:
                 )
                 self.print_log("Buy order <{}>[{}] filled, cost: {}".format(
                     symbol, ticker_id, cost))
+                # remove from monitor
+                if stop_tracking:
+                    del self.tracking_tickers[symbol]
                 break
         if not order_filled:
             # check order timeout
@@ -330,7 +334,7 @@ class StrategyBase:
             "Checking sell order <{}>[{}] filled...".format(symbol, ticker_id))
         positions = webullsdk.get_positions()
         if positions == None:
-            return
+            return False
         order_filled = True
         for position in positions:
             # make sure position is positive

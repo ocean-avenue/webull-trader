@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import datetime, date
 from webull_trader import enums
 from scripts import config
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
@@ -760,6 +760,38 @@ def save_swing_hist_daily_bar(bar_data):
             sma_120=bar_data['sma_120'],
         )
         bar.save()
+
+
+def save_overnight_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time):
+    position = OvernightPosition.objects.filter(order_id=order_id).first()
+    if not position:
+        position = OvernightPosition(order_id=order_id)
+    position.symbol = symbol
+    position.ticker_id = ticker_id
+    position.setup = setup
+    position.cost = cost
+    position.quantity = quant
+    position.buy_time = buy_time
+    position.buy_date = buy_time.date()
+    position.save()
+
+
+def save_overnight_trade(symbol, position, order_id, sell_price, sell_time):
+    trade = OvernightTrade.objects.filter(sell_order_id=order_id).first()
+    if not trade:
+        trade = OvernightTrade(sell_order_id=order_id)
+    trade.symbol = symbol
+    trade.quantity = position.quantity
+    trade.buy_date = position.buy_date
+    trade.buy_time = position.buy_time
+    trade.buy_price = position.cost
+    trade.buy_order_id = position.order_id
+    trade.sell_time = sell_time
+    trade.sell_date = sell_time.date()
+    trade.sell_price = sell_price
+    trade.sell_order_id = order_id
+    trade.setup = position.setup
+    trade.save()
 
 
 def check_day_trade_order(setup):
