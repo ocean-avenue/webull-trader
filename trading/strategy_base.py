@@ -256,7 +256,7 @@ class StrategyBase:
                         self.print_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
-    def check_buy_order_filled(self, ticker):
+    def check_buy_order_filled(self, ticker, resubmit=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         self.print_log(
@@ -291,9 +291,29 @@ class StrategyBase:
                     ), note="Buy order timeout, canceled!")
                     self.print_log(
                         "Buy order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
-                    self.tracking_tickers[symbol]['pending_buy'] = False
-                    self.tracking_tickers[symbol]['pending_order_id'] = None
-                    self.tracking_tickers[symbol]['pending_order_time'] = None
+                    # resubmit buy order
+                    if resubmit:
+                        quote = webullsdk.get_quote(ticker_id=ticker_id)
+                        if quote == None:
+                            return
+                        ask_price = float(
+                            quote['depth']['ntvAggAskList'][0]['price'])
+                        buy_position_amount = self.get_buy_order_limit(symbol)
+                        buy_quant = (int)(buy_position_amount / ask_price)
+                        order_response = webullsdk.buy_limit_order(
+                            ticker_id=ticker_id,
+                            price=ask_price,
+                            quant=buy_quant)
+                        self.print_log("Resubmit buy order <{}>[{}], quant: {}, limit price: {}".format(
+                            symbol, ticker_id, buy_quant, ask_price))
+                        self.update_pending_buy_order(symbol, order_response)
+                        if 'orderId' in order_response:
+                            utils.save_webull_order_note(
+                                order_response['orderId'], setup=self.get_setup(), note="Resubmit buy order.")
+                    else:
+                        self.tracking_tickers[symbol]['pending_buy'] = False
+                        self.tracking_tickers[symbol]['pending_order_id'] = None
+                        self.tracking_tickers[symbol]['pending_order_time'] = None
                 else:
                     self.print_log(
                         "Failed to cancel timeout buy order <{}>[{}]!".format(symbol, ticker_id))
@@ -301,7 +321,9 @@ class StrategyBase:
         # check short order
         self.check_error_short_order(positions)
 
-    def check_sell_order_filled(self, ticker, stop_tracking=True):
+        return order_filled
+
+    def check_sell_order_filled(self, ticker, resubmit=True, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         self.print_log(
@@ -348,28 +370,35 @@ class StrategyBase:
                     self.print_log(
                         "Sell order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
                     # resubmit sell order
-                    quote = webullsdk.get_quote(ticker_id=ticker_id)
-                    if quote == None:
-                        return
-                    bid_price = float(
-                        quote['depth']['ntvAggBidList'][0]['price'])
-                    holding_quantity = ticker['positions']
-                    order_response = webullsdk.sell_limit_order(
-                        ticker_id=ticker_id,
-                        price=bid_price,
-                        quant=holding_quantity)
-                    self.print_log("Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
-                        symbol, ticker_id, holding_quantity, bid_price))
-                    self.update_pending_sell_order(symbol, order_response)
-                    if 'orderId' in order_response:
-                        utils.save_webull_order_note(
-                            order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
+                    if resubmit:
+                        quote = webullsdk.get_quote(ticker_id=ticker_id)
+                        if quote == None:
+                            return
+                        bid_price = float(
+                            quote['depth']['ntvAggBidList'][0]['price'])
+                        holding_quantity = ticker['positions']
+                        order_response = webullsdk.sell_limit_order(
+                            ticker_id=ticker_id,
+                            price=bid_price,
+                            quant=holding_quantity)
+                        self.print_log("Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
+                            symbol, ticker_id, holding_quantity, bid_price))
+                        self.update_pending_sell_order(symbol, order_response)
+                        if 'orderId' in order_response:
+                            utils.save_webull_order_note(
+                                order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
+                    else:
+                        self.tracking_tickers[symbol]['pending_sell'] = False
+                        self.tracking_tickers[symbol]['pending_order_id'] = None
+                        self.tracking_tickers[symbol]['pending_order_time'] = None
                 else:
                     self.print_log(
                         "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))
 
         # check short order
         self.check_error_short_order(positions)
+
+        return order_filled
 
     def update_trading_stats(self, symbol, price, cost, profit_loss_rate):
         # after perform 1 trade

@@ -284,6 +284,7 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
         action='BUY',
         orderType='LMT',
         quant=quant,
+        enforce="DAY",
     )
 
 # {'orderId': 41995367}
@@ -310,6 +311,7 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
         action='SELL',
         orderType='LMT',
         quant=quant,
+        enforce="DAY",
     )
 
 

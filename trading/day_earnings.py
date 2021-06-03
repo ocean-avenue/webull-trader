@@ -32,10 +32,34 @@ class DayTradingEarnings(StrategyBase):
 
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        # TODO, buy in pre/post market hour
+
+        if ticker['pending_buy']:
+            if self.check_buy_order_filled(ticker, resubmit=True):
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+            return
+
+        if ticker['pending_sell']:
+            self.check_sell_order_filled(ticker)
+            return
+
+        # buy in pre/after market hour
         if utils.is_extended_market_hour():
-            pass
-        # TODO, sell in regular market hour
+            quote = webullsdk.get_quote(ticker_id=ticker_id)
+            if quote == None or 'depth' not in quote:
+                return
+            change_ratio = float(quote['pChRatio'])
+            if change_ratio >= self.min_earning_gap_ratio:
+                ask_price = float(quote['depth']['ntvAggAskList'][0]['price'])
+                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_quant = (int)(buy_position_amount / ask_price)
+                # submit limit order at ask price
+                order_response = webullsdk.buy_limit_order(
+                    ticker_id=ticker_id,
+                    price=ask_price,
+                    quant=buy_quant)
+
+        # sell in regular market hour
         if utils.is_regular_market_hour():
             pass
 
