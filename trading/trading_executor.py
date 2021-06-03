@@ -114,6 +114,7 @@ class TradingExecutor:
                 max_prev_day_close_gap_ratio=trading_settings.max_prev_day_close_gap_ratio,
                 min_relative_volume=trading_settings.min_relative_volume,
                 min_earning_gap_ratio=trading_settings.min_earning_gap_ratio,
+                day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
             )
         return True
 
@@ -127,6 +128,7 @@ def start():
     from trading.day_momo_newhigh import DayTradingMomoNewHigh
     from trading.day_redgreen import DayTradingRedGreen
     from trading.day_breakout import DayTradingBreakout
+    from trading.day_earnings import DayTradingEarnings
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
@@ -150,6 +152,9 @@ def start():
         # DAY_BREAKOUT: breakout trade
         strategies.append(DayTradingBreakout(
             paper=paper, entry_period=20, exit_period=10))
+    elif algo_type == AlgorithmType.DAY_EARNINGS:
+        # DAY_EARNINGS: earnings trade
+        strategies.append(DayTradingEarnings(paper=paper))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days
         strategies.append(SwingTurtle(

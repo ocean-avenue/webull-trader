@@ -80,7 +80,7 @@ class SetupType:
     DAY_REVERSAL = 3
     DAY_RED_TO_GREEN = 4
     DAY_20_MINUTES_NEW_HIGH = 5
-    DAY_EARNING_GAP = 6
+    DAY_EARNINGS_GAP = 6
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
 
@@ -98,7 +98,7 @@ class SetupType:
             return '[Day] Red to Green'
         if val == SetupType.DAY_20_MINUTES_NEW_HIGH:
             return '[Day] 20 minutes new high'
-        if val == SetupType.DAY_EARNING_GAP:
+        if val == SetupType.DAY_EARNINGS_GAP:
             return '[Day] Earning Gap'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '[Swing] 20 days new high'
@@ -121,8 +121,8 @@ class SetupType:
                 SetupType.DAY_RED_TO_GREEN)),
             (SetupType.DAY_20_MINUTES_NEW_HIGH, SetupType.tostr(
                 SetupType.DAY_20_MINUTES_NEW_HIGH)),
-            (SetupType.DAY_EARNING_GAP, SetupType.tostr(
-                SetupType.DAY_EARNING_GAP)),
+            (SetupType.DAY_EARNINGS_GAP, SetupType.tostr(
+                SetupType.DAY_EARNINGS_GAP)),
             (SetupType.SWING_20_DAYS_NEW_HIGH, SetupType.tostr(
                 SetupType.SWING_20_DAYS_NEW_HIGH)),
             (SetupType.SWING_55_DAYS_NEW_HIGH, SetupType.tostr(
@@ -136,7 +136,7 @@ class AlgorithmType:
     DAY_RED_TO_GREEN = 2
     DAY_MOMENTUM_NEW_HIGH = 3
     DAY_BREAKOUT = 4
-    DAY_EARNING = 5
+    DAY_EARNINGS = 5
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -159,7 +159,7 @@ class AlgorithmType:
             return 'Momo day trade, no entry if the price not break max of last high price.'
         if val == AlgorithmType.DAY_BREAKOUT:
             return 'Breakout day trade, entry if price reach 20 minutes new high.'
-        if val == AlgorithmType.DAY_EARNING:
+        if val == AlgorithmType.DAY_EARNINGS:
             return 'Earning date day trade, entry if gap up.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
@@ -185,7 +185,7 @@ class AlgorithmType:
             return 'DAY (RED GREEN)'
         if val == AlgorithmType.DAY_BREAKOUT:
             return 'DAY (BREAKOUT)'
-        if val == AlgorithmType.DAY_EARNING:
+        if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNING)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
@@ -212,8 +212,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_RED_TO_GREEN)),
             (AlgorithmType.DAY_BREAKOUT, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT)),
-            (AlgorithmType.DAY_EARNING, AlgorithmType.tostr(
-                AlgorithmType.DAY_EARNING)),
+            (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
+                AlgorithmType.DAY_EARNINGS)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(

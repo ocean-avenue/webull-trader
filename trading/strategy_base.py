@@ -67,7 +67,8 @@ class StrategyBase:
                       swing_position_amount_limit,
                       max_prev_day_close_gap_ratio,
                       min_relative_volume,
-                      min_earning_gap_ratio):
+                      min_earning_gap_ratio,
+                      day_trade_usable_cash_threshold):
 
         self.min_surge_amount = min_surge_amount
         self.print_log("Min surge amount: {}".format(self.min_surge_amount))
@@ -138,6 +139,10 @@ class StrategyBase:
         self.min_earning_gap_ratio = min_earning_gap_ratio
         self.print_log("Earning gap ratio for entry: {}".format(
             self.min_earning_gap_ratio))
+
+        self.day_trade_usable_cash_threshold = day_trade_usable_cash_threshold
+        self.print_log("Usable cash threshold for day trade: {}".format(
+            self.day_trade_usable_cash_threshold))
 
         return True
 

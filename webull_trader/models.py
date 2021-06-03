@@ -45,6 +45,8 @@ class TradingSettings(models.Model):
     min_relative_volume = models.FloatField()
     # earning gap ratio for earning strategy
     min_earning_gap_ratio = models.FloatField()
+    # usable cash for day trade use
+    day_trade_usable_cash_threshold = models.FloatField()
 
     def __str__(self):
         return "Trading settings, paper: {}, order amount limit: {}, algo: {}".format(
@@ -380,7 +382,7 @@ class OvernightPosition(models.Model):
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.DAY_EARNING_GAP
+        default=enums.SetupType.DAY_EARNINGS_GAP
     )
 
     def __str__(self):
@@ -403,7 +405,7 @@ class OvernightTrade(models.Model):
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.DAY_EARNING_GAP
+        default=enums.SetupType.DAY_EARNINGS_GAP
     )
     note = models.TextField(null=True, blank=True)
 

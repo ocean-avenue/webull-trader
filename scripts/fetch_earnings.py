@@ -9,9 +9,9 @@ def start():
     from webull_trader.models import EarningCalendar
     from webull_trader.enums import AlgorithmType
 
-    # only fetch earning for DAY_EARNING
+    # only fetch earning for DAY_EARNINGS
     algo_type = utils.get_algo_type()
-    if algo_type != AlgorithmType.DAY_EARNING:
+    if algo_type != AlgorithmType.DAY_EARNINGS:
         return
 
     symbol_list = []

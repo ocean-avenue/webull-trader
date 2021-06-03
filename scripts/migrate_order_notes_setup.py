@@ -14,8 +14,8 @@ def start():
         setup_type = SetupType.DAY_20_MINUTES_NEW_HIGH
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         setup_type = SetupType.DAY_RED_TO_GREEN
-    elif algo_type == AlgorithmType.DAY_EARNING:
-        setup_type = SetupType.DAY_EARNING_GAP
+    elif algo_type == AlgorithmType.DAY_EARNINGS:
+        setup_type = SetupType.DAY_EARNINGS_GAP
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         setup_type = SetupType.SWING_20_DAYS_NEW_HIGH
     elif algo_type == AlgorithmType.SWING_TURTLE_55:

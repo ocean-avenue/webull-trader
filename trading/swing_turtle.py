@@ -108,7 +108,7 @@ class SwingTurtle(StrategyBase):
                 # make sure usable cash is enough
                 portfolio = webullsdk.get_portfolio()
                 usable_cash = float(portfolio['usableCash'])
-                if buy_quant > 0 and usable_cash > 5000: # TODO, settings
+                if buy_quant > 0 and usable_cash > self.day_trade_usable_cash_threshold:
                     ticker_id = webullsdk.get_ticker(symbol)
                     # submit market buy order
                     order_response = webullsdk.buy_market_order(

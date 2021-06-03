@@ -11,13 +11,13 @@ from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingEarning(StrategyBase):
+class DayTradingEarnings(StrategyBase):
 
     def get_tag(self):
-        return "DayTradingEarning"
+        return "DayTradingEarnings"
 
     def get_setup(self):
-        return SetupType.DAY_EARNING_GAP
+        return SetupType.DAY_EARNINGS_GAP
 
     def check_entry(self, ticker, bars):
         return False

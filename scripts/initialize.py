@@ -64,6 +64,7 @@ def start():
             max_prev_day_close_gap_ratio=0.02,
             min_relative_volume=3.0,
             min_earning_gap_ratio=0.05,
+            day_trade_usable_cash_threshold=10000.0,
         )
         trading_settings.save()
 
