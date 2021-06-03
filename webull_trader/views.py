@@ -2,9 +2,11 @@ import pandas as pd
 from datetime import date
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from scripts import utils, config
-from webull_trader.enums import ActionType, OrderType, SetupType
-from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrder, WebullOrderNote
+from webull_trader.enums import SetupType
+from webull_trader.config import CACHE_TIMEOUT
+from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -494,6 +496,10 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
 @login_required
 def day_reports_price(request):
 
+    cached_context = cache.get('day_reports_price_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
     # account type data
     account_type = utils.get_account_type_for_render()
 
@@ -547,7 +553,7 @@ def day_reports_price(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         price_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -557,11 +563,19 @@ def day_reports_price(request):
         "win_rate": price_win_rate,
         "profit_loss_ratio": price_profit_loss_ratio,
         "trades": price_trades,
-    })
+    }
+
+    cache.set('day_reports_price_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_mktcap(request):
+
+    cached_context = cache.get('day_reports_mktcap_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -579,7 +593,7 @@ def day_reports_mktcap(request):
         utils.get_market_cap_range_index,
         utils.get_market_cap_range_labels())
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -589,11 +603,19 @@ def day_reports_mktcap(request):
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
-    })
+    }
+
+    cache.set('day_reports_mktcap_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_float(request):
+
+    cached_context = cache.get('day_reports_float_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -611,7 +633,7 @@ def day_reports_float(request):
         utils.get_free_float_range_index,
         utils.get_free_float_range_labels())
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -621,11 +643,19 @@ def day_reports_float(request):
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
-    })
+    }
+
+    cache.set('day_reports_float_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_turnover(request):
+
+    cached_context = cache.get('day_reports_turnover_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -643,7 +673,7 @@ def day_reports_turnover(request):
         utils.get_turnover_ratio_range_index,
         utils.get_turnover_ratio_range_labels())
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -653,11 +683,19 @@ def day_reports_turnover(request):
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
-    })
+    }
+
+    cache.set('day_reports_turnover_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_short(request):
+
+    cached_context = cache.get('day_reports_short_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -675,7 +713,7 @@ def day_reports_short(request):
         utils.get_short_float_range_index,
         utils.get_short_float_range_labels())
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -685,11 +723,19 @@ def day_reports_short(request):
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
-    })
+    }
+
+    cache.set('day_reports_short_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_gap(request):
+
+    cached_context = cache.get('day_reports_gap_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -747,7 +793,7 @@ def day_reports_gap(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         gap_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -757,11 +803,20 @@ def day_reports_gap(request):
         "win_rate": gap_win_rate,
         "profit_loss_ratio": gap_profit_loss_ratio,
         "trades": gap_trades,
-    })
+    }
+
+    cache.set('day_reports_gap_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_relvol(request):
+
+    cached_context = cache.get('day_reports_relvol_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
     # account type data
     account_type = utils.get_account_type_for_render()
 
@@ -822,7 +877,7 @@ def day_reports_relvol(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         relvol_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -832,11 +887,19 @@ def day_reports_relvol(request):
         "win_rate": relvol_win_rate,
         "profit_loss_ratio": relvol_profit_loss_ratio,
         "trades": relvol_trades,
-    })
+    }
+
+    cache.set('day_reports_relvol_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_holding(request):
+
+    cached_context = cache.get('day_reports_holding_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -852,9 +915,10 @@ def day_reports_holding(request):
         size=len(utils.get_holding_time_labels()))
     # for P&L, win rate and profit/loss ratio, trades by holding time
     for day_trade in day_trades:
-        holding_sec = (day_trade['sell_time'] - day_trade['buy_time']).seconds
-        holding_idx = utils.get_holding_time_index(holding_sec)
         if 'sell_price' in day_trade:
+            holding_sec = (day_trade['sell_time'] -
+                           day_trade['buy_time']).seconds
+            holding_idx = utils.get_holding_time_index(holding_sec)
             gain = (day_trade['sell_price'] -
                     day_trade['buy_price']) * day_trade['quantity']
             if gain > 0:
@@ -893,7 +957,7 @@ def day_reports_holding(request):
             profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
         holding_profit_loss_ratio.append(profit_loss_ratio)
 
-    return render(request, 'webull_trader/day_reports_field.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -903,11 +967,19 @@ def day_reports_holding(request):
         "win_rate": holding_win_rate,
         "profit_loss_ratio": holding_profit_loss_ratio,
         "trades": holding_trades,
-    })
+    }
+
+    cache.set('day_reports_holding_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
 
 
 @login_required
 def day_reports_hourly(request):
+
+    cached_context = cache.get('day_reports_hourly_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_hourly.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -921,7 +993,7 @@ def day_reports_hourly(request):
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     hourly_stat = utils.get_hourly_stat_from_trades_for_render(day_trades)
 
-    return render(request, 'webull_trader/day_reports_hourly.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -931,11 +1003,19 @@ def day_reports_hourly(request):
         "hourly_win_rate": hourly_stat['win_rate'],
         "hourly_profit_loss_ratio": hourly_stat['profit_loss_ratio'],
         "hourly_trades": hourly_stat['trades'],
-    })
+    }
+
+    cache.set('day_reports_hourly_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_hourly.html', context)
 
 
 @login_required
 def day_reports_daily(request):
+
+    cached_context = cache.get('day_reports_daily_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_daily.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -958,7 +1038,7 @@ def day_reports_daily(request):
         daily_profit_loss_ratio.append(daytrade_perf.profit_loss_ratio)
         daily_trades.append(daytrade_perf.trades)
 
-    return render(request, 'webull_trader/day_reports_daily.html', {
+    context = {
         "account_type": account_type,
         "algo_desc": algo_desc,
         "algo_tag": algo_tag,
@@ -968,4 +1048,8 @@ def day_reports_daily(request):
         "daily_win_rate": daily_win_rate,
         "daily_profit_loss_ratio": daily_profit_loss_ratio,
         "daily_trades": daily_trades,
-    })
+    }
+
+    cache.set('day_reports_daily_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_daily.html', context)
