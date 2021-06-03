@@ -2,14 +2,15 @@
 
 # calculate historical statistics data
 
-def start():
+def start(day=None):
     from datetime import date
     from scripts import utils
     from webull_trader.models import HistoricalDayTradePerformance
 
-    today = date.today()
+    if day == None:
+        day = date.today()
     # day trade
-    buy_orders, sell_orders = utils.get_day_trade_orders(date=today)
+    buy_orders, sell_orders = utils.get_day_trade_orders(date=day)
     # trades
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     # trade count
@@ -95,10 +96,10 @@ def start():
 
     # save hist daytrade perf object
     hist_daytrade_perf = HistoricalDayTradePerformance.objects.filter(
-        date=today).first()
+        date=day).first()
     if not hist_daytrade_perf:
         hist_daytrade_perf = HistoricalDayTradePerformance()
-    hist_daytrade_perf.date = today
+    hist_daytrade_perf.date = day
     hist_daytrade_perf.win_rate = overall_win_rate
     hist_daytrade_perf.profit_loss_ratio = overall_profit_loss_ratio
     hist_daytrade_perf.day_profit_loss = round(day_profit_loss, 2)
