@@ -3,15 +3,12 @@
 # fetch minute/daily historical candle data into database
 
 
-from webull_trader.models import WebullOrderNote
-
-
 def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
-    from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade
+    from webull_trader.models import WebullOrder, WebullOrderNote, SwingWatchlist, SwingPosition, SwingTrade, OvernightPosition, OvernightTrade
 
     if day == None:
         day = date.today()
@@ -165,7 +162,7 @@ def start(day=None):
             }
             utils.save_swing_hist_daily_bar(bar_data)
 
-    # fill swing position and trade data
+    # fill swing/overnight position and trade data
     for order in all_day_orders:
         # check swing position
         swing_position = SwingPosition.objects.filter(
@@ -194,6 +191,36 @@ def start(day=None):
             swing_trade.save()
             # fill order setup
             order.setup = swing_trade.setup
+            order.save()
+            continue
+
+        # check overnight position
+        overnight_position = OvernightPosition.objects.filter(
+            order_id=order.order_id).first()
+        if overnight_position:
+            overnight_position.cost = order.avg_price
+            overnight_position.quantity = order.filled_quantity
+            overnight_position.buy_time = order.filled_time
+            overnight_position.buy_date = order.filled_time.date()
+            # save
+            overnight_position.save()
+            # fill order setup
+            order.setup = overnight_position.setup
+            order.save()
+            continue
+
+        # check overnight trade
+        overnight_trade = OvernightTrade.objects.filter(
+            sell_order_id=order.order_id).first()
+        if overnight_trade:
+            overnight_trade.sell_price = order.avg_price
+            overnight_trade.quantity = order.filled_quantity
+            overnight_trade.sell_time = order.filled_time
+            overnight_trade.sell_date = order.filled_time.date()
+            # save
+            overnight_trade.save()
+            # fill order setup
+            order.setup = overnight_trade.setup
             order.save()
             continue
 
