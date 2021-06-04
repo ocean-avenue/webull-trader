@@ -402,6 +402,7 @@ class StrategyBase:
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
                         self.tracking_tickers[symbol]['resubmit_count'] = 0
+                        # TODO, send message
                 else:
                     self.print_log(
                         "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))

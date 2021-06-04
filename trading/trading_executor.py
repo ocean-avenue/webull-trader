@@ -75,6 +75,9 @@ class TradingExecutor:
         for strategy in self.strategies:
             strategy.on_end()
 
+        # notify if has short position
+        self.notify_if_has_short_positions()
+
         print("[{}] Trading ended!".format(utils.get_now()))
 
         # output today's proft loss
@@ -123,6 +126,11 @@ class TradingExecutor:
                 day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
             )
         return True
+
+    # notify me if has short positions
+    def notify_if_has_short_positions(self):
+        # TODO, send messages
+        pass
 
 
 def start():
