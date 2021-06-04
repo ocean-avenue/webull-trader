@@ -23,8 +23,7 @@ class DayTradingEarnings(StrategyBase):
         return SetupType.DAY_EARNINGS_GAP
 
     def check_entry(self, ticker, quote):
-        change_ratio = float(quote['pChRatio'])
-        if change_ratio >= self.min_earning_gap_ratio:
+        if 'pChRatio' in quote and float(quote['pChRatio']) >= self.min_earning_gap_ratio:
             return True
         return False
 
