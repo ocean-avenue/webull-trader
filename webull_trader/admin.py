@@ -60,6 +60,7 @@ class WebullOrderAdmin(admin.ModelAdmin):
         'symbol',
         'order_id',
         'ticker_id',
+        'setup',
         'action',
         'status',
         'total_quantity',

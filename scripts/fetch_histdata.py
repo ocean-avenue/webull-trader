@@ -177,6 +177,9 @@ def start(day=None):
             swing_position.buy_date = order.filled_time.date()
             # save
             swing_position.save()
+            # fill order setup
+            order.setup = swing_position.setup
+            order.save()
             continue
 
         # check swing trade
@@ -189,6 +192,9 @@ def start(day=None):
             swing_trade.sell_date = order.filled_time.date()
             # save
             swing_trade.save()
+            # fill order setup
+            order.setup = swing_trade.setup
+            order.save()
             continue
 
     # fill all order with setup
