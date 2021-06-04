@@ -170,13 +170,13 @@ class AlgorithmType:
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'Swing trade based on turtle trading rules (55 days).'
         if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
-            return 'Day/Swing trade with momentum / turtle (55 days) strategy.'
+            return 'Day trade with momentum / Swing trade with turtle (55 days).'
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
-            return 'Day/Swing trade with red to green / turtle (55 days) strategy.'
+            return 'Day trade with red to green / Swing trade with turtle (55 days).'
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return 'Day/Swing trade with breakout (20 minutes) / turtle (55 days) strategy.'
+            return 'Day trade with breakout (20 minutes) / Swing trade with turtle (55 days).'
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
-            return 'Day/Swing trade with earning gap up / turtle (55 days) strategy.'
+            return 'Day trade with earning gap up / Swing trade with turtle (55 days).'
         return UNKNOWN
 
     @staticmethod
