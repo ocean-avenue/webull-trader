@@ -145,6 +145,7 @@ class AlgorithmType:
     DAY_SWING_MOMO_TURTLE = 200
     DAY_SWING_RG_TURTLE = 201
     DAY_SWING_BREAKOUT_TURTLE = 202
+    DAY_SWING_EARNINGS_TURTLE = 203
 
     @staticmethod
     def tostr(val):
@@ -169,11 +170,13 @@ class AlgorithmType:
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'Swing trade based on turtle trading rules (55 days).'
         if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
-            return 'Day/Swing trade with momentum and turtle (55 days) strategy.'
+            return 'Day/Swing trade with momentum / turtle (55 days) strategy.'
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
-            return 'Day/Swing trade with red to green and turtle (55 days) strategy.'
+            return 'Day/Swing trade with red to green / turtle (55 days) strategy.'
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return 'Day/Swing trade with breakout (20 minutes) and turtle (55 days) strategy.'
+            return 'Day/Swing trade with breakout (20 minutes) / turtle (55 days) strategy.'
+        if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
+            return 'Day/Swing trade with earning gap up / turtle (55 days) strategy.'
         return UNKNOWN
 
     @staticmethod
@@ -189,7 +192,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_BREAKOUT:
             return 'DAY (BREAKOUT)'
         if val == AlgorithmType.DAY_EARNINGS:
-            return 'DAY (EARNING)'
+            return 'DAY (EARNINGS)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -200,6 +203,8 @@ class AlgorithmType:
             return 'DAY (R-G) / SWING (TURTLE)'
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
             return 'DAY (BREAKOUT) / SWING (TURTLE)'
+        if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
+            return 'DAY (EARNINGS) / SWING (TURTLE)'
         return UNKNOWN
 
     @staticmethod
@@ -225,6 +230,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_SWING_RG_TURTLE)),
             (AlgorithmType.DAY_SWING_BREAKOUT_TURTLE, AlgorithmType.tostr(
                 AlgorithmType.DAY_SWING_BREAKOUT_TURTLE)),
+            (AlgorithmType.DAY_SWING_EARNINGS_TURTLE, AlgorithmType.tostr(
+                AlgorithmType.DAY_SWING_EARNINGS_TURTLE)),
         )
 
 

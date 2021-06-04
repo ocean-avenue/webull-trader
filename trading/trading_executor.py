@@ -191,6 +191,13 @@ def start():
         # turtle trade 55 days
         strategies.append(SwingTurtle(
             paper=paper, entry_period=55, exit_period=20))
+    elif algo_type == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
+        # DAY_SWING_EARNINGS_TURTLE
+        # earnings trade
+        strategies.append(DayTradingEarnings(paper=paper))
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(
+            paper=paper, entry_period=55, exit_period=20))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return
