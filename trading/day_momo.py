@@ -121,12 +121,10 @@ class DayTradingMomo(StrategyBase):
             # check entry: current price above vwap and ema 9, entry if first candle make new high
             if self.check_entry(ticker, m2_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None or 'depth' not in quote:
+                ask_price = self.get_ask_price_from_quote(quote)
+                # bid_price = self.get_bid_price_from_quote(quote)
+                if ask_price == None:
                     return
-                ask_price = float(
-                    quote['depth']['ntvAggAskList'][0]['price'])
-                # bid_price = float(
-                #     quote['depth']['ntvAggBidList'][0]['price'])
                 # gap = (ask_price - bid_price) / bid_price
                 # if gap > self.max_bid_ask_gap_ratio:
                 #     self.print_log("<{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(

@@ -130,9 +130,9 @@ class DayTradingBreakout(StrategyBase):
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, m2_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None or 'depth' not in quote:
+                ask_price = self.get_ask_price_from_quote(quote)
+                if ask_price == None:
                     return
-                ask_price = float(quote['depth']['ntvAggAskList'][0]['price'])
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
                 # submit limit order at ask price

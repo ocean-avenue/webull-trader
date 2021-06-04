@@ -72,10 +72,9 @@ class DayTradingRedGreen(StrategyBase):
             # check entry, current price above prev day close with (prev price below or not long after market open)
             if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30)).seconds <= 300):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None or 'depth' not in quote:
+                ask_price = self.get_ask_price_from_quote(quote)
+                if ask_price == None:
                     return
-                ask_price = float(
-                    quote['depth']['ntvAggAskList'][0]['price'])
                 # check if ask_price is too high above prev day close
                 if (ask_price - prev_day_close) / prev_day_close > self.max_prev_day_close_gap_ratio:
                     self.print_log("<{}>[{}] gap too large, ask: {}, prev day close: {}, stop trading!".format(

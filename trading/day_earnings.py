@@ -70,10 +70,12 @@ class DayTradingEarnings(StrategyBase):
         # buy in pre/after market hour
         if utils.is_extended_market_hour():
             quote = webullsdk.get_quote(ticker_id=ticker_id)
-            if quote == None or 'depth' not in quote:
+            if quote == None:
                 return
             if self.check_entry(ticker, quote):
-                ask_price = float(quote['depth']['ntvAggAskList'][0]['price'])
+                ask_price = self.get_ask_price_from_quote(quote)
+                if ask_price == None:
+                    return
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
                 # submit limit order at ask price

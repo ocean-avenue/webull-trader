@@ -191,6 +191,20 @@ class StrategyBase:
             "pending_order_time": None,
         }
 
+    def get_ask_price_from_quote(self, quote):
+        if quote == None or 'depth' not in quote or 'ntvAggAskList' not in quote['depth']:
+            return None
+        if len(quote['depth']['ntvAggAskList']) == 0:
+            return None
+        return float(quote['depth']['ntvAggAskList'][0]['price'])
+
+    def get_bid_price_from_quote(self, quote):
+        if quote == None or 'depth' not in quote or 'ntvAggBidList' not in quote['depth']:
+            return None
+        if len(quote['depth']['ntvAggBidList']) == 0:
+            return None
+        return float(quote['depth']['ntvAggBidList'][0]['price'])
+
     def check_entry(self):
         return False
 
@@ -300,10 +314,9 @@ class StrategyBase:
                     # resubmit buy order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
-                        if quote == None:
+                        ask_price = self.get_ask_price_from_quote(quote)
+                        if ask_price == None:
                             return
-                        ask_price = float(
-                            quote['depth']['ntvAggAskList'][0]['price'])
                         buy_position_amount = self.get_buy_order_limit(symbol)
                         buy_quant = (int)(buy_position_amount / ask_price)
                         order_response = webullsdk.buy_limit_order(
