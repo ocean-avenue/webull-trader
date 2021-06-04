@@ -1114,3 +1114,54 @@ def swing_positions(request):
     }
 
     return render(request, 'webull_trader/swing_positions.html', context)
+
+
+@login_required
+def swing_positions_symbol(request, symbol=None):
+    position = get_object_or_404(SwingPosition, symbol=symbol)
+    daily_bars = get_list_or_404(SwingHistoricalDailyBar, symbol=symbol)
+    print(daily_bars)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_desc = utils.get_algo_type_desc()
+    algo_tag = utils.get_algo_type_tag()
+
+    # swing position
+    unit_cost = position.cost
+    quantity = position.quantity
+    total_cost = unit_cost * quantity
+    last_bar = daily_bars[-1]
+    last_price = last_bar.close
+    total_value = last_price * quantity
+    last_acc_stat = WebullAccountStatistics.objects.last()
+    net_liquidation = last_acc_stat.net_liquidation
+    portfolio_percent = total_value / net_liquidation
+    unrealized_pl = total_value - total_cost
+    unrealized_pl_percent = (total_value - total_cost) / total_cost
+
+    profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+        round(unrealized_pl, 2))
+    swing_position = {
+        "unit_cost": "${}".format(unit_cost),
+        "total_cost": "${}".format(round(total_cost, 2)),
+        "total_value": "${}".format(round(total_value, 2)),
+        "quantity": quantity,
+        "price": "${}".format(last_price),
+        "profit_loss": profit_loss,
+        "profit_loss_percent": "{}%".format(round(unrealized_pl_percent * 100, 2)),
+        "profit_loss_style": profit_loss_style,
+        "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
+    }
+
+    context = {
+        "symbol": symbol,
+        "account_type": account_type,
+        "algo_desc": algo_desc,
+        "algo_tag": algo_tag,
+        "swing_position": swing_position,
+    }
+
+    return render(request, 'webull_trader/swing_positions_symbol.html', context)

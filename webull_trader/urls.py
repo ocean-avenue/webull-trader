@@ -18,4 +18,5 @@ urlpatterns = [
     path('day-reports/hourly', views.day_reports_hourly, name='day_reports_hourly'),
     path('day-reports/daily', views.day_reports_daily, name='day_reports_daily'),
     path('swing-positions', views.swing_positions, name='swing_positions'),
+    path('swing-positions/<str:symbol>', views.swing_positions_symbol, name='swing_positions_symbol'),
 ]
