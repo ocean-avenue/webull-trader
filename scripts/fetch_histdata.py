@@ -3,6 +3,9 @@
 # fetch minute/daily historical candle data into database
 
 
+from webull_trader.models import WebullOrderNote
+
+
 def start(day=None):
     import time
     from datetime import date
@@ -187,6 +190,14 @@ def start(day=None):
             # save
             swing_trade.save()
             continue
+
+    # fill all order with setup
+    for order in all_day_orders:
+        order_id = order.order_id
+        order_note = WebullOrderNote.objects.filter(order_id=order_id).first()
+        if order_note:
+            order.setup = order_note.setup
+            order.save()
 
 
 if __name__ == "django.core.management.commands.shell":
