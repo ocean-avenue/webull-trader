@@ -83,6 +83,7 @@ class SetupType:
     DAY_EARNINGS_GAP = 6
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
+    UNKNOWN = 999
 
     @staticmethod
     def tostr(val):
@@ -127,6 +128,8 @@ class SetupType:
                 SetupType.SWING_20_DAYS_NEW_HIGH)),
             (SetupType.SWING_55_DAYS_NEW_HIGH, SetupType.tostr(
                 SetupType.SWING_55_DAYS_NEW_HIGH)),
+            (SetupType.UNKNOWN, SetupType.tostr(
+                SetupType.UNKNOWN)),
         )
 
 

@@ -109,6 +109,11 @@ class WebullOrder(models.Model):
     )
     paper = models.BooleanField(default=True)
 
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.UNKNOWN
+    )
+
     def __str__(self):
         return "[{}] <{}> {} total: {}, filled: {}, price: ${}, avg: ${}".format(
             self.placed_time,
