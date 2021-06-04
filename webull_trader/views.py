@@ -426,11 +426,11 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
                 gain)
 
-            entries = []
+            setup = None
             buy_order_notes = WebullOrderNote.objects.filter(
                 order_id=day_trade["buy_order_id"])
-            for buy_order_note in buy_order_notes:
-                entries.append(SetupType.tostr(buy_order_note.setup))
+            if len(buy_order_notes) > 0:
+                setup = SetupType.tostr(buy_order_notes[0].setup)
             notes = []
             sell_order_notes = WebullOrderNote.objects.filter(
                 order_id=day_trade["sell_order_id"])
@@ -444,7 +444,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
                 "sell_price": "${}".format(sell_price),
                 "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
                 "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
-                "entry": ", ".join(entries),
+                "setup": setup,
                 "notes": " ".join(notes),
                 "profit_loss": profit_loss,
                 "profit_loss_style": profit_loss_style,
