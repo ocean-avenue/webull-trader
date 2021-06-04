@@ -178,6 +178,7 @@ class StrategyBase:
             "exit_note": None,
             "prev_close": prev_close,
             "prev_high": prev_high,
+            "resubmit_count": 0,
         }
 
     def get_init_error_short_ticker(self, symbol, ticker_id):
@@ -278,6 +279,7 @@ class StrategyBase:
                 self.tracking_tickers[symbol]['pending_buy'] = False
                 self.tracking_tickers[symbol]['pending_order_id'] = None
                 self.tracking_tickers[symbol]['pending_order_time'] = None
+                self.tracking_tickers[symbol]['resubmit_count'] = 0
                 self.tracking_tickers[symbol]['order_filled_time'] = datetime.now(
                 )
                 self.print_log("Buy order <{}>[{}] filled, cost: {}".format(
@@ -296,7 +298,7 @@ class StrategyBase:
                     self.print_log(
                         "Buy order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
                     # resubmit buy order
-                    if resubmit:
+                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
                             return
@@ -314,10 +316,12 @@ class StrategyBase:
                         if 'orderId' in order_response:
                             utils.save_webull_order_note(
                                 order_response['orderId'], setup=self.get_setup(), note="Resubmit buy order.")
+                        self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_buy'] = False
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
+                        self.tracking_tickers[symbol]['resubmit_count'] = 0
                 else:
                     self.print_log(
                         "Failed to cancel timeout buy order <{}>[{}]!".format(symbol, ticker_id))
@@ -353,6 +357,7 @@ class StrategyBase:
             self.tracking_tickers[symbol]['pending_order_time'] = None
             self.tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             self.tracking_tickers[symbol]['exit_note'] = None
+            self.tracking_tickers[symbol]['resubmit_count'] = 0
             # last_profit_loss_rate = self.tracking_tickers[symbol]['last_profit_loss_rate']
             # # keep in track if > 10% profit, prevent buy back too quick
             # if last_profit_loss_rate != None and last_profit_loss_rate < 0.1:
@@ -374,7 +379,7 @@ class StrategyBase:
                     self.print_log(
                         "Sell order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
                     # resubmit sell order
-                    if resubmit:
+                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
                             return
@@ -391,10 +396,12 @@ class StrategyBase:
                         if 'orderId' in order_response:
                             utils.save_webull_order_note(
                                 order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
+                        self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_sell'] = False
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
+                        self.tracking_tickers[symbol]['resubmit_count'] = 0
                 else:
                     self.print_log(
                         "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))
