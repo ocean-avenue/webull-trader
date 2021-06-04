@@ -7,12 +7,12 @@ def start():
     from sdk import fmpsdk
     from scripts import utils
     from webull_trader.models import EarningCalendar
-    from webull_trader.enums import AlgorithmType
+    # from webull_trader.enums import AlgorithmType
 
     # only fetch earning for DAY_EARNINGS
-    algo_type = utils.get_algo_type()
-    if algo_type != AlgorithmType.DAY_EARNINGS:
-        return
+    # algo_type = utils.get_algo_type()
+    # if algo_type != AlgorithmType.DAY_EARNINGS:
+    #     return
 
     symbol_list = []
     earning_calendars = fmpsdk.get_earning_calendar()
