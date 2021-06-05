@@ -1182,6 +1182,9 @@ def swing_positions_symbol(request, symbol=None):
         "label": {"fontSize": 10},
     })
 
+    # fmp news
+    news = fmpsdk.get_news(symbol, count=16)
+
     context = {
         "symbol": symbol,
         "account_type": account_type,
@@ -1190,6 +1193,7 @@ def swing_positions_symbol(request, symbol=None):
         "position": swing_position,
         "d1_candle_data": d1_candle_data,
         "d1_trade_quantity_records": d1_trade_quantity_records,
+        "news": news,
     }
 
     cache.set('swing_positions_symbol_{}_cache'.format(

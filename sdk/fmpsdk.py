@@ -98,6 +98,14 @@ def get_intraday_sma(symbol, interval, period):
     )
 
 
+def get_news(symbol, count=20):
+    return _get_jsonparsed_data(
+        "{}/stock_news?tickers={}&limit={}&apikey={}".format(
+            FMP_API_BASE_URL, symbol, count, FMP_API_KEY
+        )
+    )
+
+
 def get_market_hour():
     return _get_jsonparsed_data(
         "{}/market-hours?apikey={}".format(
