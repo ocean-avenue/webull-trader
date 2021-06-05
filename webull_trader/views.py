@@ -3,10 +3,11 @@ from datetime import date
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import HistoricalDayTradePerformance, HistoricalMinuteBar, SwingHistoricalDailyBar, SwingPosition, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -1089,6 +1090,7 @@ def swing_positions(request):
 @login_required
 def swing_positions_symbol(request, symbol=None):
     position = get_object_or_404(SwingPosition, symbol=symbol)
+    watchlist = get_object_or_404(SwingWatchlist, symbol=symbol)
     daily_bars = get_list_or_404(SwingHistoricalDailyBar, symbol=symbol)
     print(daily_bars)
 
@@ -1098,12 +1100,38 @@ def swing_positions_symbol(request, symbol=None):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
+    # fmp quote data
+    quote = fmpsdk.get_quote(symbol)
+    eps = None
+    if quote["eps"]:
+        eps = round(quote["eps"], 2)
+    pe = None
+    if quote["pe"]:
+        pe = round(quote["pe"], 2)
+    sector = None
+    if watchlist.sector:
+        sector = watchlist.sector
+    next_earning = None
+    # search next earning
+    earnings = EarningCalendar.objects.filter(symbol=symbol)
+    for earning in earnings:
+        if earning.earning_date >= date.today():
+            next_earning = "{} ({})".format(
+                earning.earning_date, earning.earning_time)
+    quote_data = {
+        "market_value": utils.millify(quote["marketCap"]),
+        "free_float": utils.millify(quote['sharesOutstanding']),
+        "pe": pe,
+        "eps": eps,
+        "sector": sector,
+        "next_earning": next_earning,
+    }
+
     # swing position
     unit_cost = position.cost
     quantity = position.quantity
     total_cost = unit_cost * quantity
-    last_bar = daily_bars[-1]
-    last_price = last_bar.close
+    last_price = quote['price']
     total_value = last_price * quantity
     last_acc_stat = WebullAccountStatistics.objects.last()
     net_liquidation = last_acc_stat.net_liquidation
@@ -1129,7 +1157,8 @@ def swing_positions_symbol(request, symbol=None):
         "symbol": symbol,
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "swing_position": swing_position,
+        "quote": quote_data,
+        "position": swing_position,
     }
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)

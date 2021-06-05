@@ -38,6 +38,7 @@ SWING_WATCHLIST_SYMBOLS = [
 
 def start():
     from scripts import utils
+    from sdk import fmpsdk
     from webull_trader import enums
     from webull_trader.models import TradingSettings, SwingWatchlist
 
@@ -78,6 +79,12 @@ def start():
         watchlist = SwingWatchlist.objects.filter(symbol=symbol).first()
         if not watchlist:
             watchlist = SwingWatchlist(symbol=symbol)
+        # get profile from FMP
+        profile = fmpsdk.get_profile(symbol)
+        if profile:
+            watchlist.sector = profile["sector"]
+            watchlist.exchange = profile["exchangeShortName"]
+            watchlist.is_etf = profile["isEtf"]
         watchlist.save()
 
     print("[{}] Swing watchlist initialized successful".format(utils.get_now()))

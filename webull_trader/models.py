@@ -310,6 +310,10 @@ class SwingWatchlist(models.Model):
         choices=enums.ScreenerType.tochoices(),
         default=enums.ScreenerType.MANUAL
     )
+    units = models.PositiveSmallIntegerField(default=1)
+    sector = models.CharField(max_length=64, default="Technology")
+    exchange = models.CharField(max_length=64, default="NASDAQ")
+    is_etf = models.BooleanField(default=False)
 
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)

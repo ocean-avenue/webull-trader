@@ -267,6 +267,9 @@ class SwingWatchlistAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
         'screener_type',
+        'sector',
+        'units',
+        'is_etf',
         'updated_date',
         'created_date',
     ]

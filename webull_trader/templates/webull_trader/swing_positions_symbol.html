@@ -24,12 +24,87 @@
   </div>
 
   <div class="row">
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.market_value|safe}}</h3>
+              <p class="mb-2">Market Cap</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.free_float|safe}}</h3>
+              <p class="mb-2">Free Float</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.pe|safe}}</h3>
+              <p class="mb-2">P/E</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.eps|safe}}</h3>
+              <p class="mb-2">EPS</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.sector|safe}}</h3>
+              <p class="mb-2">Sector</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.next_earning|safe}}</h3>
+              <p class="mb-2">Earning Date</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
     <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.unit_cost|safe}}</h3>
+              <h3 class="mb-2">{{position.unit_cost|safe}}</h3>
               <p class="mb-2">Unit Cost</p>
             </div>
           </div>
@@ -41,7 +116,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.total_cost|safe}}</h3>
+              <h3 class="mb-2">{{position.total_cost|safe}}</h3>
               <p class="mb-2">Total Cost</p>
             </div>
           </div>
@@ -53,7 +128,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.total_value|safe}}</h3>
+              <h3 class="mb-2">{{position.total_value|safe}}</h3>
               <p class="mb-2">Total Value</p>
             </div>
           </div>
@@ -65,7 +140,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.quantity|safe}}</h3>
+              <h3 class="mb-2">{{position.quantity|safe}}</h3>
               <p class="mb-2">Quantity</p>
             </div>
           </div>
@@ -77,7 +152,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.price|safe}}</h3>
+              <h3 class="mb-2">{{position.price|safe}}</h3>
               <p class="mb-2">Price</p>
             </div>
           </div>
@@ -89,7 +164,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2 {{swing_position.profit_loss_style}}">{{swing_position.profit_loss|safe}}</h3>
+              <h3 class="mb-2 {{position.profit_loss_style}}">{{position.profit_loss|safe}}</h3>
               <p class="mb-2">P&L</p>
             </div>
           </div>
@@ -101,7 +176,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2 {{swing_position.profit_loss_style}}">{{swing_position.profit_loss_percent|safe}}</h3>
+              <h3 class="mb-2 {{position.profit_loss_style}}">{{position.profit_loss_percent|safe}}</h3>
               <p class="mb-2">P/L %</p>
             </div>
           </div>
@@ -113,7 +188,7 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
-              <h3 class="mb-2">{{swing_position.portfolio_percent|safe}}</h3>
+              <h3 class="mb-2">{{position.portfolio_percent|safe}}</h3>
               <p class="mb-2">Portfolio %</p>
             </div>
           </div>

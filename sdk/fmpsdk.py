@@ -1,7 +1,7 @@
 import json
 from urllib.request import urlopen
 from sdk.config import FMP_API_BASE_URL
-from credentials.fmp import FMP_API_KEY
+from credentials.fmpcred import FMP_API_KEY
 
 
 def _get_jsonparsed_data(url):
@@ -40,6 +40,14 @@ def get_earning_calendar(from_date=None, to_date=None):
     )
 
 
+def get_quote(symbol):
+    return _get_jsonparsed_data(
+        "{}/quote/{}?apikey={}".format(
+            FMP_API_BASE_URL, symbol, FMP_API_KEY
+        )
+    )[0]
+
+
 def get_quotes(symbol_list):
     return _get_jsonparsed_data(
         "{}/quote/{}?apikey={}".format(
@@ -53,6 +61,17 @@ def get_quote_short(symbol):
         "{}/quote-short/{}?apikey={}".format(FMP_API_BASE_URL,
                                              symbol, FMP_API_KEY)
     )[0]
+
+
+def get_profile(symbol):
+    profiles = _get_jsonparsed_data(
+        "{}/profile/{}?apikey={}".format(
+            FMP_API_BASE_URL, symbol, FMP_API_KEY
+        )
+    )
+    if len(profiles) > 0:
+        return profiles[0]
+    return None
 
 
 def get_daily_sma(symbol, period):
