@@ -10,14 +10,14 @@ from sdk import webullsdk
 from scripts import utils
 
 
-class DayTradingEarnings(StrategyBase):
+class DayTradingEarningsOvernight(StrategyBase):
 
     def __init__(self, paper):
         super().__init__(paper=paper)
         self.trading_price = {}
 
     def get_tag(self):
-        return "DayTradingEarnings"
+        return "DayTradingEarningsOvernight"
 
     def get_setup(self):
         return SetupType.DAY_EARNINGS_GAP

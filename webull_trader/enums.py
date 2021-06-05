@@ -140,6 +140,8 @@ class AlgorithmType:
     DAY_MOMENTUM_NEW_HIGH = 3
     DAY_BREAKOUT = 4
     DAY_EARNINGS = 5
+    DAY_EARNINGS_OVERNIGHT = 6
+    DAY_EARNINGS_BREAKOUT = 7
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -164,7 +166,11 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_BREAKOUT:
             return 'Breakout day trade, entry if price reach 20 minutes new high.'
         if val == AlgorithmType.DAY_EARNINGS:
-            return 'Earning date day trade, entry if gap up.'
+            return 'Earning date day trade, entry if gap up and exit trade intraday.'
+        if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
+            return 'Earning date day trade, entry if gap up and may hold position overnight.'
+        if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
+            return 'Earning date day trade, entry if gap up and do breakout trade if no earning event.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -193,6 +199,10 @@ class AlgorithmType:
             return 'DAY (BREAKOUT)'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNINGS)'
+        if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
+            return 'DAY (EARNINGS OVERNIGHT)'
+        if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
+            return 'DAY (EARNINGS BREAKOUT)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -222,6 +232,10 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT)),
             (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS)),
+            (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(
+                AlgorithmType.DAY_EARNINGS_OVERNIGHT)),
+            (AlgorithmType.DAY_EARNINGS_BREAKOUT, AlgorithmType.tostr(
+                AlgorithmType.DAY_EARNINGS_BREAKOUT)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(

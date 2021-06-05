@@ -142,7 +142,7 @@ def start():
     from trading.day_momo_newhigh import DayTradingMomoNewHigh
     from trading.day_redgreen import DayTradingRedGreen
     from trading.day_breakout import DayTradingBreakout
-    from trading.day_earnings import DayTradingEarnings
+    from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
@@ -168,7 +168,11 @@ def start():
             paper=paper, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
-        strategies.append(DayTradingEarnings(paper=paper))
+        # TODO
+        strategies.append(DayTradingEarningsOvernight(paper=paper))
+    elif algo_type == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
+        # DAY_EARNINGS: earnings overnight trade
+        strategies.append(DayTradingEarningsOvernight(paper=paper))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days
         strategies.append(SwingTurtle(
@@ -194,7 +198,7 @@ def start():
     elif algo_type == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
         # DAY_SWING_EARNINGS_TURTLE
         # earnings trade
-        strategies.append(DayTradingEarnings(paper=paper))
+        strategies.append(DayTradingEarningsOvernight(paper=paper))
         # turtle trade 55 days
         strategies.append(SwingTurtle(
             paper=paper, entry_period=55, exit_period=20))
