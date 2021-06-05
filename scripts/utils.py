@@ -1555,7 +1555,7 @@ def get_swing_daily_candle_data_for_render(symbol):
     }
     for i in range(0, len(daily_bars)):
         candle = daily_bars[i]
-        candle_data["times"].append(candle.date.strftime("%m/%d"))
+        candle_data["times"].append(candle.date.strftime("%Y/%m/%d"))
         # open, close, low, high
         candle_data["candles"].append(
             [candle.open, candle.close, candle.low, candle.high])
@@ -1570,6 +1570,14 @@ def get_swing_daily_candle_data_for_render(symbol):
                 'itemStyle': {'color': config.PROFIT_COLOR},
             })
     return candle_data
+
+
+def get_swing_daily_candle_high_by_date(symbol, date):
+    day_bar = SwingHistoricalDailyBar.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    if day_bar:
+        return day_bar.high
+    return 0
 
 
 def get_trade_stat_record_for_render(symbol, trade, date):

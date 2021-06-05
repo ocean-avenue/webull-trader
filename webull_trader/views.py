@@ -344,7 +344,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         m1_trade_quantity_records.append({
             "name": "+{}".format(buy_order.filled_quantity),
             "coord": m1_coord,
-            "value": buy_order.avg_price,
+            "value": buy_order.filled_quantity,
             "itemStyle": {"color": config.BUY_COLOR},
             "label": {"fontSize": 10},
         })
@@ -364,7 +364,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         m2_trade_quantity_records.append({
             "name": "+{}".format(buy_order.filled_quantity),
             "coord": m2_coord,
-            "value": buy_order.avg_price,
+            "value": buy_order.filled_quantity,
             "itemStyle": {"color": config.BUY_COLOR},
             "label": {"fontSize": 10},
         })
@@ -385,7 +385,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         m1_trade_quantity_records.append({
             "name": "-{}".format(sell_order.filled_quantity),
             "coord": m1_coord,
-            "value": sell_order.avg_price,
+            "value": sell_order.filled_quantity,
             "itemStyle": {"color": config.SELL_COLOR},
             "label": {"fontSize": 10},
         })
@@ -405,7 +405,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         m2_trade_quantity_records.append({
             "name": "-{}".format(sell_order.filled_quantity),
             "coord": m2_coord,
-            "value": sell_order.avg_price,
+            "value": sell_order.filled_quantity,
             "itemStyle": {"color": config.SELL_COLOR},
             "label": {"fontSize": 10},
         })
@@ -1154,6 +1154,22 @@ def swing_positions_symbol(request, symbol=None):
     # calculate daily candle
     d1_candle_data = utils.get_swing_daily_candle_data_for_render(symbol)
 
+    # 1m trade records
+    d1_trade_quantity_records = []
+    d1_coord = [
+        position.buy_date.strftime("%Y/%m/%d"),
+        # use high price avoid block candle
+        utils.get_swing_daily_candle_high_by_date(
+            symbol, position.buy_date) + 0.01,
+    ]
+    d1_trade_quantity_records.append({
+        "name": "+{}".format(position.quantity),
+        "coord": d1_coord,
+        "value": position.quantity,
+        "itemStyle": {"color": config.BUY_COLOR},
+        "label": {"fontSize": 10},
+    })
+
     context = {
         "symbol": symbol,
         "account_type": account_type,
@@ -1161,6 +1177,7 @@ def swing_positions_symbol(request, symbol=None):
         "quote": quote_data,
         "position": swing_position,
         "d1_candle_data": d1_candle_data,
+        "d1_trade_quantity_records": d1_trade_quantity_records,
     }
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)

@@ -319,6 +319,21 @@
           borderColor: null,
           borderColor0: null,
         },
+        markPoint: {
+          label: {
+            normal: {
+              formatter: function (param) {
+                return param.name;
+              }
+            }
+          },
+          data: {{ d1_trade_quantity_records|safe }},
+          tooltip: {
+            formatter: function (param) {
+              return param.name + '<br>' + (param.data.coord || '');
+            }
+          }
+        },
       },
       {
         name: 'Volume',
