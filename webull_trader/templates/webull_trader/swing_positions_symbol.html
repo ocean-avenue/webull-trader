@@ -207,7 +207,7 @@
           <div class="align-self-center chart chart-md">
             <div
               id="d1-candle-chart"
-              style="width: 100%; min-height: 400px"
+              style="width: 100%; min-height: 600px"
             ></div>
           </div>
         </div>
@@ -229,7 +229,7 @@
       },
     },
     legend: {
-      data: ['Daily Candle', 'Volume']
+      data: ['Daily Candle', 'SMA 55', 'SMA 120', 'Volume', 'RSI 10']
     },
     axisPointer: {
       link: {xAxisIndex: 'all'},
@@ -241,13 +241,19 @@
       {
         left: '3%',
         right: '4%',
-        height: '60%'
+        height: '50%'
       },
       {
         left: '3%',
         right: '4%',
-        top: '75%',
-        height: '20%'
+        top: '65%',
+        height: '15%'
+      },
+      {
+        left: '3%',
+        right: '4%',
+        top: '80%',
+        height: '15%'
       }
     ],
     xAxis: [
@@ -279,6 +285,20 @@
         min: 'dataMin',
         max: 'dataMax'
       },
+      {
+        type: 'category',
+        gridIndex: 2,
+        data: {{d1_candle_data.times|safe}},
+        scale: true,
+        boundaryGap: true,
+        axisLine: {onZero: false},
+        axisTick: {show: false},
+        splitLine: {show: false},
+        axisLabel: {show: false},
+        splitNumber: 20,
+        min: 'dataMin',
+        max: 'dataMax'
+      },
     ],
     yAxis: [
       {
@@ -293,7 +313,14 @@
       {
         scale: true,
         gridIndex: 1,
-        splitNumber: 2,
+        axisLabel: {show: false},
+        axisLine: {show: false},
+        axisTick: {show: false},
+        splitLine: {show: false}
+      },
+      {
+        scale: true,
+        gridIndex: 2,
         axisLabel: {show: false},
         axisLine: {show: false},
         axisTick: {show: false},
@@ -336,10 +363,41 @@
         },
       },
       {
-        name: 'Volume',
-        type: 'bar',
+        name: 'SMA 55',
+        type: 'line',
+        data: {{d1_candle_data.sma_55|safe}},
+        smooth: true,
+        showSymbol: false,
+        color: '#ff7518',
+        lineStyle: {
+          width: 1,
+        }
+      },
+      {
+        name: 'SMA 120',
+        type: 'line',
+        data: {{d1_candle_data.sma_120|safe}},
+        smooth: true,
+        showSymbol: false,
+        color: '#d0312d',
+        lineStyle: {
+          width: 1,
+        }
+      },
+      {
+        name: 'RSI 10',
+        type: 'line',
+        color: '#45b6fe',
         xAxisIndex: 1,
         yAxisIndex: 1,
+        showSymbol: false,
+        data: {{d1_candle_data.rsi_10|safe}},
+      },
+      {
+        name: 'Volume',
+        type: 'bar',
+        xAxisIndex: 2,
+        yAxisIndex: 2,
         data: {{d1_candle_data.volumes|safe}},
       },
     ]

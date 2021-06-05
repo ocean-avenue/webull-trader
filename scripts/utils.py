@@ -1552,6 +1552,9 @@ def get_swing_daily_candle_data_for_render(symbol):
         "times": [],
         "candles": [],
         "volumes": [],
+        "rsi_10": [],
+        "sma_55": [],
+        "sma_120": [],
     }
     for i in range(0, len(daily_bars)):
         candle = daily_bars[i]
@@ -1569,6 +1572,9 @@ def get_swing_daily_candle_data_for_render(symbol):
                 'value': candle.volume,
                 'itemStyle': {'color': config.PROFIT_COLOR},
             })
+        candle_data["rsi_10"].append(round(candle.rsi_10, 2))
+        candle_data["sma_55"].append(round(candle.sma_55, 2))
+        candle_data["sma_120"].append(round(candle.sma_120, 2))
     return candle_data
 
 
