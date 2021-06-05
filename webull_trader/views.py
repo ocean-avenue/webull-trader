@@ -1029,6 +1029,10 @@ def day_reports_daily(request):
 @login_required
 def swing_positions(request):
 
+    cached_context = cache.get('swing_positions_cache')
+    if cached_context:
+        return render(request, 'webull_trader/swing_positions.html', cached_context)
+
     # account type data
     account_type = utils.get_account_type_for_render()
 
@@ -1084,11 +1088,19 @@ def swing_positions(request):
         "swing_positions": swing_positions,
     }
 
+    cache.set('swing_positions_cache', context, CACHE_TIMEOUT)
+
     return render(request, 'webull_trader/swing_positions.html', context)
 
 
 @login_required
 def swing_positions_symbol(request, symbol=None):
+
+    cached_context = cache.get(
+        'swing_positions_symbol_{}_cache'.format(symbol))
+    if cached_context:
+        return render(request, 'webull_trader/swing_positions_symbol.html', cached_context)
+
     position = get_object_or_404(SwingPosition, symbol=symbol)
     watchlist = get_object_or_404(SwingWatchlist, symbol=symbol)
 
@@ -1179,5 +1191,8 @@ def swing_positions_symbol(request, symbol=None):
         "d1_candle_data": d1_candle_data,
         "d1_trade_quantity_records": d1_trade_quantity_records,
     }
+
+    cache.set('swing_positions_symbol_{}_cache'.format(
+        symbol), context, CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)
