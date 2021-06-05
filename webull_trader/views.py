@@ -19,8 +19,7 @@ def index(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     # account statistics data
     net_account_value = {
@@ -92,8 +91,7 @@ def index(request):
 
     return render(request, 'webull_trader/index.html', {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "net_account_value": net_account_value,
         "day_profit_loss": day_profit_loss,
         "net_assets": net_assets,
@@ -109,8 +107,7 @@ def day_analytics(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     # calendar events
     profit_events = {
@@ -162,8 +159,7 @@ def day_analytics(request):
 
     return render(request, 'webull_trader/day_analytics.html', {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "initial_date": today.strftime("%Y-%m-%d"),
         "profit_events": profit_events,
         "loss_events": loss_events,
@@ -179,8 +175,7 @@ def day_analytics_date(request, date=None):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     # day profit loss
     day_profit_loss = utils.get_day_profit_loss_for_render(acc_stat)
@@ -254,8 +249,7 @@ def day_analytics_date(request, date=None):
 
     return render(request, 'webull_trader/day_analytics_date.html', {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "date": date,
         "day_profit_loss": day_profit_loss,
         "trades_count": daytrade_perf.trades,
@@ -281,8 +275,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     timestamps = []
     # for load data frame
@@ -473,8 +466,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         "date": date,
         "symbol": symbol,
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "m1_candle_data": m1_candle_data,
         "m2_candle_data": m2_candle_data,
         "m5_candle_data": m5_candle_data,
@@ -502,8 +494,7 @@ def day_reports_price(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -553,8 +544,7 @@ def day_reports_price(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Entry Price",
         "labels": utils.get_entry_price_range_labels(),
         "profit_loss": price_profit_loss,
@@ -579,8 +569,7 @@ def day_reports_mktcap(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -593,8 +582,7 @@ def day_reports_mktcap(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Market Cap",
         "labels": utils.get_market_cap_range_labels(),
         "profit_loss": stat_render['profit_loss'],
@@ -619,8 +607,7 @@ def day_reports_float(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -633,8 +620,7 @@ def day_reports_float(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Free Float",
         "labels": utils.get_free_float_range_labels(),
         "profit_loss": stat_render['profit_loss'],
@@ -659,8 +645,7 @@ def day_reports_turnover(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -673,8 +658,7 @@ def day_reports_turnover(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Turnover %",
         "labels": utils.get_turnover_ratio_range_labels(),
         "profit_loss": stat_render['profit_loss'],
@@ -699,8 +683,7 @@ def day_reports_short(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -713,8 +696,7 @@ def day_reports_short(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Short Ratio",
         "labels": utils.get_short_float_range_labels(),
         "profit_loss": stat_render['profit_loss'],
@@ -739,8 +721,7 @@ def day_reports_gap(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -793,8 +774,7 @@ def day_reports_gap(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Gap %",
         "labels": utils.get_gap_range_labels(),
         "profit_loss": gap_profit_loss,
@@ -819,8 +799,7 @@ def day_reports_relvol(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -877,8 +856,7 @@ def day_reports_relvol(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Relative Volume",
         "labels": utils.get_relative_volume_labels(),
         "profit_loss": relvol_profit_loss,
@@ -903,8 +881,7 @@ def day_reports_holding(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -957,8 +934,7 @@ def day_reports_holding(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Holding Time",
         "labels": utils.get_holding_time_labels(),
         "profit_loss": holding_profit_loss,
@@ -983,8 +959,7 @@ def day_reports_hourly(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
@@ -993,8 +968,7 @@ def day_reports_hourly(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Hourly",
         "hourly_labels": utils.get_market_hourly_interval_labels(),
         "hourly_profit_loss": hourly_stat['profit_loss'],
@@ -1019,8 +993,7 @@ def day_reports_daily(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     daily_labels = []
     daily_profit_loss = []
@@ -1038,8 +1011,7 @@ def day_reports_daily(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "title": "Hourly",
         "daily_labels": daily_labels,
         "daily_profit_loss": daily_profit_loss,
@@ -1060,8 +1032,7 @@ def swing_positions(request):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     positions = SwingPosition.objects.all()
     last_acc_stat = WebullAccountStatistics.objects.last()
@@ -1108,8 +1079,7 @@ def swing_positions(request):
 
     context = {
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "swing_positions": swing_positions,
     }
 
@@ -1126,8 +1096,7 @@ def swing_positions_symbol(request, symbol=None):
     account_type = utils.get_account_type_for_render()
 
     # algo type data
-    algo_desc = utils.get_algo_type_desc()
-    algo_tag = utils.get_algo_type_tag()
+    algo_type_texts = utils.get_algo_type_texts()
 
     # swing position
     unit_cost = position.cost
@@ -1159,8 +1128,7 @@ def swing_positions_symbol(request, symbol=None):
     context = {
         "symbol": symbol,
         "account_type": account_type,
-        "algo_desc": algo_desc,
-        "algo_tag": algo_tag,
+        "algo_type_texts": algo_type_texts,
         "swing_position": swing_position,
     }
 

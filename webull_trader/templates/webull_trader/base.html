@@ -229,15 +229,16 @@
             </li>
           </ul>
 
+          {% for algo_type in algo_type_texts %}
           <div class="sidebar-cta">
             <div class="sidebar-cta-content">
-              <strong class="d-inline-block mb-2">{{algo_tag|safe}}</strong>
+              <strong class="d-inline-block mb-2">{{algo_type.tag|safe}}</strong>
               <div class="mb-3 text-sm">
-                {{algo_desc|safe}}
+                {{algo_type.desc|safe}}
               </div>
             </div>
           </div>
-
+          {% endfor %}
         </div>
       </nav>
       <div class="main">

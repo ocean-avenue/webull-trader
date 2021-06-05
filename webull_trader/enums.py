@@ -176,13 +176,13 @@ class AlgorithmType:
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'Swing trade based on turtle trading rules (55 days).'
         if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
-            return 'Day trade with momentum / Swing trade with turtle (55 days).'
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_MOMENTUM), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
-            return 'Day trade with red to green / Swing trade with turtle (55 days).'
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return 'Day trade with breakout (20 minutes) / Swing trade with turtle (55 days).'
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
-            return 'Day trade with earning gap up / Swing trade with turtle (55 days).'
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_EARNINGS), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
 
     @staticmethod
@@ -208,13 +208,13 @@ class AlgorithmType:
         if val == AlgorithmType.SWING_TURTLE_55:
             return 'SWING (TURTLE 55)'
         if val == AlgorithmType.DAY_SWING_MOMO_TURTLE:
-            return 'DAY (MOMO) / SWING (TURTLE)'
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_MOMENTUM), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
-            return 'DAY (R-G) / SWING (TURTLE)'
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return 'DAY (BREAKOUT) / SWING (TURTLE)'
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
-            return 'DAY (EARNINGS) / SWING (TURTLE)'
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_EARNINGS), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
 
     @staticmethod

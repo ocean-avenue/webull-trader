@@ -1393,20 +1393,33 @@ def get_gap_by_symbol_date(symbol, date):
     return 0.0
 
 
-def get_algo_type_desc():
+def get_algo_type_texts():
+    tags = get_algo_type_tags()
+    descs = get_algo_type_descs()
+    texts = []
+    # tags, descs should have same length
+    for i in range(0, len(tags)):
+        texts.append({
+            "tag": tags[i],
+            "desc": descs[i],
+        })
+    return texts
+
+
+def get_algo_type_descs():
     description = enums.AlgorithmType.todesc(enums.AlgorithmType.DAY_MOMENTUM)
     settings = TradingSettings.objects.first()
     if settings:
         description = enums.AlgorithmType.todesc(settings.algo_type)
-    return description
+    return description.split(" / ")
 
 
-def get_algo_type_tag():
+def get_algo_type_tags():
     tag = enums.AlgorithmType.totag(enums.AlgorithmType.DAY_MOMENTUM)
     settings = TradingSettings.objects.first()
     if settings:
         tag = enums.AlgorithmType.totag(settings.algo_type)
-    return tag
+    return tag.split(" / ")
 
 
 # utils for render UI
