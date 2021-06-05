@@ -1091,8 +1091,6 @@ def swing_positions(request):
 def swing_positions_symbol(request, symbol=None):
     position = get_object_or_404(SwingPosition, symbol=symbol)
     watchlist = get_object_or_404(SwingWatchlist, symbol=symbol)
-    daily_bars = get_list_or_404(SwingHistoricalDailyBar, symbol=symbol)
-    print(daily_bars)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -1153,12 +1151,16 @@ def swing_positions_symbol(request, symbol=None):
         "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
     }
 
+    # calculate daily candle
+    d1_candle_data = utils.get_swing_daily_candle_data_for_render(symbol)
+
     context = {
         "symbol": symbol,
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
         "quote": quote_data,
         "position": swing_position,
+        "d1_candle_data": d1_candle_data,
     }
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)

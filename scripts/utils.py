@@ -1515,11 +1515,6 @@ def get_minute_candle_data_for_render(bars):
 
 
 def get_last_60d_daily_candle_data_for_render(symbol, date):
-    candle_data = {
-        "times": [],
-        "candles": [],
-        "volumes": [],
-    }
     daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
     end_idx = -1
     for i in range(0, len(daily_bars)):
@@ -1533,6 +1528,32 @@ def get_last_60d_daily_candle_data_for_render(symbol, date):
         "volumes": [],
     }
     for i in range(start_idx, end_idx):
+        candle = daily_bars[i]
+        candle_data["times"].append(candle.date.strftime("%m/%d"))
+        # open, close, low, high
+        candle_data["candles"].append(
+            [candle.open, candle.close, candle.low, candle.high])
+        if candle.close < candle.open:
+            candle_data['volumes'].append({
+                'value': candle.volume,
+                'itemStyle': {'color': config.LOSS_COLOR},
+            })
+        else:
+            candle_data['volumes'].append({
+                'value': candle.volume,
+                'itemStyle': {'color': config.PROFIT_COLOR},
+            })
+    return candle_data
+
+
+def get_swing_daily_candle_data_for_render(symbol):
+    daily_bars = SwingHistoricalDailyBar.objects.filter(symbol=symbol)
+    candle_data = {
+        "times": [],
+        "candles": [],
+        "volumes": [],
+    }
+    for i in range(0, len(daily_bars)):
         candle = daily_bars[i]
         candle_data["times"].append(candle.date.strftime("%m/%d"))
         # open, close, low, high
