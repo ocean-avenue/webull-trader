@@ -12,8 +12,8 @@ def start(day=None):
 
     if day == None:
         day = date.today()
-    all_day_orders = WebullOrder.objects.filter(placed_time__year=str(
-        day.year), placed_time__month=str(day.month), placed_time__day=str(day.day))
+    all_day_orders = WebullOrder.objects.filter(filled_time__year=str(
+        day.year), filled_time__month=str(day.month), filled_time__day=str(day.day))
     # get all symbols orders in today's orders
     symbol_list = []
     ticker_id_list = []
