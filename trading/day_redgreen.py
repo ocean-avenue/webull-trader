@@ -60,7 +60,7 @@ class DayTradingRedGreen(StrategyBase):
                 del self.tracking_tickers[symbol]
                 return
 
-            if not utils.check_bars_has_volume(m2_bars):
+            if not utils.check_bars_has_volume(m2_bars, time_scale=2):
                 self.print_log(
                     "<{}>[{}] Charts has not enough volume, stop trading!".format(symbol, ticker_id))
                 # remove from monitor

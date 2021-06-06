@@ -123,7 +123,7 @@ class DayTradingBreakout(StrategyBase):
                 del self.tracking_tickers[symbol]
                 return
 
-            if not utils.check_bars_has_volume(m1_bars):
+            if not utils.check_bars_has_volume(m1_bars, time_scale=1):
                 self.print_log(
                     "<{}>[{}] Charts has not enough volume, stop trading!".format(symbol, ticker_id))
                 # remove from monitor

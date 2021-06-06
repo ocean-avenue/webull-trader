@@ -273,6 +273,10 @@ def get_1d_bars(ticker_id=None, count=20):
 # symbol = 'AAPL'
 # ticker_id = 913256135
 
+
+def get_sample_ticker():
+    return 913256135
+
 # {'orderId': 41947352}
 
 

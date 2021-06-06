@@ -62,15 +62,15 @@ def local_time_minute_delay(t):
 
 # for multi minutes
 
-def local_time_minute_period(t, period):
+def local_time_minute_scale(t, time_scale):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
     minute = localtz.minute
-    res = minute % period
+    res = minute % time_scale
     minute -= res
     if res > 0:
-        minute += period
+        minute += time_scale
     minute = str(minute)
     if minute == "60":
         minute = "00"
@@ -238,25 +238,26 @@ def convert_5m_bars(bars):
     return pd.DataFrame()
 
 
-def check_bars_updated(bars, period=1):
+def check_bars_updated(bars, time_scale=1):
     """
     check if have valid latest chart data, delay no more than 1 minute
     """
     latest_index = bars.index[-1]
     latest_timestamp = int(datetime.timestamp(latest_index.to_pydatetime()))
     current_timestamp = int(datetime.timestamp(datetime.now()))
-    if current_timestamp - latest_timestamp <= 60 * period:
+    if current_timestamp - latest_timestamp <= 60 * time_scale:
         return True
     return False
 
 
-def check_bars_continue(bars, period=1):
+def check_bars_continue(bars, time_scale=1, period=10):
     """
     check if candle bar is continue in 1 minute of time scale
     """
     last_minute = -1
     is_continue = True
-    for index, _ in bars.iterrows():
+    period_bars = bars.tail(period)
+    for index, _ in period_bars.iterrows():
         time = index.to_pydatetime()
         if last_minute == -1:
             last_minute = time.minute
@@ -264,20 +265,21 @@ def check_bars_continue(bars, period=1):
         current_minute = time.minute
         if time.minute == 0:
             current_minute = 60
-        if current_minute - last_minute != period:
+        if current_minute - last_minute != time_scale:
             is_continue = False
             break
         last_minute = time.minute
     return is_continue
 
 
-def check_bars_has_volume(bars, period=1):
+def check_bars_has_volume(bars, time_scale=1, period=10):
     """
     check if bar chart has enough volume
     """
     has_volume = True
-    confirm_avg_volume = get_avg_confirm_volume() * period
-    for index, row in bars.iterrows():
+    period_bars = bars.tail(period)
+    confirm_avg_volume = get_avg_confirm_volume() * time_scale
+    for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         volume = row["volume"]
         require_confirm_volume = confirm_avg_volume
@@ -1795,16 +1797,16 @@ def get_hourly_stat_from_trades_for_render(day_trades):
     }
 
 
-def get_minutes_trade_marker_from_orders_for_render(orders, candles, minutes, color):
+def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale, color):
     trade_price_records = []
     trade_quantity_records = []
 
     for order in orders:
         coord = [
-            local_time_minute_period(order.filled_time, minutes),
+            local_time_minute_scale(order.filled_time, time_scale),
             # use high price avoid block candle
             get_minute_candle_high_by_time_minute(
-                candles, local_time_minute_period(order.filled_time, minutes)) + 0.01,
+                candles, local_time_minute_scale(order.filled_time, time_scale)) + 0.01,
         ]
         trade_price_records.append({
             "name": "{}".format(order.avg_price),
