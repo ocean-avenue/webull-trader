@@ -36,7 +36,7 @@ class TradingLogAdmin(admin.ModelAdmin):
         'date',
         'tag',
         'trading_hour',
-        'log_text',
+        # 'log_text',
     ]
 
 
