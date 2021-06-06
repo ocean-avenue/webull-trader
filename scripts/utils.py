@@ -142,6 +142,14 @@ def is_regular_market_hour():
     return True
 
 
+def is_pre_market_time(t):
+    return True
+
+
+def is_after_market_time(t):
+    return True
+
+
 def _open_resampler(series):
     if series.size > 0:
         return series[0]
@@ -230,42 +238,57 @@ def convert_5m_bars(bars):
     return pd.DataFrame()
 
 
-def check_bars_updated(bars):
+def check_bars_updated(bars, period=1):
     """
     check if have valid latest chart data, delay no more than 1 minute
     """
     latest_index = bars.index[-1]
     latest_timestamp = int(datetime.timestamp(latest_index.to_pydatetime()))
     current_timestamp = int(datetime.timestamp(datetime.now()))
-    if current_timestamp - latest_timestamp <= 60:
+    if current_timestamp - latest_timestamp <= 60 * period:
         return True
     return False
 
 
-def check_bars_has_volume(bars):
+def check_bars_continue(bars, period=1):
+    """
+    check if candle bar is continue in 1 minute of time scale
+    """
+    last_minute = -1
+    is_continue = True
+    for index, _ in bars.iterrows():
+        time = index.to_pydatetime()
+        if last_minute == -1:
+            last_minute = time.minute
+            continue
+        current_minute = time.minute
+        if time.minute == 0:
+            current_minute = 60
+        if current_minute - last_minute != period:
+            is_continue = False
+            break
+        last_minute = time.minute
+    return is_continue
+
+
+def check_bars_has_volume(bars, period=1):
     """
     check if bar chart has enough volume
     """
-    enough_volume = True
-    # extended hour is 1/3 of regular hour
-    confirm_avg_volume = get_avg_confirm_volume()
-    if is_extended_market_hour():
-        confirm_avg_volume /= 3
-    total_volume = 0
-    total_count = 0
+    has_volume = True
+    confirm_avg_volume = get_avg_confirm_volume() * period
     for index, row in bars.iterrows():
         time = index.to_pydatetime()
-        if (time.hour == 9 and time.minute > 30) or time.hour > 9:
-            volume = row["volume"]
-            total_volume += volume
-            total_count += 1
-    if total_count > 0:
-        avg_volume = total_volume / total_count
-        confirm_avg_volume = get_avg_confirm_volume()
-        if avg_volume < confirm_avg_volume:
-            enough_volume = False
+        volume = row["volume"]
+        require_confirm_volume = confirm_avg_volume
+        if is_pre_market_time(time) or is_after_market_time(time):
+            # extended hour requirement is 1/3 of regular hour
+            require_confirm_volume /= 3
+        if volume < require_confirm_volume:
+            has_volume = False
+            break
 
-    if enough_volume:
+    if has_volume:
         # check relative volume over 3
         last_candle2 = bars.iloc[-2]
         last_candle3 = bars.iloc[-3]
@@ -273,8 +296,8 @@ def check_bars_has_volume(bars):
         last_candle5 = bars.iloc[-5]
         if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
             # relative volume not enough
-            enough_volume = False
-    return enough_volume
+            has_volume = False
+    return has_volume
 
 
 def check_bars_volatility(bars):

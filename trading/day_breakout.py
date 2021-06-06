@@ -104,13 +104,21 @@ class DayTradingBreakout(StrategyBase):
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            m1_bars = webullsdk.get_1m_bars(ticker_id, count=30)
+            m1_bars = webullsdk.get_1m_bars(
+                ticker_id, count=(self.entry_period+5))
             if m1_bars.empty:
                 return
 
             if not utils.check_bars_updated(m1_bars):
                 self.print_log(
                     "<{}>[{}] Charts is not updated, stop trading!".format(symbol, ticker_id))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
+
+            if not utils.check_bars_continue(m1_bars):
+                self.print_log(
+                    "<{}>[{}] Charts is not continue, stop trading!".format(symbol, ticker_id))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
@@ -169,7 +177,8 @@ class DayTradingBreakout(StrategyBase):
 
             if not exit_trading:
                 # get 1m bar charts
-                m1_bars = webullsdk.get_1m_bars(ticker_id, count=15)
+                m1_bars = webullsdk.get_1m_bars(
+                    ticker_id, count=(self.exit_period+5))
 
                 # get bars error
                 if m1_bars.empty:
