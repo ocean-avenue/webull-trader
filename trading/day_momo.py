@@ -20,6 +20,14 @@ class DayTradingMomo(StrategyBase):
     def get_setup(self):
         return SetupType.DAY_FIRST_CANDLE_NEW_HIGH
 
+    def check_track(self, bar):
+        close = bar["close"]
+        vwap = bar["vwap"]
+        volume = int(bar["volume"])
+        if close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and close >= vwap:
+            return True
+        return False
+
     def check_entry(self, ticker, bars):
         current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
@@ -267,13 +275,11 @@ class DayTradingMomo(StrategyBase):
                 m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty:
                     continue
-                # use latest formed candle
-                latest_candle = m2_bars.iloc[-2]
-                latest_close = latest_candle["close"]
-                latest_vwap = latest_candle["vwap"]
-                volume = int(latest_candle["volume"])
+                # use latest 2 candle
+                latest_candle = m2_bars.iloc[-1]
+                latest_candle2 = m2_bars.iloc[-2]
                 # check if trasaction amount meets requirement
-                if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
+                if self.check_track(latest_candle) or self.check_track(latest_candle2):
                     # found trading ticker
                     ticker = self.get_init_tracking_ticker(
                         symbol, ticker_id)
