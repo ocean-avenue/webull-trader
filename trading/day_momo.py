@@ -269,20 +269,19 @@ class DayTradingMomo(StrategyBase):
                     continue
                 # use latest formed candle
                 latest_candle = m2_bars.iloc[-2]
-                if utils.check_bars_updated(m2_bars) and utils.check_bars_has_volume(m2_bars):
-                    latest_close = latest_candle["close"]
-                    latest_vwap = latest_candle["vwap"]
-                    volume = int(latest_candle["volume"])
-                    # check if trasaction amount meets requirement
-                    if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
-                        # found trading ticker
-                        ticker = self.get_init_tracking_ticker(
-                            symbol, ticker_id)
-                        self.tracking_tickers[symbol] = ticker
-                        self.print_log(
-                            "Found <{}>[{}] to trade!".format(symbol, ticker_id))
-                        # do trade
-                        self.trade(ticker, m1_bars=m1_bars)
+                latest_close = latest_candle["close"]
+                latest_vwap = latest_candle["vwap"]
+                volume = int(latest_candle["volume"])
+                # check if trasaction amount meets requirement
+                if latest_close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and latest_close >= latest_vwap:
+                    # found trading ticker
+                    ticker = self.get_init_tracking_ticker(
+                        symbol, ticker_id)
+                    self.tracking_tickers[symbol] = ticker
+                    self.print_log(
+                        "Found <{}>[{}] to trade!".format(symbol, ticker_id))
+                    # do trade
+                    self.trade(ticker, m1_bars=m1_bars)
 
     def on_end(self):
         self.trading_end = True
