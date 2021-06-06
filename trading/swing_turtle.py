@@ -25,8 +25,8 @@ class SwingTurtle(StrategyBase):
             return SetupType.SWING_20_DAYS_NEW_HIGH
         return SetupType.SWING_55_DAYS_NEW_HIGH
 
-    def get_buy_order_limit(self, symbol):
-        return self.swing_position_amount_limit
+    def get_buy_order_limit(self, units):
+        return self.swing_position_amount_limit * units
 
     def check_period_high(self, daily_bars):
         if len(daily_bars) <= self.entry_period:
@@ -63,7 +63,9 @@ class SwingTurtle(StrategyBase):
             return True
         return False
 
-    def trade(self, symbol):
+    def trade(self, watchlist):
+        symbol = watchlist["symbol"]
+        units = watchlist["units"]
         # check if already has possition
         position = SwingPosition.objects.filter(
             symbol=symbol, setup=self.get_setup()).first()
@@ -103,7 +105,7 @@ class SwingTurtle(StrategyBase):
             if self.check_period_high(current_daily_bars) and not self.check_period_high(prev_daily_bars):
                 latest_close = current_daily_bars[-1].close
                 # buy swing position amount
-                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_position_amount = self.get_buy_order_limit(units)
                 buy_quant = (int)(buy_position_amount / latest_close)
                 # make sure usable cash is enough
                 portfolio = webullsdk.get_portfolio()
@@ -139,8 +141,10 @@ class SwingTurtle(StrategyBase):
 
         swing_watchlist = SwingWatchlist.objects.all()
         for swing_watch in swing_watchlist:
-            symbol = swing_watch.symbol
-            self.trading_symbols.append(symbol)
+            self.trading_watchlist.append({
+                "symbol": swing_watch.symbol,
+                "units": swing_watch.units,
+            })
 
     def on_update(self):
         if not self.check_trading_hour():
@@ -151,13 +155,13 @@ class SwingTurtle(StrategyBase):
         if utils.is_regular_market_hour():
 
             # swing trading one symbol in each update
-            if len(self.trading_symbols) > 0:
-                symbol = self.trading_symbols[0]
+            if len(self.trading_watchlist) > 0:
+                watchlist = self.trading_watchlist[0]
                 # swing trade using market order
-                self.trade(symbol)
+                self.trade(watchlist)
                 # remove from swing_symbols
-                del self.trading_symbols[0]
+                del self.trading_watchlist[0]
 
             # check if trading is end
-            if len(self.trading_symbols) == 0:
+            if len(self.trading_watchlist) == 0:
                 self.trading_end = True

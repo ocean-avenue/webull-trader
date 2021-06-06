@@ -21,7 +21,7 @@ class StrategyBase:
         self.error_short_tickers = {}
         self.trading_logs = []
         # for swing trade
-        self.trading_symbols = []
+        self.trading_watchlist = []
 
     def on_begin(self):
         pass
