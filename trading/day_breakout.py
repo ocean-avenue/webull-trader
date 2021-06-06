@@ -104,19 +104,18 @@ class DayTradingBreakout(StrategyBase):
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-            m2_bars = utils.convert_2m_bars(m1_bars)
-            if m2_bars.empty:
+            m1_bars = webullsdk.get_1m_bars(ticker_id, count=30)
+            if m1_bars.empty:
                 return
 
-            if not utils.check_bars_updated(m2_bars):
+            if not utils.check_bars_updated(m1_bars):
                 self.print_log(
                     "<{}>[{}] Charts is not updated, stop trading!".format(symbol, ticker_id))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
-            if not utils.check_bars_has_volume(m2_bars):
+            if not utils.check_bars_has_volume(m1_bars):
                 self.print_log(
                     "<{}>[{}] Charts has not enough volume, stop trading!".format(symbol, ticker_id))
                 # remove from monitor
@@ -124,11 +123,11 @@ class DayTradingBreakout(StrategyBase):
                 return
 
             # candle data
-            current_candle = m2_bars.iloc[-1]
-            prev_candle = m2_bars.iloc[-2]
+            current_candle = m1_bars.iloc[-1]
+            prev_candle = m1_bars.iloc[-2]
 
             # check entry: current price above vwap, entry period minutes new high
-            if self.check_entry(ticker, m2_bars):
+            if self.check_entry(ticker, m1_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 ask_price = self.get_ask_price_from_quote(quote)
                 if ask_price == None:
@@ -168,19 +167,18 @@ class DayTradingBreakout(StrategyBase):
                 ticker, ticker_position)
 
             if not exit_trading:
-                # get 2m bar charts
-                m2_bars = utils.convert_2m_bars(
-                    webullsdk.get_1m_bars(ticker_id, count=30))
+                # get 1m bar charts
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=15)
 
                 # get bars error
-                if m2_bars.empty:
+                if m1_bars.empty:
                     self.print_log(
                         "<{}>[{}] Bars data error!".format(symbol, ticker_id))
                     exit_trading = True
                     exit_note = "Bars data error!"
                 else:
                     # check exit trade
-                    exit_trading, exit_note = self.check_exit(ticker, m2_bars)
+                    exit_trading, exit_note = self.check_exit(ticker, m1_bars)
 
             # exit trading
             if exit_trading:
