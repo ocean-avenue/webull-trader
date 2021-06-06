@@ -59,17 +59,19 @@ def local_time_minute_delay(t):
         minute = "0{}".format(minute)
     return "{}:{}".format(hour, minute)
 
-# for 2 minute
 
+# for multi minutes
 
-def local_time_minute2(t):
+def local_time_minute_period(t, period):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
     minute = localtz.minute
-    if minute % 2 == 1:
-        minute -= 1
-    minute = str(minute + 2)
+    res = minute % period
+    minute -= res
+    if res > 0:
+        minute += period
+    minute = str(minute)
     if minute == "60":
         minute = "00"
         hour = str(localtz.hour + 1)
@@ -1768,3 +1770,32 @@ def get_hourly_stat_from_trades_for_render(day_trades):
         "profit_loss_ratio": hourly_profit_loss_ratio,
         "trades": hourly_trades,
     }
+
+
+def get_minutes_trade_marker_from_orders_for_render(orders, candles, minutes, color):
+    trade_price_records = []
+    trade_quantity_records = []
+
+    for order in orders:
+        coord = [
+            local_time_minute_period(order.filled_time, minutes),
+            # use high price avoid block candle
+            get_minute_candle_high_by_time_minute(
+                candles, local_time_minute_period(order.filled_time, minutes)) + 0.01,
+        ]
+        trade_price_records.append({
+            "name": "{}".format(order.avg_price),
+            "coord": coord,
+            "value": order.avg_price,
+            "itemStyle": {"color": color},
+            "label": {"fontSize": 10},
+        })
+        trade_quantity_records.append({
+            "name": "+{}".format(order.filled_quantity),
+            "coord": coord,
+            "value": order.filled_quantity,
+            "itemStyle": {"color": color},
+            "label": {"fontSize": 10},
+        })
+
+    return (trade_price_records, trade_quantity_records)

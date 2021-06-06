@@ -308,14 +308,14 @@
                   onclick="m1_candle_chart_marker_price()"
                   class="dropdown-item"
                 >
-                  Marker Price
+                  Price Marker
                 </button>
                 <button
                   type="button"
                   onclick="m1_candle_chart_marker_quantity()"
                   class="dropdown-item"
                 >
-                  Marker Quantity
+                  Quantity Marker
                 </button>
               </div>
             </div>
@@ -349,14 +349,14 @@
                   onclick="m2_candle_chart_marker_price()"
                   class="dropdown-item"
                 >
-                  Marker Price
+                  Price Marker
                 </button>
                 <button
                   type="button"
                   onclick="m2_candle_chart_marker_quantity()"
                   class="dropdown-item"
                 >
-                  Marker Quantity
+                  Quantity Marker
                 </button>
               </div>
             </div>
@@ -379,6 +379,29 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
+          <div class="card-actions float-end">
+            <div class="dropdown show">
+              <a href="#" data-bs-toggle="dropdown" data-bs-display="static">
+                <i class="align-middle" data-feather="more-horizontal"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <button
+                  type="button"
+                  onclick="m5_candle_chart_marker_price()"
+                  class="dropdown-item"
+                >
+                  Price Marker
+                </button>
+                <button
+                  type="button"
+                  onclick="m5_candle_chart_marker_quantity()"
+                  class="dropdown-item"
+                >
+                  Quantity Marker
+                </button>
+              </div>
+            </div>
+          </div>
           <h5 class="card-title mb-0">5 Minute Chart</h5>
         </div>
         <div class="card-body d-flex w-100">
@@ -904,6 +927,21 @@
           borderColor: null,
           borderColor0: null,
         },
+        markPoint: {
+          label: {
+            normal: {
+              formatter: function (param) {
+                return param.name;
+              }
+            }
+          },
+          data: {{ m5_trade_price_records|safe }},
+          tooltip: {
+            formatter: function (param) {
+              return param.name + '<br>' + (param.data.coord || '');
+            }
+          }
+        },
       },
       {
         name: 'VWAP',
@@ -939,6 +977,16 @@
     ]
   };
   m5_candle_chart.setOption(m5_candle_option);
+
+  function m5_candle_chart_marker_price() {
+    m5_candle_option['series'][0]['markPoint']['data'] = {{ m5_trade_price_records|safe }};
+    m5_candle_chart.setOption(m5_candle_option);
+  }
+
+  function m5_candle_chart_marker_quantity() {
+    m5_candle_option['series'][0]['markPoint']['data'] = {{ m5_trade_quantity_records|safe }};
+    m5_candle_chart.setOption(m5_candle_option);
+  }
 
   // daily candle chart
   const d1_candle_chart = echarts.init(document.getElementById("d1-candle-chart"));

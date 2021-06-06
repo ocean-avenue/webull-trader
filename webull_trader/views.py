@@ -318,97 +318,34 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     # calculate daily candle
     d1_candle_data = utils.get_last_60d_daily_candle_data_for_render(
         symbol, analytics_date)
-    # 1m trade records
-    m1_trade_price_records = []
-    m1_trade_quantity_records = []
-    # 2m trade records
-    m2_trade_price_records = []
-    m2_trade_quantity_records = []
-
+    # buy/sell orders
     buy_orders, sell_orders = utils.get_day_trade_orders(
         date=analytics_date, symbol=symbol)
-    for buy_order in buy_orders:
-        m1_coord = [
-            utils.local_time_minute_delay(buy_order.filled_time),
-            # use high price avoid block candle
-            utils.get_minute_candle_high_by_time_minute(
-                m1_candle_data, utils.local_time_minute_delay(buy_order.filled_time)) + 0.01,
-        ]
-        m1_trade_price_records.append({
-            "name": "{}".format(buy_order.avg_price),
-            "coord": m1_coord,
-            "value": buy_order.avg_price,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m1_trade_quantity_records.append({
-            "name": "+{}".format(buy_order.filled_quantity),
-            "coord": m1_coord,
-            "value": buy_order.filled_quantity,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m2_coord = [
-            utils.local_time_minute2(buy_order.filled_time),
-            # use high price avoid block candle
-            utils.get_minute_candle_high_by_time_minute(
-                m2_candle_data, utils.local_time_minute2(buy_order.filled_time)) + 0.01,
-        ]
-        m2_trade_price_records.append({
-            "name": "{}".format(buy_order.avg_price),
-            "coord": m2_coord,
-            "value": buy_order.avg_price,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m2_trade_quantity_records.append({
-            "name": "+{}".format(buy_order.filled_quantity),
-            "coord": m2_coord,
-            "value": buy_order.filled_quantity,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-    for sell_order in sell_orders:
-        m1_coord = [
-            utils.local_time_minute_delay(sell_order.filled_time),
-            # use high price avoid block candle
-            utils.get_minute_candle_high_by_time_minute(
-                m1_candle_data, utils.local_time_minute_delay(sell_order.filled_time)) + 0.01,
-        ]
-        m1_trade_price_records.append({
-            "name": "{}".format(sell_order.avg_price),
-            "coord": m1_coord,
-            "value": sell_order.avg_price,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m1_trade_quantity_records.append({
-            "name": "-{}".format(sell_order.filled_quantity),
-            "coord": m1_coord,
-            "value": sell_order.filled_quantity,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m2_coord = [
-            utils.local_time_minute2(sell_order.filled_time),
-            # use high price avoid block candle
-            utils.get_minute_candle_high_by_time_minute(
-                m2_candle_data, utils.local_time_minute2(sell_order.filled_time)) + 0.01,
-        ]
-        m2_trade_price_records.append({
-            "name": "{}".format(sell_order.avg_price),
-            "coord": m2_coord,
-            "value": sell_order.avg_price,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
-        m2_trade_quantity_records.append({
-            "name": "-{}".format(sell_order.filled_quantity),
-            "coord": m2_coord,
-            "value": sell_order.filled_quantity,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
+    # 1m trade records
+    m1_trade_price_buy_records, m1_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        buy_orders, m1_candle_data, 1, config.BUY_COLOR)
+    m1_trade_price_sell_records, m1_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        sell_orders, m1_candle_data, 1, config.SELL_COLOR)
+    m1_trade_price_records = m1_trade_price_buy_records + m1_trade_price_sell_records
+    m1_trade_quantity_records = m1_trade_quantity_buy_records + \
+        m1_trade_quantity_sell_records
+    # 2m trade records
+    m2_trade_price_buy_records, m2_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        buy_orders, m2_candle_data, 2, config.BUY_COLOR)
+    m2_trade_price_sell_records, m2_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        sell_orders, m2_candle_data, 2, config.SELL_COLOR)
+    m2_trade_price_records = m2_trade_price_buy_records + m2_trade_price_sell_records
+    m2_trade_quantity_records = m2_trade_quantity_buy_records + \
+        m2_trade_quantity_sell_records
+    # 5m trade records
+    m5_trade_price_buy_records, m5_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        buy_orders, m5_candle_data, 5, config.BUY_COLOR)
+    m5_trade_price_sell_records, m5_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
+        sell_orders, m5_candle_data, 5, config.SELL_COLOR)
+    m5_trade_price_records = m5_trade_price_buy_records + m5_trade_price_sell_records
+    m5_trade_quantity_records = m5_trade_quantity_buy_records + \
+        m5_trade_quantity_sell_records
+
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
     trade_records = []
     for day_trade in day_trades:
@@ -475,6 +412,8 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         "m1_trade_quantity_records": m1_trade_quantity_records,
         "m2_trade_price_records": m2_trade_price_records,
         "m2_trade_quantity_records": m2_trade_quantity_records,
+        "m5_trade_price_records": m5_trade_price_records,
+        "m5_trade_quantity_records": m5_trade_quantity_records,
         "d1_candle_data": d1_candle_data,
         "trade_records": trade_records,
         "trade_stats": trade_stats,
