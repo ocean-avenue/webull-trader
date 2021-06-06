@@ -129,20 +129,21 @@ class DayTradingBreakout(StrategyBase):
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, m1_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                ask_price = self.get_ask_price_from_quote(quote)
-                if ask_price == None:
+                bid_price = self.get_bid_price_from_quote(quote)
+                # ask_price = self.get_ask_price_from_quote(quote)
+                if bid_price == None:
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
-                buy_quant = (int)(buy_position_amount / ask_price)
+                buy_quant = (int)(buy_position_amount / bid_price)
                 # submit limit order at ask price
                 order_response = webullsdk.buy_limit_order(
                     ticker_id=ticker_id,
-                    price=ask_price,
+                    price=bid_price,
                     quant=buy_quant)
                 self.print_log("Trading <{}>[{}], price: {}, vwap: {}, volume: {}".format(
                     symbol, ticker_id, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                 self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
-                    symbol, ticker_id, buy_quant, ask_price))
+                    symbol, ticker_id, buy_quant, bid_price))
                 # update pending buy
                 self.update_pending_buy_order(
                     symbol, order_response, stop_loss=prev_candle['low'])
