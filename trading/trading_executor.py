@@ -165,7 +165,7 @@ def start():
     elif algo_type == AlgorithmType.DAY_BREAKOUT:
         # DAY_BREAKOUT: breakout trade
         strategies.append(DayTradingBreakout(
-            paper=paper, entry_period=20, exit_period=10))
+            paper=paper, entry_period=30, exit_period=15))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO
