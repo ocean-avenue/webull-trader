@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Earning day trading class
+# Earning day trading class, may holding positions overnight
 
 from datetime import date, datetime
 from webull_trader.models import EarningCalendar, OvernightPosition
