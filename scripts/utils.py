@@ -829,6 +829,14 @@ def check_day_trade_order(setup):
     return False
 
 
+def check_swing_trade_algo(algo):
+    if algo == enums.AlgorithmType.SWING_TURTLE_20 or algo == enums.AlgorithmType.SWING_TURTLE_55 or \
+        algo == enums.AlgorithmType.DAY_SWING_BREAKOUT_TURTLE or algo == enums.AlgorithmType.DAY_SWING_RG_TURTLE or \
+            algo == enums.AlgorithmType.DAY_SWING_EARNINGS_TURTLE or algo == enums.AlgorithmType.DAY_SWING_MOMO_TURTLE:
+        return True
+    return False
+
+
 def get_day_trade_orders(date=None, symbol=None):
     # only limit orders for day trades
     lmt_buy_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
