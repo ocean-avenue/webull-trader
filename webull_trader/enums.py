@@ -80,7 +80,8 @@ class SetupType:
     DAY_REVERSAL = 3
     DAY_RED_TO_GREEN = 4
     DAY_20_MINUTES_NEW_HIGH = 5
-    DAY_EARNINGS_GAP = 6
+    DAY_30_MINUTES_NEW_HIGH = 6
+    DAY_EARNINGS_GAP = 7
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
     UNKNOWN = 999
@@ -99,6 +100,8 @@ class SetupType:
             return '[Day] Red to Green'
         if val == SetupType.DAY_20_MINUTES_NEW_HIGH:
             return '[Day] 20 minutes new high'
+        if val == SetupType.DAY_30_MINUTES_NEW_HIGH:
+            return '[Day] 30 minutes new high'
         if val == SetupType.DAY_EARNINGS_GAP:
             return '[Day] Earning Gap'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
@@ -122,6 +125,8 @@ class SetupType:
                 SetupType.DAY_RED_TO_GREEN)),
             (SetupType.DAY_20_MINUTES_NEW_HIGH, SetupType.tostr(
                 SetupType.DAY_20_MINUTES_NEW_HIGH)),
+            (SetupType.DAY_30_MINUTES_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_30_MINUTES_NEW_HIGH)),
             (SetupType.DAY_EARNINGS_GAP, SetupType.tostr(
                 SetupType.DAY_EARNINGS_GAP)),
             (SetupType.SWING_20_DAYS_NEW_HIGH, SetupType.tostr(

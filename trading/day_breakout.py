@@ -21,6 +21,8 @@ class DayTradingBreakout(StrategyBase):
         return "DayTradingBreakout"
 
     def get_setup(self):
+        if self.entry_period == 30:
+            return SetupType.DAY_30_MINUTES_NEW_HIGH
         return SetupType.DAY_20_MINUTES_NEW_HIGH
 
     def check_entry(self, ticker, bars):
