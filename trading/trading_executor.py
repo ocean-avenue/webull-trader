@@ -139,7 +139,8 @@ def start():
     from trading.trading_executor import TradingExecutor
     from trading.day_momo import DayTradingMomo
     from trading.day_momo_reducesize import DayTradingMomoReduceSize
-    from trading.day_momo_newhigh import DayTradingMomoNewHigh
+    # from trading.day_momo_newhigh import DayTradingMomoNewHigh
+    from trading.day_momo_extendedhour import DayTradingMomoExtendedHour
     from trading.day_redgreen import DayTradingRedGreen
     from trading.day_breakout import DayTradingBreakout
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
@@ -158,7 +159,8 @@ def start():
         strategies.append(DayTradingMomoReduceSize(paper=paper))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
         # DAY_MOMENTUM_NEW_HIGH: momo trade with new high confirm
-        strategies.append(DayTradingMomoNewHigh(paper=paper))
+        # strategies.append(DayTradingMomoNewHigh(paper=paper))
+        strategies.append(DayTradingMomoExtendedHour(paper=paper))
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         # DAY_RED_TO_GREEN: red/green trade
         strategies.append(DayTradingRedGreen(paper=paper))

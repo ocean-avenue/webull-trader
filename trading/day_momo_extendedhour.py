@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Momo day trading class, only trade in extended hour
+# Momo day trading class, only trade in extended hour (include new high condition)
 
 from trading.day_momo import DayTradingMomo
 from sdk import webullsdk
@@ -8,8 +8,6 @@ from scripts import utils
 
 
 class DayTradingMomoExtendedHour(DayTradingMomo):
-
-    import pandas as pd
 
     def get_tag(self):
         return "DayTradingMomoExtendedHour"
