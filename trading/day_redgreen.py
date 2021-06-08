@@ -67,6 +67,13 @@ class DayTradingRedGreen(StrategyBase):
                 del self.tracking_tickers[symbol]
                 return
 
+            if not utils.check_bars_rel_volume(m2_bars):
+                self.print_log(
+                    "<{}>[{}] Charts has no relative volume, stop trading!".format(symbol, ticker_id))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
+
             now = datetime.now()
 
             # check entry, current price above prev day close with (prev price below or not long after market open)

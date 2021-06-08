@@ -143,6 +143,13 @@ class DayTradingBreakout(StrategyBase):
                 del self.tracking_tickers[symbol]
                 return
 
+            if not utils.check_bars_rel_volume(m1_bars):
+                self.print_log(
+                    "<{}>[{}] Charts has no relative volume, stop trading!".format(symbol, ticker_id))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
+
             # candle data
             current_candle = m1_bars.iloc[-1]
             prev_candle = m1_bars.iloc[-2]

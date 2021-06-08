@@ -340,16 +340,23 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
             has_volume = False
             break
 
-    if has_volume:
-        # check relative volume over 3
-        last_candle2 = bars.iloc[-2]
-        last_candle3 = bars.iloc[-3]
-        last_candle4 = bars.iloc[-4]
-        last_candle5 = bars.iloc[-5]
-        if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) <= get_min_relative_volume():
-            # relative volume not enough
-            has_volume = False
     return has_volume
+
+
+def check_bars_rel_volume(bars):
+    """
+    check if bar chart relative volume
+    """
+    # check relative volume over 3
+    last_candle = bars.iloc[-1]
+    last_candle2 = bars.iloc[-2]
+    last_candle3 = bars.iloc[-3]
+    last_candle4 = bars.iloc[-4]
+
+    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > get_min_relative_volume():
+        # relative volume ok
+        return True
+    return False
 
 
 def check_bars_volatility(bars):
