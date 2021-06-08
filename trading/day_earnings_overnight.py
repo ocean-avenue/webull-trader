@@ -68,7 +68,7 @@ class DayTradingEarningsOvernight(StrategyBase):
 
         holding_quantity = ticker['positions']
         # buy in pre/after market hour
-        if utils.is_extended_market_hour():
+        if self.is_extended_market_hour():
             quote = webullsdk.get_quote(ticker_id=ticker_id)
             if quote == None:
                 return
@@ -94,7 +94,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 self.update_pending_buy_order(symbol, order_response)
 
         # sell in regular market hour
-        if utils.is_regular_market_hour():
+        if self.is_regular_market_hour():
             exit_trading, exit_note = self.check_exit(ticker)
             if exit_trading:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -118,13 +118,13 @@ class DayTradingEarningsOvernight(StrategyBase):
 
     def on_begin(self):
         # prepare tickers for buy
-        if utils.is_extended_market_hour():
+        if self.is_extended_market_hour():
             today = date.today()
             earning_time = None
             # get earning calendars
-            if utils.is_pre_market_hour():
+            if self.is_pre_market_hour():
                 earning_time = "bmo"
-            elif utils.is_after_market_hour():
+            elif self.is_after_market_hour():
                 earning_time = "amc"
             earnings = EarningCalendar.objects.filter(
                 earning_date=today).filter(earning_time=earning_time)
@@ -137,7 +137,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 self.print_log("Add ticker <{}>[{}] to check earning gap!".format(
                     symbol, ticker_id))
         # prepare tickers for sell
-        if utils.is_regular_market_hour():
+        if self.is_regular_market_hour():
             earning_positions = OvernightPosition.objects.filter(
                 setup=self.get_setup())
             for position in earning_positions:

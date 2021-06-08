@@ -198,17 +198,17 @@ class StrategyBase:
             return None
         return float(quote['depth']['ntvAggBidList'][0]['price'])
 
-    def check_entry(self):
-        return False
+    def is_regular_market_hour(self):
+        return self.trading_hour == TradingHourType.REGULAR
 
-    def check_stop_loss(self):
-        return False
+    def is_pre_market_hour(self):
+        return self.trading_hour == TradingHourType.BEFORE_MARKET_OPEN
 
-    def check_exit(self):
-        return False
+    def is_after_market_hour(self):
+        return self.trading_hour == TradingHourType.AFTER_MARKET_CLOSE
 
-    def check_trading_hour(self):
-        return True
+    def is_extended_market_hour(self):
+        return self.is_pre_market_hour() or self.is_after_market_hour()
 
     def check_error_short_order(self, positions):
         # check if short order covered

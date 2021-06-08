@@ -5,7 +5,7 @@
 import time
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
+from webull_trader.enums import SetupType, TradingHourType
 from sdk import webullsdk
 from scripts import utils
 
@@ -252,11 +252,11 @@ class DayTradingMomo(StrategyBase):
 
         # find trading ticker in top gainers
         top_gainers = []
-        if utils.is_regular_market_hour():
+        if self.is_regular_market_hour():
             top_gainers = webullsdk.get_top_gainers()
-        elif utils.is_pre_market_hour():
+        elif self.is_pre_market_hour():
             top_gainers = webullsdk.get_pre_market_gainers()
-        elif utils.is_after_market_hour():
+        elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
         # self.print_log("Scanning top gainers [{}]...".format(

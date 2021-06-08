@@ -133,16 +133,9 @@ class DayTradingRedGreen(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
 
-    def check_trading_hour(self):
-        valid_time = True
-        if datetime.now().hour < 9 or datetime.now().hour >= 16:
-            # self.print_log("Skip pre and after market session, quit!")
-            valid_time = False
-        return valid_time
-
     def on_begin(self):
 
-        if not self.check_trading_hour():
+        if not self.is_regular_market_hour():
             return
 
         # default today
@@ -195,12 +188,12 @@ class DayTradingRedGreen(StrategyBase):
         return False
 
     def on_update(self):
-        if not self.check_trading_hour():
+        if not self.is_regular_market_hour():
             self.trading_end = False
             return
 
         # only trade regular market hour before 13:00
-        if utils.is_regular_market_hour() and self.is_power_hour():
+        if self.is_power_hour():
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]

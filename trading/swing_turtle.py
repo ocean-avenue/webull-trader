@@ -7,7 +7,6 @@ from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from webull_trader.models import SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 from sdk import webullsdk
-from scripts import utils
 
 
 class SwingTurtle(StrategyBase):
@@ -127,16 +126,9 @@ class SwingTurtle(StrategyBase):
                         buy_time=datetime.now(),
                         setup=self.get_setup())
 
-    def check_trading_hour(self):
-        valid_time = True
-        if datetime.now().hour < 9 or datetime.now().hour >= 16:
-            # self.print_log("Skip pre and after market session, quit!")
-            valid_time = False
-        return valid_time
-
     def on_begin(self):
 
-        if not self.check_trading_hour():
+        if not self.is_regular_market_hour():
             return
 
         swing_watchlist = SwingWatchlist.objects.all()
@@ -147,21 +139,19 @@ class SwingTurtle(StrategyBase):
             })
 
     def on_update(self):
-        if not self.check_trading_hour():
+        # only trade regular market hour once
+        if not self.is_regular_market_hour():
             self.trading_end = False
             return
 
-        # only trade regular market hour once
-        if utils.is_regular_market_hour():
+        # swing trading one symbol in each update
+        if len(self.trading_watchlist) > 0:
+            watchlist = self.trading_watchlist[0]
+            # swing trade using market order
+            self.trade(watchlist)
+            # remove from swing_symbols
+            del self.trading_watchlist[0]
 
-            # swing trading one symbol in each update
-            if len(self.trading_watchlist) > 0:
-                watchlist = self.trading_watchlist[0]
-                # swing trade using market order
-                self.trade(watchlist)
-                # remove from swing_symbols
-                del self.trading_watchlist[0]
-
-            # check if trading is end
-            if len(self.trading_watchlist) == 0:
-                self.trading_end = True
+        # check if trading is end
+        if len(self.trading_watchlist) == 0:
+            self.trading_end = True
