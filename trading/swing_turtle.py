@@ -37,12 +37,14 @@ class SwingTurtle(StrategyBase):
         if latest_close > latest_sma120:
             # get entry_period highest
             entry_period_highest = 0
+            entry_period_highest_idx = -1
             for i in range(len(daily_bars) - self.entry_period - 1, len(daily_bars) - 1):
                 daily_bar = daily_bars[i]
                 if daily_bar.close > entry_period_highest:
                     entry_period_highest = daily_bar.close
-            # check if entry_period new high
-            if latest_close > entry_period_highest:
+                    entry_period_highest_idx = i
+            # check if entry_period new high, and period high is not in last 5 days
+            if latest_close > entry_period_highest and entry_period_highest_idx < (len(daily_bars) - 6):
                 return True
         return False
 
@@ -98,10 +100,10 @@ class SwingTurtle(StrategyBase):
             hist_daily_bars = SwingHistoricalDailyBar.objects.filter(
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
-            prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
+            # prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
 
             # first period high
-            if self.check_period_high(current_daily_bars) and not self.check_period_high(prev_daily_bars):
+            if self.check_period_high(current_daily_bars):
                 latest_close = current_daily_bars[-1].close
                 # buy swing position amount
                 buy_position_amount = self.get_buy_order_limit(units)
