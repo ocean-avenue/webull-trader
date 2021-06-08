@@ -172,8 +172,12 @@ def start():
         # DAY_RED_TO_GREEN: red/green trade
         strategies.append(DayTradingRedGreen(
             paper=paper, trading_hour=trading_hour))
-    elif algo_type == AlgorithmType.DAY_BREAKOUT:
-        # DAY_BREAKOUT: breakout trade
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_20:
+        # DAY_BREAKOUT: breakout trade 20 minutes
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
+        # DAY_BREAKOUT: breakout trade 30 minutes
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=30, exit_period=15))
     elif algo_type == AlgorithmType.DAY_EARNINGS:

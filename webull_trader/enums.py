@@ -143,10 +143,12 @@ class AlgorithmType:
     DAY_MOMENTUM_REDUCE_SIZE = 1
     DAY_RED_TO_GREEN = 2
     DAY_MOMENTUM_NEW_HIGH = 3
-    DAY_BREAKOUT = 4
-    DAY_EARNINGS = 5
-    DAY_EARNINGS_OVERNIGHT = 6
-    DAY_EARNINGS_BREAKOUT = 7
+    DAY_BREAKOUT_20 = 4
+    DAY_BREAKOUT_30 = 5
+    DAY_BREAKOUT_EARNINGS = 6
+    DAY_EARNINGS = 7
+    DAY_EARNINGS_OVERNIGHT = 8
+    DAY_EARNINGS_BREAKOUT = 9
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -168,8 +170,12 @@ class AlgorithmType:
             return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
             return 'Momo day trade, no entry if the price not break max of last high price.'
-        if val == AlgorithmType.DAY_BREAKOUT:
+        if val == AlgorithmType.DAY_BREAKOUT_20:
             return 'Breakout day trade, entry if price reach 20 minutes new high.'
+        if val == AlgorithmType.DAY_BREAKOUT_30:
+            return 'Breakout day trade, entry if price reach 30 minutes new high.'
+        if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
+            return 'Breakout and earning day trade, entry if price reach 30 minutes new high.'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'Earning date day trade, entry if gap up and exit trade intraday.'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -185,7 +191,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT_30), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_EARNINGS), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
@@ -200,8 +206,12 @@ class AlgorithmType:
             return 'DAY (MOMO NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'DAY (RED GREEN)'
-        if val == AlgorithmType.DAY_BREAKOUT:
-            return 'DAY (BREAKOUT)'
+        if val == AlgorithmType.DAY_BREAKOUT_20:
+            return 'DAY (BREAKOUT 20)'
+        if val == AlgorithmType.DAY_BREAKOUT_30:
+            return 'DAY (BREAKOUT 30)'
+        if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
+            return 'DAY (BREAKOUT EARNINGS)'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNINGS)'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -217,7 +227,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT_30), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_EARNINGS), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
@@ -233,8 +243,12 @@ class AlgorithmType:
                 AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
             (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.tostr(
                 AlgorithmType.DAY_RED_TO_GREEN)),
-            (AlgorithmType.DAY_BREAKOUT, AlgorithmType.tostr(
-                AlgorithmType.DAY_BREAKOUT)),
+            (AlgorithmType.DAY_BREAKOUT_20, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_20)),
+            (AlgorithmType.DAY_BREAKOUT_30, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_30)),
+            (AlgorithmType.DAY_BREAKOUT_EARNINGS, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_EARNINGS)),
             (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS)),
             (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(

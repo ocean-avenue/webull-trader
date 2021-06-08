@@ -10,8 +10,10 @@ def start():
 
     setup_type = SetupType.DAY_FIRST_CANDLE_NEW_HIGH
     algo_type = utils.get_algo_type()
-    if algo_type == AlgorithmType.DAY_BREAKOUT:
+    if algo_type == AlgorithmType.DAY_BREAKOUT_20:
         setup_type = SetupType.DAY_20_MINUTES_NEW_HIGH
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
+        setup_type = SetupType.DAY_30_MINUTES_NEW_HIGH
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         setup_type = SetupType.DAY_RED_TO_GREEN
     elif algo_type == AlgorithmType.DAY_EARNINGS:
