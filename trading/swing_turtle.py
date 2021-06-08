@@ -86,7 +86,7 @@ class SwingTurtle(StrategyBase):
                 self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, latest price: {}".format(
                     symbol, ticker_id, position.quantity, latest_close))
                 # add swing trade
-                self.add_swing_trade(
+                self.update_pending_swing_trade(
                     symbol=symbol,
                     order_response=order_response,
                     position=position,
@@ -121,7 +121,7 @@ class SwingTurtle(StrategyBase):
                         symbol, ticker_id, buy_quant, latest_close))
                     # add swing position
 
-                    self.add_swing_position(
+                    self.update_pending_swing_position(
                         symbol,
                         order_response,
                         cost=latest_close,

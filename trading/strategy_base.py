@@ -461,7 +461,7 @@ class StrategyBase:
             self.print_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
-    def add_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
+    def update_pending_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
         elif 'orderId' in order_response:
@@ -480,7 +480,7 @@ class StrategyBase:
             self.print_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
-    def add_swing_trade(self, symbol, order_response, position, price, sell_time):
+    def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time):
         if 'msg' in order_response:
             self.print_log(order_response['msg'])
         elif 'orderId' in order_response:

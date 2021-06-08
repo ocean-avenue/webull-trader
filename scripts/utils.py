@@ -396,7 +396,13 @@ def check_bars_price_fixed(bars):
         prev_close2 = bars.iloc[-2]['close']
         prev_close3 = bars.iloc[-3]['close']
         prev_close4 = bars.iloc[-4]['close']
-        if prev_close2 == prev_close3 and prev_close3 == prev_close4:
+
+        prev_open2 = bars.iloc[-2]['open']
+        prev_open3 = bars.iloc[-3]['open']
+        prev_open4 = bars.iloc[-4]['open']
+
+        if prev_close2 == prev_close3 and prev_close3 == prev_close4 and \
+                prev_open2 == prev_open3 and prev_open3 == prev_open4:
             return True
     return False
 

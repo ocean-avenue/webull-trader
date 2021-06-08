@@ -86,7 +86,7 @@ class DayTradingBreakout(StrategyBase):
             self.print_log("<{}>[{}] new period low price, new low: {}, period low: {}, exit!".format(
                 ticker['symbol'], ticker['ticker_id'], current_price, period_low_price))
         # check if price fixed in last 3 candles
-        elif self.is_regular_market_hour and utils.check_bars_price_fixed(bars):
+        elif self.is_regular_market_hour() and utils.check_bars_price_fixed(bars):
             self.print_log(
                 "<{}>[{}] Price is fixed during last 3 candles.".format(ticker['symbol'], ticker['ticker_id']))
             exit_trading = True
