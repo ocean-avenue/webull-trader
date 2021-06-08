@@ -110,6 +110,18 @@ def is_pre_market_hour():
     return True
 
 
+def is_pre_market_hour_exact():
+    """
+    NY pre market hour from 04:00 to 09:30
+    """
+    now = datetime.now()
+    if now.hour < 4 or now.hour > 9:
+        return False
+    if now.hour == 9 and now.minute >= 30:
+        return False
+    return True
+
+
 def is_after_market_hour():
     """
     NY after market hour from 16:00 to 20:00
@@ -122,6 +134,16 @@ def is_after_market_hour():
         return False
     # stop after market earlier for 5 minutes
     if now.hour == 19 and now.minute >= 55:
+        return False
+    return True
+
+
+def is_after_market_hour_exact():
+    """
+    NY after market hour from 16:00 to 20:00
+    """
+    now = datetime.now()
+    if now.hour < 16 or now.hour >= 20:
         return False
     return True
 
@@ -142,12 +164,40 @@ def is_regular_market_hour():
     return True
 
 
+def is_regular_market_hour_exact():
+    """
+    NY regular market hour from 09:30 to 16:00
+    """
+    now = datetime.now()
+    if now.hour < 9 or now.hour >= 16:
+        return False
+    if now.hour == 9 and now.minute < 30:
+        return False
+    return True
+
+
 def is_pre_market_time(t):
+    if t.hour < 4 or t.hour > 9:
+        return False
+    if t.hour == 9 and t.minute >= 30:
+        return False
     return True
 
 
 def is_after_market_time(t):
+    if t.hour < 16 or t.hour >= 20:
+        return False
     return True
+
+
+def get_trading_hour():
+    if is_pre_market_hour_exact():
+        return enums.TradingHourType.BEFORE_MARKET_OPEN
+    elif is_after_market_hour_exact():
+        return enums.TradingHourType.AFTER_MARKET_CLOSE
+    elif is_regular_market_hour_exact():
+        return enums.TradingHourType.REGULAR
+    return None
 
 
 def _open_resampler(series):

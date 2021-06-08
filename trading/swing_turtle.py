@@ -12,8 +12,8 @@ from scripts import utils
 
 class SwingTurtle(StrategyBase):
 
-    def __init__(self, paper, entry_period=55, exit_period=20):
-        super().__init__(paper=paper)
+    def __init__(self, paper, trading_hour, entry_period=55, exit_period=20):
+        super().__init__(paper=paper, trading_hour=trading_hour)
         self.entry_period = entry_period
         self.exit_period = exit_period
 

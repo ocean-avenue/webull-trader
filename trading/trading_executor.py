@@ -147,63 +147,76 @@ def start():
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
+    trading_hour = utils.get_trading_hour()
+    if trading_hour == None:
+        print("[{}] Not in trading hour, skip...".format(utils.get_now()))
+        return
     strategies = []
     # load algo type
     algo_type = utils.get_algo_type()
     # load strategies
     if algo_type == AlgorithmType.DAY_MOMENTUM:
         # DAY_MOMENTUM: momo trade
-        strategies.append(DayTradingMomo(paper=paper))
+        strategies.append(DayTradingMomo(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
         # DAY_MOMENTUM_REDUCE_SIZE: momo trade with reduce size
-        strategies.append(DayTradingMomoReduceSize(paper=paper))
+        strategies.append(DayTradingMomoReduceSize(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
         # DAY_MOMENTUM_NEW_HIGH: momo trade with new high confirm
         # strategies.append(DayTradingMomoNewHigh(paper=paper))
-        strategies.append(DayTradingMomoExtendedHour(paper=paper))
+        strategies.append(DayTradingMomoExtendedHour(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_RED_TO_GREEN:
         # DAY_RED_TO_GREEN: red/green trade
-        strategies.append(DayTradingRedGreen(paper=paper))
+        strategies.append(DayTradingRedGreen(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_BREAKOUT:
         # DAY_BREAKOUT: breakout trade
         strategies.append(DayTradingBreakout(
-            paper=paper, entry_period=30, exit_period=15))
+            paper=paper, trading_hour=trading_hour, entry_period=30, exit_period=15))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO
-        strategies.append(DayTradingEarningsOvernight(paper=paper))
+        strategies.append(DayTradingEarningsOvernight(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
         # DAY_EARNINGS: earnings overnight trade
-        strategies.append(DayTradingEarningsOvernight(paper=paper))
+        strategies.append(DayTradingEarningsOvernight(
+            paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days
         strategies.append(SwingTurtle(
-            paper=paper, entry_period=20, exit_period=10))
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.SWING_TURTLE_55:
         # SWING_TURTLE_55: turtle trade 55 days
         strategies.append(SwingTurtle(
-            paper=paper, entry_period=55, exit_period=20))
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_SWING_MOMO_TURTLE:
         # DAY_SWING_MOMO_TURTLE:
         # momo trade
-        strategies.append(DayTradingMomo(paper=paper))
+        strategies.append(DayTradingMomo(
+            paper=paper, trading_hour=trading_hour))
         # turtle trade 55 days
         strategies.append(SwingTurtle(
-            paper=paper, entry_period=55, exit_period=20))
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_SWING_RG_TURTLE:
         # DAY_SWING_RG_TURTLE
         # red/green trade
-        strategies.append(DayTradingRedGreen(paper=paper))
+        strategies.append(DayTradingRedGreen(
+            paper=paper, trading_hour=trading_hour))
         # turtle trade 55 days
         strategies.append(SwingTurtle(
-            paper=paper, entry_period=55, exit_period=20))
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
         # DAY_SWING_EARNINGS_TURTLE
         # earnings trade
-        strategies.append(DayTradingEarningsOvernight(paper=paper))
+        strategies.append(DayTradingEarningsOvernight(
+            paper=paper, trading_hour=trading_hour))
         # turtle trade 55 days
         strategies.append(SwingTurtle(
-            paper=paper, entry_period=55, exit_period=20))
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return

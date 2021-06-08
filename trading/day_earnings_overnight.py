@@ -12,8 +12,8 @@ from scripts import utils
 
 class DayTradingEarningsOvernight(StrategyBase):
 
-    def __init__(self, paper):
-        super().__init__(paper=paper)
+    def __init__(self, paper, trading_hour):
+        super().__init__(paper=paper, trading_hour=trading_hour)
         self.trading_price = {}
 
     def get_tag(self):
@@ -161,4 +161,4 @@ class DayTradingEarningsOvernight(StrategyBase):
 
         # save trading logs
         utils.save_trading_log("\n".join(
-            self.trading_logs), self.get_tag(), self.get_trading_hour(), date.today())
+            self.trading_logs), self.get_tag(), self.trading_hour, date.today())

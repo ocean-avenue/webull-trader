@@ -11,8 +11,9 @@ from scripts import utils
 
 class StrategyBase:
 
-    def __init__(self, paper=True):
+    def __init__(self, paper=True, trading_hour=TradingHourType.REGULAR):
         self.paper = paper
+        self.trading_hour = trading_hour
         self.trading_end = False
         # init trading variables
         self.tracking_tickers = {}
@@ -34,14 +35,6 @@ class StrategyBase:
 
     def get_tag(self):
         return ""
-
-    def get_trading_hour(self):
-        now = datetime.now()
-        if now.hour < 9 or now.hour == 9 and now.minute < 30:
-            return TradingHourType.BEFORE_MARKET_OPEN
-        if now.hour >= 16:
-            return TradingHourType.AFTER_MARKET_CLOSE
-        return TradingHourType.REGULAR
 
     def print_log(self, text):
         self.trading_logs.append(

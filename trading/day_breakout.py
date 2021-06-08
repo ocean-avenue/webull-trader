@@ -12,8 +12,8 @@ from scripts import utils
 
 class DayTradingBreakout(StrategyBase):
 
-    def __init__(self, paper, entry_period=20, exit_period=10):
-        super().__init__(paper=paper)
+    def __init__(self, paper, trading_hour, entry_period=20, exit_period=10):
+        super().__init__(paper=paper, trading_hour=trading_hour)
         self.entry_period = entry_period
         self.exit_period = exit_period
 
@@ -265,4 +265,4 @@ class DayTradingBreakout(StrategyBase):
 
         # save trading logs
         utils.save_trading_log("\n".join(
-            self.trading_logs), self.get_tag(), self.get_trading_hour(), date.today())
+            self.trading_logs), self.get_tag(), self.trading_hour, date.today())
