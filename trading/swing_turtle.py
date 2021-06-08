@@ -2,7 +2,7 @@
 
 # Turtle trading
 
-from datetime import datetime
+from django.utils import timezone
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from webull_trader.models import SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
@@ -91,7 +91,7 @@ class SwingTurtle(StrategyBase):
                     order_response=order_response,
                     position=position,
                     price=latest_close,
-                    sell_time=datetime.now())
+                    sell_time=timezone.now())
                 # clear position
                 position.delete()
         else:
@@ -120,12 +120,13 @@ class SwingTurtle(StrategyBase):
                     self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, latest price: {}".format(
                         symbol, ticker_id, buy_quant, latest_close))
                     # add swing position
+
                     self.add_swing_position(
                         symbol,
                         order_response,
                         cost=latest_close,
                         quant=buy_quant,
-                        buy_time=datetime.now(),
+                        buy_time=timezone.now(),
                         setup=self.get_setup())
 
     def on_begin(self):

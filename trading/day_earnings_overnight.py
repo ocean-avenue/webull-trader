@@ -2,6 +2,7 @@
 
 # Earning day trading class, may holding positions overnight
 
+from django.utils import timezone
 from datetime import date, datetime
 from webull_trader.models import EarningCalendar, OvernightPosition
 from trading.strategy_base import StrategyBase
@@ -47,7 +48,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 cost = self.trading_price[symbol]['cost']
                 quantity = self.trading_price[symbol]['quantity']
                 utils.save_overnight_position(
-                    symbol, ticker_id, order_id, self.get_setup(), cost, quantity, datetime.now())
+                    symbol, ticker_id, order_id, self.get_setup(), cost, quantity, timezone.now())
             return
 
         if ticker['pending_sell']:
@@ -60,7 +61,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                     # add overnight trade
                     sell_price = self.trading_price[symbol]['sell_price']
                     utils.save_overnight_trade(
-                        symbol, position, order_id, sell_price, datetime.now())
+                        symbol, position, order_id, sell_price, timezone.now())
                 else:
                     self.print_log(
                         "❌ Cannot find overnight position for <{}>[{}]!".format(symbol, ticker_id))
