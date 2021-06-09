@@ -237,7 +237,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT_30), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT_10), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_EARNINGS), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
