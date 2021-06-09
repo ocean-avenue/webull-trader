@@ -888,7 +888,8 @@ def check_day_trade_order(setup):
     if setup == enums.SetupType.DAY_10_MINUTES_NEW_HIGH or setup == enums.SetupType.DAY_20_MINUTES_NEW_HIGH or \
             setup == enums.SetupType.DAY_30_MINUTES_NEW_HIGH or setup == enums.SetupType.DAY_BULL_FLAG or \
             setup == enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH or setup == enums.SetupType.DAY_GAP_AND_GO or \
-            setup == enums.SetupType.DAY_RED_TO_GREEN or setup == enums.SetupType.DAY_REVERSAL:
+            setup == enums.SetupType.DAY_RED_TO_GREEN or setup == enums.SetupType.DAY_REVERSAL or \
+            setup == enums.SetupType.DAY_EARNINGS_GAP:
         return True
     return False
 
