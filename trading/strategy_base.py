@@ -309,7 +309,7 @@ class StrategyBase:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         ask_price = self.get_ask_price_from_quote(quote)
                         if ask_price == None:
-                            return
+                            return False
                         buy_position_amount = self.get_buy_order_limit(symbol)
                         buy_quant = (int)(buy_position_amount / ask_price)
                         order_response = webullsdk.buy_limit_order(
@@ -328,6 +328,9 @@ class StrategyBase:
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
                         self.tracking_tickers[symbol]['resubmit_count'] = 0
+                        # remove from monitor
+                        if stop_tracking:
+                            del self.tracking_tickers[symbol]
                 else:
                     self.print_log(
                         "Failed to cancel timeout buy order <{}>[{}]!".format(symbol, ticker_id))
@@ -388,7 +391,7 @@ class StrategyBase:
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
-                            return
+                            return False
                         bid_price = float(
                             quote['depth']['ntvAggBidList'][0]['price'])
                         holding_quantity = ticker['positions']
@@ -408,6 +411,10 @@ class StrategyBase:
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
                         self.tracking_tickers[symbol]['resubmit_count'] = 0
+                        # remove from monitor
+                        if stop_tracking:
+                            del self.tracking_tickers[symbol]
+                        self.print_log("Failed to sell order <{}>[{}]!".format(symbol, ticker_id))
                         # TODO, send message
                 else:
                     self.print_log(
