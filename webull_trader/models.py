@@ -12,6 +12,7 @@ class TradingSettings(models.Model):
     )
     # position amount for day trade
     order_amount_limit = models.FloatField()
+    extended_order_amount_limit = models.FloatField()
     # surge amount = surge volume x price
     min_surge_amount = models.FloatField()
     # min surge volume for momo strategy

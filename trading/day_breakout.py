@@ -25,7 +25,9 @@ class DayTradingBreakout(StrategyBase):
     def get_setup(self):
         if self.entry_period == 30:
             return SetupType.DAY_30_MINUTES_NEW_HIGH
-        return SetupType.DAY_20_MINUTES_NEW_HIGH
+        elif self.entry_period == 20:
+            return SetupType.DAY_20_MINUTES_NEW_HIGH
+        return SetupType.DAY_10_MINUTES_NEW_HIGH
 
     # check if track in extended hour
     def check_surge(self, bar):

@@ -48,6 +48,7 @@ def start():
             paper=True,
             algo_type=enums.AlgorithmType.DAY_MOMENTUM,
             order_amount_limit=1000.0,
+            extended_order_amount_limit=1000.0,
             min_surge_amount=15000.0,
             min_surge_volume=6000,
             min_surge_change_ratio=0.04,

@@ -172,6 +172,10 @@ def start():
         # DAY_RED_TO_GREEN: red/green trade
         strategies.append(DayTradingRedGreen(
             paper=paper, trading_hour=trading_hour))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_10:
+        # DAY_BREAKOUT: breakout trade 10 minutes
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_20:
         # DAY_BREAKOUT: breakout trade 20 minutes
         strategies.append(DayTradingBreakout(
@@ -218,6 +222,14 @@ def start():
         # earnings trade
         strategies.append(DayTradingEarningsOvernight(
             paper=paper, trading_hour=trading_hour))
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
+    elif algo_type == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
+        # DAY_SWING_BREAKOUT_TURTLE
+        # breakout trade
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
         # turtle trade 55 days
         strategies.append(SwingTurtle(
             paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))

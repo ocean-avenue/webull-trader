@@ -82,6 +82,7 @@ class SetupType:
     DAY_20_MINUTES_NEW_HIGH = 5
     DAY_30_MINUTES_NEW_HIGH = 6
     DAY_EARNINGS_GAP = 7
+    DAY_10_MINUTES_NEW_HIGH = 8
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
     UNKNOWN = 999
@@ -98,6 +99,8 @@ class SetupType:
             return '[Day] Reversal'
         if val == SetupType.DAY_RED_TO_GREEN:
             return '[Day] Red to Green'
+        if val == SetupType.DAY_10_MINUTES_NEW_HIGH:
+            return '[Day] 10 minutes new high'
         if val == SetupType.DAY_20_MINUTES_NEW_HIGH:
             return '[Day] 20 minutes new high'
         if val == SetupType.DAY_30_MINUTES_NEW_HIGH:
@@ -123,6 +126,8 @@ class SetupType:
                 SetupType.DAY_REVERSAL)),
             (SetupType.DAY_RED_TO_GREEN, SetupType.tostr(
                 SetupType.DAY_RED_TO_GREEN)),
+            (SetupType.DAY_10_MINUTES_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_10_MINUTES_NEW_HIGH)),
             (SetupType.DAY_20_MINUTES_NEW_HIGH, SetupType.tostr(
                 SetupType.DAY_20_MINUTES_NEW_HIGH)),
             (SetupType.DAY_30_MINUTES_NEW_HIGH, SetupType.tostr(
@@ -149,6 +154,7 @@ class AlgorithmType:
     DAY_EARNINGS = 7
     DAY_EARNINGS_OVERNIGHT = 8
     DAY_EARNINGS_BREAKOUT = 9
+    DAY_BREAKOUT_10 = 10
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -170,6 +176,8 @@ class AlgorithmType:
             return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
             return 'Momo day trade, no entry if the price not break max of last high price.'
+        if val == AlgorithmType.DAY_BREAKOUT_10:
+            return 'Breakout day trade, entry if price reach 10 minutes new high.'
         if val == AlgorithmType.DAY_BREAKOUT_20:
             return 'Breakout day trade, entry if price reach 20 minutes new high.'
         if val == AlgorithmType.DAY_BREAKOUT_30:
@@ -191,7 +199,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_SWING_RG_TURTLE:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_RED_TO_GREEN), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_BREAKOUT_TURTLE:
-            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT_30), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT_10), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_EARNINGS), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
@@ -206,6 +214,8 @@ class AlgorithmType:
             return 'DAY (MOMO NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'DAY (RED GREEN)'
+        if val == AlgorithmType.DAY_BREAKOUT_10:
+            return 'DAY (BREAKOUT 10)'
         if val == AlgorithmType.DAY_BREAKOUT_20:
             return 'DAY (BREAKOUT 20)'
         if val == AlgorithmType.DAY_BREAKOUT_30:
@@ -243,6 +253,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
             (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.tostr(
                 AlgorithmType.DAY_RED_TO_GREEN)),
+            (AlgorithmType.DAY_BREAKOUT_10, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_10)),
             (AlgorithmType.DAY_BREAKOUT_20, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_20)),
             (AlgorithmType.DAY_BREAKOUT_30, AlgorithmType.tostr(
