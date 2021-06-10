@@ -83,7 +83,7 @@ class SwingTurtle(StrategyBase):
                 order_response = webullsdk.sell_market_order(
                     ticker_id=ticker_id,
                     quant=position.quantity)
-                self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, latest price: {}".format(
+                self.print_log("🔴 Submit sell order <{}>, quant: {}, latest price: {}".format(
                     symbol, ticker_id, position.quantity, latest_close))
                 # add swing trade
                 self.update_pending_swing_trade(
@@ -117,8 +117,8 @@ class SwingTurtle(StrategyBase):
                     order_response = webullsdk.buy_market_order(
                         ticker_id=ticker_id,
                         quant=buy_quant)
-                    self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, latest price: {}".format(
-                        symbol, ticker_id, buy_quant, latest_close))
+                    self.print_log("🟢 Submit buy order <{}>, quant: {}, latest price: {}".format(
+                        symbol, buy_quant, latest_close))
                     # add swing position
 
                     self.update_pending_swing_position(

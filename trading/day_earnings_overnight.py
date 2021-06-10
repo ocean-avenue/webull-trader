@@ -64,7 +64,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                         symbol, position, order_id, sell_price, timezone.now())
                 else:
                     self.print_log(
-                        "❌ Cannot find overnight position for <{}>[{}]!".format(symbol, ticker_id))
+                        "❌ Cannot find overnight position for <{}>!".format(symbol))
             return
 
         holding_quantity = ticker['positions']
@@ -89,8 +89,8 @@ class DayTradingEarningsOvernight(StrategyBase):
                     "cost": ask_price,
                     "quantity": buy_quant,
                 }
-                self.print_log("🟢 Submit buy order <{}>[{}], quant: {}, limit price: {}".format(
-                    symbol, ticker_id, buy_quant, ask_price))
+                self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                    symbol, buy_quant, ask_price))
                 # update pending buy
                 self.update_pending_buy_order(symbol, order_response)
 
@@ -111,8 +111,8 @@ class DayTradingEarningsOvernight(StrategyBase):
                 self.trading_price[symbol] = {
                     "sell_price": bid_price,
                 }
-                self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
-                    symbol, ticker_id, holding_quantity, bid_price))
+                self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+                    symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
@@ -135,8 +135,8 @@ class DayTradingEarningsOvernight(StrategyBase):
                 ticker_id = webullsdk.get_ticker(symbol=symbol)
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                 self.tracking_tickers[symbol] = ticker
-                self.print_log("Add ticker <{}>[{}] to check earning gap!".format(
-                    symbol, ticker_id))
+                self.print_log(
+                    "Add ticker <{}> to check earning gap!".format(symbol))
         # prepare tickers for sell
         if self.is_regular_market_hour():
             earning_positions = OvernightPosition.objects.filter(
@@ -145,8 +145,8 @@ class DayTradingEarningsOvernight(StrategyBase):
                 symbol = position.symbol
                 ticker_id = position.ticker_id
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
-                self.print_log("Add ticker <{}>[{}] to sell during regular hour!".format(
-                    symbol, ticker_id))
+                self.print_log(
+                    "Add ticker <{}> to sell during regular hour!".format(symbol))
 
     def on_update(self):
         # trading tickers

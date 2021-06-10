@@ -33,16 +33,14 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                     # found trading ticker
                     ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
-                    self.print_log(
-                        "Found <{}>[{}] to trade!".format(symbol, ticker_id))
+                    self.print_log("Found <{}> to trade!".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)
             elif self.is_regular_market_hour():
                 # found trading ticker
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                 self.tracking_tickers[symbol] = ticker
-                self.print_log(
-                    "Found <{}>[{}] to trade!".format(symbol, ticker_id))
+                self.print_log("Found <{}> to trade!".format(symbol))
                 # do trade
                 self.trade(ticker)
 
@@ -64,7 +62,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             self.earning_symbols.append(symbol)
             self.symbol_tickers_map[symbol] = ticker_id
             self.print_log(
-                "Add ticker <{}>[{}] to check earning gap!".format(symbol, ticker_id))
+                "Add ticker <{}> to check earning gap!".format(symbol))
 
     def on_update(self):
         # trading tickers
@@ -86,7 +84,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             elif self.is_after_market_hour():
                 top_gainers = webullsdk.get_after_market_gainers()
 
-            # self.print_log("Scanning top gainers [{}]...".format(
+            # self.print_log("Scanning top gainers <{}>...".format(
             #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
             for gainer in top_gainers:
                 symbol = gainer["symbol"]
@@ -94,7 +92,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 if symbol in self.tracking_tickers:
                     continue
                 ticker_id = gainer["ticker_id"]
-                # self.print_log("Scanning <{}>[{}]...".format(symbol, ticker_id))
+                # self.print_log("Scanning <{}>...".format(symbol))
                 change_percentage = gainer["change_percentage"]
                 self.check_trade(symbol, ticker_id, change_percentage)
         else:

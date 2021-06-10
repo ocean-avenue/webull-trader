@@ -223,8 +223,7 @@ class StrategyBase:
             if order_filled:
                 # remove
                 del self.error_short_tickers[symbol]
-                self.print_log(
-                    "Short cover order <{}>[{}] filled".format(symbol, ticker_id))
+                self.print_log("Short cover order <{}> filled".format(symbol))
             else:
                 # check order timeout
                 if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
@@ -234,7 +233,7 @@ class StrategyBase:
                         del self.error_short_tickers[symbol]
                     else:
                         self.print_log(
-                            "Failed to cancel timeout short cover order <{}>[{}]!".format(symbol, ticker_id))
+                            "Failed to cancel timeout short cover order <{}>!".format(symbol))
         for position in positions:
             # if short position
             position_size = int(position['position'])
@@ -252,8 +251,8 @@ class StrategyBase:
                         ticker_id=ticker_id,
                         price=buy_price,
                         quant=abs(position_size))
-                    self.print_log("🟢 Submit short cover order <{}>[{}], quant: {}, limit price: {}".format(
-                        symbol, ticker_id, abs(position_size), buy_price))
+                    self.print_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
+                        symbol, abs(position_size), buy_price))
                     if 'msg' in order_response:
                         self.print_log(order_response['msg'])
                     elif 'orderId' in order_response:
@@ -267,8 +266,7 @@ class StrategyBase:
     def check_buy_order_filled(self, ticker, resubmit=False, stop_tracking=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        self.print_log(
-            "Checking buy order <{}>[{}] filled...".format(symbol, ticker_id))
+        self.print_log("Checking buy order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
         if positions == None:
             return False
@@ -289,8 +287,8 @@ class StrategyBase:
                 self.tracking_tickers[symbol]['resubmit_count'] = 0
                 self.tracking_tickers[symbol]['order_filled_time'] = datetime.now(
                 )
-                self.print_log("Buy order <{}>[{}] filled, cost: {}".format(
-                    symbol, ticker_id, cost))
+                self.print_log(
+                    "Buy order <{}> filled, cost: {}".format(symbol, cost))
                 # remove from monitor
                 if stop_tracking:
                     del self.tracking_tickers[symbol]
@@ -303,7 +301,7 @@ class StrategyBase:
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Buy order timeout, canceled!")
                     self.print_log(
-                        "Buy order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
+                        "Buy order <{}> timeout, canceled!".format(symbol))
                     # resubmit buy order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -316,8 +314,8 @@ class StrategyBase:
                             ticker_id=ticker_id,
                             price=ask_price,
                             quant=buy_quant)
-                        self.print_log("Resubmit buy order <{}>[{}], quant: {}, limit price: {}".format(
-                            symbol, ticker_id, buy_quant, ask_price))
+                        self.print_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
+                            symbol, buy_quant, ask_price))
                         self.update_pending_buy_order(symbol, order_response)
                         if 'orderId' in order_response:
                             utils.save_webull_order_note(
@@ -333,7 +331,7 @@ class StrategyBase:
                             del self.tracking_tickers[symbol]
                 else:
                     self.print_log(
-                        "Failed to cancel timeout buy order <{}>[{}]!".format(symbol, ticker_id))
+                        "Failed to cancel timeout buy order <{}>!".format(symbol))
 
         # check short order
         self.check_error_short_order(positions)
@@ -343,8 +341,7 @@ class StrategyBase:
     def check_sell_order_filled(self, ticker, resubmit=True, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        self.print_log(
-            "Checking sell order <{}>[{}] filled...".format(symbol, ticker_id))
+        self.print_log("Checking sell order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
         if positions == None:
             return False
@@ -373,8 +370,7 @@ class StrategyBase:
             # remove from monitor
             if stop_tracking:
                 del self.tracking_tickers[symbol]
-            self.print_log(
-                "Sell order <{}>[{}] filled".format(symbol, ticker_id))
+            self.print_log("Sell order <{}> filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
             utils.save_webull_account(account_data)
@@ -386,7 +382,7 @@ class StrategyBase:
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Sell order timeout, canceled!")
                     self.print_log(
-                        "Sell order <{}>[{}] timeout, canceled!".format(symbol, ticker_id))
+                        "Sell order <{}> timeout, canceled!".format(symbol))
                     # resubmit sell order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
@@ -399,8 +395,8 @@ class StrategyBase:
                             ticker_id=ticker_id,
                             price=bid_price,
                             quant=holding_quantity)
-                        self.print_log("Resubmit sell order <{}>[{}], quant: {}, limit price: {}".format(
-                            symbol, ticker_id, holding_quantity, bid_price))
+                        self.print_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
+                            symbol, holding_quantity, bid_price))
                         self.update_pending_sell_order(symbol, order_response)
                         if 'orderId' in order_response:
                             utils.save_webull_order_note(
@@ -414,11 +410,12 @@ class StrategyBase:
                         # remove from monitor
                         if stop_tracking:
                             del self.tracking_tickers[symbol]
-                        self.print_log("Failed to sell order <{}>[{}]!".format(symbol, ticker_id))
+                        self.print_log(
+                            "Failed to sell order <{}>!".format(symbol))
                         # TODO, send message
                 else:
                     self.print_log(
-                        "Failed to cancel timeout sell order <{}>[{}]!".format(symbol, ticker_id))
+                        "Failed to cancel timeout sell order <{}>!".format(symbol))
 
         # check short order
         self.check_error_short_order(positions)
@@ -548,8 +545,8 @@ class StrategyBase:
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        self.print_log("🔴 Submit sell order <{}>[{}], quant: {}, limit price: {}".format(
-            symbol, ticker_id, holding_quantity, bid_price))
+        self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+            symbol, holding_quantity, bid_price))
         self.update_pending_sell_order(
             symbol, order_response, exit_note="Clear position.")
 
