@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingWatchlist, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -992,9 +992,9 @@ def swing_positions(request):
         total_cost = unit_cost * quantity
 
         last_price = 0.0
-        last_bar = SwingHistoricalDailyBar.objects.filter(symbol=symbol).last()
-        if last_bar:
-            last_price = last_bar.close
+        quote = StockQuote.objects.filter(symbol=symbol).first()
+        if quote:
+            last_price = quote.price
 
         total_value = last_price * quantity
 
@@ -1041,7 +1041,7 @@ def swing_positions_symbol(request, symbol=None):
         return render(request, 'webull_trader/swing_positions_symbol.html', cached_context)
 
     position = get_object_or_404(SwingPosition, symbol=symbol)
-    watchlist = get_object_or_404(SwingWatchlist, symbol=symbol)
+    quote = get_object_or_404(StockQuote, symbol=symbol)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -1049,17 +1049,7 @@ def swing_positions_symbol(request, symbol=None):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    # fmp quote data
-    quote = fmpsdk.get_quote(symbol)
-    eps = None
-    if quote["eps"]:
-        eps = round(quote["eps"], 2)
-    pe = None
-    if quote["pe"]:
-        pe = round(quote["pe"], 2)
-    sector = None
-    if watchlist.sector:
-        sector = watchlist.sector
+    # fill quote data
     next_earning = None
     # search next earning
     earnings = EarningCalendar.objects.filter(symbol=symbol)
@@ -1068,11 +1058,12 @@ def swing_positions_symbol(request, symbol=None):
             next_earning = "{} ({})".format(
                 earning.earning_date, earning.earning_time)
     quote_data = {
-        "market_value": utils.millify(quote["marketCap"]),
-        "free_float": utils.millify(quote['sharesOutstanding']),
-        "pe": pe,
-        "eps": eps,
-        "sector": sector,
+        "market_value": utils.millify(quote.market_value),
+        "free_float": utils.millify(quote.outstanding_shares),
+        "beta": round(quote.beta, 2),
+        "pe": round(quote.pe, 2),
+        "eps": round(quote.eps, 2),
+        "sector": quote.sector,
         "next_earning": next_earning,
     }
 
