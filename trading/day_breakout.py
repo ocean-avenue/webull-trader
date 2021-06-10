@@ -81,12 +81,21 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if not utils.check_bars_rel_volume(bars):
-            self.print_log(
-                "<{}> charts has no relative volume, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-            return False
+        if self.entry_period == 10:
+            # check ema 9
+            if current_price < current_candle['ema9']:
+                self.print_log(
+                    "<{}> price is not above ema9, stop trading!".format(symbol))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return False
+        else:
+            if not utils.check_bars_rel_volume(bars):
+                self.print_log(
+                    "<{}> charts has no relative volume, stop trading!".format(symbol))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return False
         return True
 
     def check_stop_loss(self, ticker, position):
@@ -152,6 +161,9 @@ class DayTradingBreakout(StrategyBase):
                     ticker_id, count=(self.entry_period+5))
             if m1_bars.empty:
                 return
+
+            # calculate and fill ema 9 data
+            m1_bars['ema9'] = m1_bars['close'].ewm(span=9, adjust=False).mean()
 
             # candle data
             current_candle = m1_bars.iloc[-1]
