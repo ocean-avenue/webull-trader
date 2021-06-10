@@ -24,6 +24,9 @@ def start(day=None):
             symbol_list.append(symbol)
             ticker_id_list.append(ticker_id)
 
+    # fetch stock quotes
+    utils.fetch_stock_quotes(symbol_list)
+
     # iterate through all symbol
     for i in range(0, len(symbol_list)):
         symbol = symbol_list[i]
