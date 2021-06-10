@@ -85,6 +85,7 @@ class SetupType:
     DAY_10_MINUTES_NEW_HIGH = 8
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
+    ERROR_FAILED_TO_SELL = 500
     UNKNOWN = 999
 
     @staticmethod
@@ -111,6 +112,8 @@ class SetupType:
             return '[Swing] 20 days new high'
         if val == SetupType.SWING_55_DAYS_NEW_HIGH:
             return '[Swing] 55 days new high'
+        if val == SetupType.ERROR_FAILED_TO_SELL:
+            return '[Error] Failed to sell'
         return UNKNOWN
 
     @staticmethod
@@ -138,6 +141,8 @@ class SetupType:
                 SetupType.SWING_20_DAYS_NEW_HIGH)),
             (SetupType.SWING_55_DAYS_NEW_HIGH, SetupType.tostr(
                 SetupType.SWING_55_DAYS_NEW_HIGH)),
+            (SetupType.ERROR_FAILED_TO_SELL, SetupType.tostr(
+                SetupType.ERROR_FAILED_TO_SELL)),
             (SetupType.UNKNOWN, SetupType.tostr(
                 SetupType.UNKNOWN)),
         )
