@@ -353,7 +353,8 @@ def check_bars_rel_volume(bars):
     last_candle3 = bars.iloc[-3]
     last_candle4 = bars.iloc[-4]
 
-    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > get_min_relative_volume():
+    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > get_min_relative_volume() or \
+            last_candle["volume"] / last_candle2["volume"] > get_min_relative_volume() or last_candle2["volume"] / last_candle3["volume"] > get_min_relative_volume():
         # relative volume ok
         return True
     return False
