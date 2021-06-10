@@ -12,6 +12,7 @@ class TradingSettings(models.Model):
     )
     # position amount for day trade
     order_amount_limit = models.FloatField()
+    # TODO, use this value for extended hour
     extended_order_amount_limit = models.FloatField()
     # surge amount = surge volume x price
     min_surge_amount = models.FloatField()
@@ -165,6 +166,31 @@ class WebullAccountStatistics(models.Model):
 
     def __str__(self):
         return "[{}] day P&L: {}".format(self.date, self.day_profit_loss)
+
+
+class StockQuote(models.Model):
+    symbol = models.CharField(max_length=64)
+    price = models.FloatField()
+    volume = models.FloatField()
+    change = models.FloatField()
+    change_percentage = models.FloatField()
+    price_range = models.CharField(max_length=64, default="-")
+    beta = models.FloatField(default=1.0)
+    market_value = models.FloatField()
+    avg_price_50d = models.FloatField()
+    avg_price_200d = models.FloatField()
+    avg_volume = models.FloatField()
+    last_div = models.FloatField(default=1.0)
+    exchange = models.CharField(max_length=64, default="NASDAQ")
+    sector = models.CharField(max_length=64, default="Technology")
+    industry = models.CharField(max_length=128, default="Consumer Electronics")
+    eps = models.FloatField()
+    pe = models.FloatField()
+    outstanding_shares = models.FloatField()
+    is_etf = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "<{}> price: ${}, range: {}, sector: {}".format(self.symbol, self.price, self.price_range, self.sector)
 
 
 class EarningCalendar(models.Model):

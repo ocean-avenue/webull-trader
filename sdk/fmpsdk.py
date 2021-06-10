@@ -74,6 +74,14 @@ def get_profile(symbol):
     return None
 
 
+def get_profiles(symbol_list):
+    return _get_jsonparsed_data(
+        "{}/profile/{}?apikey={}".format(
+            FMP_API_BASE_URL, ",".join(symbol_list), FMP_API_KEY
+        )
+    )
+
+
 def get_daily_sma(symbol, period):
     return _get_jsonparsed_data(
         "{}/technical_indicator/daily/{}?period={}&type=sma&apikey={}".format(

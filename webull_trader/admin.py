@@ -126,6 +126,22 @@ admin.site.register(models.WebullAccountStatistics,
                     WebullAccountStatisticsAdmin)
 
 
+class StockQuoteAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'symbol',
+        'price',
+        'beta',
+        'market_value',
+        'price_range',
+        'sector',
+    ]
+
+
+admin.site.register(models.StockQuote,
+                    StockQuoteAdmin)
+
+
 class EarningCalendarAdmin(admin.ModelAdmin):
 
     list_display = [

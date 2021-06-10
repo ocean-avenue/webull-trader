@@ -6,10 +6,11 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, utils
+from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, utils
 from trading import trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
+REGULAR_HOURS = ["10", "11", "12", "13", "14", "15", "16"]
 
 scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
 scheduler.add_jobstore(DjangoJobStore(), "default")
@@ -44,10 +45,22 @@ def trading_job():
     print("[{}] Done trading job!".format(utils.get_now()))
 
 
+def fetch_stock_quote_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip fetch stock quote job...".format(
+            utils.get_now(), holiday))
+        return
+
+    print("[{}] Start fetch quotes job...".format(utils.get_now()))
+    fetch_quotes.start()
+    print("[{}] Done fetch quotes job!".format(utils.get_now()))
+
+
 def fetch_stats_data_job():
     holiday = _check_market_holiday()
     if holiday != None:
-        print("[{}] {}, skip fetch data job...".format(
+        print("[{}] {}, skip fetch stats data job...".format(
             utils.get_now(), holiday))
         return
 
@@ -89,6 +102,20 @@ def add_weekday_jobs(job, job_name, hour, minute, second="00"):
         )
 
 
+def add_regular_hour_jobs(job, job_name):
+    for weekday in WEEKDAYS:
+        for regular_hour in REGULAR_HOURS:
+            scheduler.add_job(
+                job,
+                trigger=CronTrigger(
+                    day_of_week=weekday, hour=regular_hour, minute="00", second="00"
+                ),
+                id="{}_{}_{}".format(job_name, weekday, regular_hour),
+                max_instances=1,
+                replace_existing=True,
+            )
+
+
 class Command(BaseCommand):
     help = "runs apscheduler"
 
@@ -121,6 +148,12 @@ class Command(BaseCommand):
             job_name="fetch_stats_data_job",
             hour="20",
             minute="15")
+
+        # fetch stock quote
+        add_regular_hour_jobs(
+            job=fetch_stock_quote_job,
+            job_name="fetch_stock_quote_job",
+        )
 
         try:
             print("[{}] start scheduler...".format(utils.get_now()))
