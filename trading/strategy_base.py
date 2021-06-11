@@ -2,9 +2,12 @@
 
 # Base trading class
 
+import copy
+from time import time
 from datetime import datetime, timedelta
+from django.utils import timezone
 from webull_trader.models import SwingPosition, SwingTrade
-from webull_trader.enums import TradingHourType
+from webull_trader.enums import SetupType, TradingHourType
 from sdk import webullsdk
 from scripts import utils
 
@@ -519,27 +522,43 @@ class StrategyBase:
                 break
         return ticker_position
 
+    def clear_positions(self):
+        unsold_tickers = copy.deepcopy(self.tracking_tickers)
+        while len(list(self.tracking_tickers)) > 0:
+            for symbol in list(self.tracking_tickers):
+                ticker = self.tracking_tickers[symbol]
+                if self.clear_position(ticker):
+                    del unsold_tickers[symbol]
+            # at least slepp 1 sec
+            time.sleep(1)
+        # add unsold_tickers to overnight position
+        for symbol in len(list(unsold_tickers)):
+            ticker = unsold_tickers[symbol]
+            utils.save_overnight_position(
+                symbol,
+                ticker["ticker_id"],
+                str(int(timezone.now().timestamp())),  # set random order id
+                SetupType.ERROR_FAILED_TO_SELL,
+                1.0,
+                ticker["positions"],
+                timezone.now())
+
     def clear_position(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
 
-        if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker)
-            return
-
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker)
-            return
+            return self.check_sell_order_filled(ticker)
 
         holding_quantity = ticker['positions']
         if holding_quantity == 0:
             # remove from monitor
             del self.tracking_tickers[symbol]
-            return
+            return True
 
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         if quote == None:
-            return
+            return False
         bid_price = float(quote['depth']['ntvAggBidList'][0]['price'])
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
@@ -549,6 +568,7 @@ class StrategyBase:
             symbol, holding_quantity, bid_price))
         self.update_pending_sell_order(
             symbol, order_response, exit_note="Clear position.")
+        return False
 
     def get_setup(self):
         return 999

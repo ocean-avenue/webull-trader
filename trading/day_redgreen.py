@@ -208,13 +208,13 @@ class DayTradingRedGreen(StrategyBase):
                 self.init_tracking_stats_if_not(ticker)
                 # do trade
                 self.trade(ticker)
-        elif len(list(self.tracking_tickers)) > 0:
-            # check if still holding any positions before exit
-            for symbol in list(self.tracking_tickers):
-                ticker = self.tracking_tickers[symbol]
-                self.clear_position(ticker)
         else:
-            # save trading logs
-            utils.save_trading_log(
-                "\n".join(self.trading_logs), self.get_tag(), self.trading_hour, date.today())
             self.trading_end = True
+
+    def on_end(self):
+        # check if still holding any positions before exit
+        self.clear_positions()
+
+        # save trading logs
+        utils.save_trading_log(
+            "\n".join(self.trading_logs), self.get_tag(), self.trading_hour, date.today())

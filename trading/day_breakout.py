@@ -300,14 +300,9 @@ class DayTradingBreakout(StrategyBase):
 
     def on_end(self):
         self.trading_end = True
-        # check if still holding any positions before exit
-        while len(list(self.tracking_tickers)) > 0:
-            for symbol in list(self.tracking_tickers):
-                ticker = self.tracking_tickers[symbol]
-                self.clear_position(ticker)
 
-            # at least slepp 1 sec
-            time.sleep(1)
+        # check if still holding any positions before exit
+        self.clear_positions()
 
         # save trading logs
         utils.save_trading_log("\n".join(
