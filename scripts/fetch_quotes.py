@@ -4,7 +4,7 @@
 
 
 def start():
-    from django import utils
+    from scripts import utils
     from webull_trader.models import SwingWatchlist
 
     swing_watchlist = SwingWatchlist.objects.all()

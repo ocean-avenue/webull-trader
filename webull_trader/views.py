@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingWatchlist, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -354,7 +354,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             sell_price = day_trade["sell_price"]
             quantity = day_trade["quantity"]
             gain = round((sell_price - buy_price) * quantity, 2)
-            profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+            profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
                 gain)
 
             setup = None
@@ -1003,7 +1003,7 @@ def swing_positions(request):
         unrealized_pl = total_value - total_cost
         unrealized_pl_percent = (total_value - total_cost) / total_cost
 
-        profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
             round(unrealized_pl, 2))
 
         swing_positions.append({
@@ -1050,6 +1050,21 @@ def swing_positions_symbol(request, symbol=None):
     algo_type_texts = utils.get_algo_type_texts()
 
     # fill quote data
+    market_value = None
+    if quote.market_value:
+        market_value = utils.millify(quote.market_value)
+    outstanding_shares = None
+    if quote.outstanding_shares:
+        outstanding_shares = utils.millify(quote.outstanding_shares)
+    beta = None
+    if quote.beta:
+        beta = round(quote.beta, 2)
+    pe = None
+    if quote.pe:
+        pe = round(quote.pe, 2)
+    eps = None
+    if quote.eps:
+        eps = round(quote.eps, 2)
     next_earning = None
     # search next earning
     earnings = EarningCalendar.objects.filter(symbol=symbol)
@@ -1057,21 +1072,25 @@ def swing_positions_symbol(request, symbol=None):
         if earning.earning_date >= date.today():
             next_earning = "{} ({})".format(
                 earning.earning_date, earning.earning_time)
+    change_percent, change_percent_style = utils.get_color_percentage_style_for_render(
+        round(quote.change_percentage, 2))
     quote_data = {
-        "market_value": utils.millify(quote.market_value),
-        "free_float": utils.millify(quote.outstanding_shares),
-        "beta": round(quote.beta, 2),
-        "pe": round(quote.pe, 2),
-        "eps": round(quote.eps, 2),
+        "market_value": market_value,
+        "free_float": outstanding_shares,
+        "beta": beta,
+        "pe": pe,
+        "eps": eps,
         "sector": quote.sector,
         "next_earning": next_earning,
+        "change_percent": change_percent,
+        "change_percent_style": change_percent_style,
     }
 
     # swing position
     unit_cost = position.cost
     quantity = position.quantity
     total_cost = unit_cost * quantity
-    last_price = quote['price']
+    last_price = quote.price
     total_value = last_price * quantity
     last_acc_stat = WebullAccountStatistics.objects.last()
     net_liquidation = last_acc_stat.net_liquidation
@@ -1079,7 +1098,7 @@ def swing_positions_symbol(request, symbol=None):
     unrealized_pl = total_value - total_cost
     unrealized_pl_percent = (total_value - total_cost) / total_cost
 
-    profit_loss, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+    profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
         round(unrealized_pl, 2))
     swing_position = {
         "unit_cost": "${}".format(unit_cost),

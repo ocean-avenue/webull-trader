@@ -900,7 +900,7 @@ def fetch_stock_quotes(symbol_list):
     for symbol in symbol_list:
         quote = quote_dist[symbol]
         stock_quote = StockQuote.objects.filter(symbol=symbol).first()
-        if not quote:
+        if not stock_quote:
             stock_quote = StockQuote(symbol=symbol)
         stock_quote.price = quote["price"]
         stock_quote.volume = quote["volume"]
@@ -922,6 +922,7 @@ def fetch_stock_quotes(symbol_list):
             stock_quote.sector = profile["sector"]
             stock_quote.industry = profile["industry"]
             stock_quote.is_etf = profile["isEtf"]
+        stock_quote.save()
 
 
 def check_day_trade_order(setup):
@@ -1590,13 +1591,21 @@ def get_color_bar_chart_item_for_render(value):
     }
 
 
-def get_color_profit_loss_style_for_render(value):
-    profit_loss = "+${}".format(value)
-    profit_loss_style = "text-success"
+def get_color_price_style_for_render(value):
+    price = "+${}".format(value)
+    price_style = "text-success"
     if value < 0:
-        profit_loss = "-${}".format(abs(value))
-        profit_loss_style = "text-danger"
-    return (profit_loss, profit_loss_style)
+        price = "-${}".format(abs(value))
+        price_style = "text-danger"
+    return (price, price_style)
+
+def get_color_percentage_style_for_render(value):
+    percentage = "+{}%".format(value)
+    percentage_style = "text-success"
+    if value < 0:
+        percentage = "{}%".format(value)
+        percentage_style = "text-danger"
+    return (percentage, percentage_style)
 
 
 def get_day_profit_loss_for_render(acc_stat):

@@ -176,7 +176,7 @@ class StockQuote(models.Model):
     change_percentage = models.FloatField()
     price_range = models.CharField(max_length=64, default="-")
     beta = models.FloatField(default=1.0)
-    market_value = models.FloatField()
+    market_value = models.FloatField(null=True, blank=True, default=None)
     avg_price_50d = models.FloatField()
     avg_price_200d = models.FloatField()
     avg_volume = models.FloatField()
@@ -184,9 +184,9 @@ class StockQuote(models.Model):
     exchange = models.CharField(max_length=64, default="NASDAQ")
     sector = models.CharField(max_length=64, default="Technology")
     industry = models.CharField(max_length=128, default="Consumer Electronics")
-    eps = models.FloatField()
-    pe = models.FloatField()
-    outstanding_shares = models.FloatField()
+    eps = models.FloatField(null=True, blank=True, default=None)
+    pe = models.FloatField(null=True, blank=True, default=None)
+    outstanding_shares = models.FloatField(null=True, blank=True, default=None)
     is_etf = models.BooleanField(default=False)
 
     def __str__(self):

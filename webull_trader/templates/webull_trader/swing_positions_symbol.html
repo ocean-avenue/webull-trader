@@ -24,7 +24,7 @@
   </div>
 
   <div class="row">
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
@@ -36,7 +36,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
@@ -48,7 +48,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
@@ -60,7 +60,7 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
@@ -72,7 +72,19 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{quote.beta|safe}}</h3>
+              <p class="mb-2">BETA</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
@@ -84,13 +96,25 @@
         </div>
       </div>
     </div>
-    <div class="col-12 col-sm-4 col-xxl d-flex">
+    <div class="col-12 col-sm-3 col-xxl d-flex">
       <div class="card flex-fill">
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
               <h3 class="mb-2">{{quote.next_earning|safe}}</h3>
               <p class="mb-2">Earning Date</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-3 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">{{position.portfolio_percent|safe}}</h3>
+              <p class="mb-2">Portfolio %</p>
             </div>
           </div>
         </div>
@@ -164,6 +188,18 @@
         <div class="card-body py-4">
           <div class="d-flex align-items-start">
             <div class="flex-grow-1">
+              <h3 class="mb-2 {{quote.change_percent_style}}">{{quote.change_percent|safe}}</h3>
+              <p class="mb-2">Change %</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-3 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
               <h3 class="mb-2 {{position.profit_loss_style}}">{{position.profit_loss|safe}}</h3>
               <p class="mb-2">P&L</p>
             </div>
@@ -178,18 +214,6 @@
             <div class="flex-grow-1">
               <h3 class="mb-2 {{position.profit_loss_style}}">{{position.profit_loss_percent|safe}}</h3>
               <p class="mb-2">P/L %</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12 col-sm-3 col-xxl d-flex">
-      <div class="card flex-fill">
-        <div class="card-body py-4">
-          <div class="d-flex align-items-start">
-            <div class="flex-grow-1">
-              <h3 class="mb-2">{{position.portfolio_percent|safe}}</h3>
-              <p class="mb-2">Portfolio %</p>
             </div>
           </div>
         </div>
