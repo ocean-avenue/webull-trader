@@ -228,8 +228,9 @@ class DayTradingBreakout(StrategyBase):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
-                bid_price = float(
-                    quote['depth']['ntvAggBidList'][0]['price'])
+                bid_price = self.get_bid_price_from_quote(quote)
+                if bid_price == None:
+                    return
                 order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
                     price=bid_price,

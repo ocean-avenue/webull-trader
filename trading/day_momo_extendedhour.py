@@ -19,6 +19,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
         return True
 
     def on_update(self):
+
         # only trading in extended hour
         if self.is_regular_market_hour():
             self.trading_end = True

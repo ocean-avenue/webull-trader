@@ -223,6 +223,7 @@ class StrategyBase:
                 # make sure is short position
                 if position['ticker']['symbol'] == symbol and float(position['position']) < 0:
                     order_filled = False
+                    break
             if order_filled:
                 # remove
                 del self.error_short_tickers[symbol]
@@ -391,8 +392,9 @@ class StrategyBase:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
                             return False
-                        bid_price = float(
-                            quote['depth']['ntvAggBidList'][0]['price'])
+                        bid_price = self.get_bid_price_from_quote(quote)
+                        if bid_price == None:
+                            return False
                         holding_quantity = ticker['positions']
                         order_response = webullsdk.sell_limit_order(
                             ticker_id=ticker_id,
@@ -559,7 +561,9 @@ class StrategyBase:
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         if quote == None:
             return False
-        bid_price = float(quote['depth']['ntvAggBidList'][0]['price'])
+        bid_price = self.get_bid_price_from_quote(quote)
+        if bid_price == None:
+            return False
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
             price=bid_price,

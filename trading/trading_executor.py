@@ -4,8 +4,8 @@
 
 import time
 from datetime import datetime, timedelta
-from webull_trader.enums import AlgorithmType
-from webull_trader.models import TradingSettings
+from webull_trader.enums import AlgorithmType, SetupType
+from webull_trader.models import OvernightPosition, TradingSettings
 from sdk import webullsdk
 from scripts import utils
 
@@ -15,6 +15,8 @@ class TradingExecutor:
     def __init__(self, strategies=[], paper=True):
         self.paper = paper
         self.strategies = strategies
+
+        self.unsold_tickers = {}
 
     def start(self):
 
@@ -46,6 +48,19 @@ class TradingExecutor:
         print("[{}] Webull logged in".format(utils.get_now()))
         last_login_refresh_time = datetime.now()
 
+        # check unsold tickers
+        unsold_positions = OvernightPosition.objects.filter(
+            setup=SetupType.ERROR_FAILED_TO_SELL)
+        for position in unsold_positions:
+            self.unsold_tickers[position.symbol] = {
+                "symbol": position.symbol,
+                "ticker_id": position.ticker_id,
+                "pending_sell": False,
+                "pending_order_id": None,
+                "pending_order_time": None,
+                "positions": position.quantity,
+            }
+
         # prepare strategies
         for strategy in self.strategies:
             strategy.on_begin()
@@ -67,6 +82,9 @@ class TradingExecutor:
                         utils.get_now()))
                     # TODO, send message
                     break
+
+            # clear unsold positions
+            self.clear_unsold_positions_update()
 
             # at least slepp 1 sec
             time.sleep(1)
@@ -102,6 +120,8 @@ class TradingExecutor:
         self.algo_type = trading_settings.algo_type
         # refresh login interval minutes
         self.refresh_login_interval_in_min = trading_settings.refresh_login_interval_in_min
+        # pending order timeout in seconds
+        self.pending_order_timeout_in_sec = trading_settings.pending_order_timeout_in_sec
 
         # init setting for strategies
         for strategy in self.strategies:
@@ -131,6 +151,55 @@ class TradingExecutor:
     def notify_if_has_short_positions(self):
         # TODO, send messages
         pass
+
+    def clear_unsold_positions_update(self):
+        if len(self.unsold_tickers) == 0:
+            return
+        positions = webullsdk.get_positions()
+        if positions == None:
+            return
+        for symbol in list(self.unsold_tickers):
+            ticker = self.unsold_tickers[symbol]
+            # check if already sold
+            if ticker['pending_sell']:
+                order_filled = True
+                for position in positions:
+                    # make sure position is positive
+                    if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
+                        order_filled = False
+                        break
+                if order_filled:
+                    # order filled
+                    del self.unsold_tickers[symbol]
+                else:
+                    # check order timeout
+                    if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+                        # cancel timeout order
+                        if webullsdk.cancel_order(ticker['pending_order_id']):
+                            # reset
+                            self.unsold_tickers[symbol]['pending_sell'] = False
+                            self.unsold_tickers[symbol]['pending_order_id'] = None
+                            self.unsold_tickers[symbol]['pending_order_time'] = None
+
+            else:
+                quote = webullsdk.get_quote(ticker_id=ticker['ticker_id'])
+                if quote == None:
+                    return
+                bid_price = self.get_bid_price_from_quote(quote)
+                if bid_price == None:
+                    return
+                order_response = webullsdk.sell_limit_order(
+                    ticker_id=ticker['ticker_id'],
+                    price=bid_price,
+                    quant=ticker['positions'])
+                if 'msg' in order_response:
+                    print(order_response['msg'])
+                elif 'orderId' in order_response:
+                    # mark pending sell
+                    self.unsold_tickers[symbol]['pending_sell'] = True
+                    self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                    self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
+                    )
 
 
 def start():
