@@ -356,6 +356,28 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
     return has_volume
 
 
+def check_bars_has_amount(bars, time_scale=1, period=10):
+    """
+    check if bar chart has enough amount
+    """
+    has_amount = True
+    period_bars = bars.tail(period)
+    confirm_avg_volume = get_avg_confirm_amount() * time_scale
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        volume = row["volume"]
+        price = row["close"]
+        require_confirm_amount = confirm_avg_volume
+        if is_pre_market_time(time) or is_after_market_time(time):
+            # extended hour requirement is 1/3 of regular hour
+            require_confirm_amount /= 3
+        if volume * price < require_confirm_amount:
+            has_amount = False
+            break
+
+    return has_amount
+
+
 def check_bars_rel_volume(bars):
     """
     check if bar chart relative volume
@@ -516,6 +538,15 @@ def get_avg_confirm_volume():
             "[{}] Cannot find trading settings, default confirm volume!".format(get_now()))
         return 6000
     return settings.avg_confirm_volume
+
+
+def get_avg_confirm_amount():
+    settings = TradingSettings.objects.first()
+    if settings == None:
+        print(
+            "[{}] Cannot find trading settings, default confirm amount!".format(get_now()))
+        return 30000
+    return settings.avg_confirm_amount
 
 
 def get_min_relative_volume():

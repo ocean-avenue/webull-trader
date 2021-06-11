@@ -51,6 +51,7 @@ class StrategyBase:
                       min_surge_volume,
                       min_surge_change_ratio,
                       avg_confirm_volume,
+                      avg_confirm_amount,
                       order_amount_limit,
                       observe_timeout_in_sec,
                       trade_interval_in_sec,
@@ -80,6 +81,10 @@ class StrategyBase:
         self.avg_confirm_volume = avg_confirm_volume
         self.print_log("Avg confirm volume: {}".format(
             self.avg_confirm_volume))
+
+        self.avg_confirm_amount = avg_confirm_amount
+        self.print_log("Avg confirm amount: {}".format(
+            self.avg_confirm_amount))
 
         self.order_amount_limit = order_amount_limit
         self.print_log("Buy order limit: {}".format(self.order_amount_limit))

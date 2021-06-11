@@ -130,6 +130,7 @@ class TradingExecutor:
                 min_surge_volume=trading_settings.min_surge_volume,
                 min_surge_change_ratio=trading_settings.min_surge_change_ratio,
                 avg_confirm_volume=trading_settings.avg_confirm_volume,
+                avg_confirm_amount=trading_settings.avg_confirm_amount,
                 order_amount_limit=trading_settings.order_amount_limit,
                 observe_timeout_in_sec=trading_settings.observe_timeout_in_sec,
                 trade_interval_in_sec=trading_settings.trade_interval_in_sec,

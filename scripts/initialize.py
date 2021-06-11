@@ -53,6 +53,7 @@ def start():
             min_surge_volume=6000,
             min_surge_change_ratio=0.04,
             avg_confirm_volume=3000,
+            avg_confirm_amount=30000,
             observe_timeout_in_sec=300,
             trade_interval_in_sec=120,
             pending_order_timeout_in_sec=60,
