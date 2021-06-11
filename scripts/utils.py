@@ -340,7 +340,8 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
     check if bar chart has enough volume
     """
     has_volume = True
-    period_bars = bars.tail(period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
     confirm_avg_volume = get_avg_confirm_volume() * time_scale
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
@@ -361,7 +362,8 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     check if bar chart has enough amount
     """
     has_amount = True
-    period_bars = bars.tail(period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
     confirm_avg_volume = get_avg_confirm_amount() * time_scale
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
