@@ -10,6 +10,18 @@ from sdk import fmpsdk
 from webull_trader import enums
 from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
+# sector values
+BASIC_MATERIALS = "Basic Materials"
+COMMUNICATION_SERVICES = "Communication Services"
+CONSUMER_CYCLICAL = "Consumer Cyclical"
+CONSUMER_DEFENSIVE = "Consumer Defensive"
+ENERGY = "Energy"
+FINANCIAL_SERVICES = "Financial Services"
+HEALTHCARE = "Healthcare"
+INDUSTRIALS = "Industrials"
+REAL_ESTATE = "Real Estate"
+TECHNOLOGY = "Technology"
+UTILITIES = "Utilities"
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
@@ -1349,6 +1361,52 @@ def get_relative_volume_index(rel_vol):
     return index
 
 
+def get_sector_labels():
+    return [
+        BASIC_MATERIALS,  # 0
+        COMMUNICATION_SERVICES,  # 1
+        CONSUMER_CYCLICAL,  # 2
+        CONSUMER_DEFENSIVE,  # 3
+        ENERGY,  # 4
+        FINANCIAL_SERVICES,  # 5
+        HEALTHCARE,  # 6
+        INDUSTRIALS,  # 7
+        REAL_ESTATE,  # 8
+        TECHNOLOGY,  # 9
+        UTILITIES,  # 10
+        "None",  # 11
+    ]
+
+
+def get_sector_index(sector):
+    index = -1
+    if sector == BASIC_MATERIALS:
+        index = 0
+    elif sector == COMMUNICATION_SERVICES:
+        index = 1
+    elif sector == CONSUMER_CYCLICAL:
+        index = 2
+    elif sector == CONSUMER_DEFENSIVE:
+        index = 3
+    elif sector == ENERGY:
+        index = 4
+    elif sector == FINANCIAL_SERVICES:
+        index = 5
+    elif sector == HEALTHCARE:
+        index = 6
+    elif sector == INDUSTRIALS:
+        index = 7
+    elif sector == REAL_ESTATE:
+        index = 8
+    elif sector == TECHNOLOGY:
+        index = 9
+    elif sector == UTILITIES:
+        index = 10
+    elif sector == None:
+        index = 11
+    return index
+
+
 def get_market_hourly_interval_labels():
     return [
         "04:00-04:30",  # 0
@@ -1598,6 +1656,7 @@ def get_color_price_style_for_render(value):
         price = "-${}".format(abs(value))
         price_style = "text-danger"
     return (price, price_style)
+
 
 def get_color_percentage_style_for_render(value):
     percentage = "+{}%".format(value)

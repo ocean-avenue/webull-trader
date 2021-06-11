@@ -179,6 +179,13 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'day_reports_relvol' %}">Relative Volume</a>
                 </li>
+                {% if request.path == '/day-reports/sector' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_sector' %}">Sector</a>
+                </li>
                 {% if request.path == '/day-reports/holding' %}
                 <li class="sidebar-item active">
                 {% else  %}

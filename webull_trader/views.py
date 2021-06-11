@@ -811,6 +811,86 @@ def day_reports_relvol(request):
 
 
 @login_required
+def day_reports_sector(request):
+
+    cached_context = cache.get('day_reports_sector_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    buy_orders, sell_orders = utils.get_day_trade_orders()
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    sector_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_sector_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by sector
+    for day_trade in day_trades:
+        sector = None
+        quote = StockQuote.objects.filter(symbol=day_trade['symbol']).first()
+        if quote:
+            sector = quote.sector
+        sector_idx = utils.get_sector_index(sector)
+        if 'sell_price' in day_trade:
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                sector_statistics[sector_idx]['win_trades'] += 1
+                sector_statistics[sector_idx]['total_profit'] += gain
+            else:
+                sector_statistics[sector_idx]['loss_trades'] += 1
+                sector_statistics[sector_idx]['total_loss'] += gain
+            sector_statistics[sector_idx]['profit_loss'] += gain
+            sector_statistics[sector_idx]['trades'] += 1
+    sector_profit_loss = []
+    sector_win_rate = []
+    sector_profit_loss_ratio = []
+    sector_trades = []
+    # calculate win rate and profit/loss ratio
+    for sector_stat in sector_statistics:
+        sector_trades.append(sector_stat['trades'])
+        sector_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(sector_stat['profit_loss'], 2)))
+        if sector_stat['trades'] > 0:
+            sector_win_rate.append(
+                round(sector_stat['win_trades']/sector_stat['trades'] * 100, 2))
+        else:
+            sector_win_rate.append(0.0)
+        avg_profit = 1.0
+        if sector_stat['win_trades'] > 0:
+            avg_profit = sector_stat['total_profit'] / \
+                sector_stat['win_trades']
+        avg_loss = 1.0
+        if sector_stat['loss_trades'] > 0:
+            avg_loss = sector_stat['total_loss'] / sector_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if sector_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if sector_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        sector_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Sector",
+        "labels": utils.get_sector_labels(),
+        "profit_loss": sector_profit_loss,
+        "win_rate": sector_win_rate,
+        "profit_loss_ratio": sector_profit_loss_ratio,
+        "trades": sector_trades,
+    }
+
+    cache.set('day_reports_sector_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
 def day_reports_holding(request):
 
     cached_context = cache.get('day_reports_holding_cache')
