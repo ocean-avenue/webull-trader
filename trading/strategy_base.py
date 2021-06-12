@@ -538,7 +538,7 @@ class StrategyBase:
             # at least slepp 1 sec
             time.sleep(1)
         # add unsold_tickers to overnight position
-        for symbol in len(list(unsold_tickers)):
+        for symbol in list(unsold_tickers):
             ticker = unsold_tickers[symbol]
             utils.save_overnight_position(
                 symbol,
