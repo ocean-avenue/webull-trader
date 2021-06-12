@@ -401,17 +401,18 @@ def check_bars_volatility(bars):
     """
     check if has bar's ohlc has different price, not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
     """
+    count = 0
     if bars.iloc[-1]['open'] == bars.iloc[-1]['close'] and bars.iloc[-1]['close'] == bars.iloc[-1]['high'] and bars.iloc[-1]['high'] == bars.iloc[-1]['low']:
-        return False
+        count += 1
     if bars.iloc[-2]['open'] == bars.iloc[-2]['close'] and bars.iloc[-2]['close'] == bars.iloc[-2]['high'] and bars.iloc[-2]['high'] == bars.iloc[-2]['low']:
-        return False
+        count += 1
     if bars.iloc[-3]['open'] == bars.iloc[-3]['close'] and bars.iloc[-3]['close'] == bars.iloc[-3]['high'] and bars.iloc[-3]['high'] == bars.iloc[-3]['low']:
-        return False
+        count += 1
     if bars.iloc[-4]['open'] == bars.iloc[-4]['close'] and bars.iloc[-4]['close'] == bars.iloc[-4]['high'] and bars.iloc[-4]['high'] == bars.iloc[-4]['low']:
-        return False
+        count += 1
     if bars.iloc[-5]['open'] == bars.iloc[-5]['close'] and bars.iloc[-5]['close'] == bars.iloc[-5]['high'] and bars.iloc[-5]['high'] == bars.iloc[-5]['low']:
-        return False
-    return True
+        count += 1
+    return count >= 3
 
 
 def check_bars_current_low_less_than_prev_low(bars):

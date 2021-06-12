@@ -62,21 +62,28 @@ class DayTradingBreakout(StrategyBase):
         #     return False
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
             self.print_log(
-                "<{}> charts is not updated, stop trading!".format(symbol))
+                "<{}> candle chart is not updated, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_continue(bars):
             self.print_log(
-                "<{}> charts is not continue, stop trading!".format(symbol))
+                "<{}> candle chart is not continue, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=1, period=3):
             self.print_log(
-                "<{}> charts has not enough amount, stop trading!".format(symbol))
+                "<{}> candle chart has not enough amount, stop trading!".format(symbol))
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            return False
+        
+        if not utils.check_bars_volatility(bars):
+            self.print_log(
+                "<{}> candle chart is not volatility, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
@@ -92,7 +99,7 @@ class DayTradingBreakout(StrategyBase):
         else:
             if not utils.check_bars_rel_volume(bars):
                 self.print_log(
-                    "<{}> charts has no relative volume, stop trading!".format(symbol))
+                    "<{}> candle chart has no relative volume, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return False
@@ -125,12 +132,12 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "{} candles new low.".format(self.exit_period)
             self.print_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 ticker['symbol'], current_price, period_low_price))
-        # check if price fixed in last 3 candles
-        elif self.is_regular_market_hour() and utils.check_bars_price_fixed(bars):
+        # check if bar chart has volatility
+        elif not utils.check_bars_volatility(bars):
             self.print_log(
-                "<{}> price is fixed during last 3 candles.".format(ticker['symbol']))
+                "<{}> candle chart is not volatility, exit!".format(ticker['symbol']))
             exit_trading = True
-            exit_note = "Price fixed during last 3 candles."
+            exit_note = "Candle chart is not volatility."
         return (exit_trading, exit_note)
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):

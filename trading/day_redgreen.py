@@ -55,21 +55,21 @@ class DayTradingRedGreen(StrategyBase):
 
             if not utils.check_bars_updated(m2_bars):
                 self.print_log(
-                    "<{}> charts is not updated, stop trading!".format(symbol))
+                    "<{}> candle chart is not updated, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             if not utils.check_bars_has_volume(m2_bars, time_scale=2):
                 self.print_log(
-                    "<{}> charts has not enough volume, stop trading!".format(symbol))
+                    "<{}> candle chart has not enough volume, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             if not utils.check_bars_rel_volume(m2_bars):
                 self.print_log(
-                    "<{}> charts has no relative volume, stop trading!".format(symbol))
+                    "<{}> candle chart has no relative volume, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return

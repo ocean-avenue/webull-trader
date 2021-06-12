@@ -104,13 +104,13 @@ class DayTradingMomo(StrategyBase):
 
             if not utils.check_bars_updated(m1_bars):
                 self.print_log(
-                    "<{}> charts is not updated, stop trading!".format(symbol))
+                    "<{}> candle chart is not updated, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             # if not utils.check_bars_volatility(m1_bars):
-            #     self.print_log("<{}> charts is not volatility, stop trading!".format(symbol))
+            #     self.print_log("<{}> candle chart is not volatility, stop trading!".format(symbol))
             #     # remove from monitor
             #     del tracking_tickers[symbol]
             #     return
