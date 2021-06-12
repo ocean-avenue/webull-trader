@@ -55,6 +55,13 @@ class DayTradingBreakout(StrategyBase):
         # check if new high
         if current_price < period_high_price:
             return False
+        # check ema 9
+        if current_price < current_candle['ema9']:
+            self.print_log(
+                "<{}> price is not above ema9, stop trading!".format(symbol))
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            return False
         # # check if gap too large
         # if period_high_price * 1.01 < current_price:
         #     self.print_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
@@ -74,13 +81,14 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=1, period=3):
+        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=1, period=5) and not utils.check_bars_rel_volume(bars):
+            # has no volume and no relative volume
             self.print_log(
-                "<{}> candle chart has not enough amount, stop trading!".format(symbol))
+                "<{}> candle chart has not enough volume, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
-        
+
         if not utils.check_bars_volatility(bars):
             self.print_log(
                 "<{}> candle chart is not volatility, stop trading!".format(symbol))
@@ -88,21 +96,6 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.entry_period == 10:
-            # check ema 9
-            if current_price < current_candle['ema9']:
-                self.print_log(
-                    "<{}> price is not above ema9, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
-                return False
-        else:
-            if not utils.check_bars_rel_volume(bars):
-                self.print_log(
-                    "<{}> candle chart has no relative volume, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
-                return False
         return True
 
     def check_stop_loss(self, ticker, position):
