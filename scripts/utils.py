@@ -932,6 +932,8 @@ def save_overnight_trade(symbol, position, order_id, sell_price, sell_time):
 
 
 def fetch_stock_quotes(symbol_list):
+    if len(symbol_list) == 0:
+        return
     quotes = fmpsdk.get_quotes(symbol_list)
     quote_dist = {}
     for quote in quotes:
