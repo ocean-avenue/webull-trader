@@ -2,8 +2,7 @@
 
 # Base trading class
 
-import copy
-from time import time
+import copy, time
 from datetime import datetime, timedelta
 from django.utils import timezone
 from webull_trader.models import SwingPosition, SwingTrade
