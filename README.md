@@ -1,6 +1,6 @@
 # webull-trader
 
-Day & Swing Trading System with Webull Platform
+Day/Swing Trading System powered by Webull Platform
 
 ### Strategy:
 
@@ -13,7 +13,7 @@ Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
 1. Install required packages:
 
 ```
-$ pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 2. Initialize:
@@ -42,21 +42,26 @@ python manage.py runscheduler
 
 ### Deploy:
 
-1. Prepare:
+1. Run server:
 
 ```
-mkdir /tmp/webull-trader/
-touch /tmp/webull-trader/deploy.ini
+screen -r server
+```
+```
+uwsgi --ini uwsgi.ini --touch-reload /tmp/deploy.ini --logto /tmp/uwsgi.log
 ```
 
-2. Run server:
+2. Run scheduler:
 
 ```
-uwsgi --ini uwsgi.ini --touch-reload /tmp/webull-trader/deploy.ini --logto /tmp/webull-trader/uwsgi.log
+screen -r scheduler
+```
+```
+python manage.py runscheduler
 ```
 
 3. Hot reload:
 
 ```
-touch /tmp/webull-trader/deploy.ini
+touch /tmp/deploy.ini
 ```
