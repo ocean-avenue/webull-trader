@@ -2,7 +2,8 @@
 
 # Base trading class
 
-import copy, time
+import copy
+import time
 from datetime import datetime, timedelta
 from django.utils import timezone
 from webull_trader.models import SwingPosition, SwingTrade
@@ -50,8 +51,11 @@ class StrategyBase:
                       min_surge_volume,
                       min_surge_change_ratio,
                       avg_confirm_volume,
+                      extended_avg_confirm_volume,
                       avg_confirm_amount,
+                      extended_avg_confirm_amount,
                       order_amount_limit,
+                      extended_order_amount_limit,
                       observe_timeout_in_sec,
                       trade_interval_in_sec,
                       pending_order_timeout_in_sec,
@@ -81,12 +85,24 @@ class StrategyBase:
         self.print_log("Avg confirm volume: {}".format(
             self.avg_confirm_volume))
 
+        self.extended_avg_confirm_volume = extended_avg_confirm_volume
+        self.print_log("Avg confirm volume (extended hour): {}".format(
+            self.extended_avg_confirm_volume))
+
         self.avg_confirm_amount = avg_confirm_amount
         self.print_log("Avg confirm amount: {}".format(
             self.avg_confirm_amount))
 
+        self.extended_avg_confirm_amount = extended_avg_confirm_amount
+        self.print_log("Avg confirm amount (extended hour): {}".format(
+            self.extended_avg_confirm_amount))
+
         self.order_amount_limit = order_amount_limit
         self.print_log("Buy order limit: {}".format(self.order_amount_limit))
+
+        self.extended_order_amount_limit = extended_order_amount_limit
+        self.print_log("Buy order limit (extended hour): {}".format(
+            self.extended_order_amount_limit))
 
         # observe timeout in seconds
         self.observe_timeout_in_sec = observe_timeout_in_sec
@@ -582,4 +598,6 @@ class StrategyBase:
         return 999
 
     def get_buy_order_limit(self, symbol):
-        return self.order_amount_limit
+        if self.is_regular_market_hour():
+            return self.order_amount_limit
+        return self.extended_order_amount_limit

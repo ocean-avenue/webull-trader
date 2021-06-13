@@ -342,15 +342,11 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
     has_volume = True
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
-    confirm_avg_volume = get_avg_confirm_volume() * time_scale
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
+        confirm_volume = get_avg_confirm_volume(time) * time_scale
         volume = row["volume"]
-        require_confirm_volume = confirm_avg_volume
-        if is_pre_market_time(time) or is_after_market_time(time):
-            # extended hour requirement is 1/3 of regular hour
-            require_confirm_volume /= 3
-        if volume < require_confirm_volume:
+        if volume < confirm_volume:
             has_volume = False
             break
 
@@ -364,16 +360,12 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     has_amount = True
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
-    confirm_avg_volume = get_avg_confirm_amount() * time_scale
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
+        confirm_amount = get_avg_confirm_amount(time) * time_scale
         volume = row["volume"]
         price = row["close"]
-        require_confirm_amount = confirm_avg_volume
-        if is_pre_market_time(time) or is_after_market_time(time):
-            # extended hour requirement is 1/3 of regular hour
-            require_confirm_amount /= 3
-        if volume * price < require_confirm_amount:
+        if volume * price < confirm_amount:
             has_amount = False
             break
 
@@ -534,21 +526,25 @@ def get_algo_type():
     return settings.algo_type
 
 
-def get_avg_confirm_volume():
+def get_avg_confirm_volume(time):
     settings = TradingSettings.objects.first()
     if settings == None:
         print(
             "[{}] Cannot find trading settings, default confirm volume!".format(get_now()))
         return 6000
+    if is_pre_market_time(time) or is_after_market_time(time):
+        return settings.extended_avg_confirm_volume
     return settings.avg_confirm_volume
 
 
-def get_avg_confirm_amount():
+def get_avg_confirm_amount(time):
     settings = TradingSettings.objects.first()
     if settings == None:
         print(
             "[{}] Cannot find trading settings, default confirm amount!".format(get_now()))
         return 30000
+    if is_pre_market_time(time) or is_after_market_time(time):
+        return settings.extended_avg_confirm_amount
     return settings.avg_confirm_amount
 
 

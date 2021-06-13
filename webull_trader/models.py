@@ -12,7 +12,7 @@ class TradingSettings(models.Model):
     )
     # position amount for day trade
     order_amount_limit = models.FloatField()
-    # TODO, use this value for extended hour
+    # position amount for day trade extended hour
     extended_order_amount_limit = models.FloatField()
     # surge amount = surge volume x price
     min_surge_amount = models.FloatField()
@@ -22,8 +22,12 @@ class TradingSettings(models.Model):
     min_surge_change_ratio = models.FloatField()
     # average confirm volume in regular market
     avg_confirm_volume = models.FloatField()
+    # average confirm volume in extended market
+    extended_avg_confirm_volume = models.FloatField()
     # average confirm amount in regular market
     avg_confirm_amount = models.FloatField()
+    # average confirm amount in extended market
+    extended_avg_confirm_amount = models.FloatField()
     # trading observe timeout in seconds
     observe_timeout_in_sec = models.IntegerField()
     # buy after sell interval in seconds

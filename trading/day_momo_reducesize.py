@@ -12,7 +12,9 @@ class DayTradingMomoReduceSize(DayTradingMomo):
         return "DayTradingMomoReduceSize"
 
     def get_buy_order_limit(self, symbol):
-        buy_position_amount = self.order_amount_limit
+        buy_position_amount = self.extended_order_amount_limit
+        if self.is_regular_market_hour():
+            buy_position_amount = self.order_amount_limit
         # check win rate
         if symbol in self.tracking_stats:
             win_rate = float(
