@@ -717,26 +717,27 @@ def get_pre_market_gainers(count=10):
             WEBULL_PRE_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
-        obj_list = res_json["data"]
         gainers = []
-        for json_obj in obj_list:
-            ticker_obj = json_obj["ticker"]
-            values_obj = json_obj["values"]
-            if ticker_obj["template"] == "stock":
-                symbol = ticker_obj["symbol"]
-                ticker_id = ticker_obj["tickerId"]
-                change = float(values_obj["change"])
-                change_percentage = float(values_obj["changeRatio"])
-                price = float(values_obj["price"])
-                gainers.append(
-                    {
-                        "symbol": symbol,
-                        "ticker_id": ticker_id,
-                        "change": change,
-                        "change_percentage": change_percentage,
-                        "price": price,
-                    }
-                )
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(values_obj["price"])
+                    gainers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                        }
+                    )
         return gainers
     except Exception as e:
         print("[{}] ⚠️  Exception get_pre_market_gainers: {}".format(
@@ -764,28 +765,29 @@ def get_top_gainers(count=10):
             WEBULL_TOP_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
-        obj_list = res_json["data"]
         gainers = []
-        for json_obj in obj_list:
-            ticker_obj = json_obj["ticker"]
-            values_obj = json_obj["values"]
-            if ticker_obj["template"] == "stock":
-                symbol = ticker_obj["symbol"]
-                ticker_id = ticker_obj["tickerId"]
-                change = float(values_obj["change"])
-                change_percentage = float(values_obj["changeRatio"])
-                price = float(ticker_obj["pprice"])
-                close = float(ticker_obj["close"])
-                gainers.append(
-                    {
-                        "symbol": symbol,
-                        "ticker_id": ticker_id,
-                        "change": change,
-                        "change_percentage": change_percentage,
-                        "price": price,
-                        "close": close,
-                    }
-                )
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(ticker_obj["pprice"])
+                    close = float(ticker_obj["close"])
+                    gainers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                            "close": close,
+                        }
+                    )
         return gainers
     except Exception as e:
         print("[{}] ⚠️  Exception get_top_gainers: {}".format(utils.get_now(), e))
@@ -800,26 +802,27 @@ def get_after_market_gainers(count=10):
             WEBULL_AFTER_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
-        obj_list = res_json["data"]
         gainers = []
-        for json_obj in obj_list:
-            ticker_obj = json_obj["ticker"]
-            values_obj = json_obj["values"]
-            if ticker_obj["template"] == "stock":
-                symbol = ticker_obj["symbol"]
-                ticker_id = ticker_obj["tickerId"]
-                change = float(values_obj["change"])
-                change_percentage = float(values_obj["changeRatio"])
-                price = float(values_obj["price"])
-                gainers.append(
-                    {
-                        "symbol": symbol,
-                        "ticker_id": ticker_id,
-                        "change": change,
-                        "change_percentage": change_percentage,
-                        "price": price,
-                    }
-                )
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(values_obj["price"])
+                    gainers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                        }
+                    )
         return gainers
     except Exception as e:
         print("[{}] ⚠️  Exception get_after_market_gainers: {}".format(
@@ -847,28 +850,29 @@ def get_top_losers(count=10):
             WEBULL_TOP_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
-        obj_list = res_json["data"]
         losers = []
-        for json_obj in obj_list:
-            ticker_obj = json_obj["ticker"]
-            values_obj = json_obj["values"]
-            if ticker_obj["template"] == "stock":
-                symbol = ticker_obj["symbol"]
-                ticker_id = ticker_obj["tickerId"]
-                change = float(values_obj["change"])
-                change_percentage = float(values_obj["changeRatio"])
-                price = float(ticker_obj["pprice"])
-                close = float(ticker_obj["close"])
-                losers.append(
-                    {
-                        "symbol": symbol,
-                        "ticker_id": ticker_id,
-                        "change": change,
-                        "change_percentage": change_percentage,
-                        "price": price,
-                        "close": close,
-                    }
-                )
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(ticker_obj["pprice"])
+                    close = float(ticker_obj["close"])
+                    losers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                            "close": close,
+                        }
+                    )
         return losers
     except Exception as e:
         print("[{}] ⚠️  Exception get_top_losers: {}".format(utils.get_now(), e))
@@ -883,26 +887,27 @@ def get_after_market_losers(count=10):
             WEBULL_AFTER_MARKET_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
-        obj_list = res_json["data"]
         gainers = []
-        for json_obj in obj_list:
-            ticker_obj = json_obj["ticker"]
-            values_obj = json_obj["values"]
-            if ticker_obj["template"] == "stock":
-                symbol = ticker_obj["symbol"]
-                ticker_id = ticker_obj["tickerId"]
-                change = float(values_obj["change"])
-                change_percentage = float(values_obj["changeRatio"])
-                price = float(values_obj["price"])
-                gainers.append(
-                    {
-                        "symbol": symbol,
-                        "ticker_id": ticker_id,
-                        "change": change,
-                        "change_percentage": change_percentage,
-                        "price": price,
-                    }
-                )
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(values_obj["price"])
+                    gainers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                        }
+                    )
         return gainers
     except Exception as e:
         print("[{}] ⚠️  Exception get_after_market_losers: {}".format(
