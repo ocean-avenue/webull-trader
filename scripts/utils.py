@@ -203,6 +203,14 @@ def is_after_market_time(t):
     return True
 
 
+def is_regular_market_time(t):
+    if t.hour < 9 or t.hour >= 16:
+        return False
+    if t.hour == 9 and t.minute < 30:
+        return False
+    return True
+
+
 def get_trading_hour():
     if is_pre_market_hour_exact():
         return enums.TradingHourType.BEFORE_MARKET_OPEN
@@ -393,18 +401,23 @@ def check_bars_volatility(bars):
     """
     check if has bar's ohlc has different price, not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
     """
-    count = 0
-    if bars.iloc[-1]['open'] == bars.iloc[-1]['close'] and bars.iloc[-1]['close'] == bars.iloc[-1]['high'] and bars.iloc[-1]['high'] == bars.iloc[-1]['low']:
-        count += 1
-    if bars.iloc[-2]['open'] == bars.iloc[-2]['close'] and bars.iloc[-2]['close'] == bars.iloc[-2]['high'] and bars.iloc[-2]['high'] == bars.iloc[-2]['low']:
-        count += 1
-    if bars.iloc[-3]['open'] == bars.iloc[-3]['close'] and bars.iloc[-3]['close'] == bars.iloc[-3]['high'] and bars.iloc[-3]['high'] == bars.iloc[-3]['low']:
-        count += 1
-    if bars.iloc[-4]['open'] == bars.iloc[-4]['close'] and bars.iloc[-4]['close'] == bars.iloc[-4]['high'] and bars.iloc[-4]['high'] == bars.iloc[-4]['low']:
-        count += 1
-    if bars.iloc[-5]['open'] == bars.iloc[-5]['close'] and bars.iloc[-5]['close'] == bars.iloc[-5]['high'] and bars.iloc[-5]['high'] == bars.iloc[-5]['low']:
-        count += 1
-    return count >= 3
+    period_bars = bars.tail(10)
+    flat_count = 0
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        # check for pre market hour only
+        if is_pre_market_hour_exact() and is_pre_market_time(time):
+            if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
+                flat_count += 1
+        # check for after market hour only
+        if is_after_market_hour_exact() and is_after_market_time(time):
+            if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
+                flat_count += 1
+        # check for regular market hour only
+        if is_regular_market_hour_exact() and is_regular_market_time(time):
+            if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
+                flat_count += 1
+    return flat_count <= 2
 
 
 def check_bars_current_low_less_than_prev_low(bars):

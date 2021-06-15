@@ -24,7 +24,7 @@ SWING_WATCHLIST_SYMBOLS = [
     "QQQ",
     "RBLX", "ROKU", "ROOT", "RDNT",
     "SPY", "SQ", "SHOP", "SNOW", "SE", "SKLZ", "SNAP", "SPOT", "SPCE", "SAVE",
-    "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK",
+    "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK", "SENS",
     "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
     "TOL", "TAL", "TME", "TALO",
     "U", "UBER", "UPWK", "UAL", "UMC", "UEC",
