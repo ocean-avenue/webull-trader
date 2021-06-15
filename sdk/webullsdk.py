@@ -124,7 +124,18 @@ def get_account():
 
 def get_portfolio():
     instance = _get_instance()
-    return instance.get_portfolio()
+    data = instance.get_account()
+    output = {}
+    if 'accountMembers' in data:
+        for item in data['accountMembers']:
+            output[item['key']] = item['value']
+    if 'totalMarketValue' not in output:
+        output['totalMarketValue'] = '0.00'
+    if 'usableCash' not in output:
+        output['usableCash'] = '0.00'
+    if 'dayProfitLoss' not in output:
+        output['dayProfitLoss'] = '0.00'
+    return output
 
 
 def get_trade_token(password=''):
