@@ -226,6 +226,22 @@ def get_quote(ticker_id=None):
         return None
 
 
+def get_ask_price_from_quote(quote):
+    if quote == None or 'depth' not in quote or 'ntvAggAskList' not in quote['depth']:
+        return None
+    if len(quote['depth']['ntvAggAskList']) == 0:
+        return None
+    return float(quote['depth']['ntvAggAskList'][0]['price'])
+
+
+def get_bid_price_from_quote(quote):
+    if quote == None or 'depth' not in quote or 'ntvAggBidList' not in quote['depth']:
+        return None
+    if len(quote['depth']['ntvAggBidList']) == 0:
+        return None
+    return float(quote['depth']['ntvAggBidList'][0]['price'])
+
+
 def get_ticker(symbol=None):
     time.sleep(1)
     try:

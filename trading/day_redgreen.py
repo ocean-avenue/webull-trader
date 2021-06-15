@@ -79,7 +79,7 @@ class DayTradingRedGreen(StrategyBase):
             # check entry, current price above prev day close with (prev price below or not long after market open)
             if current_low >= prev_day_close and (prev_low <= prev_day_close or (now - datetime(now.year, now.month, now.day, 9, 30)).seconds <= 300):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                ask_price = self.get_ask_price_from_quote(quote)
+                ask_price = webullsdk.get_ask_price_from_quote(quote)
                 if ask_price == None:
                     return
                 # check if ask_price is too high above prev day close

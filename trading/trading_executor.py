@@ -189,7 +189,7 @@ class TradingExecutor:
                 quote = webullsdk.get_quote(ticker_id=ticker['ticker_id'])
                 if quote == None:
                     return
-                bid_price = self.get_bid_price_from_quote(quote)
+                bid_price = webullsdk.get_bid_price_from_quote(quote)
                 if bid_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(

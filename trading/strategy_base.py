@@ -207,20 +207,6 @@ class StrategyBase:
             "pending_order_time": None,
         }
 
-    def get_ask_price_from_quote(self, quote):
-        if quote == None or 'depth' not in quote or 'ntvAggAskList' not in quote['depth']:
-            return None
-        if len(quote['depth']['ntvAggAskList']) == 0:
-            return None
-        return float(quote['depth']['ntvAggAskList'][0]['price'])
-
-    def get_bid_price_from_quote(self, quote):
-        if quote == None or 'depth' not in quote or 'ntvAggBidList' not in quote['depth']:
-            return None
-        if len(quote['depth']['ntvAggBidList']) == 0:
-            return None
-        return float(quote['depth']['ntvAggBidList'][0]['price'])
-
     def is_regular_market_hour(self):
         return self.trading_hour == TradingHourType.REGULAR
 
@@ -329,7 +315,7 @@ class StrategyBase:
                     # resubmit buy order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
-                        ask_price = self.get_ask_price_from_quote(quote)
+                        ask_price = webullsdk.get_ask_price_from_quote(quote)
                         if ask_price == None:
                             return False
                         buy_position_amount = self.get_buy_order_limit(symbol)
@@ -412,7 +398,7 @@ class StrategyBase:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
                             return False
-                        bid_price = self.get_bid_price_from_quote(quote)
+                        bid_price = webullsdk.get_bid_price_from_quote(quote)
                         if bid_price == None:
                             return False
                         holding_quantity = ticker['positions']
@@ -581,7 +567,7 @@ class StrategyBase:
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         if quote == None:
             return False
-        bid_price = self.get_bid_price_from_quote(quote)
+        bid_price = webullsdk.get_bid_price_from_quote(quote)
         if bid_price == None:
             return False
         order_response = webullsdk.sell_limit_order(

@@ -4,6 +4,7 @@
 
 from django.utils import timezone
 from datetime import date, datetime
+
 from webull_trader.models import EarningCalendar, OvernightPosition
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
@@ -74,7 +75,7 @@ class DayTradingEarningsOvernight(StrategyBase):
             if quote == None:
                 return
             if self.check_entry(ticker, quote):
-                ask_price = self.get_ask_price_from_quote(quote)
+                ask_price = webullsdk.get_ask_price_from_quote(quote)
                 if ask_price == None:
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
@@ -101,7 +102,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
-                bid_price = self.get_bid_price_from_quote(quote)
+                bid_price = webullsdk.get_bid_price_from_quote(quote)
                 if bid_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(

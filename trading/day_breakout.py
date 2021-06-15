@@ -172,8 +172,8 @@ class DayTradingBreakout(StrategyBase):
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, m1_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                # bid_price = self.get_bid_price_from_quote(quote)
-                ask_price = self.get_ask_price_from_quote(quote)
+                # bid_price = webullsdk.get_bid_price_from_quote(quote)
+                ask_price = webullsdk.get_ask_price_from_quote(quote)
                 if ask_price == None:
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
@@ -228,7 +228,7 @@ class DayTradingBreakout(StrategyBase):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
-                bid_price = self.get_bid_price_from_quote(quote)
+                bid_price = webullsdk.get_bid_price_from_quote(quote)
                 if bid_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(

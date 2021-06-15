@@ -128,8 +128,8 @@ class DayTradingMomo(StrategyBase):
             # check entry: current price above vwap and ema 9, entry if first candle make new high
             if self.check_entry(ticker, m2_bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                ask_price = self.get_ask_price_from_quote(quote)
-                # bid_price = self.get_bid_price_from_quote(quote)
+                ask_price = webullsdk.get_ask_price_from_quote(quote)
+                # bid_price = webullsdk.get_bid_price_from_quote(quote)
                 if ask_price == None:
                     return
                 # gap = (ask_price - bid_price) / bid_price
@@ -211,7 +211,7 @@ class DayTradingMomo(StrategyBase):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     return
-                bid_price = self.get_bid_price_from_quote(quote)
+                bid_price = webullsdk.get_bid_price_from_quote(quote)
                 if bid_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(
