@@ -93,6 +93,10 @@ class TradingExecutor:
         for strategy in self.strategies:
             strategy.on_end()
 
+        # update account status
+        account_data = webullsdk.get_account()
+        utils.save_webull_account(account_data)
+
         # notify if has short position
         self.notify_if_has_short_positions()
 
