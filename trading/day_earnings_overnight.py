@@ -54,7 +54,7 @@ class DayTradingEarningsOvernight(StrategyBase):
 
         if ticker['pending_sell']:
             order_id = ticker['pending_order_id']
-            if self.check_sell_order_filled(ticker):
+            if self.check_sell_order_filled(ticker, resubmit=50):
                 # remove overnight position
                 position = OvernightPosition.objects.filter(symbol=symbol).filter(
                     ticker_id=ticker_id).filter(setup=self.get_setup()).first()

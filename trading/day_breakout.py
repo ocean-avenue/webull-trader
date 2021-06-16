@@ -143,7 +143,7 @@ class DayTradingBreakout(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker)
+            self.check_sell_order_filled(ticker, resubmit_count=50)
             return
 
         holding_quantity = ticker['positions']

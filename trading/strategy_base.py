@@ -273,7 +273,7 @@ class StrategyBase:
                         self.print_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
-    def check_buy_order_filled(self, ticker, resubmit=False, stop_tracking=False):
+    def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         self.print_log("Checking buy order <{}> filled...".format(symbol))
@@ -313,7 +313,7 @@ class StrategyBase:
                     self.print_log(
                         "Buy order <{}> timeout, canceled!".format(symbol))
                     # resubmit buy order
-                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
+                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= resubmit_count:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         ask_price = webullsdk.get_ask_price_from_quote(quote)
                         if ask_price == None:
@@ -348,7 +348,7 @@ class StrategyBase:
 
         return order_filled
 
-    def check_sell_order_filled(self, ticker, resubmit=True, stop_tracking=True):
+    def check_sell_order_filled(self, ticker, resubmit=True, resubmit_count=10, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         self.print_log("Checking sell order <{}> filled...".format(symbol))
@@ -394,7 +394,7 @@ class StrategyBase:
                     self.print_log(
                         "Sell order <{}> timeout, canceled!".format(symbol))
                     # resubmit sell order
-                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= 10:
+                    if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= resubmit_count:
                         quote = webullsdk.get_quote(ticker_id=ticker_id)
                         if quote == None:
                             return False
@@ -556,7 +556,7 @@ class StrategyBase:
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_sell']:
-            return self.check_sell_order_filled(ticker)
+            return self.check_sell_order_filled(ticker, resubmit_count=10)
 
         holding_quantity = ticker['positions']
         if holding_quantity == 0:
