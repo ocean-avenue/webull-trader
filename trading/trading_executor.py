@@ -59,6 +59,7 @@ class TradingExecutor:
                 "pending_order_id": None,
                 "pending_order_time": None,
                 "positions": position.quantity,
+                "position_obj": position,
             }
 
         # prepare strategies
@@ -177,6 +178,8 @@ class TradingExecutor:
                         order_filled = False
                         break
                 if order_filled:
+                    # delete position object
+                    self.unsold_tickers[symbol]['position_obj'].delete()
                     # order filled
                     del self.unsold_tickers[symbol]
                 else:
@@ -190,24 +193,37 @@ class TradingExecutor:
                             self.unsold_tickers[symbol]['pending_order_time'] = None
 
             else:
-                quote = webullsdk.get_quote(ticker_id=ticker['ticker_id'])
-                if quote == None:
-                    return
-                bid_price = webullsdk.get_bid_price_from_quote(quote)
-                if bid_price == None:
-                    return
-                order_response = webullsdk.sell_limit_order(
-                    ticker_id=ticker['ticker_id'],
-                    price=bid_price,
-                    quant=ticker['positions'])
-                if 'msg' in order_response:
-                    print(order_response['msg'])
-                elif 'orderId' in order_response:
-                    # mark pending sell
-                    self.unsold_tickers[symbol]['pending_sell'] = True
-                    self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
-                    self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
-                    )
+                # check the position is existed
+                existed = False
+                for position in positions:
+                    # make sure position is positive
+                    if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
+                        existed = True
+                        break
+                if existed:
+                    quote = webullsdk.get_quote(ticker_id=ticker['ticker_id'])
+                    if quote == None:
+                        return
+                    bid_price = webullsdk.get_bid_price_from_quote(quote)
+                    if bid_price == None:
+                        return
+                    order_response = webullsdk.sell_limit_order(
+                        ticker_id=ticker['ticker_id'],
+                        price=bid_price,
+                        quant=ticker['positions'])
+                    if 'msg' in order_response:
+                        print(order_response['msg'])
+                    elif 'orderId' in order_response:
+                        # mark pending sell
+                        self.unsold_tickers[symbol]['pending_sell'] = True
+                        self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                        self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
+                        )
+                else:
+                    # delete position object
+                    self.unsold_tickers[symbol]['position_obj'].delete()
+                    # not existed
+                    del self.unsold_tickers[symbol]
 
 
 def start():
