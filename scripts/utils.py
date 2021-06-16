@@ -399,10 +399,11 @@ def check_bars_rel_volume(bars):
 
 def check_bars_volatility(bars):
     """
-    check if has bar's ohlc has different price, not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
+    check if has bar's ohlc has different price
     """
     period_bars = bars.tail(10)
     flat_count = 0
+    price_set = {}
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check for pre market hour only
@@ -417,7 +418,19 @@ def check_bars_volatility(bars):
         if is_regular_market_hour_exact() and is_regular_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
-    return flat_count <= 2
+        # add price value set
+        price_set.add(row['open'])
+        price_set.add(row['high'])
+        price_set.add(row['low'])
+        price_set.add(row['close'])
+    # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
+    if flat_count > 2:
+        return False
+    # price set only in a few values
+    if len(price_set) <= 8:
+        return False
+    return True
+
 
 
 def check_bars_current_low_less_than_prev_low(bars):
