@@ -62,11 +62,11 @@ class DayTradingBreakout(StrategyBase):
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
-        # # check if gap too large
-        # if period_high_price * 1.01 < current_price:
-        #     self.print_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
-        #         ticker['symbol'], current_price, period_high_price))
-        #     return False
+        # check if gap already too large
+        if period_high_price * 1.1 < current_price:
+            self.print_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
+                ticker['symbol'], current_price, period_high_price))
+            return False
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
             self.print_log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
