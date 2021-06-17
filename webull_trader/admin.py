@@ -49,6 +49,7 @@ class WebullCredentialsAdmin(admin.ModelAdmin):
     list_display = [
         'paper',
         'cred',
+        'trade_pwd',
     ]
 
 

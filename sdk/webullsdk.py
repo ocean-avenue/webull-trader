@@ -8,13 +8,16 @@ from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS
 from webull_trader.models import WebullCredentials
 
 wb_instance = None
+wb_paper = True
+wb_trade_pwd = "123456"
 
 
-def _get_instance(paper=True):
+def _get_instance():
     global wb_instance
+    global wb_paper
     if wb_instance:
         return wb_instance
-    if paper:
+    if wb_paper:
         return paper_webull()
     else:
         return webull()
@@ -22,10 +25,13 @@ def _get_instance(paper=True):
 
 def login(paper=True):
     global wb_instance
+    global wb_paper
+    global wb_trade_pwd
     if paper:
         wb_instance = paper_webull()
     else:
         wb_instance = webull()
+    wb_paper = paper
 
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:
@@ -34,6 +40,7 @@ def login(paper=True):
         return False
 
     credentials_data = json.loads(credentials.cred)
+    wb_trade_pwd = credentials.trade_pwd
 
     wb_instance._refresh_token = credentials_data['refreshToken']
     wb_instance._access_token = credentials_data['accessToken']
@@ -308,6 +315,10 @@ def get_sample_ticker():
 
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     return instance.place_order(
         tId=ticker_id,
@@ -322,6 +333,10 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
 
 
 def buy_market_order(ticker_id=None, quant=0):
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     return instance.place_order(
         tId=ticker_id,
@@ -335,6 +350,10 @@ def buy_market_order(ticker_id=None, quant=0):
 
 
 def sell_limit_order(ticker_id=None, price=0, quant=0):
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     return instance.place_order(
         tId=ticker_id,
@@ -349,6 +368,10 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
 # {'orderId': 41995648}
 
 def sell_market_order(ticker_id=None, quant=0):
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     return instance.place_order(
         tId=ticker_id,
@@ -362,11 +385,19 @@ def sell_market_order(ticker_id=None, quant=0):
 # True
 
 def cancel_order(order_id):
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     return instance.cancel_order(order_id)
 
 
 def cancel_all_orders():
+    global wb_paper
+    global wb_trade_pwd
+    if not wb_paper and not get_trade_token(wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     instance.cancel_all_orders()
 
@@ -411,7 +442,6 @@ def cancel_all_orders():
 
 
 def get_positions():
-    time.sleep(1)
     try:
         instance = _get_instance()
         return instance.get_positions()
@@ -421,7 +451,6 @@ def get_positions():
 
 
 def get_current_orders():
-    time.sleep(1)
     try:
         instance = _get_instance()
         return instance.get_current_orders()

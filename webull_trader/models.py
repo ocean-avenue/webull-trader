@@ -76,6 +76,7 @@ class TradingLog(models.Model):
 
 class WebullCredentials(models.Model):
     cred = models.TextField(null=True, blank=True)
+    trade_pwd = models.CharField(max_length=32)
     paper = models.BooleanField(default=True)
 
     def __str__(self):
