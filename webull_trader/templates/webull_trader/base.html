@@ -223,6 +223,16 @@
             <li class="sidebar-header">
               Swing Trading
             </li>
+            {% if 'swing-analytics' in request.path %}
+            <li class="sidebar-item active">
+            {% else  %}
+            <li class="sidebar-item">
+            {% endif %}
+              <a class="sidebar-link" href="{% url 'swing_analytics' %}">
+                <i class="align-middle" data-feather="activity"></i>
+                <span class="align-middle">Analytics</span>
+              </a>
+            </li>
             {% if 'swing-positions' in request.path %}
             <li class="sidebar-item active">
             {% else  %}
@@ -231,12 +241,6 @@
               <a class="sidebar-link" href="{% url 'swing_positions' %}">
                 <i class="align-middle" data-feather="layers"></i>
                 <span class="align-middle">Positions</span>
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a class="sidebar-link" href="{% url 'swing_trades' %}">
-                <i class="align-middle" data-feather="code"></i>
-                <span class="align-middle">Trades</span>
               </a>
             </li>
           </ul>

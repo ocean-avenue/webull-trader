@@ -1783,6 +1783,59 @@ def get_day_profit_loss_for_render(acc_stat):
     return day_profit_loss
 
 
+def get_swing_profit_loss_for_render(trades):
+    swing_profit_loss = {
+        "value": "$0.0",
+        "value_style": "",
+        "swing_pl_rate": "0.0%",
+        "swing_pl_rate_style": "badge-soft-dark",
+        "swing_win_rate": "0.0%",
+        "swing_pl_ratio": "1.0",
+    }
+    total_cost = 0.0
+    total_sold = 0.0
+    win_count = 0
+    loss_count = 0
+    total_profit = 0.0
+    total_loss = 0.0
+    for trade in trades:
+        total_cost += trade.buy_price * trade.quantity
+        total_sold += trade.sell_price * trade.quantity
+        if trade.sell_price > trade.buy_price:
+            win_count += 1
+            total_profit += (trade.sell_price -
+                             trade.buy_price) * trade.quantity
+        if trade.sell_price < trade.buy_price:
+            loss_count += 1
+            total_loss += (trade.buy_price - trade.sell_price) * trade.quantity
+    if len(trades) > 0:
+        swing_profit_loss["swing_win_rate"] = "{}%".format(round(win_count / len(trades) * 100, 2))
+    avg_profit = 0.0
+    if win_count > 0:
+        avg_profit = total_profit / win_count
+    avg_loss = 0.0
+    if loss_count > 0:
+        avg_loss = total_loss / loss_count
+    if avg_loss > 0:
+        swing_profit_loss["swing_pl_ratio"] = round(avg_profit/avg_loss)
+    profit_loss = total_sold - total_cost
+    profit_loss_rate = (total_sold - total_cost) / total_cost
+    swing_profit_loss["value"] = "${}".format(abs(round(profit_loss, 2)))
+    swing_profit_loss["swing_pl_rate"] = "{}%".format(
+        round(profit_loss_rate * 100, 2))
+    if profit_loss > 0:
+        swing_profit_loss["value"] = "+" + swing_profit_loss["value"]
+        swing_profit_loss["value_style"] = "text-success"
+        swing_profit_loss["swing_pl_rate"] = "+" + \
+            swing_profit_loss["swing_pl_rate"]
+        swing_profit_loss["swing_pl_rate_style"] = "badge-soft-success"
+    elif profit_loss < 0:
+        swing_profit_loss["value"] = "-" + swing_profit_loss["value"]
+        swing_profit_loss["value_style"] = "text-danger"
+        swing_profit_loss["swing_pl_rate_style"] = "badge-soft-danger"
+    return swing_profit_loss
+
+
 def get_minute_candle_data_for_render(bars):
     candle_data = {
         "times": [],

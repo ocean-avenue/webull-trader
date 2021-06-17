@@ -1,0 +1,204 @@
+{% extends 'webull_trader/base.html' %}
+
+{% block title %} Swing Trading Analytics {% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container-fluid p-0">
+  <div class="row mb-2 mb-xl-3">
+    <div class="col-auto d-none d-sm-block">
+      <span class="badge {{account_type.value_style|safe}} text-dark">
+        {{account_type.value|safe}}
+      </span>
+    </div>
+    <div class="col-auto d-none d-sm-block">
+      <h3>Swing Trading Analytics</h3>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2 {{swing_profit_loss.value_style|safe}}">
+                {{swing_profit_loss.value|safe}}
+              </h3>
+              <p class="mb-2">P&L</p>
+              <div class="mb-0">
+                <span
+                  class="badge {{swing_profit_loss.swing_pl_rate_style|safe}} me-2"
+                >
+                  <i class="mdi mdi-arrow-bottom-right"></i>
+                  {{swing_profit_loss.swing_pl_rate|safe}}
+                </span>
+              </div>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="activity"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2">
+                {{trades_count|safe}}
+              </h3>
+              <p class="mb-2">Total Trades</p>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="hash"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2 text-success">
+                {{swing_top_gain.value|safe}}
+              </h3>
+              <p class="mb-2">Top Gain Trade</p>
+              <div class="mb-0">
+                <a href="/swing-analytics/{{swing_top_gain.symbol|safe}}">
+                  <span
+                    class="badge badge-soft-dark me-2"
+                  >
+                    <i class="mdi mdi-arrow-bottom-right"></i>
+                    {{swing_top_gain.symbol|safe}}
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="plus"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2 text-danger">
+                {{swing_top_loss.value|safe}}
+              </h3>
+              <p class="mb-2">Top Loss Trade</p>
+              <div class="mb-0">
+                <a href="/swing-analytics/{{swing_top_loss.symbol|safe}}">
+                  <span
+                    class="badge badge-soft-dark me-2"
+                  >
+                    <i class="mdi mdi-arrow-bottom-right"></i>
+                    {{swing_top_loss.symbol|safe}}
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="minus"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2 text-dark">{{swing_profit_loss.swing_win_rate|safe}}</h3>
+              <p class="mb-2">Win Rate</p>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="star"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xxl d-flex">
+      <div class="card flex-fill">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+              <h3 class="mb-2 text-dark">{{swing_profit_loss.swing_pl_ratio|safe}}</h3>
+              <p class="mb-2">Profit/Loss Ratio</p>
+            </div>
+            <div class="d-inline-block ms-3">
+              <div class="stat">
+                <i class="align-middle" data-feather="flag"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card flex-fill">
+    <table class="table table-striped my-0">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th class="d-none d-xl-table-cell">Buy Date</th>
+          <th class="d-none d-xl-table-cell">Holding Days</th>
+          <th class="d-none d-xl-table-cell">Sell Date</th>
+          <th class="d-none d-xl-table-cell">Setup</th>
+          <th class="d-none d-xl-table-cell">Buy Price</th>
+          <th class="d-none d-xl-table-cell">Total Cost</th>
+          <th class="d-none d-xl-table-cell">Quantity</th>
+          <th class="d-none d-xl-table-cell">Sell Price</th>
+          <th class="d-none d-xl-table-cell">Total Sold</th>
+          <th class="d-none d-xl-table-cell">P&L</th>
+          <th class="d-none d-xl-table-cell">P&L %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for trade in swing_trades %}
+        <tr>
+          <td><a href="/swing-trades/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+          <td class="d-none d-xl-table-cell">{{trade.buy_date|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.holding_days|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.sell_date|safe}}</td>
+          <td class="d-none d-md-table-cell">{{trade.setup|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{trade.total_sold|safe}}</td>
+          <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+          <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss_percent|safe}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

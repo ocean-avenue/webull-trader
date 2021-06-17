@@ -1232,11 +1232,11 @@ def swing_positions_symbol(request, symbol=None):
 
 
 @login_required
-def swing_trades(request):
+def swing_analytics(request):
 
-    cached_context = cache.get('swing_trades_cache')
+    cached_context = cache.get('swing_analytics_cache')
     if cached_context:
-        return render(request, 'webull_trader/swing_trades.html', cached_context)
+        return render(request, 'webull_trader/swing_analytics.html', cached_context)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -1246,7 +1246,13 @@ def swing_trades(request):
 
     trades = SwingTrade.objects.all()
 
+    swing_profit_loss = utils.get_swing_profit_loss_for_render(trades)
+
     swing_trades = []
+    top_gain_symbol = ""
+    top_gain_value = 0.0
+    top_loss_symbol = ""
+    top_loss_value = 0.0
     for trade in trades:
         symbol = trade.symbol
         setup = SetupType.tostr(trade.setup)
@@ -1265,6 +1271,15 @@ def swing_trades(request):
         profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
             round(realized_pl, 2))
 
+        # calculate top gain/loss
+        if realized_pl > top_gain_value:
+            top_gain_symbol = symbol
+            top_gain_value = round(realized_pl, 2)
+        if realized_pl < top_loss_value:
+            top_loss_symbol = symbol
+            top_loss_value = round(realized_pl, 2)
+
+        # trade records
         swing_trades.append({
             "symbol": symbol,
             "buy_price": "${}".format(buy_price),
@@ -1281,12 +1296,25 @@ def swing_trades(request):
             "profit_loss_style": profit_loss_style,
         })
 
+    swing_top_gain = {
+        "value": "+${}".format(top_gain_value),
+        "symbol": top_gain_symbol,
+    }
+    swing_top_loss = {
+        "value": "-${}".format(abs(top_loss_value)),
+        "symbol": top_loss_symbol,
+    }
+
     context = {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
+        "swing_profit_loss": swing_profit_loss,
         "swing_trades": swing_trades,
+        "trades_count": len(trades),
+        "swing_top_gain": swing_top_gain,
+        "swing_top_loss": swing_top_loss,
     }
 
-    cache.set('swing_trades_cache', context, CACHE_TIMEOUT)
+    cache.set('swing_analytics_cache', context, CACHE_TIMEOUT)
 
-    return render(request, 'webull_trader/swing_trades.html', context)
+    return render(request, 'webull_trader/swing_analytics.html', context)
