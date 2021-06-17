@@ -2,7 +2,6 @@
 
 # Breakout day trading class
 
-import time
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
@@ -54,6 +53,8 @@ class DayTradingBreakout(StrategyBase):
                 period_high_price = close_price
         # check if new high
         if current_price < period_high_price:
+            return False
+        if not self.check_if_trade_price_new_high(symbol, current_price):
             return False
         # check ema 9
         if current_price < current_candle['ema9']:
@@ -132,6 +133,9 @@ class DayTradingBreakout(StrategyBase):
             exit_trading = True
             exit_note = "Candle chart is not volatility."
         return (exit_trading, exit_note)
+
+    def check_if_trade_price_new_high(self, symbol, price):
+        return True
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
