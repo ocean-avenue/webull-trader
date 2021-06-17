@@ -195,6 +195,12 @@ class DayTradingBreakout(StrategyBase):
             if not ticker_position:
                 self.print_log("Finding <{}> position error!".format(symbol))
                 return
+            if holding_quantity <= 0:
+                # position is negitive, some unknown error happen
+                self.print_log("<{}> holding quantity is negitive {}!".format(
+                    symbol, holding_quantity))
+                del self.tracking_tickers[symbol]
+                return
 
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])

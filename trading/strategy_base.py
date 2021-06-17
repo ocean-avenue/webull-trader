@@ -423,6 +423,16 @@ class StrategyBase:
                             del self.tracking_tickers[symbol]
                         self.print_log(
                             "Failed to sell order <{}>!".format(symbol))
+                        # add to overnight position for next sell
+                        utils.save_overnight_position(
+                            symbol,
+                            ticker["ticker_id"],
+                            # fill random order id, no use
+                            str(int(timezone.now().timestamp())),
+                            SetupType.ERROR_FAILED_TO_SELL,
+                            1.0,  # fill $1 cost, no use
+                            ticker['positions'],
+                            timezone.now())
                         # TODO, send message
                 else:
                     self.print_log(
@@ -545,9 +555,10 @@ class StrategyBase:
             utils.save_overnight_position(
                 symbol,
                 ticker["ticker_id"],
-                str(int(timezone.now().timestamp())),  # set random order id
+                # fill random order id, no use
+                str(int(timezone.now().timestamp())),
                 SetupType.ERROR_FAILED_TO_SELL,
-                1.0,
+                1.0,  # fill $1 cost, no use
                 ticker["positions"],
                 timezone.now())
 
