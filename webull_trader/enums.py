@@ -160,6 +160,7 @@ class AlgorithmType:
     DAY_EARNINGS_OVERNIGHT = 8
     DAY_EARNINGS_BREAKOUT = 9
     DAY_BREAKOUT_10 = 10
+    DAY_BREAKOUT_NEW_HIGH = 11
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -180,7 +181,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
-            return 'Momo day trade, no entry if the price not break max of last high price.'
+            return 'Momo day trade, no entry if the price not break max of last high trade price.'
         if val == AlgorithmType.DAY_BREAKOUT_10:
             return 'Breakout day trade, entry if price reach 10 minutes new high.'
         if val == AlgorithmType.DAY_BREAKOUT_20:
@@ -189,6 +190,8 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 30 minutes new high.'
         if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
             return 'Breakout and earning day trade, entry if price reach 30 minutes new high.'
+        if val == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
+            return 'Breakout day trade, no entry if the price not break max of last high trade price.'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'Earning date day trade, entry if gap up and exit trade intraday.'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -227,6 +230,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT 30)'
         if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
             return 'DAY (BREAKOUT EARNINGS)'
+        if val == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
+            return 'DAY (BREAKOUT NEW HIGH)'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNINGS)'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -266,6 +271,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_30)),
             (AlgorithmType.DAY_BREAKOUT_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_EARNINGS)),
+            (AlgorithmType.DAY_BREAKOUT_NEW_HIGH, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_NEW_HIGH)),
             (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS)),
             (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(

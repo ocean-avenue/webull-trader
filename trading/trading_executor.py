@@ -4,6 +4,7 @@
 
 import time
 from datetime import datetime, timedelta
+from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
 from webull_trader.enums import AlgorithmType, SetupType
 from webull_trader.models import OvernightPosition, TradingSettings
 from sdk import webullsdk
@@ -277,6 +278,10 @@ def start():
         # DAY_BREAKOUT: breakout trade 30 minutes
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=30, exit_period=15))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
+        # DAY_BREAKOUT_NEW_HIGH: breakout trade with new high confirm
+        strategies.append(DayTradingBreakoutNewHigh(
+            paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO
