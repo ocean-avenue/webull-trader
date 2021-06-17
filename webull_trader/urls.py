@@ -5,8 +5,7 @@ urlpatterns = [
     path('', views.index, name='dashboard'),
     path('day-analytics', views.day_analytics, name='day_analytics'),
     path('day-analytics/<str:date>', views.day_analytics_date, name='day_analytics_date'),
-    path('day-analytics/<str:date>/<str:symbol>',
-         views.day_analytics_date_symbol, name='day_analytics_date_symbol'),
+    path('day-analytics/<str:date>/<str:symbol>', views.day_analytics_date_symbol, name='day_analytics_date_symbol'),
     path('day-reports/price', views.day_reports_price, name='day_reports_price'),
     path('day-reports/mktcap', views.day_reports_mktcap, name='day_reports_mktcap'),
     path('day-reports/float', views.day_reports_float, name='day_reports_float'),
@@ -20,4 +19,5 @@ urlpatterns = [
     path('day-reports/daily', views.day_reports_daily, name='day_reports_daily'),
     path('swing-positions', views.swing_positions, name='swing_positions'),
     path('swing-positions/<str:symbol>', views.swing_positions_symbol, name='swing_positions_symbol'),
+    path('swing-trades', views.swing_trades, name='swing_trades'),
 ]

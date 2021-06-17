@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -1229,3 +1229,64 @@ def swing_positions_symbol(request, symbol=None):
         symbol), context, CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)
+
+
+@login_required
+def swing_trades(request):
+
+    cached_context = cache.get('swing_trades_cache')
+    if cached_context:
+        return render(request, 'webull_trader/swing_trades.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    trades = SwingTrade.objects.all()
+
+    swing_trades = []
+    for trade in trades:
+        symbol = trade.symbol
+        setup = SetupType.tostr(trade.setup)
+        buy_date = trade.buy_date
+        sell_date = trade.sell_date
+        holding_days = (sell_date - buy_date).days
+        buy_price = trade.buy_price
+        sell_price = trade.sell_price
+        quantity = trade.quantity
+        total_cost = buy_price * quantity
+        total_sold = sell_price * quantity
+
+        realized_pl = total_sold - total_cost
+        realized_pl_percent = (total_sold - total_cost) / total_cost
+
+        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
+            round(realized_pl, 2))
+
+        swing_trades.append({
+            "symbol": symbol,
+            "buy_price": "${}".format(buy_price),
+            "sell_price": "${}".format(sell_price),
+            "total_cost": "${}".format(round(total_cost, 2)),
+            "total_sold": "${}".format(round(total_sold, 2)),
+            "quantity": quantity,
+            "buy_date": buy_date,
+            "sell_date": sell_date,
+            "holding_days": holding_days,
+            "setup": setup,
+            "profit_loss": profit_loss,
+            "profit_loss_percent": "{}%".format(round(realized_pl_percent * 100, 2)),
+            "profit_loss_style": profit_loss_style,
+        })
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "swing_trades": swing_trades,
+    }
+
+    cache.set('swing_trades_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/swing_trades.html', context)
