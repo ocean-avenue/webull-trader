@@ -403,7 +403,7 @@ def check_bars_volatility(bars):
     """
     period_bars = bars.tail(10)
     flat_count = 0
-    price_set = {}
+    price_set = set()
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check for pre market hour only
