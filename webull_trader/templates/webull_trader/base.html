@@ -243,6 +243,110 @@
                 <span class="align-middle">Positions</span>
               </a>
             </li>
+            {% if 'swing-reports' in request.path %}
+            <li class="sidebar-item active">
+            {% else  %}
+            <li class="sidebar-item">
+            {% endif %}
+              <a
+                data-bs-target="#swing-reports"
+                data-bs-toggle="collapse"
+                {% if 'swing-reports' in request.path %}
+                class="sidebar-link"
+                {% else  %}
+                class="sidebar-link collapsed"
+                {% endif %}
+              >
+                <i class="align-middle" data-feather="pie-chart"></i>
+                <span class="align-middle">Reports</span>
+              </a>
+              <ul
+                id="swing-reports"
+                {% if 'swing-reports' in request.path %}
+                class="sidebar-dropdown list-unstyled collapse show"
+                {% else  %}
+                class="sidebar-dropdown list-unstyled collapse"
+                {% endif %}
+                data-bs-parent="#sidebar"
+              >
+                {% if request.path == '/swing-reports/price' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Entry Price</a>
+                </li>
+                {% if request.path == '/swing-reports/mktcap' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Market Cap</a>
+                </li>
+                {% if request.path == '/swing-reports/float' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Free Float</a>
+                </li>
+                {% if request.path == '/day-reports/turnover' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_turnover' %}">Turnover %</a>
+                </li>
+                {% if request.path == '/day-reports/short' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_short' %}">Short %</a>
+                </li>
+                {% if request.path == '/swing-reports/gap' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Gap %</a>
+                </li>
+                {% if request.path == '/swing-reports/relvol' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Relative Volume</a>
+                </li>
+                {% if request.path == '/swing-reports/sector' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Sector</a>
+                </li>
+                {% if request.path == '/swing-reports/holding' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Holding Day</a>
+                </li>
+                {% if request.path == '/swing-reports/daily' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="#">Daily</a>
+                </li>
+                <li class="sidebar-item">
+                  <a class="sidebar-link" href="#">Weekly</a>
+                </li>
+                <li class="sidebar-item">
+                  <a class="sidebar-link" href="#">Monthly</a>
+                </li>
+              </ul>
+            </li>
           </ul>
 
           {% for algo_type in algo_type_texts %}

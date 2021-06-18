@@ -1760,6 +1760,15 @@ def get_color_percentage_style_for_render(value):
     return (percentage, percentage_style)
 
 
+def get_color_percentage_badge_style_for_render(value):
+    percentage = "+{}%".format(value)
+    percentage_style = "badge-soft-success"
+    if value < 0:
+        percentage = "{}%".format(value)
+        percentage_style = "badge-soft-danger"
+    return (percentage, percentage_style)
+
+
 def get_day_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",

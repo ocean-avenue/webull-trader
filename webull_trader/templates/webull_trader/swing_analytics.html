@@ -162,6 +162,9 @@
   </div>
 
   <div class="card flex-fill">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Trades</h5>
+    </div>
     <table class="table table-striped my-0">
       <thead>
         <tr>
@@ -182,7 +185,7 @@
       <tbody>
         {% for trade in swing_trades %}
         <tr>
-          <td><a href="/swing-trades/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+          <td><a href="/swing-analytics/{{trade.buy_date|safe}}/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
           <td class="d-none d-xl-table-cell">{{trade.buy_date|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.holding_days|safe}}</td>
           <td class="d-none d-xl-table-cell">{{trade.sell_date|safe}}</td>
