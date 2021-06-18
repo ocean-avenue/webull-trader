@@ -238,12 +238,12 @@ def day_analytics_date(request, date=None):
         hourly_profit_loss_ratio.append(profit_loss_ratio)
 
     # for trade records group by symbol
-    trades_dist = utils.get_trade_stat_dist_from_trades(day_trades)
+    trades_dist = utils.get_trade_stat_dist_from_day_trades(day_trades)
     # trade records
     trade_records = []
-    for symbol, trade in trades_dist.items():
-        trade_record_for_render = utils.get_trade_stat_record_for_render(
-            symbol, trade, date)
+    for symbol, trade_stat in trades_dist.items():
+        trade_record_for_render = utils.get_day_trade_stat_record_for_render(
+            symbol, trade_stat, date)
         trade_records.append(trade_record_for_render)
     # sort trade records
     trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
@@ -381,8 +381,8 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
                 "profit_loss_style": profit_loss_style,
             })
     # stats
-    trades_dist = utils.get_trade_stat_dist_from_trades(day_trades)
-    trade_stats = utils.get_trade_stat_record_for_render(
+    trades_dist = utils.get_trade_stat_dist_from_day_trades(day_trades)
+    trade_stats = utils.get_day_trade_stat_record_for_render(
         symbol, trades_dist[symbol], date)
     # news
     webull_news = WebullNews.objects.filter(
@@ -1250,55 +1250,31 @@ def swing_analytics(request):
 
     trades = SwingTrade.objects.all()
 
-    swing_profit_loss = utils.get_swing_profit_loss_for_render(trades)
-
-    swing_trades = []
+    # for trade records group by symbol
+    trades_dist = utils.get_trade_stat_dist_from_swing_trades(trades)
+    # trade records
+    trade_records = []
+    # top gain/loss
     top_gain_symbol = ""
     top_gain_value = 0.0
     top_loss_symbol = ""
     top_loss_value = 0.0
-    for trade in trades:
-        symbol = trade.symbol
-        setup = SetupType.tostr(trade.setup)
-        buy_date = trade.buy_date
-        sell_date = trade.sell_date
-        holding_days = (sell_date - buy_date).days
-        buy_price = trade.buy_price
-        sell_price = trade.sell_price
-        quantity = trade.quantity
-        total_cost = buy_price * quantity
-        total_sold = sell_price * quantity
-
-        realized_pl = total_sold - total_cost
-        realized_pl_percent = (total_sold - total_cost) / total_cost
-
-        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
-            round(realized_pl, 2))
-
+    for symbol, trade_stat in trades_dist.items():
+        trade_record_for_render = utils.get_swing_trade_stat_record_for_render(
+            symbol, trade_stat)
+        trade_records.append(trade_record_for_render)
         # calculate top gain/loss
-        if realized_pl > top_gain_value:
+        if trade_stat["top_gain"] > top_gain_value:
             top_gain_symbol = symbol
-            top_gain_value = round(realized_pl, 2)
-        if realized_pl < top_loss_value:
+            top_gain_value = round(trade_stat["top_gain"], 2)
+        if trade_stat["top_loss"] < top_loss_value:
             top_loss_symbol = symbol
-            top_loss_value = round(realized_pl, 2)
+            top_loss_value = round(trade_stat["top_loss"], 2)
 
-        # trade records
-        swing_trades.append({
-            "symbol": symbol,
-            "buy_price": "${}".format(buy_price),
-            "sell_price": "${}".format(sell_price),
-            "total_cost": "${}".format(round(total_cost, 2)),
-            "total_sold": "${}".format(round(total_sold, 2)),
-            "quantity": quantity,
-            "buy_date": buy_date,
-            "sell_date": sell_date,
-            "holding_days": holding_days,
-            "setup": setup,
-            "profit_loss": profit_loss,
-            "profit_loss_percent": "{}%".format(round(realized_pl_percent * 100, 2)),
-            "profit_loss_style": profit_loss_style,
-        })
+    # sort trade records
+    trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
+
+    swing_profit_loss = utils.get_swing_profit_loss_for_render(trades)
 
     swing_top_gain = {
         "value": "+${}".format(top_gain_value),
@@ -1313,7 +1289,7 @@ def swing_analytics(request):
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
         "swing_profit_loss": swing_profit_loss,
-        "swing_trades": swing_trades,
+        "trade_records": trade_records,
         "trades_count": len(trades),
         "swing_top_gain": swing_top_gain,
         "swing_top_loss": swing_top_loss,

@@ -1637,7 +1637,7 @@ def get_minute_candle_high_by_time_minute(candle_data, time):
     return candle_data['candles'][idx][3]
 
 
-def get_trade_stat_dist_from_trades(day_trades):
+def get_trade_stat_dist_from_day_trades(day_trades):
     trades_dist = {}
     for trade in day_trades:
         if "sell_price" in trade:
@@ -1671,6 +1671,55 @@ def get_trade_stat_dist_from_trades(day_trades):
             if gain < trades_dist[symbol]["top_loss"]:
                 trades_dist[symbol]["top_loss"] = gain
     return trades_dist
+
+
+def get_trade_stat_dist_from_swing_trades(swing_trades):
+    trades_dist = {}
+    for trade in swing_trades:
+        symbol = trade.symbol
+        buy_price = trade.buy_price
+        sell_price = trade.sell_price
+        quantity = trade.quantity
+        total_cost = buy_price * quantity
+        total_sold = sell_price * quantity
+        gain = round((sell_price - buy_price) * quantity, 2)
+        # build trades_dist
+        if symbol not in trades_dist:
+            trades_dist[symbol] = {
+                "trades": 0,
+                "win_trades": 0,
+                "loss_trades": 0,
+                "total_gain": 0,
+                "total_loss": 0,
+                "profit_loss": 0,
+                "total_cost": 0,
+                "total_sold": 0,
+                "top_gain": 0,
+                "top_loss": 0,
+            }
+        trades_dist[symbol]["trades"] += 1
+        trades_dist[symbol]["profit_loss"] += gain
+        trades_dist[symbol]["total_cost"] += total_cost
+        trades_dist[symbol]["total_sold"] += total_sold
+        if gain > 0:
+            trades_dist[symbol]["win_trades"] += 1
+            trades_dist[symbol]["total_gain"] += gain
+        else:
+            trades_dist[symbol]["loss_trades"] += 1
+            trades_dist[symbol]["total_loss"] += gain
+        if gain > trades_dist[symbol]["top_gain"]:
+            trades_dist[symbol]["top_gain"] = gain
+        if gain < trades_dist[symbol]["top_loss"]:
+            trades_dist[symbol]["top_loss"] = gain
+    return trades_dist
+
+
+def get_swing_daily_candle_high_by_date(symbol, date):
+    day_bar = SwingHistoricalDailyBar.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    if day_bar:
+        return day_bar.high
+    return 0
 
 
 def get_gap_by_symbol_date(symbol, date):
@@ -1808,7 +1857,8 @@ def get_day_profit_loss_for_render(perf):
             abs(perf.day_profit_loss))
         day_pl_rate = 0.0
         if perf.total_buy_amount > 0:
-            day_pl_rate = (perf.total_sell_amount - perf.total_buy_amount) / perf.total_buy_amount
+            day_pl_rate = (perf.total_sell_amount -
+                           perf.total_buy_amount) / perf.total_buy_amount
         day_profit_loss["day_pl_rate"] = "{}%".format(
             round(day_pl_rate * 100, 2))
         if perf.day_profit_loss > 0:
@@ -1972,15 +2022,7 @@ def get_swing_daily_candle_data_for_render(symbol):
     return candle_data
 
 
-def get_swing_daily_candle_high_by_date(symbol, date):
-    day_bar = SwingHistoricalDailyBar.objects.filter(
-        symbol=symbol).filter(date=date).first()
-    if day_bar:
-        return day_bar.high
-    return 0
-
-
-def get_trade_stat_record_for_render(symbol, trade, date):
+def get_day_trade_stat_record_for_render(symbol, trade_stat, date):
     key_statistics = get_hist_key_stat(symbol, date)
     mktcap = 0
     short_float = None
@@ -2000,23 +2042,24 @@ def get_trade_stat_record_for_render(symbol, trade, date):
         relative_volume = round(
             key_statistics.volume / key_statistics.avg_vol_3m, 2)
     win_rate = "0.0%"
-    if trade["trades"] > 0:
+    if trade_stat["trades"] > 0:
         win_rate = "{}%".format(
-            round(trade["win_trades"] / trade["trades"] * 100, 2))
+            round(trade_stat["win_trades"] / trade_stat["trades"] * 100, 2))
     avg_profit = 0.0
-    if trade["win_trades"] > 0:
-        avg_profit = trade["total_gain"] / trade["win_trades"]
+    if trade_stat["win_trades"] > 0:
+        avg_profit = trade_stat["total_gain"] / trade_stat["win_trades"]
     avg_loss = 0.0
-    if trade["loss_trades"] > 0:
-        avg_loss = abs(trade["total_loss"] / trade["loss_trades"])
+    if trade_stat["loss_trades"] > 0:
+        avg_loss = abs(trade_stat["total_loss"] / trade_stat["loss_trades"])
     profit_loss_ratio = 1.0
     if avg_loss > 0:
         profit_loss_ratio = round(avg_profit/avg_loss, 2)
-    avg_price = "${}".format(round(trade["total_cost"] / trade["trades"], 2))
-    profit_loss = "+${}".format(round(trade["profit_loss"], 2))
+    avg_price = "${}".format(
+        round(trade_stat["total_cost"] / trade_stat["trades"], 2))
+    profit_loss = "+${}".format(round(trade_stat["profit_loss"], 2))
     profit_loss_style = "text-success"
-    if trade["profit_loss"] < 0:
-        profit_loss = "-${}".format(abs(round(trade["profit_loss"], 2)))
+    if trade_stat["profit_loss"] < 0:
+        profit_loss = "-${}".format(abs(round(trade_stat["profit_loss"], 2)))
         profit_loss_style = "text-danger"
     gap_value = get_gap_by_symbol_date(symbol, key_statistics.date)
     gap = "0.0%"
@@ -2035,8 +2078,8 @@ def get_trade_stat_record_for_render(symbol, trade, date):
 
     return {
         "symbol": symbol,
-        "trades": trade["trades"],
-        "profit_loss_value": round(trade["profit_loss"], 2),
+        "trades": trade_stat["trades"],
+        "profit_loss_value": round(trade_stat["profit_loss"], 2),
         "profit_loss": profit_loss,
         "win_rate": win_rate,
         "profit_loss_ratio": profit_loss_ratio,
@@ -2049,8 +2092,52 @@ def get_trade_stat_record_for_render(symbol, trade, date):
         "news": news_count,
         "mktcap": mktcap,
         "turnover_rate": turnover_rate,
-        "top_gain": "+${}".format(trade["top_gain"]),
-        "top_loss": "-${}".format(abs(trade["top_loss"])),
+        "top_gain": "+${}".format(trade_stat["top_gain"]),
+        "top_loss": "-${}".format(abs(trade_stat["top_loss"])),
+    }
+
+
+def get_swing_trade_stat_record_for_render(symbol, trade_stat):
+    win_rate = "0.0%"
+    if trade_stat["trades"] > 0:
+        win_rate = "{}%".format(
+            round(trade_stat["win_trades"] / trade_stat["trades"] * 100, 2))
+    avg_profit = 0.0
+    if trade_stat["win_trades"] > 0:
+        avg_profit = trade_stat["total_gain"] / trade_stat["win_trades"]
+    avg_loss = 0.0
+    if trade_stat["loss_trades"] > 0:
+        avg_loss = abs(trade_stat["total_loss"] / trade_stat["loss_trades"])
+    profit_loss_ratio = 1.0
+    if avg_loss > 0:
+        profit_loss_ratio = round(avg_profit/avg_loss, 2)
+    avg_cost = "${}".format(
+        round(trade_stat["total_cost"] / trade_stat["trades"], 2))
+    avg_sold = "${}".format(
+        round(trade_stat["total_sold"] / trade_stat["trades"], 2))
+    profit_loss = "+${}".format(round(trade_stat["profit_loss"], 2))
+    profit_loss_style = "text-success"
+    if trade_stat["profit_loss"] < 0:
+        profit_loss = "-${}".format(abs(round(trade_stat["profit_loss"], 2)))
+        profit_loss_style = "text-danger"
+    profit_loss_percent_value = (trade_stat["total_sold"] - trade_stat["total_cost"]) / trade_stat["total_cost"]
+    profit_loss_percent = "+{}%".format(round(profit_loss_percent_value * 100, 2))
+    if profit_loss_percent_value < 0:
+        profit_loss_percent = "{}%".format(round(profit_loss_percent_value * 100, 2))
+
+    return {
+        "symbol": symbol,
+        "trades": trade_stat["trades"],
+        "profit_loss_value": round(trade_stat["profit_loss"], 2),
+        "profit_loss": profit_loss,
+        "profit_loss_percent": profit_loss_percent,
+        "win_rate": win_rate,
+        "profit_loss_ratio": profit_loss_ratio,
+        "avg_cost": avg_cost,
+        "avg_sold": avg_sold,
+        "profit_loss_style": profit_loss_style,
+        "total_cost": round(trade_stat["total_cost"], 2),
+        "total_sold": round(trade_stat["total_sold"], 2),
     }
 
 
