@@ -627,6 +627,7 @@ def save_webull_account(acc_data):
 
 
 def save_webull_order(order_data, paper=True):
+    create_order = False
     if paper:
         order_id = str(order_data['orderId'])
         order = WebullOrder.objects.filter(order_id=order_id).first()
@@ -656,6 +657,7 @@ def save_webull_order(order_data, paper=True):
             placed_time = pytz.timezone(settings.TIME_ZONE).localize(
                 datetime.strptime(order_data['placedTime'], "%m/%d/%Y %H:%M:%S EDT"))
             time_in_force = get_time_in_force_enum(order_data['timeInForce'])
+            create_order = True
     else:
         order_obj = order_data['orders'][0]
         order_id = str(order_obj['orderId'])
@@ -686,24 +688,26 @@ def save_webull_order(order_data, paper=True):
             placed_time = pytz.timezone(settings.TIME_ZONE).localize(
                 datetime.strptime(order_obj['createTime'], "%m/%d/%Y %H:%M:%S EDT"))
             time_in_force = get_time_in_force_enum(order_obj['timeInForce'])
+            create_order = True
 
-    order = WebullOrder(
-        order_id=order_id,
-        ticker_id=ticker_id,
-        symbol=symbol,
-        action=action,
-        status=status,
-        total_quantity=total_quantity,
-        filled_quantity=filled_quantity,
-        price=price,
-        avg_price=avg_price,
-        order_type=order_type,
-        filled_time=filled_time,
-        placed_time=placed_time,
-        time_in_force=time_in_force,
-        paper=paper,
-    )
-    order.save()
+    if create_order:
+        order = WebullOrder(
+            order_id=order_id,
+            ticker_id=ticker_id,
+            symbol=symbol,
+            action=action,
+            status=status,
+            total_quantity=total_quantity,
+            filled_quantity=filled_quantity,
+            price=price,
+            avg_price=avg_price,
+            order_type=order_type,
+            filled_time=filled_time,
+            placed_time=placed_time,
+            time_in_force=time_in_force,
+            paper=paper,
+        )
+        order.save()
 
 
 def save_webull_order_note(order_id, setup=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH, note=""):
@@ -1809,7 +1813,8 @@ def get_swing_profit_loss_for_render(trades):
             loss_count += 1
             total_loss += (trade.buy_price - trade.sell_price) * trade.quantity
     if len(trades) > 0:
-        swing_profit_loss["swing_win_rate"] = "{}%".format(round(win_count / len(trades) * 100, 2))
+        swing_profit_loss["swing_win_rate"] = "{}%".format(
+            round(win_count / len(trades) * 100, 2))
     avg_profit = 0.0
     if win_count > 0:
         avg_profit = total_profit / win_count
