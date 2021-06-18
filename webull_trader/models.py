@@ -334,6 +334,9 @@ class HistoricalDayTradePerformance(models.Model):
     top_loss_amount = models.FloatField()
     top_loss_symbol = models.CharField(max_length=64)
 
+    total_buy_amount = models.FloatField()
+    total_sell_amount = models.FloatField()
+
     def __str__(self):
         return "[{}] P&L: {}, {} trades".format(self.date, self.day_profit_loss, self.trades)
 

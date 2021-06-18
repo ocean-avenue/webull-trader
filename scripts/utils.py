@@ -1769,7 +1769,7 @@ def get_color_percentage_badge_style_for_render(value):
     return (percentage, percentage_style)
 
 
-def get_day_profit_loss_for_render(acc_stat):
+def get_net_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",
         "value_style": "",
@@ -1790,6 +1790,34 @@ def get_day_profit_loss_for_render(acc_stat):
                 day_profit_loss["day_pl_rate"]
             day_profit_loss["day_pl_rate_style"] = "badge-soft-success"
         elif acc_stat.day_profit_loss < 0:
+            day_profit_loss["value"] = "-" + day_profit_loss["value"]
+            day_profit_loss["value_style"] = "text-danger"
+            day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"
+    return day_profit_loss
+
+
+def get_day_profit_loss_for_render(perf):
+    day_profit_loss = {
+        "value": "$0.0",
+        "value_style": "",
+        "day_pl_rate": "0.0%",
+        "day_pl_rate_style": "badge-soft-dark",
+    }
+    if perf:
+        day_profit_loss["value"] = "${}".format(
+            abs(perf.day_profit_loss))
+        day_pl_rate = 0.0
+        if perf.total_buy_amount > 0:
+            day_pl_rate = (perf.total_sell_amount - perf.total_buy_amount) / perf.total_buy_amount
+        day_profit_loss["day_pl_rate"] = "{}%".format(
+            round(day_pl_rate * 100, 2))
+        if perf.day_profit_loss > 0:
+            day_profit_loss["value"] = "+" + day_profit_loss["value"]
+            day_profit_loss["value_style"] = "text-success"
+            day_profit_loss["day_pl_rate"] = "+" + \
+                day_profit_loss["day_pl_rate"]
+            day_profit_loss["day_pl_rate_style"] = "badge-soft-success"
+        elif perf.day_profit_loss < 0:
             day_profit_loss["value"] = "-" + day_profit_loss["value"]
             day_profit_loss["value_style"] = "text-danger"
             day_profit_loss["day_pl_rate_style"] = "badge-soft-danger"

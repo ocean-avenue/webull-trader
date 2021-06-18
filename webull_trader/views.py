@@ -55,7 +55,7 @@ def index(request):
 
     today_acc_stat = WebullAccountStatistics.objects.filter(
         date=today).first()
-    day_profit_loss = utils.get_day_profit_loss_for_render(today_acc_stat)
+    day_profit_loss = utils.get_net_profit_loss_for_render(today_acc_stat)
 
     acc_stat_list = WebullAccountStatistics.objects.all()
     # net assets chart
@@ -179,7 +179,7 @@ def day_analytics_date(request, date=None):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day profit loss
-    day_profit_loss = utils.get_day_profit_loss_for_render(acc_stat)
+    day_profit_loss = utils.get_day_profit_loss_for_render(daytrade_perf)
     # top gain & loss
     day_top_gain = {
         "value": "+${}".format(daytrade_perf.top_gain_amount),

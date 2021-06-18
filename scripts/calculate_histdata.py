@@ -28,8 +28,8 @@ def start(day=None):
     total_loss = 0.0
     # day profit loss
     day_profit_loss = 0.0
-    # total_buy_amount = 0.0
-    # total_sell_amount = 0.0
+    total_buy_amount = 0.0
+    total_sell_amount = 0.0
     # for order in buy_orders:
     #     total_buy_amount += (order.avg_price * order.filled_quantity)
     # for order in sell_orders:
@@ -42,6 +42,8 @@ def start(day=None):
             symbol = trade["symbol"]
             gain = round(
                 (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
+            total_buy_amount += (trade["buy_price"] * trade["quantity"])
+            total_sell_amount += (trade["sell_price"] * trade["quantity"])
             # calculate win rate, profit/loss ratio
             if gain > 0:
                 total_profit += gain
@@ -108,6 +110,8 @@ def start(day=None):
     hist_daytrade_perf.top_gain_symbol = top_gain_symbol
     hist_daytrade_perf.top_loss_amount = top_loss_amount
     hist_daytrade_perf.top_loss_symbol = top_loss_symbol
+    hist_daytrade_perf.total_buy_amount = round(total_buy_amount, 2)
+    hist_daytrade_perf.total_sell_amount = round(total_sell_amount, 2)
     hist_daytrade_perf.save()
 
 
