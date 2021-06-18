@@ -457,3 +457,30 @@ class OvernightTrade(models.Model):
 
     def __str__(self):
         return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
+
+
+class ManualTradeRequest(models.Model):
+    symbol = models.CharField(max_length=64)
+    quantity = models.PositiveIntegerField()
+
+    ACTION_TYPE_CHOICES = (
+        (enums.ActionType.BUY, enums.ActionType.tostr(enums.ActionType.BUY)),
+        (enums.ActionType.SELL, enums.ActionType.tostr(enums.ActionType.SELL)),
+    )
+    action = models.PositiveSmallIntegerField(
+        choices=ACTION_TYPE_CHOICES,
+        default=enums.ActionType.BUY
+    )
+
+    setup = models.PositiveSmallIntegerField(
+        choices=enums.SetupType.tochoices(),
+        default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
+    )
+
+    complete = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "{} <{}> x{}".format(enums.ActionType.tostr(self.action), self.symbol, self.quantity)

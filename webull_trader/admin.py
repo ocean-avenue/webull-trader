@@ -386,3 +386,19 @@ class OvernightTradeAdmin(admin.ModelAdmin):
 
 admin.site.register(models.OvernightTrade,
                     OvernightTradeAdmin)
+
+
+class ManualTradeRequestAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'quantity',
+        'action',
+        'setup',
+        'complete',
+        'created_at',
+        'updated_at',
+    ]
+
+
+admin.site.register(models.ManualTradeRequest,
+                    ManualTradeRequestAdmin)

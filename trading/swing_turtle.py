@@ -4,8 +4,8 @@
 
 from django.utils import timezone
 from trading.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
-from webull_trader.models import SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
+from webull_trader.enums import ActionType, SetupType
+from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 from sdk import webullsdk
 
 
@@ -84,7 +84,7 @@ class SwingTurtle(StrategyBase):
                     ticker_id=ticker_id,
                     quant=position.quantity)
                 self.print_log("🔴 Submit sell order <{}>, quant: {}, latest price: {}".format(
-                    symbol, ticker_id, position.quantity, latest_close))
+                    symbol, position.quantity, latest_close))
                 # add swing trade
                 self.update_pending_swing_trade(
                     symbol=symbol,
@@ -92,8 +92,6 @@ class SwingTurtle(StrategyBase):
                     position=position,
                     price=latest_close,
                     sell_time=timezone.now())
-                # clear position
-                position.delete()
         else:
             # check if buy
             # get entry_period+1 daily bars
@@ -120,7 +118,6 @@ class SwingTurtle(StrategyBase):
                     self.print_log("🟢 Submit buy order <{}>, quant: {}, latest price: {}".format(
                         symbol, buy_quant, latest_close))
                     # add swing position
-
                     self.update_pending_swing_position(
                         symbol,
                         order_response,
@@ -128,6 +125,44 @@ class SwingTurtle(StrategyBase):
                         quant=buy_quant,
                         buy_time=timezone.now(),
                         setup=self.get_setup())
+
+    def manual_trade(self, request):
+        symbol = request.symbol
+        quantity = request.quantity
+        action = request.action
+        if action == ActionType.BUY:
+            # TODO, support manual buy order
+            pass
+        else:
+            # check if already has possition
+            position = SwingPosition.objects.filter(
+                symbol=symbol, setup=self.get_setup(), quantity=quantity).first()
+            if position:
+                ticker_id = webullsdk.get_ticker(symbol)
+                latest_price = 0.0
+                quote = StockQuote.objects.filter(symbol=symbol).first()
+                if quote:
+                    latest_price = quote.price
+                # submit market sell order
+                order_response = webullsdk.sell_market_order(
+                    ticker_id=ticker_id,
+                    quant=quantity)
+                self.print_log("🔴 Submit manual sell order <{}>, quant: {}, latest price: {}".format(
+                    symbol, quantity, latest_price))
+                # add swing trade
+                self.update_pending_swing_trade(
+                    symbol=symbol,
+                    order_response=order_response,
+                    position=position,
+                    price=latest_price,
+                    sell_time=timezone.now(),
+                    manual_request=request)
+            else:
+                self.print_log("Unable to find match position <{}>, quant: {} for sell manual request.".format(
+                    symbol, quantity))
+        # mark request done
+        request.complete = True
+        request.save()
 
     def on_begin(self):
 
@@ -145,6 +180,13 @@ class SwingTurtle(StrategyBase):
         # only trade regular market hour once
         if not self.is_regular_market_hour():
             self.trading_end = False
+            return
+
+        # manual request first
+        manual_request = ManualTradeRequest.objects.filter(
+            setup=self.get_setup(), complete=False).first()
+        if manual_request:
+            self.manual_trade(manual_request)
             return
 
         # swing trading one symbol in each update
