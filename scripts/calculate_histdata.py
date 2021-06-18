@@ -5,7 +5,7 @@
 def start(day=None):
     from datetime import date
     from scripts import utils
-    from webull_trader.models import HistoricalDayTradePerformance
+    from webull_trader.models import HistoricalDayTradePerformance, HistoricalSwingTradePerformance, SwingTrade
 
     if day == None:
         day = date.today()
@@ -28,13 +28,13 @@ def start(day=None):
     total_loss = 0.0
     # day profit loss
     day_profit_loss = 0.0
-    total_buy_amount = 0.0
-    total_sell_amount = 0.0
+    day_total_buy_amount = 0.0
+    day_total_sell_amount = 0.0
     # for order in buy_orders:
-    #     total_buy_amount += (order.avg_price * order.filled_quantity)
+    #     day_total_buy_amount += (order.avg_price * order.filled_quantity)
     # for order in sell_orders:
-    #     total_sell_amount += (order.avg_price * order.filled_quantity)
-    # day_profit_loss = total_sell_amount - total_buy_amount
+    #     day_total_sell_amount += (order.avg_price * order.filled_quantity)
+    # day_profit_loss = day_total_sell_amount - day_total_buy_amount
     # trade records
     trades_dist = {}
     for trade in day_trades:
@@ -42,8 +42,8 @@ def start(day=None):
             symbol = trade["symbol"]
             gain = round(
                 (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
-            total_buy_amount += (trade["buy_price"] * trade["quantity"])
-            total_sell_amount += (trade["sell_price"] * trade["quantity"])
+            day_total_buy_amount += (trade["buy_price"] * trade["quantity"])
+            day_total_sell_amount += (trade["sell_price"] * trade["quantity"])
             # calculate win rate, profit/loss ratio
             if gain > 0:
                 total_profit += gain
@@ -100,8 +100,7 @@ def start(day=None):
     hist_daytrade_perf = HistoricalDayTradePerformance.objects.filter(
         date=day).first()
     if not hist_daytrade_perf:
-        hist_daytrade_perf = HistoricalDayTradePerformance()
-    hist_daytrade_perf.date = day
+        hist_daytrade_perf = HistoricalDayTradePerformance(date=day)
     hist_daytrade_perf.win_rate = overall_win_rate
     hist_daytrade_perf.profit_loss_ratio = overall_profit_loss_ratio
     hist_daytrade_perf.day_profit_loss = round(day_profit_loss, 2)
@@ -110,9 +109,30 @@ def start(day=None):
     hist_daytrade_perf.top_gain_symbol = top_gain_symbol
     hist_daytrade_perf.top_loss_amount = top_loss_amount
     hist_daytrade_perf.top_loss_symbol = top_loss_symbol
-    hist_daytrade_perf.total_buy_amount = round(total_buy_amount, 2)
-    hist_daytrade_perf.total_sell_amount = round(total_sell_amount, 2)
+    hist_daytrade_perf.total_buy_amount = round(day_total_buy_amount, 2)
+    hist_daytrade_perf.total_sell_amount = round(day_total_sell_amount, 2)
     hist_daytrade_perf.save()
+
+    # swing trades
+    swing_trades = SwingTrade.objects.filter(sell_date=day)
+    # swing profit loss
+    swing_profit_loss = 0.0
+    swing_total_buy_amount = 0.0
+    swing_total_sell_amount = 0.0
+    for trade in swing_trades:
+        swing_total_buy_amount += (trade.buy_price * trade.quantity)
+        swing_total_sell_amount += (trade.sell_price * trade.quantity)
+    swing_profit_loss = swing_total_sell_amount - swing_total_buy_amount
+    # save hist swingtrade perf object
+    hist_swingtrade_perf = HistoricalSwingTradePerformance.objects.filter(
+        date=day).first()
+    if not hist_swingtrade_perf:
+        hist_daytrade_perf = HistoricalSwingTradePerformance(date=day)
+    hist_swingtrade_perf.day_profit_loss = round(swing_profit_loss, 2)
+    hist_swingtrade_perf.trades = len(swing_trades)
+    hist_swingtrade_perf.total_buy_amount = round(swing_total_buy_amount, 2)
+    hist_swingtrade_perf.total_sell_amount = round(swing_total_sell_amount, 2)
+    hist_swingtrade_perf.save()
 
 
 if __name__ == "django.core.management.commands.shell":

@@ -274,11 +274,27 @@ class HistoricalDayTradePerformanceAdmin(admin.ModelAdmin):
         'top_gain_symbol',
         'top_loss_amount',
         'top_loss_symbol',
+        'total_buy_amount',
+        'total_sell_amount',
     ]
 
 
 admin.site.register(models.HistoricalDayTradePerformance,
                     HistoricalDayTradePerformanceAdmin)
+
+
+class HistoricalSwingTradePerformanceAdmin(admin.ModelAdmin):
+    list_display = [
+        'date',
+        'day_profit_loss',
+        'trades',
+        'total_buy_amount',
+        'total_sell_amount',
+    ]
+
+
+admin.site.register(models.HistoricalSwingTradePerformance,
+                    HistoricalSwingTradePerformanceAdmin)
 
 
 class SwingWatchlistAdmin(admin.ModelAdmin):

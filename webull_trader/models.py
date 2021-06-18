@@ -341,6 +341,18 @@ class HistoricalDayTradePerformance(models.Model):
         return "[{}] P&L: {}, {} trades".format(self.date, self.day_profit_loss, self.trades)
 
 
+class HistoricalSwingTradePerformance(models.Model):
+    date = models.DateField(auto_now=False, auto_now_add=False)
+    day_profit_loss = models.FloatField()
+    trades = models.PositiveIntegerField()
+
+    total_buy_amount = models.FloatField()
+    total_sell_amount = models.FloatField()
+
+    def __str__(self):
+        return "[{}] P&L: {}, {} trades".format(self.date, self.day_profit_loss, self.trades)
+
+
 class SwingWatchlist(models.Model):
     symbol = models.CharField(max_length=64)
     screener_type = models.PositiveSmallIntegerField(
