@@ -57,8 +57,8 @@ def start():
         earning.market_value = quote["marketCap"] or 0
         earning.avg_price_50d = quote["priceAvg50"]
         earning.avg_price_200d = quote["priceAvg200"]
-        earning.volume = quote["volume"]
-        earning.avg_volume = quote["avgVolume"]
+        earning.volume = quote["volume"] or 0
+        earning.avg_volume = quote["avgVolume"] or 0
         earning.exchange = quote["exchange"]
         earning.outstanding_shares = quote["sharesOutstanding"] or 0
         earning.save()
