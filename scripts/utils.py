@@ -1861,7 +1861,9 @@ def get_swing_profit_loss_for_render(trades):
     if avg_loss > 0:
         swing_profit_loss["swing_pl_ratio"] = round(avg_profit/avg_loss)
     profit_loss = total_sold - total_cost
-    profit_loss_rate = (total_sold - total_cost) / total_cost
+    profit_loss_rate = 0.0
+    if total_cost > 0:
+        profit_loss_rate = (total_sold - total_cost) / total_cost
     swing_profit_loss["value"] = "${}".format(abs(round(profit_loss, 2)))
     swing_profit_loss["swing_pl_rate"] = "{}%".format(
         round(profit_loss_rate * 100, 2))
