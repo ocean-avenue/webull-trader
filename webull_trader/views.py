@@ -1060,7 +1060,9 @@ def swing_positions(request):
 
     positions = SwingPosition.objects.all()
     last_acc_stat = WebullAccountStatistics.objects.last()
-    net_liquidation = last_acc_stat.net_liquidation
+    net_liquidation = 0.0
+    if last_acc_stat:
+        net_liquidation = last_acc_stat.net_liquidation
 
     swing_positions = []
     for position in positions:
@@ -1078,7 +1080,9 @@ def swing_positions(request):
 
         total_value = last_price * quantity
 
-        portfolio_percent = total_value / net_liquidation
+        portfolio_percent = 0.0
+        if net_liquidation > 0:
+            portfolio_percent = total_value / net_liquidation
 
         unrealized_pl = total_value - total_cost
         unrealized_pl_percent = (total_value - total_cost) / total_cost
