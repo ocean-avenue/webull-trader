@@ -1003,6 +1003,8 @@ def fetch_stock_quotes(symbol_list):
     # save stock quote
     for symbol in symbol_list:
         fmp_symbol = symbol.replace(' ', '-')
+        if fmp_symbol not in quote_dist:
+            continue
         quote = quote_dist[fmp_symbol]
         stock_quote = StockQuote.objects.filter(symbol=symbol).first()
         if not stock_quote:
