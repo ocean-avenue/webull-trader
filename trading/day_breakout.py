@@ -90,6 +90,14 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
+        if utils.check_bars_has_long_wick_up(bars):
+            # has long wick up
+            self.print_log(
+                "<{}> candle chart has long wick up, stop trading!".format(symbol))
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            return False
+
         if not utils.check_bars_volatility(bars):
             self.print_log(
                 "<{}> candle chart is not volatility, stop trading!".format(symbol))
@@ -110,6 +118,7 @@ class DayTradingBreakout(StrategyBase):
         return (exit_trading, exit_note)
 
     def check_exit(self, ticker, bars):
+        symbol = ticker['symbol']
         exit_trading = False
         exit_note = None
         current_candle = bars.iloc[-1]
@@ -125,11 +134,17 @@ class DayTradingBreakout(StrategyBase):
             exit_trading = True
             exit_note = "{} candles new low.".format(self.exit_period)
             self.print_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
-                ticker['symbol'], current_price, period_low_price))
+                symbol, current_price, period_low_price))
+        # check if has long wick up
+        elif utils.check_bars_has_long_wick_up(bars):
+            self.print_log(
+                "<{}> candle chart has long wick up, exit!".format(symbol))
+            exit_trading = True
+            exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif not utils.check_bars_volatility(bars):
             self.print_log(
-                "<{}> candle chart is not volatility, exit!".format(ticker['symbol']))
+                "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
         return (exit_trading, exit_note)
