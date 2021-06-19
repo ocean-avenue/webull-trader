@@ -1301,14 +1301,14 @@ def swing_analytics(request):
 
 
 @login_required
-def swing_analytics_date_symbol(request, date=None, symbol=None):
+def swing_analytics_symbol(request, symbol=None):
 
     cached_context = cache.get(
-        'swing_analytics_{}_{}_cache'.format(date, symbol))
+        'swing_analytics_{}_cache'.format(symbol))
     if cached_context:
-        return render(request, 'webull_trader/swing_analytics_date_symbol.html', cached_context)
+        return render(request, 'webull_trader/swing_analytics_symbol.html', cached_context)
 
-    trade = get_object_or_404(SwingTrade, buy_date=date, symbol=symbol)
+    trades = get_list_or_404(SwingTrade, symbol=symbol)
     quote = get_object_or_404(StockQuote, symbol=symbol)
 
     # account type data
@@ -1317,82 +1317,64 @@ def swing_analytics_date_symbol(request, date=None, symbol=None):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    # swing trade
-    buy_price = trade.buy_price
-    sell_price = trade.sell_price
-    buy_date = trade.buy_date
-    sell_date = trade.sell_date
-    quantity = trade.quantity
-    total_cost = buy_price * quantity
-    total_sold = sell_price * quantity
-    realized_pl = total_sold - total_cost
-    realized_pl_percent = (total_sold - total_cost) / total_cost
-    setup = SetupType.tostr(trade.setup)
-    profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
-        round(realized_pl, 2))
-    profit_loss_percent, profit_loss_percent_style = utils.get_color_percentage_badge_style_for_render(
-        round(realized_pl_percent * 100, 2))
-    holding_days = (sell_date - buy_date).days
-    swing_trade = {
-        "buy_price": "${}".format(buy_price),
-        "sell_price": "${}".format(sell_price),
-        "total_cost": "${}".format(round(total_cost, 2)),
-        "total_sold": "${}".format(round(total_sold, 2)),
-        "quantity": quantity,
-        "buy_date": buy_date,
-        "sell_date": sell_date,
-        "holding_days": holding_days,
-        "profit_loss": profit_loss,
-        "profit_loss_percent": profit_loss_percent,
-        "profit_loss_style": profit_loss_style,
-        "profit_loss_percent_style": profit_loss_percent_style,
-        "setup": setup,
-    }
+    # stats
+    trades_dist = utils.get_trade_stat_dist_from_swing_trades(trades)
+    trade_stats = utils.get_swing_trade_stat_record_for_render(
+        symbol, trades_dist[symbol])
+
+    # swing trade records
+    trade_records = []
+    for trade in trades:
+        buy_price = trade.buy_price
+        sell_price = trade.sell_price
+        buy_date = trade.buy_date
+        sell_date = trade.sell_date
+        quantity = trade.quantity
+        total_cost = buy_price * quantity
+        total_sold = sell_price * quantity
+        realized_pl = total_sold - total_cost
+        realized_pl_percent = (total_sold - total_cost) / total_cost
+        setup = SetupType.tostr(trade.setup)
+        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
+            round(realized_pl, 2))
+        profit_loss_percent, profit_loss_percent_style = utils.get_color_percentage_badge_style_for_render(
+            round(realized_pl_percent * 100, 2))
+        holding_days = (sell_date - buy_date).days
+        trade_records.append({
+            "buy_price": "${}".format(buy_price),
+            "sell_price": "${}".format(sell_price),
+            "total_cost": "${}".format(round(total_cost, 2)),
+            "total_sold": "${}".format(round(total_sold, 2)),
+            "quantity": quantity,
+            "buy_date": buy_date,
+            "sell_date": sell_date,
+            "holding_days": holding_days,
+            "profit_loss": profit_loss,
+            "profit_loss_percent": profit_loss_percent,
+            "profit_loss_style": profit_loss_style,
+            "profit_loss_percent_style": profit_loss_percent_style,
+            "setup": setup,
+        })
 
     # calculate daily candle
     d1_candle_data = utils.get_swing_daily_candle_data_for_render(symbol)
 
-    # 1m trade records
-    d1_trade_quantity_records = []
-    buy_coord = [
-        buy_date.strftime("%Y/%m/%d"),
-        # use high price avoid block candle
-        utils.get_swing_daily_candle_high_by_date(
-            symbol, buy_date) + 0.01,
-    ]
-    d1_trade_quantity_records.append({
-        "name": "+{}".format(quantity),
-        "coord": buy_coord,
-        "value": quantity,
-        "itemStyle": {"color": config.BUY_COLOR},
-        "label": {"fontSize": 10},
-    })
-    sell_coord = [
-        sell_date.strftime("%Y/%m/%d"),
-        # use high price avoid block candle
-        utils.get_swing_daily_candle_high_by_date(
-            symbol, sell_date) + 0.01,
-    ]
-    d1_trade_quantity_records.append({
-        "name": "-{}".format(trade.quantity),
-        "coord": sell_coord,
-        "value": trade.quantity,
-        "itemStyle": {"color": config.SELL_COLOR},
-        "label": {"fontSize": 10},
-    })
+    # 1d trade records, only use quantity records for now
+    _, d1_trade_quantity_records = utils.get_daily_trade_marker_from_trades_for_render(
+        trades)
 
     context = {
         "symbol": symbol,
-        "date": date,
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
         "sector": quote.sector,
-        "trade": swing_trade,
+        "trade_records": trade_records,
+        "trade_stats": trade_stats,
         "d1_candle_data": d1_candle_data,
         "d1_trade_quantity_records": d1_trade_quantity_records,
     }
 
-    cache.set('swing_analytics_{}_{}_cache'.format(
-        date, symbol), context, CACHE_TIMEOUT)
+    cache.set('swing_analytics_{}_cache'.format(
+        symbol), context, CACHE_TIMEOUT)
 
-    return render(request, 'webull_trader/swing_analytics_date_symbol.html', context)
+    return render(request, 'webull_trader/swing_analytics_symbol.html', context)

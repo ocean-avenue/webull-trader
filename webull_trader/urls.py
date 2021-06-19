@@ -20,5 +20,5 @@ urlpatterns = [
     path('swing-positions', views.swing_positions, name='swing_positions'),
     path('swing-positions/<str:symbol>', views.swing_positions_symbol, name='swing_positions_symbol'),
     path('swing-analytics', views.swing_analytics, name='swing_analytics'),
-    path('swing-analytics/<str:date>/<str:symbol>', views.swing_analytics_date_symbol, name='swing_analytics_date_symbol'),
+    path('swing-analytics/<str:symbol>', views.swing_analytics_symbol, name='swing_analytics_symbol'),
 ]

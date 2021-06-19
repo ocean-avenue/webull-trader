@@ -2120,10 +2120,13 @@ def get_swing_trade_stat_record_for_render(symbol, trade_stat):
     if trade_stat["profit_loss"] < 0:
         profit_loss = "-${}".format(abs(round(trade_stat["profit_loss"], 2)))
         profit_loss_style = "text-danger"
-    profit_loss_percent_value = (trade_stat["total_sold"] - trade_stat["total_cost"]) / trade_stat["total_cost"]
-    profit_loss_percent = "+{}%".format(round(profit_loss_percent_value * 100, 2))
+    profit_loss_percent_value = (
+        trade_stat["total_sold"] - trade_stat["total_cost"]) / trade_stat["total_cost"]
+    profit_loss_percent = "+{}%".format(
+        round(profit_loss_percent_value * 100, 2))
     if profit_loss_percent_value < 0:
-        profit_loss_percent = "{}%".format(round(profit_loss_percent_value * 100, 2))
+        profit_loss_percent = "{}%".format(
+            round(profit_loss_percent_value * 100, 2))
 
     return {
         "symbol": symbol,
@@ -2138,6 +2141,8 @@ def get_swing_trade_stat_record_for_render(symbol, trade_stat):
         "profit_loss_style": profit_loss_style,
         "total_cost": round(trade_stat["total_cost"], 2),
         "total_sold": round(trade_stat["total_sold"], 2),
+        "top_gain": "+${}".format(trade_stat["top_gain"]),
+        "top_loss": "-${}".format(abs(trade_stat["top_loss"])),
     }
 
 
@@ -2274,6 +2279,56 @@ def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale,
             "coord": coord,
             "value": order.filled_quantity,
             "itemStyle": {"color": color},
+            "label": {"fontSize": 10},
+        })
+
+    return (trade_price_records, trade_quantity_records)
+
+
+def get_daily_trade_marker_from_trades_for_render(trades):
+    trade_price_records = []
+    trade_quantity_records = []
+
+    for trade in trades:
+        symbol = trade.symbol
+        buy_date = trade.buy_date
+        coord = [
+            buy_date.strftime("%Y/%m/%d"),
+            # use high price avoid block candle
+            get_swing_daily_candle_high_by_date(symbol, buy_date) + 0.01,
+        ]
+        trade_price_records.append({
+            "name": "{}".format(trade.buy_price),
+            "coord": coord,
+            "value": trade.buy_price,
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
+        })
+        trade_quantity_records.append({
+            "name": "+{}".format(trade.quantity),
+            "coord": coord,
+            "value": trade.quantity,
+            "itemStyle": {"color": config.BUY_COLOR},
+            "label": {"fontSize": 10},
+        })
+        sell_date = trade.sell_date
+        coord = [
+            sell_date.strftime("%Y/%m/%d"),
+            # use high price avoid block candle
+            get_swing_daily_candle_high_by_date(symbol, sell_date) + 0.01,
+        ]
+        trade_price_records.append({
+            "name": "{}".format(trade.sell_price),
+            "coord": coord,
+            "value": trade.sell_price,
+            "itemStyle": {"color": config.SELL_COLOR},
+            "label": {"fontSize": 10},
+        })
+        trade_quantity_records.append({
+            "name": "-{}".format(trade.quantity),
+            "coord": coord,
+            "value": trade.quantity,
+            "itemStyle": {"color": config.SELL_COLOR},
             "label": {"fontSize": 10},
         })
 
