@@ -127,7 +127,7 @@ def start(day=None):
     hist_swingtrade_perf = HistoricalSwingTradePerformance.objects.filter(
         date=day).first()
     if not hist_swingtrade_perf:
-        hist_daytrade_perf = HistoricalSwingTradePerformance(date=day)
+        hist_swingtrade_perf = HistoricalSwingTradePerformance(date=day)
     hist_swingtrade_perf.day_profit_loss = round(swing_profit_loss, 2)
     hist_swingtrade_perf.trades = len(swing_trades)
     hist_swingtrade_perf.total_buy_amount = round(swing_total_buy_amount, 2)
