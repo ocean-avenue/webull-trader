@@ -757,6 +757,8 @@ def save_trading_log(text, tag, trading_hour, date):
 
 
 def save_hist_key_statistics(quote_data, date):
+    if 'symbol' not in quote_data:
+        return
     symbol = quote_data['symbol']
     print("[{}] Importing key statistics for {}...".format(
         get_now(), symbol))
