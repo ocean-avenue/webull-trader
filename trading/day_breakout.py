@@ -13,20 +13,21 @@ class DayTradingBreakout(StrategyBase):
 
     import pandas as pd
 
-    def __init__(self, paper, trading_hour, entry_period=20, exit_period=10):
+    def __init__(self, paper, trading_hour, entry_period=20, exit_period=10, time_scale=1):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.entry_period = entry_period
         self.exit_period = exit_period
+        self.time_scale = time_scale
 
     def get_tag(self):
         return "DayTradingBreakout"
 
     def get_setup(self):
         if self.entry_period == 30:
-            return SetupType.DAY_30_MINUTES_NEW_HIGH
+            return SetupType.DAY_30_CANDLES_NEW_HIGH
         elif self.entry_period == 20:
-            return SetupType.DAY_20_MINUTES_NEW_HIGH
-        return SetupType.DAY_10_MINUTES_NEW_HIGH
+            return SetupType.DAY_20_CANDLES_NEW_HIGH
+        return SetupType.DAY_10_CANDLES_NEW_HIGH
 
     # check if track in extended hour
     def check_surge(self, ticker, bar):
@@ -82,7 +83,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=1, period=5) and not utils.check_bars_rel_volume(bars):
+        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars):
             # has no volume and no relative volume
             self.print_log(
                 "<{}> candle chart has not enough volume, stop trading!".format(symbol))
@@ -105,7 +106,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=120):
+        if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=60 * self.time_scale):
             self.print_log(
                 "<{}> try buy too soon after last sell, stop trading!".format(symbol))
             # remove from monitor
@@ -184,19 +185,22 @@ class DayTradingBreakout(StrategyBase):
             # fetch 1m bar charts
             if m1_bars.empty:
                 m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.entry_period+5))
+                    ticker_id, count=(self.entry_period*self.time_scale+5))
             if m1_bars.empty:
                 return
+            bars = m1_bars
+            if self.time_scale == 5:
+                bars = utils.convert_5m_bars(m1_bars)
 
             # calculate and fill ema 9 data
-            m1_bars['ema9'] = m1_bars['close'].ewm(span=9, adjust=False).mean()
+            bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
 
             # candle data
-            current_candle = m1_bars.iloc[-1]
-            prev_candle = m1_bars.iloc[-2]
+            current_candle = bars.iloc[-1]
+            prev_candle = bars.iloc[-2]
 
             # check entry: current price above vwap, entry period minutes new high
-            if self.check_entry(ticker, m1_bars):
+            if self.check_entry(ticker, bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 # bid_price = webullsdk.get_bid_price_from_quote(quote)
                 ask_price = webullsdk.get_ask_price_from_quote(quote)
@@ -244,7 +248,7 @@ class DayTradingBreakout(StrategyBase):
             if not exit_trading:
                 # get 1m bar charts
                 m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.exit_period+5))
+                    ticker_id, count=(self.exit_period*self.time_scale+5))
 
                 # get bars error
                 if m1_bars.empty:
@@ -252,8 +256,11 @@ class DayTradingBreakout(StrategyBase):
                     exit_trading = True
                     exit_note = "Bars data error!"
                 else:
+                    bars = m1_bars
+                    if self.time_scale == 5:
+                        bars = utils.convert_5m_bars(m1_bars)
                     # check exit trade
-                    exit_trading, exit_note = self.check_exit(ticker, m1_bars)
+                    exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
             if exit_trading:
@@ -310,7 +317,7 @@ class DayTradingBreakout(StrategyBase):
             if change_percentage >= self.min_surge_change_ratio:
                 if self.is_extended_market_hour():
                     m1_bars = webullsdk.get_1m_bars(
-                        ticker_id, count=(self.entry_period+5))
+                        ticker_id, count=(self.entry_period*self.time_scale+5))
                     if m1_bars.empty:
                         continue
                     # use latest 2 candle

@@ -267,21 +267,25 @@ def start():
         strategies.append(DayTradingRedGreen(
             paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_10:
-        # DAY_BREAKOUT: breakout trade 10 minutes
+        # DAY_BREAKOUT: breakout trade 10 candles
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_20:
-        # DAY_BREAKOUT: breakout trade 20 minutes
+        # DAY_BREAKOUT: breakout trade 20 candles
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
-        # DAY_BREAKOUT: breakout trade 30 minutes
+        # DAY_BREAKOUT: breakout trade 30 candles
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=30, exit_period=15))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
         # DAY_BREAKOUT_NEW_HIGH: breakout trade with new high confirm
         strategies.append(DayTradingBreakoutNewHigh(
             paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_10_5:
+        # DAY_BREAKOUT_10_5: breakout trade with 5 minutes candles chart
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5, time_scale=5))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO, use other earning strategy

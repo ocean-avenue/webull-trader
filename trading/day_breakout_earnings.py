@@ -17,10 +17,10 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
     def get_setup(self):
         if len(self.earning_symbols) == 0:
             if self.entry_period == 30:
-                return SetupType.DAY_30_MINUTES_NEW_HIGH
+                return SetupType.DAY_30_CANDLES_NEW_HIGH
             elif self.entry_period == 20:
-                return SetupType.DAY_20_MINUTES_NEW_HIGH
-            return SetupType.DAY_10_MINUTES_NEW_HIGH
+                return SetupType.DAY_20_CANDLES_NEW_HIGH
+            return SetupType.DAY_10_CANDLES_NEW_HIGH
         else:
             return SetupType.DAY_EARNINGS_GAP
 

@@ -79,10 +79,10 @@ class SetupType:
     DAY_BULL_FLAG = 2
     DAY_REVERSAL = 3
     DAY_RED_TO_GREEN = 4
-    DAY_20_MINUTES_NEW_HIGH = 5
-    DAY_30_MINUTES_NEW_HIGH = 6
+    DAY_20_CANDLES_NEW_HIGH = 5
+    DAY_30_CANDLES_NEW_HIGH = 6
     DAY_EARNINGS_GAP = 7
-    DAY_10_MINUTES_NEW_HIGH = 8
+    DAY_10_CANDLES_NEW_HIGH = 8
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
     ERROR_FAILED_TO_SELL = 500
@@ -100,12 +100,12 @@ class SetupType:
             return '[Day] Reversal'
         if val == SetupType.DAY_RED_TO_GREEN:
             return '[Day] Red to Green'
-        if val == SetupType.DAY_10_MINUTES_NEW_HIGH:
-            return '[Day] 10 minutes new high'
-        if val == SetupType.DAY_20_MINUTES_NEW_HIGH:
-            return '[Day] 20 minutes new high'
-        if val == SetupType.DAY_30_MINUTES_NEW_HIGH:
-            return '[Day] 30 minutes new high'
+        if val == SetupType.DAY_10_CANDLES_NEW_HIGH:
+            return '[Day] 10 candles new high'
+        if val == SetupType.DAY_20_CANDLES_NEW_HIGH:
+            return '[Day] 20 candles new high'
+        if val == SetupType.DAY_30_CANDLES_NEW_HIGH:
+            return '[Day] 30 candles new high'
         if val == SetupType.DAY_EARNINGS_GAP:
             return '[Day] Earning Gap'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
@@ -129,12 +129,12 @@ class SetupType:
                 SetupType.DAY_REVERSAL)),
             (SetupType.DAY_RED_TO_GREEN, SetupType.tostr(
                 SetupType.DAY_RED_TO_GREEN)),
-            (SetupType.DAY_10_MINUTES_NEW_HIGH, SetupType.tostr(
-                SetupType.DAY_10_MINUTES_NEW_HIGH)),
-            (SetupType.DAY_20_MINUTES_NEW_HIGH, SetupType.tostr(
-                SetupType.DAY_20_MINUTES_NEW_HIGH)),
-            (SetupType.DAY_30_MINUTES_NEW_HIGH, SetupType.tostr(
-                SetupType.DAY_30_MINUTES_NEW_HIGH)),
+            (SetupType.DAY_10_CANDLES_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_10_CANDLES_NEW_HIGH)),
+            (SetupType.DAY_20_CANDLES_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_20_CANDLES_NEW_HIGH)),
+            (SetupType.DAY_30_CANDLES_NEW_HIGH, SetupType.tostr(
+                SetupType.DAY_30_CANDLES_NEW_HIGH)),
             (SetupType.DAY_EARNINGS_GAP, SetupType.tostr(
                 SetupType.DAY_EARNINGS_GAP)),
             (SetupType.SWING_20_DAYS_NEW_HIGH, SetupType.tostr(
@@ -161,6 +161,7 @@ class AlgorithmType:
     DAY_EARNINGS_BREAKOUT = 9
     DAY_BREAKOUT_10 = 10
     DAY_BREAKOUT_NEW_HIGH = 11
+    DAY_BREAKOUT_10_5 = 12
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -183,15 +184,17 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
             return 'Momo day trade, no entry if the price not break max of last high trade price.'
         if val == AlgorithmType.DAY_BREAKOUT_10:
-            return 'Breakout day trade, entry if price reach 10 minutes new high.'
+            return 'Breakout day trade, entry if price reach 10 candles new high.'
         if val == AlgorithmType.DAY_BREAKOUT_20:
-            return 'Breakout day trade, entry if price reach 20 minutes new high.'
+            return 'Breakout day trade, entry if price reach 20 candles new high.'
         if val == AlgorithmType.DAY_BREAKOUT_30:
-            return 'Breakout day trade, entry if price reach 30 minutes new high.'
+            return 'Breakout day trade, entry if price reach 30 candles new high.'
         if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
-            return 'Breakout and earning day trade, entry if price reach 30 minutes new high.'
+            return 'Breakout and earning day trade, entry if price reach 10 candles new high.'
         if val == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
             return 'Breakout day trade, no entry if the price not break max of last high trade price.'
+        if val == AlgorithmType.DAY_BREAKOUT_10_5:
+            return 'Breakout day trade, entry if price reach 10 candles new high in 5 minute chart.'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'Earning date day trade, entry if gap up and exit trade intraday.'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -232,6 +235,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT EARNINGS)'
         if val == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
             return 'DAY (BREAKOUT NEW HIGH)'
+        if val == AlgorithmType.DAY_BREAKOUT_10_5:
+            return 'DAY (BREAKOUT 10-5)'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNINGS)'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -273,6 +278,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_EARNINGS)),
             (AlgorithmType.DAY_BREAKOUT_NEW_HIGH, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_NEW_HIGH)),
+            (AlgorithmType.DAY_BREAKOUT_10_5, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_10_5)),
             (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS)),
             (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(
