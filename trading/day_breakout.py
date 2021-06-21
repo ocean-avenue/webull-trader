@@ -106,12 +106,14 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=60 * self.time_scale):
-            self.print_log(
-                "<{}> try buy too soon after last sell, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-            return False
+        if symbol in self.tracking_stats:
+            last_trade_time = self.tracking_stats[symbol]['last_trade_time']
+            if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=60 * self.time_scale):
+                self.print_log(
+                    "<{}> try buy too soon after last sell, stop trading!".format(symbol))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return False
 
         return True
 
