@@ -635,6 +635,7 @@ def save_webull_account(acc_data):
         acc_stat = WebullAccountStatistics.objects.filter(date=today).first()
         if not acc_stat:
             acc_stat = WebullAccountStatistics(date=today)
+        # TODO
         acc_stat.net_liquidation = acc_data['netLiquidation']
         acc_stat.total_profit_loss = acc_data['totalProfitLoss']
         acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']

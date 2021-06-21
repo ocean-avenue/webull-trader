@@ -4,7 +4,7 @@ import time
 from webull import webull, paper_webull
 import pandas as pd
 from scripts import utils
-from sdk.config import WEBULL_AFTER_MARKET_LOSERS_URL, WEBULL_PRE_MARKET_GAINERS_URL, WEBULL_AFTER_MARKET_GAINERS_URL, WEBULL_QUOTE_1M_CHARTS_URL, WEBULL_TOP_GAINERS_URL, WEBULL_TOP_LOSERS_URL
+from sdk import config
 from webull_trader.models import WebullCredentials
 
 wb_instance = None
@@ -70,6 +70,7 @@ def logout():
     return True
 
 
+# Paper
 # {
 #    "accountId":4493986,
 #    "currency":"USD",
@@ -121,13 +122,107 @@ def logout():
 #    ],
 #    "actBaseUrl":"https://act.webull.com/contentEdit/paperRule.html"
 # }
+#
+# Live
+# {
+#    "banners":[
+#       ...
+#    ],
+#    "secAccountId":13169104,
+#    "brokerId":8,
+#    "accountType":"MRGN",
+#    "brokerAccountId":"5NK43899",
+#    "currency":"USD",
+#    "currencyId":247,
+#    "pdt":false,
+#    "professional":false,
+#    "showUpgrade":false,
+#    "totalCost":"0.00",
+#    "netLiquidation":"1413.80",
+#    "unrealizedProfitLoss":"0.00",
+#    "unrealizedProfitLossRate":"0.0000",
+#    "unrealizedProfitLossBase":"1413.80",
+#    "warning":false,
+#    "remindModifyPwd":false,
+#    "accountMembers":[
+#       {
+#          "key":"totalMarketValue",
+#          "value":"0.00"
+#       },
+#       {
+#          "key":"cashBalance",
+#          "value":"1413.80"
+#       },
+#       {
+#          "key":"dayBuyingPower",
+#          "value":"1413.80"
+#       },
+#       {
+#          "key":"overnightBuyingPower",
+#          "value":"1413.80"
+#       },
+#       {
+#          "key":"cryptoBuyingPower",
+#          "value":"626.56"
+#       },
+#       {
+#          "key":"optionBuyingPower",
+#          "value":"1413.80"
+#       },
+#       {
+#          "key":"riskStatus",
+#          "value":"Safe",
+#          "data":{
+#             "warning":false,
+#             "level":"SAFE",
+#             "levelStr":"Safe",
+#             "riskWarning":false,
+#             "gfvCount":0,
+#             "marginWarning":false,
+#             "smaWarning":false,
+#             "url":"https://act.webull.com/v-trade/v-main.html?secAccountId=13169104#/risk-status"
+#          }
+#       },
+#       {
+#          "key":"remainTradeTimes",
+#          "value":"3,3,3,3,3",
+#          "data":{
+#             "url":"https://act.webull.com/v-trade/v-main.html?secAccountId=13169104#/day-transaction"
+#          }
+#       }
+#    ],
+#    "positions":[],
+#    "openOrders":[],
+#    "positions2":[],
+#    "openOrders2":[],
+#    "openIpoOrders":[],
+#    "openOrderSize":0
+# }
 
 def get_account():
     instance = _get_instance()
     return instance.get_account()
 
 
+def get_account_id():
+    instance = _get_instance()
+    return instance._account_id
+
+# Paper
 # {'totalMarketValue': '0.00', 'usableCash': '4876.63', 'dayProfitLoss': '-133.15'}
+#
+# Live
+# {
+#    "totalMarketValue":"0.00",
+#    "cashBalance":"1413.80",
+#    "dayBuyingPower":"1413.80",
+#    "overnightBuyingPower":"1413.80",
+#    "cryptoBuyingPower":"626.56",
+#    "optionBuyingPower":"1413.80",
+#    "riskStatus":"Safe",
+#    "remainTradeTimes":"3,3,3,3,3",
+# }
+
 
 def get_portfolio():
     instance = _get_instance()
@@ -142,12 +237,57 @@ def get_portfolio():
         output['usableCash'] = '0.00'
     if 'dayProfitLoss' not in output:
         output['dayProfitLoss'] = '0.00'
+    if 'cashBalance' not in output:
+        output['cashBalance'] = '0.00'
+    if 'dayBuyingPower' not in output:
+        output['dayBuyingPower'] = '0.00'
+    if 'overnightBuyingPower' not in output:
+        output['overnightBuyingPower'] = '0.00'
+    if 'cryptoBuyingPower' not in output:
+        output['cryptoBuyingPower'] = '0.00'
+    if 'optionBuyingPower' not in output:
+        output['optionBuyingPower'] = '0.00'
+    if 'riskStatus' not in output:
+        output['riskStatus'] = 'Safe'
+    if 'remainTradeTimes' not in output:
+        output['remainTradeTimes'] = 'Safe'
     return output
 
 
 def get_trade_token(password=''):
     instance = _get_instance()
     return instance.get_trade_token(password=password)
+
+
+# [
+#    ...
+#    {
+#       "periodName":"2021-06-19",
+#       "profitLoss":"0.00",
+#       "yieldRate":"0.0000",
+#       "tradingDay":false
+#    },
+#    {
+#       "periodName":"2021-06-20",
+#       "profitLoss":"0.00",
+#       "yieldRate":"0.0000",
+#       "tradingDay":false
+#    },
+#    {
+#       "periodName":"2021-06-21",
+#       "profitLoss":"0.00",
+#       "yieldRate":"0.0000",
+#       "tradingDay":true
+#    }
+# ]
+
+def get_daily_profitloss():
+    instance = _get_instance()
+    headers = instance.build_req_headers()
+    response = requests.get(config.WEBULL_DAILY_PL_URL.format(
+        get_account_id()), headers=headers)
+    result = response.json()
+    return result
 
 # {
 #    "tickerId":925348770,
@@ -654,7 +794,7 @@ def _get_browser_headers():
 def get_1m_charts(ticker_id, count=20):
     time.sleep(1)
     session = requests.Session()
-    url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
+    url = config.WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
     res = session.get(url, headers=_get_browser_headers())
     res_json = json.loads(res.text)
     if len(res_json) == 0:
@@ -687,7 +827,7 @@ def get_pre_market_gainers(count=10):
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_PRE_MARKET_GAINERS_URL.format(count),
+            config.WEBULL_PRE_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         gainers = []
@@ -735,7 +875,7 @@ def get_top_gainers(count=10):
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_TOP_GAINERS_URL.format(count),
+            config.WEBULL_TOP_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         gainers = []
@@ -772,7 +912,7 @@ def get_after_market_gainers(count=10):
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_AFTER_MARKET_GAINERS_URL.format(count),
+            config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         gainers = []
@@ -820,7 +960,7 @@ def get_top_losers(count=10):
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_TOP_LOSERS_URL.format(count),
+            config.WEBULL_TOP_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         losers = []
@@ -857,7 +997,7 @@ def get_after_market_losers(count=10):
     try:
         session = requests.Session()
         res = session.get(
-            WEBULL_AFTER_MARKET_LOSERS_URL.format(count),
+            config.WEBULL_AFTER_MARKET_LOSERS_URL.format(count),
             headers=_get_browser_headers())
         res_json = json.loads(res.text)
         gainers = []
