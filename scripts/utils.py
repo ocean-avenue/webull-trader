@@ -637,9 +637,9 @@ def save_webull_account(acc_data, paper=True):
                 date=today).first()
             if not acc_stat:
                 acc_stat = WebullAccountStatistics(date=today)
-            acc_stat.net_liquidation = acc_data['netLiquidation']
-            acc_stat.total_profit_loss = acc_data['totalProfitLoss']
-            acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
+            acc_stat.net_liquidation = float(acc_data['netLiquidation'])
+            acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
+            acc_stat.total_profit_loss_rate = float(acc_data['totalProfitLossRate'])
             acc_stat.day_profit_loss = day_profit_loss
             acc_stat.save()
     else:
@@ -649,7 +649,7 @@ def save_webull_account(acc_data, paper=True):
                 date=today).first()
             if not acc_stat:
                 acc_stat = WebullAccountStatistics(date=today)
-            acc_stat.net_liquidation = acc_data['netLiquidation']
+            acc_stat.net_liquidation = float(acc_data['netLiquidation'])
             # get today's P&L
             daily_pl = webullsdk.get_daily_profitloss()
             day_profit_loss = 0
