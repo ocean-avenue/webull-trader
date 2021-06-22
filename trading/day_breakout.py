@@ -210,18 +210,23 @@ class DayTradingBreakout(StrategyBase):
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
-                # submit limit order at ask price
-                order_response = webullsdk.buy_limit_order(
-                    ticker_id=ticker_id,
-                    price=ask_price,
-                    quant=buy_quant)
-                self.print_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
-                    symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
-                self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                    symbol, buy_quant, ask_price))
-                # update pending buy
-                self.update_pending_buy_order(
-                    symbol, order_response, stop_loss=prev_candle['low'])
+                if buy_quant > 0:
+                    # submit limit order at ask price
+                    order_response = webullsdk.buy_limit_order(
+                        ticker_id=ticker_id,
+                        price=ask_price,
+                        quant=buy_quant)
+                    self.print_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                        symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
+                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                        symbol, buy_quant, ask_price))
+                    # update pending buy
+                    self.update_pending_buy_order(
+                        symbol, order_response, stop_loss=prev_candle['low'])
+                else:
+                    self.print_log(
+                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
+
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:

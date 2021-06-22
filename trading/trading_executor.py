@@ -105,10 +105,7 @@ class TradingExecutor:
         print("[{}] Trading ended!".format(utils.get_now()))
 
         # output today's proft loss
-        portfolio = webullsdk.get_portfolio()
-        day_profit_loss = "-"
-        if "dayProfitLoss" in portfolio:
-            day_profit_loss = portfolio['dayProfitLoss']
+        day_profit_loss = webullsdk.get_day_profit_loss()
         print("[{}] Today's P&L: {}".format(
             utils.get_now(), day_profit_loss))
 

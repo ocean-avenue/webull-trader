@@ -30,7 +30,8 @@ class DayTradingRedGreen(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, stop_tracking=False, resubmit_count=50)
+            self.check_sell_order_filled(
+                ticker, stop_tracking=False, resubmit_count=50)
             return
 
         holding_quantity = ticker['positions']
@@ -89,18 +90,22 @@ class DayTradingRedGreen(StrategyBase):
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
-                # submit limit order at ask price
-                order_response = webullsdk.buy_limit_order(
-                    ticker_id=ticker_id,
-                    price=ask_price,
-                    quant=buy_quant)
-                self.print_log("Trading <{}>, price: {}, volume: {}".format(
-                    symbol, current_close, current_volume))
-                self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                    symbol, buy_quant, ask_price))
-                # update pending buy
-                self.update_pending_buy_order(
-                    symbol, order_response, stop_loss=prev_day_close)
+                if buy_quant > 0:
+                    # submit limit order at ask price
+                    order_response = webullsdk.buy_limit_order(
+                        ticker_id=ticker_id,
+                        price=ask_price,
+                        quant=buy_quant)
+                    self.print_log("Trading <{}>, price: {}, volume: {}".format(
+                        symbol, current_close, current_volume))
+                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                        symbol, buy_quant, ask_price))
+                    # update pending buy
+                    self.update_pending_buy_order(
+                        symbol, order_response, stop_loss=prev_day_close)
+                else:
+                    self.print_log(
+                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -163,9 +168,11 @@ class DayTradingRedGreen(StrategyBase):
                     ticker = self.get_init_tracking_ticker(
                         gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
                     self.tracking_tickers[gainer.symbol] = ticker
-                    self.print_log("Add gainer <{}> to trade!".format(gainer.symbol))
+                    self.print_log(
+                        "Add gainer <{}> to trade!".format(gainer.symbol))
             else:
-                self.print_log("Cannot find <{}> open price!".format(gainer.symbol))
+                self.print_log(
+                    "Cannot find <{}> open price!".format(gainer.symbol))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
         # update tracking_tickers
@@ -179,9 +186,11 @@ class DayTradingRedGreen(StrategyBase):
                     ticker = self.get_init_tracking_ticker(
                         loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
                     self.tracking_tickers[loser.symbol] = ticker
-                    self.print_log("Add loser <{}> to trade!".format(loser.symbol))
+                    self.print_log(
+                        "Add loser <{}> to trade!".format(loser.symbol))
             else:
-                self.print_log("Cannot find <{}> open price!".format(loser.symbol))
+                self.print_log(
+                    "Cannot find <{}> open price!".format(loser.symbol))
 
     def is_power_hour(self):
         now = datetime.now()

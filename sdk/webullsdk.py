@@ -254,6 +254,31 @@ def get_portfolio():
     return output
 
 
+def get_usable_cash():
+    global wb_paper
+    portfolio = get_portfolio()
+    usable_cash = 0.0
+    if wb_paper:
+        usable_cash = float(portfolio['usableCash'])
+    else:
+        usable_cash = float(portfolio['cashBalance'])
+    return usable_cash
+
+
+def get_day_profit_loss():
+    global wb_paper
+    day_profit_loss = "-"
+    if wb_paper:
+        portfolio = get_portfolio()
+        if "dayProfitLoss" in portfolio:
+            day_profit_loss = portfolio['dayProfitLoss']
+    else:
+        daily_pl = get_daily_profitloss()
+        if len(daily_pl) > 0:
+            day_profit_loss = daily_pl[-1]['profitLoss']
+    return day_profit_loss
+
+
 def get_trade_token(password=''):
     instance = _get_instance()
     return instance.get_trade_token(password=password)

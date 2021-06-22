@@ -80,20 +80,24 @@ class DayTradingEarningsOvernight(StrategyBase):
                     return
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 buy_quant = (int)(buy_position_amount / ask_price)
-                # submit limit order at ask price
-                order_response = webullsdk.buy_limit_order(
-                    ticker_id=ticker_id,
-                    price=ask_price,
-                    quant=buy_quant)
-                # update trading price
-                self.trading_price[symbol] = {
-                    "cost": ask_price,
-                    "quantity": buy_quant,
-                }
-                self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                    symbol, buy_quant, ask_price))
-                # update pending buy
-                self.update_pending_buy_order(symbol, order_response)
+                if buy_quant > 0:
+                    # submit limit order at ask price
+                    order_response = webullsdk.buy_limit_order(
+                        ticker_id=ticker_id,
+                        price=ask_price,
+                        quant=buy_quant)
+                    # update trading price
+                    self.trading_price[symbol] = {
+                        "cost": ask_price,
+                        "quantity": buy_quant,
+                    }
+                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                        symbol, buy_quant, ask_price))
+                    # update pending buy
+                    self.update_pending_buy_order(symbol, order_response)
+                else:
+                    self.print_log(
+                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
 
         # sell in regular market hour
         if self.is_regular_market_hour():
