@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.conf import settings
 from datetime import datetime, date
 from scripts import config
-from sdk import fmpsdk
+from sdk import fmpsdk, webullsdk
 from webull_trader import enums
 from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
@@ -622,25 +622,55 @@ def save_webull_credentials(cred_data, paper=True):
     credentials.save()
 
 
-def save_webull_account(acc_data):
+def save_webull_account(acc_data, paper=True):
     today = date.today()
     print("[{}] Importing daily account status ({})...".format(
         get_now(), today.strftime("%Y-%m-%d")))
-    if "accountMembers" in acc_data:
-        account_members = acc_data['accountMembers']
-        day_profit_loss = 0
-        for account_member in account_members:
-            if account_member['key'] == 'dayProfitLoss':
-                day_profit_loss = float(account_member['value'])
-        acc_stat = WebullAccountStatistics.objects.filter(date=today).first()
-        if not acc_stat:
-            acc_stat = WebullAccountStatistics(date=today)
-        # TODO
-        acc_stat.net_liquidation = acc_data['netLiquidation']
-        acc_stat.total_profit_loss = acc_data['totalProfitLoss']
-        acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
-        acc_stat.day_profit_loss = day_profit_loss
-        acc_stat.save()
+    if paper:
+        if "accountMembers" in acc_data:
+            account_members = acc_data['accountMembers']
+            day_profit_loss = 0
+            for account_member in account_members:
+                if account_member['key'] == 'dayProfitLoss':
+                    day_profit_loss = float(account_member['value'])
+            acc_stat = WebullAccountStatistics.objects.filter(
+                date=today).first()
+            if not acc_stat:
+                acc_stat = WebullAccountStatistics(date=today)
+            acc_stat.net_liquidation = acc_data['netLiquidation']
+            acc_stat.total_profit_loss = acc_data['totalProfitLoss']
+            acc_stat.total_profit_loss_rate = acc_data['totalProfitLossRate']
+            acc_stat.day_profit_loss = day_profit_loss
+            acc_stat.save()
+    else:
+        if "accountMembers" in acc_data:
+            account_members = acc_data['accountMembers']
+            acc_stat = WebullAccountStatistics.objects.filter(
+                date=today).first()
+            if not acc_stat:
+                acc_stat = WebullAccountStatistics(date=today)
+            acc_stat.net_liquidation = acc_data['netLiquidation']
+            # get today's P&L
+            daily_pl = webullsdk.get_daily_profitloss()
+            day_profit_loss = 0
+            if len(daily_pl) > 0:
+                today_pl = daily_pl[-1]
+                if today_pl['periodName'] == today.strftime("%Y-%m-%d"):
+                    day_profit_loss = float(today_pl['profitLoss'])
+            acc_stat.total_profit_loss = acc_stat.total_profit_loss or 0
+            acc_stat.total_profit_loss_rate = acc_stat.total_profit_loss_rate or 0
+            acc_stat.day_profit_loss = day_profit_loss
+            acc_stat.save()
+            # update total profit loss
+            all_acc_stats = WebullAccountStatistics.objects.all()
+            total_profit_loss = 0
+            for acc in all_acc_stats:
+                total_profit_loss += acc.day_profit_loss
+            acc_stat.total_profit_loss = total_profit_loss
+            if (acc_stat.net_liquidation - acc_stat.total_profit_loss) != 0:
+                acc_stat.total_profit_loss_rate = acc_stat.total_profit_loss / \
+                    (acc_stat.net_liquidation - acc_stat.total_profit_loss)
+            acc_stat.save()
 
 
 def save_webull_order(order_data, paper=True):

@@ -383,7 +383,7 @@ class StrategyBase:
             self.print_log("Sell order <{}> filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
-            utils.save_webull_account(account_data)
+            utils.save_webull_account(account_data, paper=self.paper)
         else:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):

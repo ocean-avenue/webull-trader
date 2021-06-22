@@ -11,7 +11,7 @@ def start():
 
     account_data = webullsdk.get_account()
 
-    utils.save_webull_account(account_data)
+    utils.save_webull_account(account_data, paper=paper)
 
 
 if __name__ == "django.core.management.commands.shell":
