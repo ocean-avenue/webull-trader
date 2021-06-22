@@ -91,8 +91,32 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if utils.check_bars_has_long_wick_up(bars):
-            # has long wick up
+        # if utils.check_bars_has_long_wick_up(bars):
+        #     # has long wick up
+        #     self.print_log(
+        #         "<{}> candle chart has long wick up, stop trading!".format(symbol))
+        #     # remove from monitor
+        #     del self.tracking_tickers[symbol]
+        #     return False
+        # TODO, for trading log
+        period = 10
+        long_wick_up_count = 0
+        period_bars = bars.tail(period + 1)
+        period_bars = period_bars.head(period)
+        self.trading_logs.append(period_bars)
+        for _, row in period_bars.iterrows():
+            mid = max(row["close"], row["open"])
+            high = row["high"]
+            low = row["low"]
+            if (mid - low) > 0 and (high - mid) / (mid - low) >= 2:
+                self.print_log("Found long wick up, open: {}, close: {}, low: {}, high: {}!".format(
+                    row["open"],
+                    row["close"],
+                    row["low"],
+                    row["high"],
+                ))
+                long_wick_up_count += 1
+        if long_wick_up_count >= 1:
             self.print_log(
                 "<{}> candle chart has long wick up, stop trading!".format(symbol))
             # remove from monitor
@@ -145,18 +169,44 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "{} candles new low.".format(self.exit_period)
             self.print_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, period_low_price))
-        # check if has long wick up
-        elif utils.check_bars_has_long_wick_up(bars):
-            self.print_log(
-                "<{}> candle chart has long wick up, exit!".format(symbol))
-            exit_trading = True
-            exit_note = "Candle chart has long wick up."
+        # # check if has long wick up
+        # elif utils.check_bars_has_long_wick_up(bars):
+        #     self.print_log(
+        #         "<{}> candle chart has long wick up, exit!".format(symbol))
+        #     exit_trading = True
+        #     exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif not utils.check_bars_volatility(bars):
             self.print_log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
+
+        if not exit_trading:
+            # TODO, for trading log
+            period = 10
+            long_wick_up_count = 0
+            period_bars = bars.tail(period + 1)
+            period_bars = period_bars.head(period)
+            self.trading_logs.append(period_bars)
+            for _, row in period_bars.iterrows():
+                mid = max(row["close"], row["open"])
+                high = row["high"]
+                low = row["low"]
+                if (mid - low) > 0 and (high - mid) / (mid - low) >= 2:
+                    self.print_log("Found long wick up, open: {}, close: {}, low: {}, high: {}!".format(
+                        row["open"],
+                        row["close"],
+                        row["low"],
+                        row["high"],
+                    ))
+                    long_wick_up_count += 1
+            if long_wick_up_count >= 1:
+                self.print_log(
+                    "<{}> candle chart has long wick up, exit!".format(symbol))
+                exit_trading = True
+                exit_note = "Candle chart has long wick up."
+
         return (exit_trading, exit_note)
 
     def check_if_trade_price_new_high(self, symbol, price):
