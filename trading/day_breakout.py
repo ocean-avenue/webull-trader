@@ -103,7 +103,7 @@ class DayTradingBreakout(StrategyBase):
         long_wick_up_count = 0
         period_bars = bars.tail(period + 1)
         period_bars = period_bars.head(period)
-        self.trading_logs.append(period_bars)
+        self.trading_logs.append(str(period_bars))
         for _, row in period_bars.iterrows():
             mid = max(row["close"], row["open"])
             high = row["high"]
@@ -188,7 +188,7 @@ class DayTradingBreakout(StrategyBase):
             long_wick_up_count = 0
             period_bars = bars.tail(period + 1)
             period_bars = period_bars.head(period)
-            self.trading_logs.append(period_bars)
+            self.trading_logs.append(str(period_bars))
             for _, row in period_bars.iterrows():
                 mid = max(row["close"], row["open"])
                 high = row["high"]
