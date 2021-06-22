@@ -76,7 +76,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_continue(bars):
+        if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
             self.print_log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # remove from monitor

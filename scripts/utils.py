@@ -323,7 +323,7 @@ def check_bars_updated(bars, time_scale=1):
 
 def check_bars_continue(bars, time_scale=1, period=10):
     """
-    check if candle bar is continue in 1 minute of time scale
+    check if candle bar is continue of time scale minutes
     """
     last_minute = -1
     is_continue = True
