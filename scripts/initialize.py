@@ -74,7 +74,7 @@ def start():
         )
         trading_settings.save()
 
-        print("[{}] Trading settings initialized successful".format(utils.get_now()))
+        print("[{}] Trading settings initialized successful.".format(utils.get_now()))
     else:
         print("[{}] Trading settings already initialized!".format(utils.get_now()))
 
@@ -91,6 +91,7 @@ def start():
             watchlist.exchange = profile["exchangeShortName"]
             watchlist.is_etf = profile["isEtf"]
         watchlist.save()
+        print("[{}] Save <{}> watchlist done.".format(utils.get_now(), symbol))
 
     print("[{}] Swing watchlist initialized successful".format(utils.get_now()))
 
