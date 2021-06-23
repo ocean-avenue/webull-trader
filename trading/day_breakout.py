@@ -258,7 +258,12 @@ class DayTradingBreakout(StrategyBase):
                 ask_price = webullsdk.get_ask_price_from_quote(quote)
                 if ask_price == None:
                     return
+                usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
+                if usable_cash <= buy_position_amount:
+                    self.print_log(
+                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
+                    return
                 buy_quant = (int)(buy_position_amount / ask_price)
                 if buy_quant > 0:
                     # submit limit order at ask price

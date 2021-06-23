@@ -318,7 +318,12 @@ class StrategyBase:
                         ask_price = webullsdk.get_ask_price_from_quote(quote)
                         if ask_price == None:
                             return False
+                        usable_cash = webullsdk.get_usable_cash()
                         buy_position_amount = self.get_buy_order_limit(symbol)
+                        if usable_cash <= buy_position_amount:
+                            self.print_log(
+                                "Not enough cash to buy <{}> again, ask price: {}!".format(symbol, ask_price))
+                            return False
                         buy_quant = (int)(buy_position_amount / ask_price)
                         order_response = webullsdk.buy_limit_order(
                             ticker_id=ticker_id,
