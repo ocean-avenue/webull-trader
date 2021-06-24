@@ -103,7 +103,6 @@ class DayTradingBreakout(StrategyBase):
         long_wick_up_count = 0
         period_bars = bars.tail(period + 1)
         period_bars = period_bars.head(period)
-        self.trading_logs.append(str(period_bars))
         for _, row in period_bars.iterrows():
             mid = max(row["close"], row["open"])
             high = row["high"]
@@ -119,6 +118,11 @@ class DayTradingBreakout(StrategyBase):
         if long_wick_up_count >= 1:
             self.print_log(
                 "<{}> candle chart has long wick up, stop trading!".format(symbol))
+            # TODO, remove
+            self.trading_logs.append("bars:")
+            self.trading_logs.append(str(bars))
+            self.trading_logs.append("period_bars:")
+            self.trading_logs.append(str(period_bars))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
@@ -188,7 +192,6 @@ class DayTradingBreakout(StrategyBase):
             long_wick_up_count = 0
             period_bars = bars.tail(period + 1)
             period_bars = period_bars.head(period)
-            self.trading_logs.append(str(period_bars))
             for _, row in period_bars.iterrows():
                 mid = max(row["close"], row["open"])
                 high = row["high"]
@@ -204,6 +207,11 @@ class DayTradingBreakout(StrategyBase):
             if long_wick_up_count >= 1:
                 self.print_log(
                     "<{}> candle chart has long wick up, exit!".format(symbol))
+                # TODO, remove
+                self.trading_logs.append("bars:")
+                self.trading_logs.append(str(bars))
+                self.trading_logs.append("period_bars:")
+                self.trading_logs.append(str(period_bars))
                 exit_trading = True
                 exit_note = "Candle chart has long wick up."
 
