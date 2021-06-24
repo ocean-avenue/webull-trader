@@ -598,6 +598,13 @@ def get_min_relative_volume():
     return settings.min_relative_volume
 
 
+def get_webull_order_time(order_time):
+    time_fmt = "%m/%d/%Y %H:%M:%S EDT"
+    if "EST" in order_time:
+        time_fmt = "%m/%d/%Y %H:%M:%S EST"
+    return pytz.timezone(settings.TIME_ZONE).localize(datetime.strptime(order_time, time_fmt))
+
+
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:
@@ -639,7 +646,8 @@ def save_webull_account(acc_data, paper=True):
                 acc_stat = WebullAccountStatistics(date=today)
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
             acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
-            acc_stat.total_profit_loss_rate = float(acc_data['totalProfitLossRate'])
+            acc_stat.total_profit_loss_rate = float(
+                acc_data['totalProfitLossRate'])
             acc_stat.day_profit_loss = day_profit_loss
             acc_stat.save()
     else:
@@ -699,10 +707,8 @@ def save_webull_order(order_data, paper=True):
                 price = float(order_data['lmtPrice'])
             filled_time = None
             if 'filledTime' in order_data:
-                filled_time = pytz.timezone(settings.TIME_ZONE).localize(
-                    datetime.strptime(order_data['filledTime'], "%m/%d/%Y %H:%M:%S EDT"))
-            placed_time = pytz.timezone(settings.TIME_ZONE).localize(
-                datetime.strptime(order_data['placedTime'], "%m/%d/%Y %H:%M:%S EDT"))
+                filled_time = get_webull_order_time(order_data['filledTime'])
+            placed_time = get_webull_order_time(order_data['placedTime'])
             time_in_force = get_time_in_force_enum(order_data['timeInForce'])
             create_order = True
     else:
@@ -730,10 +736,8 @@ def save_webull_order(order_data, paper=True):
                 price = float(order_obj['lmtPrice'])
             filled_time = None
             if 'filledTime' in order_obj:
-                filled_time = pytz.timezone(settings.TIME_ZONE).localize(
-                    datetime.strptime(order_obj['filledTime'], "%m/%d/%Y %H:%M:%S EDT"))
-            placed_time = pytz.timezone(settings.TIME_ZONE).localize(
-                datetime.strptime(order_obj['createTime'], "%m/%d/%Y %H:%M:%S EDT"))
+                filled_time = get_webull_order_time(order_data['filledTime'])
+            placed_time = get_webull_order_time(order_data['createTime'])
             time_in_force = get_time_in_force_enum(order_obj['timeInForce'])
             create_order = True
 
