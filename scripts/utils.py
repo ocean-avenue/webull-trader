@@ -736,8 +736,8 @@ def save_webull_order(order_data, paper=True):
                 price = float(order_obj['lmtPrice'])
             filled_time = None
             if 'filledTime' in order_obj:
-                filled_time = get_webull_order_time(order_data['filledTime'])
-            placed_time = get_webull_order_time(order_data['createTime'])
+                filled_time = get_webull_order_time(order_obj['filledTime'])
+            placed_time = get_webull_order_time(order_obj['createTime'])
             time_in_force = get_time_in_force_enum(order_obj['timeInForce'])
             create_order = True
 
