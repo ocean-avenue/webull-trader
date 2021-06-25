@@ -968,6 +968,42 @@ def get_after_market_gainers(count=10):
         return []
 
 
+def get_pre_market_losers(count=10):
+    time.sleep(1)
+    try:
+        session = requests.Session()
+        res = session.get(
+            config.WEBULL_PRE_MARKET_LOSERS_URL.format(count),
+            headers=_get_browser_headers())
+        res_json = json.loads(res.text)
+        losers = []
+        if "data" in res_json:
+            obj_list = res_json["data"]
+            for json_obj in obj_list:
+                ticker_obj = json_obj["ticker"]
+                values_obj = json_obj["values"]
+                if ticker_obj["template"] == "stock":
+                    symbol = ticker_obj["symbol"]
+                    ticker_id = ticker_obj["tickerId"]
+                    change = float(values_obj["change"])
+                    change_percentage = float(values_obj["changeRatio"])
+                    price = float(values_obj["price"])
+                    losers.append(
+                        {
+                            "symbol": symbol,
+                            "ticker_id": ticker_id,
+                            "change": change,
+                            "change_percentage": change_percentage,
+                            "price": price,
+                        }
+                    )
+        return losers
+    except Exception as e:
+        print("[{}] ⚠️  Exception get_pre_market_losers: {}".format(
+            utils.get_now(), e))
+        return []
+
+
 # [
 #    {
 #       "symbol":"JZXN",

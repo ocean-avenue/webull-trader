@@ -30,7 +30,7 @@ SWING_WATCHLIST_SYMBOLS = [
     "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
     "TOL", "TAL", "TME", "TALO", "TSN",
     "U", "UBER", "UPWK", "UAL", "UMC", "UEC",
-    "V",
+    "V", "VIPS",
     "WMT", "WFC", "WTI", "WBA", "WISH",
     "X", "XPEV",
     "YI",

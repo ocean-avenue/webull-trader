@@ -15,7 +15,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
         return "DayTradingBreakoutEarnings"
 
     def get_setup(self):
-        if len(self.earning_symbols) == 0:
+        if len(self.earning_tickers) == 0:
             if self.entry_period == 30:
                 return SetupType.DAY_30_CANDLES_NEW_HIGH
             elif self.entry_period == 20:
@@ -52,8 +52,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 self.trade(ticker)
 
     def on_begin(self):
-        self.earning_symbols = []
-        self.symbol_tickers_map = {}
+        self.earning_tickers = []
         # check earning calendars
         today = date.today()
         if self.is_pre_market_hour() or self.is_regular_market_hour():
@@ -62,12 +61,14 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
         elif self.is_after_market_hour():
             earnings = EarningCalendar.objects.filter(
                 earning_date=today).filter(earning_time="amc")
-        # update earning_symbols, symbol_tickers_map
+        # update earning_tickers
         for earning in earnings:
             symbol = earning.symbol
             ticker_id = webullsdk.get_ticker(symbol=symbol)
-            self.earning_symbols.append(symbol)
-            self.symbol_tickers_map[symbol] = ticker_id
+            self.earning_tickers.append({
+                "symbol": symbol,
+                "ticker_id": ticker_id,
+            })
             self.print_log(
                 "Add ticker <{}> to check earning gap!".format(symbol))
 
@@ -81,7 +82,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             self.trade(ticker)
 
         # no earning symbol found
-        if len(self.earning_symbols) == 0:
+        if len(self.earning_tickers) == 0:
             # find trading ticker in top gainers
             top_gainers = []
             if self.is_regular_market_hour():
@@ -103,11 +104,12 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 change_percentage = gainer["change_percentage"]
                 self.check_trade(symbol, ticker_id, change_percentage)
         else:
-            for symbol in self.earning_symbols:
+            for earning_ticker in self.earning_tickers:
+                symbol = earning_ticker["symbol"]
+                ticker_id = earning_ticker["ticker_id"]
                 # check if ticker already in monitor
                 if symbol in self.tracking_tickers:
                     continue
-                ticker_id = self.symbol_tickers_map[symbol]
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
                     continue
