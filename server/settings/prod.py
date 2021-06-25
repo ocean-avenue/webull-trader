@@ -4,13 +4,12 @@ from server.settings.common import *
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "webull.paper.quanturtle.net",
-    "webull.paper2.quanturtle.net",
-    "webull.paper3.quanturtle.net",
-    "webull.paper4.quanturtle.net",
-    "webull.live.quanturtle.net",
-    "webull.live2.quanturtle.net",
-    "webull.quanturtle.net",
+    "webull.p1.quanturtle.net",
+    "webull.p2.quanturtle.net",
+    "webull.p3.quanturtle.net",
+    "webull.p4.quanturtle.net",
+    "webull.l1.quanturtle.net",
+    "webull.l2.quanturtle.net",
 ]
 
 # Database
