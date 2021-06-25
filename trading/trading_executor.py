@@ -4,7 +4,6 @@
 
 import time
 from datetime import datetime, timedelta
-from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
 from webull_trader.enums import AlgorithmType, SetupType
 from webull_trader.models import OvernightPosition, TradingSettings
 from sdk import webullsdk
@@ -234,6 +233,8 @@ def start():
     from trading.day_momo_extendedhour import DayTradingMomoExtendedHour
     from trading.day_redgreen import DayTradingRedGreen
     from trading.day_breakout import DayTradingBreakout
+    from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
+    from trading.day_breakout_prelosers import DayTradingBreakoutPreLosers
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.swing_turtle import SwingTurtle
 
@@ -283,6 +284,10 @@ def start():
         # DAY_BREAKOUT_10_5: breakout trade with 5 minutes candles chart
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5, time_scale=5))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_PRE_LOSERS:
+        # DAY_BREAKOUT_PRE_LOSERS: breakout trade with pre-market losers
+        strategies.append(DayTradingBreakoutPreLosers(
+            paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO, use other earning strategy

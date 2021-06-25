@@ -162,6 +162,7 @@ class AlgorithmType:
     DAY_BREAKOUT_10 = 10
     DAY_BREAKOUT_NEW_HIGH = 11
     DAY_BREAKOUT_10_5 = 12
+    DAY_BREAKOUT_PRE_LOSERS = 13
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -195,6 +196,8 @@ class AlgorithmType:
             return 'Breakout day trade, no entry if the price not break max of last high trade price.'
         if val == AlgorithmType.DAY_BREAKOUT_10_5:
             return 'Breakout day trade, entry if price reach 10 candles new high in 5 minute chart.'
+        if val == AlgorithmType.DAY_BREAKOUT_PRE_LOSERS:
+            return 'Breakout day trade, find pre-market losers and aim for reversal.'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'Earning date day trade, entry if gap up and exit trade intraday.'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -237,6 +240,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT NEW HIGH)'
         if val == AlgorithmType.DAY_BREAKOUT_10_5:
             return 'DAY (BREAKOUT 10-5)'
+        if val == AlgorithmType.DAY_BREAKOUT_PRE_LOSERS:
+            return 'DAY (BREAKOUT PRE LOSERS)'
         if val == AlgorithmType.DAY_EARNINGS:
             return 'DAY (EARNINGS)'
         if val == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
@@ -280,6 +285,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_NEW_HIGH)),
             (AlgorithmType.DAY_BREAKOUT_10_5, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_10_5)),
+            (AlgorithmType.DAY_BREAKOUT_PRE_LOSERS, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_PRE_LOSERS)),
             (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS)),
             (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(
