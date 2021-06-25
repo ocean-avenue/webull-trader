@@ -188,7 +188,7 @@ class DayTradingBreakout(StrategyBase):
 
         if not exit_trading:
             # TODO, for trading log
-            period = 10
+            period = 5
             long_wick_up_count = 0
             period_bars = bars.tail(period + 1)
             period_bars = period_bars.head(period)
