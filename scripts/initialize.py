@@ -5,7 +5,7 @@
 
 SWING_WATCHLIST_SYMBOLS = [
     "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
-    "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB",
+    "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API",
     "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",
     "BYND", "BETZ",
     "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV",
