@@ -330,6 +330,8 @@ class DayTradingBreakout(StrategyBase):
                     if self.time_scale == 5:
                         bars = utils.convert_5m_bars(m1_bars)
                     # check exit trade
+                    self.print_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                        symbol, round(profit_loss_rate * 100, 2)))
                     exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
