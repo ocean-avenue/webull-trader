@@ -85,6 +85,11 @@ def start():
         watchlist = SwingWatchlist.objects.filter(symbol=symbol).first()
         if not watchlist:
             watchlist = SwingWatchlist(symbol=symbol)
+            print("[{}] Saving <{}> watchlist...".format(
+                utils.get_now(), symbol))
+        else:
+            print("[{}] Updating <{}> watchlist...".format(
+                utils.get_now(), symbol))
         # get profile from FMP
         profile = fmpsdk.get_profile(symbol)
         if profile:
@@ -92,7 +97,6 @@ def start():
             watchlist.exchange = profile["exchangeShortName"]
             watchlist.is_etf = profile["isEtf"]
         watchlist.save()
-        print("[{}] Save <{}> watchlist done.".format(utils.get_now(), symbol))
 
     print("[{}] Swing watchlist initialized successful".format(utils.get_now()))
 
