@@ -380,7 +380,7 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     return has_amount
 
 
-def check_bars_has_long_wick_up(bars, period=10):
+def check_bars_has_long_wick_up(bars, period=10, count=1):
     """
     check if bar chart has long wick up
     """
@@ -394,7 +394,7 @@ def check_bars_has_long_wick_up(bars, period=10):
         low = row["low"]
         if (mid - low) > 0 and (high - mid) / (mid - low) >= 2:
             long_wick_up_count += 1
-    return long_wick_up_count >= 1
+    return long_wick_up_count >= count
 
 
 def check_bars_rel_volume(bars):
