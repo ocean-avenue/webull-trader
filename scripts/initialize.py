@@ -2,44 +2,9 @@
 
 # initialize script
 
-
-SWING_WATCHLIST_SYMBOLS = [
-    "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
-    "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API",
-    "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",
-    "BYND", "BETZ",
-    "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV",
-    "DBX", "DOCU", "DQ", "DIS", "DAL", "DKNG", "DDOG", "DHI",
-    "EBAY", "EH", "ETSY", "ENPH", "ELF",
-    "F", "FB", "FCX", "FUTU", "FSLY", "FVRR", "FCEL", "FI", "FLYW", "FSLR",
-    "GOOG", "GME", "GOCO", "GM", "GOTU",
-    "HD", "HOME", "HOFV",
-    "IWN", "INTC", "IEA",
-    "JPM", "JD", "JKS", "JMIA",
-    "KO",
-    "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW",
-    "MA", "MSFT", "MP", "MMM", "MCD", "MTCH",
-    "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK", "NKE",
-    "OPEN", "OTLY",
-    "PYPL", "PLTR", "PINS", "PLUG", "PDD", "PSTG", "PAGS", "PTON", "PAY",
-    "PLNHF",
-    "QQQ",
-    "RBLX", "ROKU", "ROOT", "RDNT", "RVLV",
-    "SPY", "SQ", "SHOP", "SNOW", "SE", "SKLZ", "SNAP", "SPOT", "SPCE", "SAVE",
-    "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK", "SENS", "SQSP",
-    "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
-    "TOL", "TAL", "TME", "TALO", "TSN",
-    "U", "UBER", "UPWK", "UAL", "UMC", "UEC",
-    "V", "VIPS",
-    "WMT", "WFC", "WTI", "WBA", "WISH",
-    "X", "XPEV",
-    "YI",
-    "ZM", "ZDGE", "ZIP",
-]
-
-
 def start():
     from scripts import utils
+    from scripts.config import SWING_WATCHLIST_SYMBOLS
     from sdk import fmpsdk
     from webull_trader import enums
     from webull_trader.models import TradingSettings, SwingWatchlist
@@ -78,8 +43,6 @@ def start():
         print("[{}] Trading settings initialized successful.".format(utils.get_now()))
     else:
         print("[{}] Trading settings already initialized!".format(utils.get_now()))
-
-    global SWING_WATCHLIST_SYMBOLS
 
     for symbol in SWING_WATCHLIST_SYMBOLS:
         watchlist = SwingWatchlist.objects.filter(symbol=symbol).first()
