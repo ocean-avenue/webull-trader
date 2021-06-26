@@ -79,7 +79,7 @@ def local_time_minute_scale(t, time_scale):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
-    minute = localtz.minute
+    minute = localtz.minute + 1
     res = minute % time_scale
     minute -= res
     if res > 0:
@@ -736,7 +736,7 @@ def save_webull_order(order_data, paper=True):
                 price = avg_price
             if 'lmtPrice' in order_obj:
                 price = float(order_obj['lmtPrice'])
-            if 'auxPrice' in order_obj: # for stop order
+            if 'auxPrice' in order_obj:  # for stop order
                 price = float(order_obj['auxPrice'])
             filled_time = None
             if 'filledTime' in order_obj:
