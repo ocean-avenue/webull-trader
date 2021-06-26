@@ -728,12 +728,15 @@ def save_webull_order(order_data, paper=True):
             order_type = get_order_type_enum(order_obj['orderType'])
             total_quantity = int(order_obj['totalQuantity'])
             filled_quantity = int(order_obj['filledQuantity'])
-            avg_price = 0
+            avg_price = 0.0
+            price = 0.0
             if 'avgFilledPrice' in order_obj:
                 avg_price = float(order_obj['avgFilledPrice'])
                 price = avg_price
             if 'lmtPrice' in order_obj:
                 price = float(order_obj['lmtPrice'])
+            if 'auxPrice' in order_obj: # for stop order
+                price = float(order_obj['auxPrice'])
             filled_time = None
             if 'filledTime' in order_obj:
                 filled_time = get_webull_order_time(order_obj['filledTime'])
