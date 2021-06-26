@@ -385,6 +385,7 @@ def check_bars_has_long_wick_up(bars, period=10):
     check if bar chart has long wick up
     """
     long_wick_up_count = 0
+    period = min(period, len(bars) - 1)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
     for _, row in period_bars.iterrows():
