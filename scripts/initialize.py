@@ -19,7 +19,7 @@ SWING_WATCHLIST_SYMBOLS = [
     "KO",
     "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW",
     "MA", "MSFT", "MP", "MMM", "MCD", "MTCH",
-    "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK",
+    "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK", "NKE",
     "OPEN", "OTLY",
     "PYPL", "PLTR", "PINS", "PLUG", "PDD", "PSTG", "PAGS", "PTON", "PAY",
     "PLNHF",
