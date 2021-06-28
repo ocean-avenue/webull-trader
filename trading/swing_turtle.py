@@ -2,6 +2,8 @@
 
 # Turtle trading
 
+from datetime import date
+from django import utils
 from django.utils import timezone
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import ActionType, SetupType
@@ -175,7 +177,7 @@ class SwingTurtle(StrategyBase):
         request.save()
 
     def on_begin(self):
-
+        # only trade regular market hour once
         if not self.is_regular_market_hour():
             return
 
@@ -189,7 +191,6 @@ class SwingTurtle(StrategyBase):
     def on_update(self):
         # only trade regular market hour once
         if not self.is_regular_market_hour():
-            self.trading_end = False
             return
 
         # manual request first
@@ -207,6 +208,9 @@ class SwingTurtle(StrategyBase):
             # remove from swing_symbols
             del self.trading_watchlist[0]
 
-        # check if trading is end
-        if len(self.trading_watchlist) == 0:
-            self.trading_end = True
+    def on_end(self):
+        self.trading_end = True
+
+        # save trading logs
+        utils.save_trading_log("\n".join(
+            self.trading_logs), self.get_tag(), self.trading_hour, date.today())
