@@ -3,12 +3,12 @@
 # Turtle trading
 
 from datetime import date
-from django import utils
 from django.utils import timezone
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import ActionType, SetupType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 from sdk import webullsdk
+from scripts import utils
 
 
 class SwingTurtle(StrategyBase):
