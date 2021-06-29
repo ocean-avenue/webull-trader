@@ -49,9 +49,9 @@ class DayTradingBreakout(StrategyBase):
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
-            high_price = row['high']  # use high price
-            if high_price > period_high_price:
-                period_high_price = high_price
+            close_price = row['close']  # use close price
+            if close_price > period_high_price:
+                period_high_price = close_price
         # check if new high
         if current_price < period_high_price:
             return False
@@ -146,7 +146,7 @@ class DayTradingBreakout(StrategyBase):
             self.print_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, period_low_price))
         # check if has long wick up
-        elif utils.check_bars_has_long_wick_up(bars, count=2):
+        elif utils.check_bars_has_long_wick_up(bars, count=1):
             self.print_log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
             exit_trading = True
