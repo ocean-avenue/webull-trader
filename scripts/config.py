@@ -23,7 +23,7 @@ SWING_WATCHLIST_SYMBOLS = [
     "SPY", "SQ", "SHOP", "SNOW", "SE", "SKLZ", "SNAP", "SPOT", "SPCE", "SAVE",
     "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK", "SENS", "SQSP",
     "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
-    "TOL", "TAL", "TME", "TALO", "TSN",
+    "TOL", "TAL", "TME", "TALO", "TSN", "TAN",
     "U", "UBER", "UPWK", "UAL", "UMC", "UEC",
     "V", "VIPS",
     "WMT", "WFC", "WTI", "WBA", "WISH",
