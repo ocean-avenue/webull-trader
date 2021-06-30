@@ -557,7 +557,7 @@ class StrategyBase:
                 ticker = self.tracking_tickers[symbol]
                 if self.clear_position(ticker):
                     del unsold_tickers[symbol]
-            # at least slepp 1 sec
+            # at least sleep 1 sec
             time.sleep(1)
         # add unsold_tickers to overnight position
         for symbol in list(unsold_tickers):
@@ -599,6 +599,10 @@ class StrategyBase:
             symbol, holding_quantity, bid_price))
         self.update_pending_sell_order(
             symbol, order_response, exit_note="Clear position.")
+        # there is issue with submit order
+        if 'msg' in order_response:
+            # remove from monitor
+            del self.tracking_tickers[symbol]
         return False
 
     def get_setup(self):
