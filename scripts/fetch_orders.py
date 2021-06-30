@@ -14,6 +14,7 @@ def start():
         status='All', count=1000)[::-1]
 
     for order_data in history_orders:
+        print(order_data)
         utils.save_webull_order(order_data, paper=paper)
 
 
