@@ -37,7 +37,7 @@ def index(request):
             last_acc_stat.net_liquidation)
 
         net_account_value["total_pl"] = "{}".format(
-            last_acc_stat.total_profit_loss)
+            round(last_acc_stat.total_profit_loss, 2))
         if last_acc_stat.total_profit_loss > 0:
             net_account_value["total_pl"] = "+" + net_account_value["total_pl"]
             net_account_value["total_pl_style"] = "badge-soft-success"
