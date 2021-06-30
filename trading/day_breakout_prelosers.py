@@ -3,6 +3,7 @@
 # Breakout day trade, find pre-market losers and aim for reversal.
 
 from sdk import webullsdk
+from scripts import utils
 from trading.day_breakout import DayTradingBreakout
 
 
@@ -16,7 +17,7 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
         # check pre-market losers
         if self.is_regular_market_hour():
             self.preloser_tickers = webullsdk.get_pre_market_losers(count=10)
-            self.print_log("Add {} tickers to check loser reversal!".format(
+            utils.print_trading_log("Add {} tickers to check loser reversal!".format(
                 len(self.preloser_tickers)))
 
     def on_update(self):
@@ -42,6 +43,6 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
             # found trading ticker
             ticker = self.get_init_tracking_ticker(symbol, ticker_id)
             self.tracking_tickers[symbol] = ticker
-            self.print_log("Found <{}> to trade!".format(symbol))
+            utils.print_trading_log("Found <{}> to trade!".format(symbol))
             # do trade
             self.trade(ticker)

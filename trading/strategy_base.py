@@ -23,9 +23,10 @@ class StrategyBase:
         self.tracking_stats = {}
         # may have error short sell due to latency
         self.error_short_tickers = {}
-        self.trading_logs = []
         # for swing trade
         self.trading_watchlist = []
+        # init trading logs
+        utils.TRADING_LOGS = []
 
     def on_begin(self):
         pass
@@ -38,12 +39,6 @@ class StrategyBase:
 
     def get_tag(self):
         return ""
-
-    def print_log(self, text):
-        self.trading_logs.append(
-            "[{}] {}".format(utils.get_now(), text))
-        # output
-        print(text)
 
     # load settings
     def load_settings(self,
@@ -71,93 +66,96 @@ class StrategyBase:
                       day_trade_usable_cash_threshold):
 
         self.min_surge_amount = min_surge_amount
-        self.print_log("Min surge amount: {}".format(self.min_surge_amount))
+        utils.print_trading_log(
+            "Min surge amount: {}".format(self.min_surge_amount))
 
         self.min_surge_volume = min_surge_volume
-        self.print_log("Min surge volume: {}".format(self.min_surge_volume))
+        utils.print_trading_log(
+            "Min surge volume: {}".format(self.min_surge_volume))
 
         # at least 4% change for surge
         self.min_surge_change_ratio = min_surge_change_ratio
-        self.print_log("Min gap change: {}%".format(
+        utils.print_trading_log("Min gap change: {}%".format(
             round(self.min_surge_change_ratio * 100, 2)))
 
         self.avg_confirm_volume = avg_confirm_volume
-        self.print_log("Avg confirm volume: {}".format(
+        utils.print_trading_log("Avg confirm volume: {}".format(
             self.avg_confirm_volume))
 
         self.extended_avg_confirm_volume = extended_avg_confirm_volume
-        self.print_log("Avg confirm volume (extended hour): {}".format(
+        utils.print_trading_log("Avg confirm volume (extended hour): {}".format(
             self.extended_avg_confirm_volume))
 
         self.avg_confirm_amount = avg_confirm_amount
-        self.print_log("Avg confirm amount: {}".format(
+        utils.print_trading_log("Avg confirm amount: {}".format(
             self.avg_confirm_amount))
 
         self.extended_avg_confirm_amount = extended_avg_confirm_amount
-        self.print_log("Avg confirm amount (extended hour): {}".format(
+        utils.print_trading_log("Avg confirm amount (extended hour): {}".format(
             self.extended_avg_confirm_amount))
 
         self.order_amount_limit = order_amount_limit
-        self.print_log("Buy order limit: {}".format(self.order_amount_limit))
+        utils.print_trading_log(
+            "Buy order limit: {}".format(self.order_amount_limit))
 
         self.extended_order_amount_limit = extended_order_amount_limit
-        self.print_log("Buy order limit (extended hour): {}".format(
+        utils.print_trading_log("Buy order limit (extended hour): {}".format(
             self.extended_order_amount_limit))
 
         # observe timeout in seconds
         self.observe_timeout_in_sec = observe_timeout_in_sec
-        self.print_log("Observe timeout: {} sec".format(
+        utils.print_trading_log("Observe timeout: {} sec".format(
             self.observe_timeout_in_sec))
 
         # buy after sell interval in seconds
         self.trade_interval_in_sec = trade_interval_in_sec
-        self.print_log("Trade interval: {} sec".format(
+        utils.print_trading_log("Trade interval: {} sec".format(
             self.trade_interval_in_sec))
 
         # pending order timeout in seconds
         self.pending_order_timeout_in_sec = pending_order_timeout_in_sec
-        self.print_log("Pending order timeout: {} sec".format(
+        utils.print_trading_log("Pending order timeout: {} sec".format(
             self.pending_order_timeout_in_sec))
 
         # holding order timeout in seconds
         self.holding_order_timeout_in_sec = holding_order_timeout_in_sec
-        self.print_log("Holding order timeout: {} sec".format(
+        utils.print_trading_log("Holding order timeout: {} sec".format(
             self.holding_order_timeout_in_sec))
 
         self.max_bid_ask_gap_ratio = max_bid_ask_gap_ratio
-        self.print_log("Max bid ask gap: {}%".format(
+        utils.print_trading_log("Max bid ask gap: {}%".format(
             round(self.max_bid_ask_gap_ratio * 100, 2)))
 
         self.target_profit_ratio = target_profit_ratio
-        self.print_log("Target profit rate: {}%".format(
+        utils.print_trading_log("Target profit rate: {}%".format(
             round(self.target_profit_ratio * 100, 2)))
 
         self.stop_loss_ratio = stop_loss_ratio
-        self.print_log("Stop loss rate: {}%".format(
+        utils.print_trading_log("Stop loss rate: {}%".format(
             round(self.stop_loss_ratio * 100, 2)))
 
         self.blacklist_timeout_in_sec = blacklist_timeout_in_sec
-        self.print_log("Blacklist timeout: {} sec".format(
+        utils.print_trading_log("Blacklist timeout: {} sec".format(
             self.blacklist_timeout_in_sec))
 
         self.swing_position_amount_limit = swing_position_amount_limit
-        self.print_log("Swing position amount limit: {}".format(
+        utils.print_trading_log("Swing position amount limit: {}".format(
             self.swing_position_amount_limit))
 
         self.max_prev_day_close_gap_ratio = max_prev_day_close_gap_ratio
-        self.print_log("Max prev day close gap ratio: {}".format(
+        utils.print_trading_log("Max prev day close gap ratio: {}".format(
             self.max_prev_day_close_gap_ratio))
 
         self.min_relative_volume = min_relative_volume
-        self.print_log("Relative volume for entry: {}".format(
+        utils.print_trading_log("Relative volume for entry: {}".format(
             self.min_relative_volume))
 
         self.min_earning_gap_ratio = min_earning_gap_ratio
-        self.print_log("Earning gap ratio for entry: {}".format(
+        utils.print_trading_log("Earning gap ratio for entry: {}".format(
             self.min_earning_gap_ratio))
 
         self.day_trade_usable_cash_threshold = day_trade_usable_cash_threshold
-        self.print_log("Usable cash threshold for day trade: {}".format(
+        utils.print_trading_log("Usable cash threshold for day trade: {}".format(
             self.day_trade_usable_cash_threshold))
 
         return True
@@ -233,7 +231,8 @@ class StrategyBase:
             if order_filled:
                 # remove
                 del self.error_short_tickers[symbol]
-                self.print_log("Short cover order <{}> filled".format(symbol))
+                utils.print_trading_log(
+                    "Short cover order <{}> filled".format(symbol))
             else:
                 # check order timeout
                 if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
@@ -242,7 +241,7 @@ class StrategyBase:
                         # remove, let function re-submit again
                         del self.error_short_tickers[symbol]
                     else:
-                        self.print_log(
+                        utils.print_trading_log(
                             "Failed to cancel timeout short cover order <{}>!".format(symbol))
         for position in positions:
             # if short position
@@ -261,22 +260,23 @@ class StrategyBase:
                         ticker_id=ticker_id,
                         price=buy_price,
                         quant=abs(position_size))
-                    self.print_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
+                    utils.print_trading_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
                         symbol, abs(position_size), buy_price))
                     if 'orderId' in order_response:
                         self.error_short_tickers[symbol]['pending_order_id'] = order_response['orderId']
                         self.error_short_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
                     elif 'msg' in order_response:
-                        self.print_log(order_response['msg'])
+                        utils.print_trading_log(order_response['msg'])
                     else:
-                        self.print_log(
+                        utils.print_trading_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
     def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        self.print_log("Checking buy order <{}> filled...".format(symbol))
+        utils.print_trading_log(
+            "Checking buy order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
         if positions == None:
             return False
@@ -297,7 +297,7 @@ class StrategyBase:
                 self.tracking_tickers[symbol]['resubmit_count'] = 0
                 self.tracking_tickers[symbol]['order_filled_time'] = datetime.now(
                 )
-                self.print_log(
+                utils.print_trading_log(
                     "Buy order <{}> filled, cost: {}".format(symbol, cost))
                 # remove from monitor
                 if stop_tracking:
@@ -310,7 +310,7 @@ class StrategyBase:
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Buy order timeout, canceled!")
-                    self.print_log(
+                    utils.print_trading_log(
                         "Buy order <{}> timeout, canceled!".format(symbol))
                     # resubmit buy order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= resubmit_count:
@@ -321,7 +321,7 @@ class StrategyBase:
                         usable_cash = webullsdk.get_usable_cash()
                         buy_position_amount = self.get_buy_order_limit(symbol)
                         if usable_cash <= buy_position_amount:
-                            self.print_log(
+                            utils.print_trading_log(
                                 "Not enough cash to buy <{}> again, ask price: {}!".format(symbol, ask_price))
                             return False
                         buy_quant = (int)(buy_position_amount / ask_price)
@@ -329,7 +329,7 @@ class StrategyBase:
                             ticker_id=ticker_id,
                             price=ask_price,
                             quant=buy_quant)
-                        self.print_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
+                        utils.print_trading_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
                             symbol, buy_quant, ask_price))
                         self.update_pending_buy_order(symbol, order_response)
                         if 'orderId' in order_response:
@@ -345,7 +345,7 @@ class StrategyBase:
                         if stop_tracking:
                             del self.tracking_tickers[symbol]
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Failed to cancel timeout buy order <{}>!".format(symbol))
 
         # check short order
@@ -356,7 +356,8 @@ class StrategyBase:
     def check_sell_order_filled(self, ticker, resubmit=True, resubmit_count=10, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
-        self.print_log("Checking sell order <{}> filled...".format(symbol))
+        utils.print_trading_log(
+            "Checking sell order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
         if positions == None:
             return False
@@ -385,7 +386,7 @@ class StrategyBase:
             # remove from monitor
             if stop_tracking:
                 del self.tracking_tickers[symbol]
-            self.print_log("Sell order <{}> filled".format(symbol))
+            utils.print_trading_log("Sell order <{}> filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
             utils.save_webull_account(account_data, paper=self.paper)
@@ -396,7 +397,7 @@ class StrategyBase:
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Sell order timeout, canceled!")
-                    self.print_log(
+                    utils.print_trading_log(
                         "Sell order <{}> timeout, canceled!".format(symbol))
                     # resubmit sell order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= resubmit_count:
@@ -411,7 +412,7 @@ class StrategyBase:
                             ticker_id=ticker_id,
                             price=bid_price,
                             quant=holding_quantity)
-                        self.print_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
+                        utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
                             symbol, holding_quantity, bid_price))
                         self.update_pending_sell_order(symbol, order_response)
                         if 'orderId' in order_response:
@@ -426,7 +427,7 @@ class StrategyBase:
                         # remove from monitor
                         if stop_tracking:
                             del self.tracking_tickers[symbol]
-                        self.print_log(
+                        utils.print_trading_log(
                             "Failed to sell order <{}>!".format(symbol))
                         # add to overnight position for next sell
                         utils.save_overnight_position(
@@ -440,7 +441,7 @@ class StrategyBase:
                             timezone.now())
                         # TODO, send message
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Failed to cancel timeout sell order <{}>!".format(symbol))
 
         # check short order
@@ -472,9 +473,9 @@ class StrategyBase:
             # set stop loss at prev low
             self.tracking_tickers[symbol]['stop_loss'] = stop_loss
         elif 'msg' in order_response:
-            self.print_log(order_response['msg'])
+            utils.print_trading_log(order_response['msg'])
         else:
-            self.print_log(
+            utils.print_trading_log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
 
     def update_pending_sell_order(self, symbol, order_response, exit_note=""):
@@ -486,9 +487,9 @@ class StrategyBase:
             )
             self.tracking_tickers[symbol]['exit_note'] = exit_note
         elif 'msg' in order_response:
-            self.print_log(order_response['msg'])
+            utils.print_trading_log(order_response['msg'])
         else:
-            self.print_log(
+            utils.print_trading_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
     def update_pending_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
@@ -505,9 +506,9 @@ class StrategyBase:
             )
             position.save()
         elif 'msg' in order_response:
-            self.print_log(order_response['msg'])
+            utils.print_trading_log(order_response['msg'])
         else:
-            self.print_log(
+            utils.print_trading_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
     def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time, manual_request=None):
@@ -533,9 +534,9 @@ class StrategyBase:
             if manual_request:
                 manual_request.delete()
         elif 'msg' in order_response:
-            self.print_log(order_response['msg'])
+            utils.print_trading_log(order_response['msg'])
         else:
-            self.print_log(
+            utils.print_trading_log(
                 "⚠️  Invalid swing sell order response: {}".format(order_response))
 
     def get_position(self, ticker):
@@ -595,7 +596,7 @@ class StrategyBase:
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+        utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
             symbol, holding_quantity, bid_price))
         self.update_pending_sell_order(
             symbol, order_response, exit_note="Clear position.")

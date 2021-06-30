@@ -55,21 +55,21 @@ class DayTradingRedGreen(StrategyBase):
         if holding_quantity == 0:
 
             if not utils.check_bars_updated(m2_bars):
-                self.print_log(
+                utils.print_trading_log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             if not utils.check_bars_has_volume(m2_bars, time_scale=2):
-                self.print_log(
+                utils.print_trading_log(
                     "<{}> candle chart has not enough volume, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
                 return
 
             if not utils.check_bars_rel_volume(m2_bars):
-                self.print_log(
+                utils.print_trading_log(
                     "<{}> candle chart has no relative volume, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
@@ -85,13 +85,13 @@ class DayTradingRedGreen(StrategyBase):
                     return
                 # check if ask_price is too high above prev day close
                 if (ask_price - prev_day_close) / prev_day_close > self.max_prev_day_close_gap_ratio:
-                    self.print_log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
+                    utils.print_trading_log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         symbol, ask_price, prev_day_close))
                     return
                 usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 if usable_cash <= buy_position_amount:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
                     return
                 buy_quant = (int)(buy_position_amount / ask_price)
@@ -101,20 +101,21 @@ class DayTradingRedGreen(StrategyBase):
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    self.print_log("Trading <{}>, price: {}, volume: {}".format(
+                    utils.print_trading_log("Trading <{}>, price: {}, volume: {}".format(
                         symbol, current_close, current_volume))
-                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=prev_day_close)
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                self.print_log("Finding <{}> position error!".format(symbol))
+                utils.print_trading_log(
+                    "Finding <{}> position error!".format(symbol))
                 return
             # profit loss rate
             profit_loss_rate = float(
@@ -141,9 +142,9 @@ class DayTradingRedGreen(StrategyBase):
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                self.print_log("📈 Exit trading <{}> P&L: {}%".format(
+                utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
-                self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
                     symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
@@ -173,10 +174,10 @@ class DayTradingRedGreen(StrategyBase):
                     ticker = self.get_init_tracking_ticker(
                         gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
                     self.tracking_tickers[gainer.symbol] = ticker
-                    self.print_log(
+                    utils.print_trading_log(
                         "Add gainer <{}> to trade!".format(gainer.symbol))
             else:
-                self.print_log(
+                utils.print_trading_log(
                     "Cannot find <{}> open price!".format(gainer.symbol))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
@@ -191,10 +192,10 @@ class DayTradingRedGreen(StrategyBase):
                     ticker = self.get_init_tracking_ticker(
                         loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
                     self.tracking_tickers[loser.symbol] = ticker
-                    self.print_log(
+                    utils.print_trading_log(
                         "Add loser <{}> to trade!".format(loser.symbol))
             else:
-                self.print_log(
+                utils.print_trading_log(
                     "Cannot find <{}> open price!".format(loser.symbol))
 
     def is_power_hour(self):
@@ -225,5 +226,4 @@ class DayTradingRedGreen(StrategyBase):
         self.clear_positions()
 
         # save trading logs
-        utils.save_trading_log(
-            "\n".join(self.trading_logs), self.get_tag(), self.trading_hour, date.today())
+        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())

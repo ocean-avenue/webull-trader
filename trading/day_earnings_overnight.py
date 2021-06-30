@@ -64,7 +64,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                     utils.save_overnight_trade(
                         symbol, position, order_id, sell_price, timezone.now())
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "❌ Cannot find overnight position for <{}>!".format(symbol))
             return
 
@@ -81,7 +81,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 if usable_cash <= buy_position_amount:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
                     return
                 buy_quant = (int)(buy_position_amount / ask_price)
@@ -96,12 +96,12 @@ class DayTradingEarningsOvernight(StrategyBase):
                         "cost": ask_price,
                         "quantity": buy_quant,
                     }
-                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(symbol, order_response)
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
 
         # sell in regular market hour
@@ -122,7 +122,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 self.trading_price[symbol] = {
                     "sell_price": bid_price,
                 }
-                self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
                     symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
@@ -146,7 +146,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 ticker_id = webullsdk.get_ticker(symbol=symbol)
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                 self.tracking_tickers[symbol] = ticker
-                self.print_log(
+                utils.print_trading_log(
                     "Add ticker <{}> to check earning gap!".format(symbol))
         # prepare tickers for sell
         if self.is_regular_market_hour():
@@ -156,7 +156,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 symbol = position.symbol
                 ticker_id = position.ticker_id
                 ticker = self.get_init_tracking_ticker(symbol, ticker_id)
-                self.print_log(
+                utils.print_trading_log(
                     "Add ticker <{}> to sell during regular hour!".format(symbol))
 
     def on_update(self):
@@ -172,5 +172,4 @@ class DayTradingEarningsOvernight(StrategyBase):
         self.trading_end = True
 
         # save trading logs
-        utils.save_trading_log("\n".join(
-            self.trading_logs), self.get_tag(), self.trading_hour, date.today())
+        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())

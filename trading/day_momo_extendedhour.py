@@ -40,7 +40,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
         elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # self.print_log("Scanning top gainers <{}>...".format(
+        # utils.print_trading_log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -48,7 +48,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
             if symbol in self.tracking_tickers:
                 continue
             ticker_id = gainer["ticker_id"]
-            # self.print_log("Scanning <{}>...".format(symbol))
+            # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
             if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
@@ -65,6 +65,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
                     ticker = self.get_init_tracking_ticker(
                         symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
-                    self.print_log("Found <{}> to trade!".format(symbol))
+                    utils.print_trading_log(
+                        "Found <{}> to trade!".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)

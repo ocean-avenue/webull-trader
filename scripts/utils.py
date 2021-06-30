@@ -25,6 +25,31 @@ UTILITIES = "Utilities"
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
+TRADING_LOGS = []
+
+
+def print_trading_log(text):
+    global TRADING_LOGS
+    log_record = "[{}] {}".format(get_now(), text)
+    TRADING_LOGS.append(log_record)
+    # output
+    print(log_record)
+
+
+def save_trading_log(tag, trading_hour, date):
+    global TRADING_LOGS
+    log = TradingLog.objects.filter(date=date).filter(
+        tag=tag).filter(trading_hour=trading_hour).first()
+    if log == None:
+        log = TradingLog(
+            date=date,
+            tag=tag,
+            trading_hour=trading_hour,
+        )
+    log_text = "\n".join(TRADING_LOGS)
+    log.log_text = log_text
+    log.save()
+
 
 def millify(n):
     if not n:
@@ -799,19 +824,6 @@ def save_webull_news(news_data, symbol, date):
             date=date,
         )
         news.save()
-
-
-def save_trading_log(text, tag, trading_hour, date):
-    log = TradingLog.objects.filter(date=date).filter(
-        tag=tag).filter(trading_hour=trading_hour).first()
-    if log == None:
-        log = TradingLog(
-            date=date,
-            tag=tag,
-            trading_hour=trading_hour,
-        )
-    log.log_text = text
-    log.save()
 
 
 def save_hist_key_statistics(quote_data, date):

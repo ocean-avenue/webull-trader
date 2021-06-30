@@ -35,7 +35,8 @@ class DayTradingBreakout(StrategyBase):
         vwap = bar["vwap"]
         volume = int(bar["volume"])
         if close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and close >= vwap:
-            self.print_log("Found <{}> to trade!".format(ticker["symbol"]))
+            utils.print_trading_log(
+                "Found <{}> to trade!".format(ticker["symbol"]))
             return True
         return False
 
@@ -59,25 +60,25 @@ class DayTradingBreakout(StrategyBase):
             return False
         # check ema 9
         if current_price < current_candle['ema9']:
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> price is not above ema9, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
         # check if gap already too large
         if period_high_price * 1.1 < current_price:
-            self.print_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
+            utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
                 ticker['symbol'], current_price, period_high_price))
             return False
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
@@ -85,7 +86,7 @@ class DayTradingBreakout(StrategyBase):
 
         if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars):
             # has no volume and no relative volume
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart has not enough volume, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
@@ -93,14 +94,14 @@ class DayTradingBreakout(StrategyBase):
 
         if utils.check_bars_has_long_wick_up(bars, count=1):
             # has long wick up
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart has long wick up, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return False
 
         if not utils.check_bars_volatility(bars):
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart is not volatility, stop trading!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
@@ -109,7 +110,7 @@ class DayTradingBreakout(StrategyBase):
         if symbol in self.tracking_stats:
             last_trade_time = self.tracking_stats[symbol]['last_trade_time']
             if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=60 * self.time_scale):
-                self.print_log(
+                utils.print_trading_log(
                     "<{}> try buy too soon after last sell, stop trading!".format(symbol))
                 # remove from monitor
                 del self.tracking_tickers[symbol]
@@ -143,17 +144,17 @@ class DayTradingBreakout(StrategyBase):
         if current_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(self.exit_period)
-            self.print_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
+            utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, period_low_price))
         # check if has long wick up
         elif utils.check_bars_has_long_wick_up(bars, count=1):
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif not utils.check_bars_volatility(bars):
-            self.print_log(
+            utils.print_trading_log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
@@ -179,7 +180,8 @@ class DayTradingBreakout(StrategyBase):
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
         if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=self.observe_timeout_in_sec):
-            self.print_log("Trading <{}> session timeout!".format(symbol))
+            utils.print_trading_log(
+                "Trading <{}> session timeout!".format(symbol))
             # remove from monitor
             del self.tracking_tickers[symbol]
             return
@@ -212,7 +214,7 @@ class DayTradingBreakout(StrategyBase):
                 usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 if usable_cash <= buy_position_amount:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
                     return
                 buy_quant = (int)(buy_position_amount / ask_price)
@@ -222,25 +224,26 @@ class DayTradingBreakout(StrategyBase):
                         ticker_id=ticker_id,
                         price=ask_price,
                         quant=buy_quant)
-                    self.print_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                    utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
                         symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
-                    self.print_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=prev_candle['low'])
                 else:
-                    self.print_log(
+                    utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
 
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                self.print_log("Finding <{}> position error!".format(symbol))
+                utils.print_trading_log(
+                    "Finding <{}> position error!".format(symbol))
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
-                self.print_log("<{}> holding quantity is negitive {}!".format(
+                utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
                 del self.tracking_tickers[symbol]
                 return
@@ -265,7 +268,8 @@ class DayTradingBreakout(StrategyBase):
 
                 # get bars error
                 if m1_bars.empty:
-                    self.print_log("<{}> bars data error!".format(symbol))
+                    utils.print_trading_log(
+                        "<{}> bars data error!".format(symbol))
                     exit_trading = True
                     exit_note = "Bars data error!"
                 else:
@@ -273,7 +277,7 @@ class DayTradingBreakout(StrategyBase):
                     if self.time_scale == 5:
                         bars = utils.convert_5m_bars(m1_bars)
                     # check exit trade
-                    self.print_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                    utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
                         symbol, round(profit_loss_rate * 100, 2)))
                     exit_trading, exit_note = self.check_exit(ticker, bars)
 
@@ -289,9 +293,9 @@ class DayTradingBreakout(StrategyBase):
                     ticker_id=ticker_id,
                     price=bid_price,
                     quant=holding_quantity)
-                self.print_log("📈 Exit trading <{}> P&L: {}%".format(
+                utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
-                self.print_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
                     symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
@@ -318,7 +322,7 @@ class DayTradingBreakout(StrategyBase):
         elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # self.print_log("Scanning top gainers <{}>...".format(
+        # utils.print_trading_log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -326,7 +330,7 @@ class DayTradingBreakout(StrategyBase):
             if symbol in self.tracking_tickers:
                 continue
             ticker_id = gainer["ticker_id"]
-            # self.print_log("Scanning <{}>...".format(symbol))
+            # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
             if change_percentage >= self.min_surge_change_ratio:
@@ -349,7 +353,8 @@ class DayTradingBreakout(StrategyBase):
                     # found trading ticker
                     ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
-                    self.print_log("Found <{}> to trade!".format(symbol))
+                    utils.print_trading_log(
+                        "Found <{}> to trade!".format(symbol))
                     # do trade
                     self.trade(ticker)
 
@@ -360,5 +365,4 @@ class DayTradingBreakout(StrategyBase):
         self.clear_positions()
 
         # save trading logs
-        utils.save_trading_log("\n".join(
-            self.trading_logs), self.get_tag(), self.trading_hour, date.today())
+        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
