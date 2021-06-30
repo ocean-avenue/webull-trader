@@ -687,7 +687,10 @@ def save_webull_order(order_data, paper=True):
     if paper:
         order_id = str(order_data['orderId'])
         order = WebullOrder.objects.filter(order_id=order_id).first()
-        symbol = order_data['ticker']['symbol']
+        if "symbol" in order_data['ticker']:
+            symbol = order_data['ticker']['symbol']
+        else:
+            symbol = order_data['ticker']['disSymbol']
         print("[{}] Importing order <{}> {} ({})...".format(
             get_now(), symbol, order_id, order_data['placedTime']))
         if order:
