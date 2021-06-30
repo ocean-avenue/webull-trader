@@ -390,6 +390,8 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     """
     check if bar chart has enough amount
     """
+    # make sure not use the last candle
+    period = min(len(bars) - 1, period)
     has_amount = True
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
