@@ -1,4 +1,4 @@
-SWING_WATCHLIST_SYMBOLS = [
+WATCHLIST_SYMBOLS = [
     "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
     "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API", "ALF",
     "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",

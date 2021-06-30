@@ -4,7 +4,7 @@
 
 def start():
     from scripts import utils
-    from scripts.SWING_WATCHLIST import SWING_WATCHLIST_SYMBOLS
+    from scripts.SWING_WATCHLIST import WATCHLIST_SYMBOLS
     from sdk import fmpsdk
     from webull_trader import enums
     from webull_trader.models import TradingSettings, SwingWatchlist
@@ -44,7 +44,7 @@ def start():
     else:
         print("[{}] Trading settings already initialized!".format(utils.get_now()))
 
-    for symbol in SWING_WATCHLIST_SYMBOLS:
+    for symbol in WATCHLIST_SYMBOLS:
         watchlist = SwingWatchlist.objects.filter(symbol=symbol).first()
         if not watchlist:
             watchlist = SwingWatchlist(symbol=symbol)
