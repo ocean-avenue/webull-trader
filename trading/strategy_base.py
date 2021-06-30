@@ -263,12 +263,12 @@ class StrategyBase:
                         quant=abs(position_size))
                     self.print_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
                         symbol, abs(position_size), buy_price))
-                    if 'msg' in order_response:
-                        self.print_log(order_response['msg'])
-                    elif 'orderId' in order_response:
+                    if 'orderId' in order_response:
                         self.error_short_tickers[symbol]['pending_order_id'] = order_response['orderId']
                         self.error_short_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
+                    elif 'msg' in order_response:
+                        self.print_log(order_response['msg'])
                     else:
                         self.print_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
@@ -463,9 +463,7 @@ class StrategyBase:
             self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
     def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
-        if 'msg' in order_response:
-            self.print_log(order_response['msg'])
-        elif 'orderId' in order_response:
+        if 'orderId' in order_response:
             # mark pending buy
             self.tracking_tickers[symbol]['pending_buy'] = True
             self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
@@ -473,28 +471,28 @@ class StrategyBase:
             )
             # set stop loss at prev low
             self.tracking_tickers[symbol]['stop_loss'] = stop_loss
+        elif 'msg' in order_response:
+            self.print_log(order_response['msg'])
         else:
             self.print_log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
 
     def update_pending_sell_order(self, symbol, order_response, exit_note=""):
-        if 'msg' in order_response:
-            self.print_log(order_response['msg'])
-        elif 'orderId' in order_response:
+        if 'orderId' in order_response:
             # mark pending sell
             self.tracking_tickers[symbol]['pending_sell'] = True
             self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
             self.tracking_tickers[symbol]['exit_note'] = exit_note
+        elif 'msg' in order_response:
+            self.print_log(order_response['msg'])
         else:
             self.print_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
     def update_pending_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
-        if 'msg' in order_response:
-            self.print_log(order_response['msg'])
-        elif 'orderId' in order_response:
+        if 'orderId' in order_response:
             # create swing position
             position = SwingPosition(
                 symbol=symbol,
@@ -506,14 +504,14 @@ class StrategyBase:
                 setup=setup,
             )
             position.save()
+        elif 'msg' in order_response:
+            self.print_log(order_response['msg'])
         else:
             self.print_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
     def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time, manual_request=None):
-        if 'msg' in order_response:
-            self.print_log(order_response['msg'])
-        elif 'orderId' in order_response:
+        if 'orderId' in order_response:
             # create swing position
             trade = SwingTrade(
                 symbol=symbol,
@@ -534,6 +532,8 @@ class StrategyBase:
             # clear manual request if exist
             if manual_request:
                 manual_request.delete()
+        elif 'msg' in order_response:
+            self.print_log(order_response['msg'])
         else:
             self.print_log(
                 "⚠️  Invalid swing sell order response: {}".format(order_response))

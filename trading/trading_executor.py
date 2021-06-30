@@ -208,14 +208,14 @@ class TradingExecutor:
                         ticker_id=ticker['ticker_id'],
                         price=bid_price,
                         quant=ticker['positions'])
-                    if 'msg' in order_response:
-                        print(order_response['msg'])
-                    elif 'orderId' in order_response:
+                    if 'orderId' in order_response:
                         # mark pending sell
                         self.unsold_tickers[symbol]['pending_sell'] = True
                         self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
                         self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
+                    elif 'msg' in order_response:
+                        print(order_response['msg'])
                 else:
                     # delete position object
                     self.unsold_tickers[symbol]['position_obj'].delete()
