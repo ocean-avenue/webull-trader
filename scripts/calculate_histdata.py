@@ -136,4 +136,8 @@ def start(day=None):
 
 
 if __name__ == "django.core.management.commands.shell":
-    start()
+    from datetime import datetime
+
+    # TODO, add command for this
+    # https://stackoverflow.com/questions/54795124/how-do-i-pass-command-line-arguments-to-my-python-manage-py-shell-script
+    start(day=datetime.strptime("2021-06-29", "%Y-%m-%d").date())
