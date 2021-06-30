@@ -45,6 +45,18 @@ def trading_job():
     print("[{}] Done trading job!".format(utils.get_now()))
 
 
+def fetch_account_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip fetch account job...".format(
+            utils.get_now(), holiday))
+        return
+
+    print("[{}] Start fetch account job...".format(utils.get_now()))
+    fetch_account.start()
+    print("[{}] Done fetch account job!".format(utils.get_now()))
+
+
 def fetch_stock_quote_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -148,6 +160,12 @@ class Command(BaseCommand):
             job_name="fetch_stats_data_job",
             hour="20",
             minute="15")
+
+        # fetch account
+        add_regular_hour_jobs(
+            job=fetch_account_job,
+            job_name="fetch_account_job",
+        )
 
         # fetch stock quote
         add_regular_hour_jobs(
