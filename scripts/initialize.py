@@ -4,7 +4,7 @@
 
 def start():
     from scripts import utils
-    from scripts.config import SWING_WATCHLIST_SYMBOLS
+    from scripts.SWING_WATCHLIST import SWING_WATCHLIST_SYMBOLS
     from sdk import fmpsdk
     from webull_trader import enums
     from webull_trader.models import TradingSettings, SwingWatchlist
