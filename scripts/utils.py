@@ -428,7 +428,9 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
         mid = max(row["close"], row["open"])
         high = row["high"]
         low = row["low"]
-        if (mid - low) > 0 and (high - mid) / (mid - low) >= 2:
+        if (mid - low) > 0 and (high - mid) / (mid - low) >= config.LONG_WICK_UP_RATIO:
+            long_wick_up_count += 1
+        elif (mid - low) == 0 and (high - mid) > 0:
             long_wick_up_count += 1
     return long_wick_up_count >= count
 

@@ -1,3 +1,5 @@
+LONG_WICK_UP_RATIO = 2.5
+
 PROFIT_COLOR = "#4bbf73"
 LOSS_COLOR = "#d9534f"
 
