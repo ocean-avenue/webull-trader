@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -1089,7 +1089,7 @@ def swing_positions(request):
             total_cost, total_value)
 
         # position day's P&L
-        last_bar = HistoricalDailyBar.objects.filter(symbol=symbol).last()
+        last_bar = SwingHistoricalDailyBar.objects.filter(symbol=symbol).last()
         day_profit_loss, day_profit_loss_percent, day_profit_loss_style = utils.get_color_profit_loss_style_for_render(
             last_bar.close * quantity, last_price * quantity)
 
