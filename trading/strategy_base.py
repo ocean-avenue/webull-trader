@@ -416,6 +416,10 @@ class StrategyBase:
                             symbol, holding_quantity, bid_price))
                         self.update_pending_sell_order(symbol, order_response)
                         if 'orderId' in order_response:
+                            # also save exit note if have
+                            if self.tracking_tickers[symbol]['exit_note']:
+                                utils.save_webull_order_note(
+                                    order_response['orderId'], setup=self.get_setup(), note=self.tracking_tickers[symbol]['exit_note'])
                             utils.save_webull_order_note(
                                 order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
