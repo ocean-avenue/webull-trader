@@ -1905,6 +1905,19 @@ def get_color_percentage_badge_style_for_render(value):
     return (percentage, percentage_style)
 
 
+def get_color_profit_loss_style_for_render(old_value, new_value):
+    diff_value = round(new_value - old_value, 2)
+    diff_percent = round((new_value - old_value) / old_value * 100, 2)
+    profit_loss = "+${}".format(diff_value)
+    profit_loss_percent = "+{}%".format(diff_percent)
+    profit_loss_style = "text-success"
+    if diff_value < 0:
+        profit_loss = "-${}".format(abs(diff_value))
+        profit_loss_percent = "{}%".format(diff_percent)
+        profit_loss_style = "text-danger"
+    return (profit_loss, profit_loss_percent, profit_loss_style)
+
+
 def get_net_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",

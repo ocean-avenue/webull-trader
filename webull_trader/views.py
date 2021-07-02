@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import EarningCalendar, HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -1084,11 +1084,14 @@ def swing_positions(request):
         if net_liquidation > 0:
             portfolio_percent = total_value / net_liquidation
 
-        unrealized_pl = total_value - total_cost
-        unrealized_pl_percent = (total_value - total_cost) / total_cost
+        # position unrealized P&L
+        profit_loss, profit_loss_percent, profit_loss_style = utils.get_color_profit_loss_style_for_render(
+            total_cost, total_value)
 
-        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
-            round(unrealized_pl, 2))
+        # position day's P&L
+        last_bar = HistoricalDailyBar.objects.filter(symbol=symbol).last()
+        day_profit_loss, day_profit_loss_percent, day_profit_loss_style = utils.get_color_profit_loss_style_for_render(
+            last_bar.close * quantity, last_price * quantity)
 
         swing_positions.append({
             "symbol": symbol,
@@ -1100,8 +1103,11 @@ def swing_positions(request):
             "setup": setup,
             "price": "${}".format(last_price),
             "profit_loss": profit_loss,
-            "profit_loss_percent": "{}%".format(round(unrealized_pl_percent * 100, 2)),
+            "profit_loss_percent": profit_loss_percent,
             "profit_loss_style": profit_loss_style,
+            "day_profit_loss": day_profit_loss,
+            "day_profit_loss_percent": day_profit_loss_percent,
+            "day_profit_loss_style": day_profit_loss_style,
             "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
         })
 
