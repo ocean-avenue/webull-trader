@@ -25,8 +25,7 @@
       <thead>
         <tr>
           <th>Symbol</th>
-          <th class="d-none d-xl-table-cell">Buy Date</th>
-          <th class="d-none d-xl-table-cell">Setup</th>
+          <th class="d-none d-xl-table-cell">Holding</th>
           <th class="d-none d-xl-table-cell">Unit Cost</th>
           <th class="d-none d-xl-table-cell">Price</th>
           <th class="d-none d-xl-table-cell">Quantity</th>
@@ -43,8 +42,7 @@
         {% for position in swing_positions %}
         <tr>
           <td><a href="/swing-positions/{{position.symbol|safe}}"><span class="badge badge-soft-dark">{{position.symbol|safe}}</span></a></td>
-          <td class="d-none d-xl-table-cell">{{position.buy_date|safe}}</td>
-          <td class="d-none d-md-table-cell">{{position.setup|safe}}</td>
+          <td class="d-none d-xl-table-cell">{{position.holding_days|safe}}</td>
           <td class="d-none d-xl-table-cell">{{position.unit_cost|safe}}</td>
           <td class="d-none d-xl-table-cell">{{position.price|safe}}</td>
           <td class="d-none d-xl-table-cell">{{position.quantity|safe}}</td>
