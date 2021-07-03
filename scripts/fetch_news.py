@@ -2,22 +2,23 @@
 
 # fetch news data for stock into database
 
-def start():
+def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk
     from scripts import utils
     from webull_trader.models import WebullOrder
 
-    paper = utils.check_paper()
-    webullsdk.login(paper=paper)
+    # paper = utils.check_paper()
+    # webullsdk.login(paper=paper)
 
-    today = date.today()
+    if day == None:
+        day = date.today()
     # get all symbols orders in today's orders
     symbol_list = []
     ticker_id_list = []
     today_orders = WebullOrder.objects.filter(placed_time__year=str(
-        today.year), placed_time__month=str(today.month), placed_time__day=str(today.day))
+        day.year), placed_time__month=str(day.month), placed_time__day=str(day.day))
     for order in today_orders:
         symbol = order.symbol
         ticker_id = int(order.ticker_id)
@@ -33,7 +34,7 @@ def start():
         news_list = webullsdk.get_news(stock=symbol)
 
         # save webull news
-        utils.save_webull_news_list(news_list, symbol, today)
+        utils.save_webull_news_list(news_list, symbol, day)
 
         # rest for 5 sec
         time.sleep(5)

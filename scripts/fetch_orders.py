@@ -7,14 +7,14 @@ def start():
     from scripts import utils
 
     paper = utils.check_paper()
-    webullsdk.login(paper=paper)
 
-    # fetch enough count to cover today's orders
-    history_orders = webullsdk.get_history_orders(
-        status='All', count=1000)[::-1]
+    if webullsdk.login(paper=paper):
+        # fetch enough count to cover today's orders
+        history_orders = webullsdk.get_history_orders(
+            status='All', count=1000)[::-1]
 
-    for order_data in history_orders:
-        utils.save_webull_order(order_data, paper=paper)
+        for order_data in history_orders:
+            utils.save_webull_order(order_data, paper=paper)
 
 
 if __name__ == "django.core.management.commands.shell":

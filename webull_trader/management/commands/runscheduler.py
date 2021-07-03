@@ -129,7 +129,7 @@ def add_regular_hour_jobs(job, job_name):
 
 
 class Command(BaseCommand):
-    help = "runs apscheduler"
+    help = "run apscheduler"
 
     def handle(self, *args, **options):
 
