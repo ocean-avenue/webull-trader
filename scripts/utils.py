@@ -1470,53 +1470,50 @@ def get_gap_range_index(gap):
 
 def get_holding_time_labels():
     return [
-        "0-30s",  # 0
-        "30-60s",  # 1
-        "1-2m",  # 2
-        "2-3m",  # 3
-        "3-4m",  # 4
-        "4-5m",  # 5
-        "5-6m",  # 6
-        "6-7m",  # 7
-        "7-8m",  # 8
-        "8-9m",  # 9
-        "9-10m",  # 10
-        "10-12m",  # 11
-        "12-15m",  # 12
-        "15m+",  # 13
+        "0-5m", # 0
+        "5-10m", # 1
+        "10-15m", # 2
+        "15-20m", # 3
+        "20-25m", # 4
+        "25-30m", # 5
+        "30-35m", # 6
+        "35-40m", # 7
+        "40-45m", # 8
+        "45-50m", # 9
+        "50-55m", # 10
+        "55-60m", # 11
+        "60m+", # 12
     ]
 
 
 def get_holding_time_index(holding_sec):
     index = -1
-    if holding_sec <= 30:
+    if holding_sec <= 300:
         index = 0
-    elif holding_sec <= 60:
-        index = 1
-    elif holding_sec <= 120:
-        index = 2
-    elif holding_sec <= 180:
-        index = 3
-    elif holding_sec <= 240:
-        index = 4
-    elif holding_sec <= 300:
-        index = 5
-    elif holding_sec <= 360:
-        index = 6
-    elif holding_sec <= 420:
-        index = 7
-    elif holding_sec <= 480:
-        index = 8
-    elif holding_sec <= 540:
-        index = 9
     elif holding_sec <= 600:
-        index = 10
-    elif holding_sec <= 720:
-        index = 11
+        index = 1
     elif holding_sec <= 900:
-        index = 12
+        index = 2
+    elif holding_sec <= 1200:
+        index = 3
+    elif holding_sec <= 1500:
+        index = 4
+    elif holding_sec <= 1800:
+        index = 5
+    elif holding_sec <= 2100:
+        index = 6
+    elif holding_sec <= 2400:
+        index = 7
+    elif holding_sec <= 2700:
+        index = 8
+    elif holding_sec <= 3000:
+        index = 9
+    elif holding_sec <= 3300:
+        index = 10
+    elif holding_sec <= 3600:
+        index = 11
     else:
-        index = 13
+        index = 12
     return index
 
 
