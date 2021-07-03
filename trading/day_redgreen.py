@@ -7,7 +7,7 @@ from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingRedGreen(StrategyBase):
@@ -84,7 +84,7 @@ class DayTradingRedGreen(StrategyBase):
                 if ask_price == None:
                     return
                 # check if ask_price is too high above prev day close
-                if (ask_price - prev_day_close) / prev_day_close > self.max_prev_day_close_gap_ratio:
+                if (ask_price - prev_day_close) / prev_day_close > config.MAX_PREV_DAY_CLOSE_GAP_RATIO:
                     utils.print_trading_log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         symbol, ask_price, prev_day_close))
                     return

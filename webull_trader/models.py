@@ -14,49 +14,16 @@ class TradingSettings(models.Model):
     order_amount_limit = models.FloatField()
     # position amount for day trade extended hour
     extended_order_amount_limit = models.FloatField()
-    # surge amount = surge volume x price
-    min_surge_amount = models.FloatField()
-    # min surge volume for momo strategy
-    min_surge_volume = models.FloatField()
-    # min gap ratio for momo strategy
-    min_surge_change_ratio = models.FloatField()
-    # average confirm volume in regular market
-    avg_confirm_volume = models.FloatField()
-    # average confirm volume in extended market
-    extended_avg_confirm_volume = models.FloatField()
-    # average confirm amount in regular market
-    avg_confirm_amount = models.FloatField()
-    # average confirm amount in extended market
-    extended_avg_confirm_amount = models.FloatField()
-    # trading observe timeout in seconds
-    observe_timeout_in_sec = models.IntegerField()
-    # buy after sell interval in seconds
-    trade_interval_in_sec = models.IntegerField()
-    # pending order timeout in seconds
-    pending_order_timeout_in_sec = models.IntegerField()
-    # holding order timeout in seconds
-    holding_order_timeout_in_sec = models.IntegerField()
-    # level 2, (ask - bid) / bid
-    max_bid_ask_gap_ratio = models.FloatField()
     # target profit ratio
     target_profit_ratio = models.FloatField()
     # stop loss ratio
     stop_loss_ratio = models.FloatField()
-    # refresh login interval minutes
-    refresh_login_interval_in_min = models.IntegerField()
-    # trading blacklist timeout in seconds
-    blacklist_timeout_in_sec = models.IntegerField()
-    # day free float size limit
-    # TODO
-    # max_day_free_float = models.FloatField()
+    # day free float max size limit (million)
+    day_free_float_limit_in_million = models.FloatField()
+    # day trade sectors limit
+    day_sectors_limit = models.CharField(max_length=1024)
     # swing buy order limit
     swing_position_amount_limit = models.FloatField()
-    # max previous day close gap ratio for red/green strategy
-    max_prev_day_close_gap_ratio = models.FloatField()
-    # relative volume required for entry
-    min_relative_volume = models.FloatField()
-    # earning gap ratio for earning strategy
-    min_earning_gap_ratio = models.FloatField()
     # usable cash for day trade use
     day_trade_usable_cash_threshold = models.FloatField()
 

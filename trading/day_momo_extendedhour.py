@@ -4,7 +4,7 @@
 
 from trading.day_momo import DayTradingMomo
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingMomoExtendedHour(DayTradingMomo):
@@ -51,7 +51,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
-            if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_symbol(symbol):
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
                 m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty:

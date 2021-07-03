@@ -9,7 +9,7 @@ from django.utils import timezone
 from webull_trader.models import SwingPosition, SwingTrade
 from webull_trader.enums import SetupType, TradingHourType
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class StrategyBase:
@@ -42,57 +42,14 @@ class StrategyBase:
 
     # load settings
     def load_settings(self,
-                      min_surge_amount,
-                      min_surge_volume,
-                      min_surge_change_ratio,
-                      avg_confirm_volume,
-                      extended_avg_confirm_volume,
-                      avg_confirm_amount,
-                      extended_avg_confirm_amount,
                       order_amount_limit,
                       extended_order_amount_limit,
-                      observe_timeout_in_sec,
-                      trade_interval_in_sec,
-                      pending_order_timeout_in_sec,
-                      holding_order_timeout_in_sec,
-                      max_bid_ask_gap_ratio,
                       target_profit_ratio,
                       stop_loss_ratio,
-                      blacklist_timeout_in_sec,
+                      day_free_float_limit_in_million,
+                      day_sectors_limit,
                       swing_position_amount_limit,
-                      max_prev_day_close_gap_ratio,
-                      min_relative_volume,
-                      min_earning_gap_ratio,
                       day_trade_usable_cash_threshold):
-
-        self.min_surge_amount = min_surge_amount
-        utils.print_trading_log(
-            "Min surge amount: {}".format(self.min_surge_amount))
-
-        self.min_surge_volume = min_surge_volume
-        utils.print_trading_log(
-            "Min surge volume: {}".format(self.min_surge_volume))
-
-        # at least 4% change for surge
-        self.min_surge_change_ratio = min_surge_change_ratio
-        utils.print_trading_log("Min gap change: {}%".format(
-            round(self.min_surge_change_ratio * 100, 2)))
-
-        self.avg_confirm_volume = avg_confirm_volume
-        utils.print_trading_log("Avg confirm volume: {}".format(
-            self.avg_confirm_volume))
-
-        self.extended_avg_confirm_volume = extended_avg_confirm_volume
-        utils.print_trading_log("Avg confirm volume (extended hour): {}".format(
-            self.extended_avg_confirm_volume))
-
-        self.avg_confirm_amount = avg_confirm_amount
-        utils.print_trading_log("Avg confirm amount: {}".format(
-            self.avg_confirm_amount))
-
-        self.extended_avg_confirm_amount = extended_avg_confirm_amount
-        utils.print_trading_log("Avg confirm amount (extended hour): {}".format(
-            self.extended_avg_confirm_amount))
 
         self.order_amount_limit = order_amount_limit
         utils.print_trading_log(
@@ -102,30 +59,6 @@ class StrategyBase:
         utils.print_trading_log("Buy order limit (extended hour): {}".format(
             self.extended_order_amount_limit))
 
-        # observe timeout in seconds
-        self.observe_timeout_in_sec = observe_timeout_in_sec
-        utils.print_trading_log("Observe timeout: {} sec".format(
-            self.observe_timeout_in_sec))
-
-        # buy after sell interval in seconds
-        self.trade_interval_in_sec = trade_interval_in_sec
-        utils.print_trading_log("Trade interval: {} sec".format(
-            self.trade_interval_in_sec))
-
-        # pending order timeout in seconds
-        self.pending_order_timeout_in_sec = pending_order_timeout_in_sec
-        utils.print_trading_log("Pending order timeout: {} sec".format(
-            self.pending_order_timeout_in_sec))
-
-        # holding order timeout in seconds
-        self.holding_order_timeout_in_sec = holding_order_timeout_in_sec
-        utils.print_trading_log("Holding order timeout: {} sec".format(
-            self.holding_order_timeout_in_sec))
-
-        self.max_bid_ask_gap_ratio = max_bid_ask_gap_ratio
-        utils.print_trading_log("Max bid ask gap: {}%".format(
-            round(self.max_bid_ask_gap_ratio * 100, 2)))
-
         self.target_profit_ratio = target_profit_ratio
         utils.print_trading_log("Target profit rate: {}%".format(
             round(self.target_profit_ratio * 100, 2)))
@@ -134,25 +67,17 @@ class StrategyBase:
         utils.print_trading_log("Stop loss rate: {}%".format(
             round(self.stop_loss_ratio * 100, 2)))
 
-        self.blacklist_timeout_in_sec = blacklist_timeout_in_sec
-        utils.print_trading_log("Blacklist timeout: {} sec".format(
-            self.blacklist_timeout_in_sec))
+        self.day_free_float_limit_in_million = day_free_float_limit_in_million
+        utils.print_trading_log("Day trading max free float (million): {}".format(
+            self.day_free_float_limit_in_million))
+
+        self.day_sectors_limit = day_sectors_limit
+        utils.print_trading_log("Day trading sectors limit: {}".format(
+            self.day_sectors_limit))
 
         self.swing_position_amount_limit = swing_position_amount_limit
         utils.print_trading_log("Swing position amount limit: {}".format(
             self.swing_position_amount_limit))
-
-        self.max_prev_day_close_gap_ratio = max_prev_day_close_gap_ratio
-        utils.print_trading_log("Max prev day close gap ratio: {}".format(
-            self.max_prev_day_close_gap_ratio))
-
-        self.min_relative_volume = min_relative_volume
-        utils.print_trading_log("Relative volume for entry: {}".format(
-            self.min_relative_volume))
-
-        self.min_earning_gap_ratio = min_earning_gap_ratio
-        utils.print_trading_log("Earning gap ratio for entry: {}".format(
-            self.min_earning_gap_ratio))
 
         self.day_trade_usable_cash_threshold = day_trade_usable_cash_threshold
         utils.print_trading_log("Usable cash threshold for day trade: {}".format(
@@ -235,7 +160,7 @@ class StrategyBase:
                     "Short cover order <{}> filled".format(symbol))
             else:
                 # check order timeout
-                if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+                if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                     # cancel timeout order
                     if webullsdk.cancel_order(ticker['pending_order_id']):
                         # remove, let function re-submit again
@@ -305,7 +230,7 @@ class StrategyBase:
                 break
         if not order_filled:
             # check order timeout
-            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
@@ -392,7 +317,7 @@ class StrategyBase:
             utils.save_webull_account(account_data, paper=self.paper)
         else:
             # check order timeout
-            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(

@@ -8,7 +8,7 @@ from trading.day_breakout import DayTradingBreakout
 from webull_trader.enums import SetupType
 from webull_trader.models import EarningCalendar
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingBreakoutEarnings(DayTradingBreakout):
@@ -28,7 +28,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
 
     def check_trade(self, symbol, ticker_id, change_percentage):
         # check gap change
-        if change_percentage >= self.min_surge_change_ratio:
+        if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
             if self.is_extended_market_hour():
                 m1_bars = webullsdk.get_1m_bars(
                     ticker_id, count=(self.entry_period+5))

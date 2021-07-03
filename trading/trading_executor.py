@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from webull_trader.enums import AlgorithmType, SetupType
 from webull_trader.models import OvernightPosition, TradingSettings
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class TradingExecutor:
@@ -74,7 +74,7 @@ class TradingExecutor:
                     strategy.on_update()
 
             # refresh login
-            if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=self.refresh_login_interval_in_min):
+            if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
                 if webullsdk.login(paper=self.paper):
                     print("[{}] Refresh webull login".format(utils.get_now()))
                     last_login_refresh_time = datetime.now()
@@ -120,35 +120,17 @@ class TradingExecutor:
 
         # algorithm type
         self.algo_type = trading_settings.algo_type
-        # refresh login interval minutes
-        self.refresh_login_interval_in_min = trading_settings.refresh_login_interval_in_min
-        # pending order timeout in seconds
-        self.pending_order_timeout_in_sec = trading_settings.pending_order_timeout_in_sec
 
         # init setting for strategies
         for strategy in self.strategies:
             strategy.load_settings(
-                min_surge_amount=trading_settings.min_surge_amount,
-                min_surge_volume=trading_settings.min_surge_volume,
-                min_surge_change_ratio=trading_settings.min_surge_change_ratio,
-                avg_confirm_volume=trading_settings.avg_confirm_volume,
-                extended_avg_confirm_volume=trading_settings.extended_avg_confirm_volume,
-                avg_confirm_amount=trading_settings.avg_confirm_amount,
-                extended_avg_confirm_amount=trading_settings.extended_avg_confirm_amount,
                 order_amount_limit=trading_settings.order_amount_limit,
                 extended_order_amount_limit=trading_settings.extended_order_amount_limit,
-                observe_timeout_in_sec=trading_settings.observe_timeout_in_sec,
-                trade_interval_in_sec=trading_settings.trade_interval_in_sec,
-                pending_order_timeout_in_sec=trading_settings.pending_order_timeout_in_sec,
-                holding_order_timeout_in_sec=trading_settings.holding_order_timeout_in_sec,
-                max_bid_ask_gap_ratio=trading_settings.max_bid_ask_gap_ratio,
                 target_profit_ratio=trading_settings.target_profit_ratio,
                 stop_loss_ratio=trading_settings.stop_loss_ratio,
-                blacklist_timeout_in_sec=trading_settings.blacklist_timeout_in_sec,
+                day_free_float_limit_in_million=trading_settings.day_free_float_limit_in_million,
+                day_sectors_limit=trading_settings.day_sectors_limit,
                 swing_position_amount_limit=trading_settings.swing_position_amount_limit,
-                max_prev_day_close_gap_ratio=trading_settings.max_prev_day_close_gap_ratio,
-                min_relative_volume=trading_settings.min_relative_volume,
-                min_earning_gap_ratio=trading_settings.min_earning_gap_ratio,
                 day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
             )
         return True
@@ -181,7 +163,7 @@ class TradingExecutor:
                     del self.unsold_tickers[symbol]
                 else:
                     # check order timeout
-                    if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=self.pending_order_timeout_in_sec):
+                    if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                         # cancel timeout order
                         if webullsdk.cancel_order(ticker['pending_order_id']):
                             # reset

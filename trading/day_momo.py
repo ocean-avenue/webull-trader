@@ -5,9 +5,9 @@
 import time
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
-from webull_trader.enums import SetupType, TradingHourType
+from webull_trader.enums import SetupType
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingMomo(StrategyBase):
@@ -24,7 +24,7 @@ class DayTradingMomo(StrategyBase):
         close = bar["close"]
         vwap = bar["vwap"]
         volume = int(bar["volume"])
-        if close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and close >= vwap:
+        if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close >= vwap:
             return True
         return False
 
@@ -88,7 +88,7 @@ class DayTradingMomo(StrategyBase):
 
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
-        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=self.observe_timeout_in_sec):
+        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
             utils.print_trading_log(
                 "Trading <{}> session timeout!".format(symbol))
             # remove from monitor
@@ -134,7 +134,7 @@ class DayTradingMomo(StrategyBase):
                 if ask_price == None:
                     return
                 # gap = (ask_price - bid_price) / bid_price
-                # if gap > self.max_bid_ask_gap_ratio:
+                # if gap > config.MAX_BID_ASK_GAP_RATIO:
                 #     utils.print_trading_log("<{}>[{}] gap too large, ask: {}, bid: {}, stop trading!".format(
                 #         symbol, ticker_id, ask_price, bid_price))
                 #     # remove from monitor
@@ -198,7 +198,7 @@ class DayTradingMomo(StrategyBase):
             #     exit_trading = True
 
             # check if holding too long without profit
-            if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=self.holding_order_timeout_in_sec) and profit_loss_rate < 0.01:
+            if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=config.HOLDING_ORDER_TIMEOUT_IN_SEC) and profit_loss_rate < 0.01:
                 utils.print_trading_log(
                     "Holding <{}> too long!".format(symbol))
                 exit_note = "Holding too long!"
@@ -280,7 +280,7 @@ class DayTradingMomo(StrategyBase):
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
-            if change_percentage >= self.min_surge_change_ratio and self.check_if_track_symbol(symbol):
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_symbol(symbol):
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
                 m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty:

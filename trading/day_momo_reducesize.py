@@ -4,6 +4,7 @@
 
 from datetime import datetime, timedelta
 from trading.day_momo import DayTradingMomo
+from scripts import config
 
 
 class DayTradingMomoReduceSize(DayTradingMomo):
@@ -28,6 +29,6 @@ class DayTradingMomoReduceSize(DayTradingMomo):
         # if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
         #     return False
         # check if 3 continues loss trades and still in blacklist time
-        if symbol in self.tracking_stats and self.tracking_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=self.blacklist_timeout_in_sec):
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=config.BLACKLIST_TIMEOUT_IN_SEC):
             return False
         return True

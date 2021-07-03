@@ -4,12 +4,11 @@
 
 from django.utils import timezone
 from datetime import date, datetime
-
 from webull_trader.models import EarningCalendar, OvernightPosition
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingEarningsOvernight(StrategyBase):
@@ -25,7 +24,7 @@ class DayTradingEarningsOvernight(StrategyBase):
         return SetupType.DAY_EARNINGS_GAP
 
     def check_entry(self, ticker, quote):
-        if 'pChRatio' in quote and float(quote['pChRatio']) >= self.min_earning_gap_ratio:
+        if 'pChRatio' in quote and float(quote['pChRatio']) >= config.MIN_EARNING_GAP_RATIO:
             return True
         return False
 

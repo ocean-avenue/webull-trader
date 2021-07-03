@@ -476,8 +476,8 @@ def check_bars_rel_volume(bars):
     last_candle3 = bars.iloc[-3]
     last_candle4 = bars.iloc[-4]
 
-    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > get_min_relative_volume() or \
-            last_candle["volume"] / last_candle2["volume"] > get_min_relative_volume() or last_candle2["volume"] / last_candle3["volume"] > get_min_relative_volume():
+    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > config.MIN_RELATIVE_VOLUME or \
+            last_candle["volume"] / last_candle2["volume"] > config.MIN_RELATIVE_VOLUME or last_candle2["volume"] / last_candle3["volume"] > config.MIN_RELATIVE_VOLUME:
         # relative volume ok
         return True
     return False
@@ -638,34 +638,15 @@ def get_algo_type():
 
 
 def get_avg_confirm_volume(time):
-    settings = TradingSettings.objects.first()
-    if settings == None:
-        print(
-            "[{}] Cannot find trading settings, default confirm volume!".format(get_now()))
-        return 6000
     if is_pre_market_time(time) or is_after_market_time(time):
-        return settings.extended_avg_confirm_volume
-    return settings.avg_confirm_volume
+        return config.EXTENDED_AVG_CONFIRM_VOLUME
+    return config.AVG_CONFIRM_VOLUME
 
 
 def get_avg_confirm_amount(time):
-    settings = TradingSettings.objects.first()
-    if settings == None:
-        print(
-            "[{}] Cannot find trading settings, default confirm amount!".format(get_now()))
-        return 30000
     if is_pre_market_time(time) or is_after_market_time(time):
-        return settings.extended_avg_confirm_amount
-    return settings.avg_confirm_amount
-
-
-def get_min_relative_volume():
-    settings = TradingSettings.objects.first()
-    if settings == None:
-        print(
-            "[{}] Cannot find trading settings, default relative volume!".format(get_now()))
-        return 3
-    return settings.min_relative_volume
+        return config.EXTENDED_AVG_CONFIRM_AMOUNT
+    return config.AVG_CONFIRM_AMOUNT
 
 
 def get_webull_order_time(order_time):

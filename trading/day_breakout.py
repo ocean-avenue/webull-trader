@@ -6,7 +6,7 @@ from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class DayTradingBreakout(StrategyBase):
@@ -34,7 +34,7 @@ class DayTradingBreakout(StrategyBase):
         close = bar["close"]
         vwap = bar["vwap"]
         volume = int(bar["volume"])
-        if close * volume >= self.min_surge_amount and volume >= self.min_surge_volume and close >= vwap:
+        if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close >= vwap:
             utils.print_trading_log(
                 "Found <{}> to trade!".format(ticker["symbol"]))
             return True
@@ -109,7 +109,7 @@ class DayTradingBreakout(StrategyBase):
 
         if symbol in self.tracking_stats:
             last_trade_time = self.tracking_stats[symbol]['last_trade_time']
-            if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=60 * self.time_scale):
+            if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC * self.time_scale):
                 utils.print_trading_log(
                     "<{}> try buy too soon after last sell, stop trading!".format(symbol))
                 # remove from monitor
@@ -179,7 +179,7 @@ class DayTradingBreakout(StrategyBase):
 
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
-        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=self.observe_timeout_in_sec):
+        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
             utils.print_trading_log(
                 "Trading <{}> session timeout!".format(symbol))
             # remove from monitor
@@ -333,7 +333,7 @@ class DayTradingBreakout(StrategyBase):
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
-            if change_percentage >= self.min_surge_change_ratio:
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
                 if self.is_extended_market_hour():
                     m1_bars = webullsdk.get_1m_bars(
                         ticker_id, count=(self.entry_period*self.time_scale+5))
