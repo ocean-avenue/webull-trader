@@ -51,6 +51,24 @@ def save_trading_log(tag, trading_hour, date):
     log.save()
 
 
+def get_attr(obj, key):
+    if key in obj:
+        return obj[key]
+    return ''
+
+
+def get_attr_to_float(obj, key):
+    if key in obj:
+        return float(obj[key])
+    return 0.0
+
+
+def get_attr_to_float_or_none(obj, key):
+    if key in obj:
+        return float(obj[key])
+    return None
+
+
 def millify(n):
     if not n:
         return n
@@ -839,14 +857,14 @@ def save_webull_news(news_data, symbol, date):
         news_id=news_data['id'], symbol=symbol, date=date).first()
     if not news:
         news = WebullNews(
-            news_id=news_data['id'],
+            news_id=get_attr(news_data, 'id'),
             symbol=symbol,
-            title=news_data['title'],
-            source_name=news_data['sourceName'],
-            collect_source=news_data['collectSource'],
-            news_time=news_data['newsTime'],
-            summary=news_data['summary'],
-            news_url=news_data['newsUrl'],
+            title=get_attr(news_data, 'title'),
+            source_name=get_attr(news_data, 'sourceName'),
+            collect_source=get_attr(news_data, 'collectSource'),
+            news_time=get_attr(news_data, 'newsTime'),
+            summary=get_attr(news_data, 'summary'),
+            news_url=get_attr(news_data, 'newsUrl'),
             date=date,
         )
         news.save()
@@ -860,45 +878,12 @@ def save_hist_key_statistics(quote_data, date):
         get_now(), symbol))
     key_statistics = get_hist_key_stat(symbol, date)
     if not key_statistics:
-        market_value = 0
-        if 'marketValue' in quote_data:
-            market_value = float(quote_data['marketValue'])
-        pe = None
-        if 'pe' in quote_data:
-            pe = float(quote_data['pe'])
-        forward_pe = None
-        if 'forwardPe' in quote_data:
-            forward_pe = float(quote_data['forwardPe'])
-        pe_ttm = None
-        if 'peTtm' in quote_data:
-            pe_ttm = float(quote_data['peTtm'])
-        eps = None
-        if 'eps' in quote_data:
-            eps = float(quote_data['eps'])
-        eps_ttm = None
-        if 'epsTtm' in quote_data:
-            eps_ttm = float(quote_data['epsTtm'])
-        pb = None
-        if 'pb' in quote_data:
-            pb = float(quote_data['pb'])
-        ps = None
-        if 'ps' in quote_data:
-            ps = float(quote_data['ps'])
-        bps = None
-        if 'bps' in quote_data:
-            bps = float(quote_data['bps'])
         turnover_rate = None
         if 'turnoverRate' in quote_data and quote_data['turnoverRate'] != "-" and quote_data['turnoverRate'] != None:
             turnover_rate = float(quote_data['turnoverRate'])
         vibrate_ratio = None
         if 'vibrateRatio' in quote_data and quote_data['vibrateRatio'] != "-" and quote_data['vibrateRatio'] != None:
             vibrate_ratio = float(quote_data['vibrateRatio'])
-        latest_earnings_date = ''
-        if 'latestEarningsDate' in quote_data:
-            latest_earnings_date = quote_data['latestEarningsDate']
-        estimate_earnings_date = ''
-        if 'estimateEarningsDate' in quote_data:
-            estimate_earnings_date = quote_data['estimateEarningsDate']
         total_shares = None
         if 'totalShares' in quote_data and quote_data['totalShares'] != "-" and quote_data['totalShares'] != None:
             total_shares = float(quote_data['totalShares'])
@@ -916,27 +901,28 @@ def save_hist_key_statistics(quote_data, date):
             close=float(quote_data['close']),
             change=float(quote_data['change']),
             change_ratio=float(quote_data['changeRatio']),
-            market_value=market_value,
+            market_value=get_attr_to_float(quote_data, 'marketValue'),
             volume=float(quote_data['volume']),
             turnover_rate=turnover_rate,
             vibrate_ratio=vibrate_ratio,
             avg_vol_10d=float(quote_data['avgVol10D']),
             avg_vol_3m=float(quote_data['avgVol3M']),
-            pe=pe,
-            forward_pe=forward_pe,
-            pe_ttm=pe_ttm,
-            eps=eps,
-            eps_ttm=eps_ttm,
-            pb=pb,
-            ps=ps,
-            bps=bps,
+            pe=get_attr_to_float_or_none(quote_data, 'pe'),
+            forward_pe=get_attr_to_float_or_none(quote_data, 'forwardPe'),
+            pe_ttm=get_attr_to_float_or_none(quote_data, 'peTtm'),
+            eps=get_attr_to_float_or_none(quote_data, 'eps'),
+            eps_ttm=get_attr_to_float_or_none(quote_data, 'epsTtm'),
+            pb=get_attr_to_float_or_none(quote_data, 'pb'),
+            ps=get_attr_to_float_or_none(quote_data, 'ps'),
+            bps=get_attr_to_float_or_none(quote_data, 'bps'),
             short_float=short_float,
             total_shares=total_shares,
             outstanding_shares=outstanding_shares,
             fifty_two_wk_high=float(quote_data['fiftyTwoWkHigh']),
             fifty_two_wk_low=float(quote_data['fiftyTwoWkLow']),
-            latest_earnings_date=latest_earnings_date,
-            estimate_earnings_date=estimate_earnings_date,
+            latest_earnings_date=get_attr(quote_data, 'latestEarningsDate'),
+            estimate_earnings_date=get_attr(
+                quote_data, 'estimateEarningsDate'),
             date=date,
         )
         key_statistics.save()
@@ -1470,50 +1456,56 @@ def get_gap_range_index(gap):
 
 def get_holding_time_labels():
     return [
-        "0-5m", # 0
-        "5-10m", # 1
-        "10-15m", # 2
-        "15-20m", # 3
-        "20-25m", # 4
-        "25-30m", # 5
-        "30-35m", # 6
-        "35-40m", # 7
-        "40-45m", # 8
-        "45-50m", # 9
-        "50-55m", # 10
-        "55-60m", # 11
-        "60m+", # 12
+        "0-1m",  # 0
+        "1-3m",  # 1
+        "3-5m",  # 2
+        "5-10m",  # 3
+        "10-15m",  # 4
+        "15-20m",  # 5
+        "20-25m",  # 6
+        "25-30m",  # 7
+        "30-35m",  # 8
+        "35-40m",  # 9
+        "40-45m",  # 10
+        "45-50m",  # 11
+        "50-55m",  # 12
+        "55-60m",  # 13
+        "60m+",  # 14
     ]
 
 
 def get_holding_time_index(holding_sec):
     index = -1
-    if holding_sec <= 300:
+    if holding_sec <= 60:
         index = 0
-    elif holding_sec <= 600:
+    elif holding_sec <= 180:
         index = 1
-    elif holding_sec <= 900:
+    elif holding_sec <= 300:
         index = 2
-    elif holding_sec <= 1200:
+    elif holding_sec <= 600:
         index = 3
-    elif holding_sec <= 1500:
+    elif holding_sec <= 900:
         index = 4
-    elif holding_sec <= 1800:
+    elif holding_sec <= 1200:
         index = 5
-    elif holding_sec <= 2100:
+    elif holding_sec <= 1500:
         index = 6
-    elif holding_sec <= 2400:
+    elif holding_sec <= 1800:
         index = 7
-    elif holding_sec <= 2700:
+    elif holding_sec <= 2100:
         index = 8
-    elif holding_sec <= 3000:
+    elif holding_sec <= 2400:
         index = 9
-    elif holding_sec <= 3300:
+    elif holding_sec <= 2700:
         index = 10
-    elif holding_sec <= 3600:
+    elif holding_sec <= 3000:
         index = 11
-    else:
+    elif holding_sec <= 3300:
         index = 12
+    elif holding_sec <= 3600:
+        index = 13
+    else:
+        index = 14
     return index
 
 
