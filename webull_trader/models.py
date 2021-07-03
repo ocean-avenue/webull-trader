@@ -38,6 +38,7 @@ class TradingSettings(models.Model):
     holding_order_timeout_in_sec = models.IntegerField()
     # level 2, (ask - bid) / bid
     max_bid_ask_gap_ratio = models.FloatField()
+    # target profit ratio
     target_profit_ratio = models.FloatField()
     # stop loss ratio
     stop_loss_ratio = models.FloatField()
@@ -45,6 +46,9 @@ class TradingSettings(models.Model):
     refresh_login_interval_in_min = models.IntegerField()
     # trading blacklist timeout in seconds
     blacklist_timeout_in_sec = models.IntegerField()
+    # day free float size limit
+    # TODO
+    # max_day_free_float = models.FloatField()
     # swing buy order limit
     swing_position_amount_limit = models.FloatField()
     # max previous day close gap ratio for red/green strategy

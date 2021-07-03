@@ -455,6 +455,8 @@ def day_reports_price(request):
             price_statistics[price_idx]['profit_loss'] += gain
             price_statistics[price_idx]['trades'] += 1
     price_profit_loss = []
+    price_total_profit = []
+    price_total_loss = []
     price_win_rate = []
     price_profit_loss_ratio = []
     price_trades = []
@@ -463,6 +465,8 @@ def day_reports_price(request):
         price_trades.append(price_stat['trades'])
         price_profit_loss.append(utils.get_color_bar_chart_item_for_render(
             round(price_stat['profit_loss'], 2)))
+        price_total_profit.append(round(price_stat['total_profit'], 2))
+        price_total_loss.append(round(price_stat['total_loss'], 2))
         if price_stat['trades'] > 0:
             price_win_rate.append(
                 round(price_stat['win_trades']/price_stat['trades'] * 100, 2))
@@ -488,6 +492,8 @@ def day_reports_price(request):
         "title": "Entry Price",
         "labels": utils.get_entry_price_range_labels(),
         "profit_loss": price_profit_loss,
+        "total_profit": price_total_profit,
+        "total_loss": price_total_loss,
         "win_rate": price_win_rate,
         "profit_loss_ratio": price_profit_loss_ratio,
         "trades": price_trades,
@@ -526,6 +532,8 @@ def day_reports_mktcap(request):
         "title": "Market Cap",
         "labels": utils.get_market_cap_range_labels(),
         "profit_loss": stat_render['profit_loss'],
+        "total_profit": stat_render['total_profit'],
+        "total_loss": stat_render['total_loss'],
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
@@ -564,6 +572,8 @@ def day_reports_float(request):
         "title": "Free Float",
         "labels": utils.get_free_float_range_labels(),
         "profit_loss": stat_render['profit_loss'],
+        "total_profit": stat_render['total_profit'],
+        "total_loss": stat_render['total_loss'],
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
@@ -602,6 +612,8 @@ def day_reports_turnover(request):
         "title": "Turnover %",
         "labels": utils.get_turnover_ratio_range_labels(),
         "profit_loss": stat_render['profit_loss'],
+        "total_profit": stat_render['total_profit'],
+        "total_loss": stat_render['total_loss'],
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
@@ -640,6 +652,8 @@ def day_reports_short(request):
         "title": "Short Ratio",
         "labels": utils.get_short_float_range_labels(),
         "profit_loss": stat_render['profit_loss'],
+        "total_profit": stat_render['total_profit'],
+        "total_loss": stat_render['total_loss'],
         "win_rate": stat_render['win_rate'],
         "profit_loss_ratio": stat_render['profit_loss_ratio'],
         "trades": stat_render['trades'],
@@ -685,6 +699,8 @@ def day_reports_gap(request):
             gap_statistics[gap_idx]['profit_loss'] += gain
             gap_statistics[gap_idx]['trades'] += 1
     gap_profit_loss = []
+    gap_total_profit = []
+    gap_total_loss = []
     gap_win_rate = []
     gap_profit_loss_ratio = []
     gap_trades = []
@@ -693,6 +709,8 @@ def day_reports_gap(request):
         gap_trades.append(gap_stat['trades'])
         gap_profit_loss.append(utils.get_color_bar_chart_item_for_render(
             round(gap_stat['profit_loss'], 2)))
+        gap_total_profit.append(round(gap_stat['total_profit'], 2))
+        gap_total_loss.append(round(gap_stat['total_loss'], 2))
         if gap_stat['trades'] > 0:
             gap_win_rate.append(
                 round(gap_stat['win_trades']/gap_stat['trades'] * 100, 2))
@@ -718,6 +736,8 @@ def day_reports_gap(request):
         "title": "Gap %",
         "labels": utils.get_gap_range_labels(),
         "profit_loss": gap_profit_loss,
+        "total_profit": gap_total_profit,
+        "total_loss": gap_total_loss,
         "win_rate": gap_win_rate,
         "profit_loss_ratio": gap_profit_loss_ratio,
         "trades": gap_trades,
@@ -767,6 +787,8 @@ def day_reports_relvol(request):
                 relvol_statistics[relvol_idx]['profit_loss'] += gain
                 relvol_statistics[relvol_idx]['trades'] += 1
     relvol_profit_loss = []
+    relvol_total_profit = []
+    relvol_total_loss = []
     relvol_win_rate = []
     relvol_profit_loss_ratio = []
     relvol_trades = []
@@ -775,6 +797,8 @@ def day_reports_relvol(request):
         relvol_trades.append(relvol_stat['trades'])
         relvol_profit_loss.append(utils.get_color_bar_chart_item_for_render(
             round(relvol_stat['profit_loss'], 2)))
+        relvol_total_profit.append(round(relvol_stat['total_profit'], 2))
+        relvol_total_loss.append(round(relvol_stat['total_loss'], 2))
         if relvol_stat['trades'] > 0:
             relvol_win_rate.append(
                 round(relvol_stat['win_trades']/relvol_stat['trades'] * 100, 2))
@@ -800,6 +824,8 @@ def day_reports_relvol(request):
         "title": "Relative Volume",
         "labels": utils.get_relative_volume_labels(),
         "profit_loss": relvol_profit_loss,
+        "total_profit": relvol_total_profit,
+        "total_loss": relvol_total_loss,
         "win_rate": relvol_win_rate,
         "profit_loss_ratio": relvol_profit_loss_ratio,
         "trades": relvol_trades,
@@ -847,6 +873,8 @@ def day_reports_sector(request):
             sector_statistics[sector_idx]['profit_loss'] += gain
             sector_statistics[sector_idx]['trades'] += 1
     sector_profit_loss = []
+    sector_total_profit = []
+    sector_total_loss = []
     sector_win_rate = []
     sector_profit_loss_ratio = []
     sector_trades = []
@@ -855,6 +883,8 @@ def day_reports_sector(request):
         sector_trades.append(sector_stat['trades'])
         sector_profit_loss.append(utils.get_color_bar_chart_item_for_render(
             round(sector_stat['profit_loss'], 2)))
+        sector_total_profit.append(round(sector_stat['total_profit'], 2))
+        sector_total_loss.append(round(sector_stat['total_loss'], 2))
         if sector_stat['trades'] > 0:
             sector_win_rate.append(
                 round(sector_stat['win_trades']/sector_stat['trades'] * 100, 2))
@@ -880,6 +910,8 @@ def day_reports_sector(request):
         "title": "Sector",
         "labels": utils.get_sector_labels(),
         "profit_loss": sector_profit_loss,
+        "total_profit": sector_total_profit,
+        "total_loss": sector_total_loss,
         "win_rate": sector_win_rate,
         "profit_loss_ratio": sector_profit_loss_ratio,
         "trades": sector_trades,
@@ -925,6 +957,8 @@ def day_reports_holding(request):
             holding_statistics[holding_idx]['profit_loss'] += gain
             holding_statistics[holding_idx]['trades'] += 1
     holding_profit_loss = []
+    holding_total_profit = []
+    holding_total_loss = []
     holding_win_rate = []
     holding_profit_loss_ratio = []
     holding_trades = []
@@ -933,6 +967,8 @@ def day_reports_holding(request):
         holding_trades.append(holding_stat['trades'])
         holding_profit_loss.append(utils.get_color_bar_chart_item_for_render(
             round(holding_stat['profit_loss'], 2)))
+        holding_total_profit.append(round(holding_stat['total_profit'], 2))
+        holding_total_loss.append(round(holding_stat['total_loss'], 2))
         if holding_stat['trades'] > 0:
             holding_win_rate.append(
                 round(holding_stat['win_trades']/holding_stat['trades'] * 100, 2))
@@ -958,6 +994,8 @@ def day_reports_holding(request):
         "title": "Holding Time",
         "labels": utils.get_holding_time_labels(),
         "profit_loss": holding_profit_loss,
+        "total_profit": holding_total_profit,
+        "total_loss": holding_total_loss,
         "win_rate": holding_win_rate,
         "profit_loss_ratio": holding_profit_loss_ratio,
         "trades": holding_trades,

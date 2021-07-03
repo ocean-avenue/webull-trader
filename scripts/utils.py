@@ -2270,6 +2270,8 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
                 statistics_list[value_idx]['profit_loss'] += gain
                 statistics_list[value_idx]['trades'] += 1
     value_profit_loss = []
+    value_total_profit = []
+    value_total_loss = []
     value_win_rate = []
     value_profit_loss_ratio = []
     value_trades = []
@@ -2278,6 +2280,8 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
         value_trades.append(stat['trades'])
         value_profit_loss.append(get_color_bar_chart_item_for_render(
             round(stat['profit_loss'], 2)))
+        value_total_profit.append(round(stat['total_profit'], 2))
+        value_total_loss.append(round(stat['total_loss'], 2))
         if stat['trades'] > 0:
             value_win_rate.append(
                 round(stat['win_trades']/stat['trades'] * 100, 2))
@@ -2299,6 +2303,8 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
 
     return {
         "profit_loss": value_profit_loss,
+        "total_profit": value_total_profit,
+        "total_loss": value_total_loss,
         "win_rate": value_win_rate,
         "profit_loss_ratio": value_profit_loss_ratio,
         "trades": value_trades,

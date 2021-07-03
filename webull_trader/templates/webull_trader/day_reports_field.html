@@ -39,6 +39,22 @@
     <div class="col-12 col-lg-12 d-flex">
       <div class="card flex-fill w-100">
         <div class="card-header">
+          <h5 class="card-title mb-0">P/L by {{title|safe}}</h5>
+        </div>
+        <div class="card-body d-flex w-100">
+          <div class="align-self-center chart chart-md">
+            <div id="profit-loss-2-chart" style="width: 100%; min-height: 300px;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-12 d-flex">
+      <div class="card flex-fill w-100">
+        <div class="card-header">
           <h5 class="card-title mb-0">Win Rate by {{title|safe}}</h5>
         </div>
         <div class="card-body d-flex w-100">
@@ -118,6 +134,51 @@
     }]
   };
   profit_loss_chart.setOption(profit_loss_option);
+
+  // profit/loss chart
+  const profit_loss_2_chart = echarts.init(document.getElementById("profit-loss-2-chart"));
+  const profit_loss_2_option = {
+    legend: {
+      data: ['Profit', 'Loss'],
+    },
+    color: ['#4bbf73','#d9534f'],
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: {{labels|safe}}
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: 'Profit',
+        data: {{total_profit|safe}},
+        type: 'bar',
+        stack: 'one',
+        areaStyle: {}
+      },
+      {
+        name: 'Loss',
+        data: {{total_loss|safe}},
+        type: 'bar',
+        stack: 'one',
+        areaStyle: {}
+      },
+    ]
+  };
+  profit_loss_2_chart.setOption(profit_loss_2_option);
 
   // win rate chart
   const win_rate_chart = echarts.init(document.getElementById("win-rate-chart"));
@@ -221,6 +282,7 @@
   // resize charts
   window.onresize = function() {
     profit_loss_chart.resize();
+    profit_loss_2_chart.resize();
     win_rate_chart.resize();
     profit_loss_ratio_chart.resize();
     trades_chart.resize();
