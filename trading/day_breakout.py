@@ -308,8 +308,6 @@ class DayTradingBreakout(StrategyBase):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats if not
-            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 
@@ -326,10 +324,15 @@ class DayTradingBreakout(StrategyBase):
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
+            ticker_id = gainer["ticker_id"]
             # check if ticker already in monitor
             if symbol in self.tracking_tickers:
                 continue
-            ticker_id = gainer["ticker_id"]
+            # init tracking ticker
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            # check if can trade with requirements
+            if not self.check_can_trade_ticker(ticker):
+                continue
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
@@ -343,7 +346,6 @@ class DayTradingBreakout(StrategyBase):
                     latest_candle = m1_bars.iloc[-1]
                     latest_candle2 = m1_bars.iloc[-2]
                     # check if trasaction amount and volume meets requirement
-                    ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                     if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
                         # found trading ticker
                         self.tracking_tickers[symbol] = ticker
@@ -351,7 +353,6 @@ class DayTradingBreakout(StrategyBase):
                         self.trade(ticker, m1_bars=m1_bars)
                 elif self.is_regular_market_hour():
                     # found trading ticker
-                    ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
                     utils.print_trading_log(
                         "Found <{}> to trade!".format(symbol))

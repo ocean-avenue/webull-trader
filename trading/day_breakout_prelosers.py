@@ -29,8 +29,6 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats if not
-            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 
@@ -41,7 +39,7 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
             if symbol in self.tracking_tickers:
                 continue
             # found trading ticker
-            ticker = self.get_init_tracking_ticker(symbol, ticker_id)
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
             self.tracking_tickers[symbol] = ticker
             utils.print_trading_log("Found <{}> to trade!".format(symbol))
             # do trade

@@ -27,6 +27,10 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             return SetupType.DAY_EARNINGS_GAP
 
     def check_trade(self, symbol, ticker_id, change_percentage):
+        ticker = self.build_tracking_ticker(symbol, ticker_id)
+        # check if can trade with requirements
+        if not self.check_can_trade_ticker(ticker):
+            return
         # check gap change
         if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
             if self.is_extended_market_hour():
@@ -40,7 +44,6 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 # check if trasaction amount and volume meets requirement
                 if self.check_surge(latest_candle) or self.check_surge(latest_candle2):
                     # found trading ticker
-                    ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
                     utils.print_trading_log(
                         "Found <{}> to trade!".format(symbol))
@@ -48,7 +51,6 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                     self.trade(ticker, m1_bars=m1_bars)
             elif self.is_regular_market_hour():
                 # found trading ticker
-                ticker = self.get_init_tracking_ticker(symbol, ticker_id)
                 self.tracking_tickers[symbol] = ticker
                 utils.print_trading_log("Found <{}> to trade!".format(symbol))
                 # do trade
@@ -79,8 +81,6 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats if not
-            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 

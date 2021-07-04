@@ -6,9 +6,9 @@ import copy
 import time
 from datetime import datetime, timedelta
 from django.utils import timezone
-from webull_trader.models import SwingPosition, SwingTrade
+from webull_trader.models import SwingPosition, SwingTrade, TradingSettings
 from webull_trader.enums import SetupType, TradingHourType
-from sdk import webullsdk
+from sdk import webullsdk, fmpsdk
 from scripts import utils, config
 
 
@@ -85,20 +85,20 @@ class StrategyBase:
 
         return True
 
-    def init_tracking_stats_if_not(self, ticker):
-        symbol = ticker['symbol']
-        # init trading stats
+    def build_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
+        # init tracking stats if not
         if symbol not in self.tracking_stats:
             self.tracking_stats[symbol] = {
                 "trades": 0,
                 "win_trades": 0,
                 "lose_trades": 0,
+                "sector": None,
+                "free_float": None,
                 "continue_lose_trades": 0,
                 "last_trade_high": None,
                 "last_trade_time": None,
             }
-
-    def get_init_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
+        # init tracking tocker
         return {
             "symbol": symbol,
             "ticker_id": ticker_id,
@@ -120,7 +120,7 @@ class StrategyBase:
             "resubmit_count": 0,
         }
 
-    def get_init_error_short_ticker(self, symbol, ticker_id):
+    def build_error_short_ticker(self, symbol, ticker_id):
         return {
             "symbol": symbol,
             "ticker_id": ticker_id,
@@ -141,6 +141,35 @@ class StrategyBase:
 
     def is_extended_market_hour(self):
         return self.is_pre_market_hour() or self.is_after_market_hour()
+
+    def check_can_trade_ticker(self, ticker):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        settings = TradingSettings.objects.first()
+        if not settings:
+            return True
+        can_trade = True
+        day_free_float_limit_in_million = settings.day_free_float_limit_in_million
+        if day_free_float_limit_in_million > 0:
+            # fetch free float if not cached
+            if self.tracking_stats[symbol]["free_float"] == None:
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                if quote and "outstandingShares" in quote:
+                    self.tracking_stats[symbol]["free_float"] = float(
+                        quote["outstandingShares"])
+            if self.tracking_stats[symbol]["free_float"] == None or self.tracking_stats[symbol]["free_float"] > day_free_float_limit_in_million * 1000000:
+                can_trade = False
+        day_sectors_limit = settings.day_sectors_limit
+        if len(day_sectors_limit) > 0:
+            # fetch sector if not cached
+            if self.tracking_stats[symbol]["sector"] == None:
+                profile = fmpsdk.get_profile(symbol)
+                if profile and "sector" in profile:
+                    self.tracking_stats[symbol]["sector"] = profile["sector"]
+            sectors_limit = day_sectors_limit.split(",")
+            if self.tracking_stats[symbol]["sector"] == None or self.tracking_stats[symbol]["sector"] not in sectors_limit:
+                can_trade = False
+        return can_trade
 
     def check_error_short_order(self, positions):
         # check if short order covered
@@ -175,7 +204,7 @@ class StrategyBase:
                 symbol = position['ticker']['symbol']
                 ticker_id = position['ticker']['tickerId']
                 if symbol not in self.error_short_tickers:
-                    self.error_short_tickers[symbol] = self.get_init_tracking_ticker(
+                    self.error_short_tickers[symbol] = self.build_error_short_ticker(
                         symbol, ticker_id)
                     last_price = float(position['lastPrice'])
                     # in order to buy, increase 1% to buy

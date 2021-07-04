@@ -143,7 +143,7 @@ class DayTradingEarningsOvernight(StrategyBase):
             for earning in earnings:
                 symbol = earning.symbol
                 ticker_id = webullsdk.get_ticker(symbol=symbol)
-                ticker = self.get_init_tracking_ticker(symbol, ticker_id)
+                ticker = self.build_tracking_ticker(symbol, ticker_id)
                 self.tracking_tickers[symbol] = ticker
                 utils.print_trading_log(
                     "Add ticker <{}> to check earning gap!".format(symbol))
@@ -154,7 +154,7 @@ class DayTradingEarningsOvernight(StrategyBase):
             for position in earning_positions:
                 symbol = position.symbol
                 ticker_id = position.ticker_id
-                ticker = self.get_init_tracking_ticker(symbol, ticker_id)
+                ticker = self.build_tracking_ticker(symbol, ticker_id)
                 utils.print_trading_log(
                     "Add ticker <{}> to sell during regular hour!".format(symbol))
 
@@ -162,8 +162,6 @@ class DayTradingEarningsOvernight(StrategyBase):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats if not
-            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 

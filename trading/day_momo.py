@@ -255,8 +255,6 @@ class DayTradingMomo(StrategyBase):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            # init stats if not
-            self.init_tracking_stats_if_not(ticker)
             # do trade
             self.trade(ticker)
 
@@ -291,7 +289,7 @@ class DayTradingMomo(StrategyBase):
                 # check if trasaction amount meets requirement
                 if self.check_track(latest_candle) or self.check_track(latest_candle2):
                     # found trading ticker
-                    ticker = self.get_init_tracking_ticker(
+                    ticker = self.build_tracking_ticker(
                         symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
                     utils.print_trading_log(

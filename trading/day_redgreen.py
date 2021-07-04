@@ -171,7 +171,7 @@ class DayTradingRedGreen(StrategyBase):
                 if float(quote['open']) <= gainer.price:
                     key_stat = utils.get_hist_key_stat(
                         gainer.symbol, last_market_day)
-                    ticker = self.get_init_tracking_ticker(
+                    ticker = self.build_tracking_ticker(
                         gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
                     self.tracking_tickers[gainer.symbol] = ticker
                     utils.print_trading_log(
@@ -189,7 +189,7 @@ class DayTradingRedGreen(StrategyBase):
                 if float(quote['open']) <= loser.price:
                     key_stat = utils.get_hist_key_stat(
                         loser.symbol, last_market_day)
-                    ticker = self.get_init_tracking_ticker(
+                    ticker = self.build_tracking_ticker(
                         loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
                     self.tracking_tickers[loser.symbol] = ticker
                     utils.print_trading_log(
@@ -214,8 +214,6 @@ class DayTradingRedGreen(StrategyBase):
             # trading tickers
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
-                # init stats if not
-                self.init_tracking_stats_if_not(ticker)
                 # do trade
                 self.trade(ticker)
         else:
