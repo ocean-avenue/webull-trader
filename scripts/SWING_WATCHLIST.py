@@ -23,7 +23,7 @@ WATCHLIST_SYMBOLS = [
     "RBLX", "ROKU", "ROOT", "RDNT", "RVLV",
     "SPY", "SQ", "SHOP", "SNOW", "SE", "SKLZ", "SNAP", "SPOT", "SPCE", "SAVE",
     "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK", "SENS", "SQSP", "SKIN",
-    "SAM",
+    "SAM", "SOFI",
     "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
     "TOL", "TAL", "TME", "TALO", "TSN", "TIGR", "TTCF", "TAN",
     "U", "UBER", "UPWK", "UAL", "UMC", "UEC", "UPST",
