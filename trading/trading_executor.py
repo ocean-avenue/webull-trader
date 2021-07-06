@@ -258,6 +258,10 @@ def start():
         # DAY_BREAKOUT: breakout trade 30 candles
         strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=30, exit_period=15))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_55:
+        # DAY_BREAKOUT: breakout trade 55 candles
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
         # DAY_BREAKOUT_NEW_HIGH: breakout trade with new high confirm
         strategies.append(DayTradingBreakoutNewHigh(
