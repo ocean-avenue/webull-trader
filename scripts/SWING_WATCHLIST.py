@@ -1,7 +1,7 @@
 WATCHLIST_SYMBOLS = [
     "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
     "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API", "ALF",
-    "ATVI",
+    "ATVI", "ASTS",
     "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",
     "BYND", "BETZ", "BARK",
     "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV", "CPSR",
