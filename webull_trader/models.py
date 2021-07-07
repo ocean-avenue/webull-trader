@@ -21,8 +21,7 @@ class TradingSettings(models.Model):
     # day free float max size limit (million)
     day_free_float_limit_in_million = models.FloatField()
     # day trade sectors limit
-    day_sectors_limit = models.CharField(
-        max_length=1024, null=True, blank=True)
+    day_sectors_limit = models.CharField(max_length=1024, blank=True)
     # swing buy order limit
     swing_position_amount_limit = models.FloatField()
     # usable cash for day trade use
