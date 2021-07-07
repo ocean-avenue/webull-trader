@@ -83,6 +83,7 @@ class SetupType:
     DAY_30_CANDLES_NEW_HIGH = 6
     DAY_EARNINGS_GAP = 7
     DAY_10_CANDLES_NEW_HIGH = 8
+    DAY_VWAP_RECLAIM = 9
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
     ERROR_FAILED_TO_SELL = 500
@@ -108,6 +109,8 @@ class SetupType:
             return '[Day] 30 candles new high'
         if val == SetupType.DAY_EARNINGS_GAP:
             return '[Day] Earning Gap'
+        if val == SetupType.DAY_VWAP_RECLAIM:
+            return '[Day] VWAP Reclaim'
         if val == SetupType.SWING_20_DAYS_NEW_HIGH:
             return '[Swing] 20 days new high'
         if val == SetupType.SWING_55_DAYS_NEW_HIGH:
@@ -137,6 +140,8 @@ class SetupType:
                 SetupType.DAY_30_CANDLES_NEW_HIGH)),
             (SetupType.DAY_EARNINGS_GAP, SetupType.tostr(
                 SetupType.DAY_EARNINGS_GAP)),
+            (SetupType.DAY_VWAP_RECLAIM, SetupType.tostr(
+                SetupType.DAY_VWAP_RECLAIM)),
             (SetupType.SWING_20_DAYS_NEW_HIGH, SetupType.tostr(
                 SetupType.SWING_20_DAYS_NEW_HIGH)),
             (SetupType.SWING_55_DAYS_NEW_HIGH, SetupType.tostr(
@@ -164,6 +169,7 @@ class AlgorithmType:
     DAY_BREAKOUT_10_5 = 12
     DAY_BREAKOUT_PRE_LOSERS = 13
     DAY_BREAKOUT_55 = 14
+    DAY_VWAP_RECLAIM_LARGE_CAP = 15
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -207,6 +213,8 @@ class AlgorithmType:
             return 'Earning date day trade, entry if gap up and may hold position overnight.'
         if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
             return 'Earning date day trade, entry if gap up and do breakout trade if no earning event.'
+        if val == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
+            return 'VWAP reclaim day trade, entry if price reclaim vwap for large cap tickers.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -253,6 +261,8 @@ class AlgorithmType:
             return 'DAY (EARNINGS OVERNIGHT)'
         if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
             return 'DAY (EARNINGS BREAKOUT)'
+        if val == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
+            return 'DAY (VWAP LARGE CAP)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -300,6 +310,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_EARNINGS_OVERNIGHT)),
             (AlgorithmType.DAY_EARNINGS_BREAKOUT, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS_BREAKOUT)),
+            (AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP, AlgorithmType.tostr(
+                AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
