@@ -54,3 +54,6 @@ FINVIZ_DOUBLE_BOTTOM_CONSUMER_CYCLICAL_URL = "https://finviz.com/screener.ashx?v
 FINVIZ_DOUBLE_BOTTOM_CONSUMER_DEFENSIVE_URL = "https://finviz.com/screener.ashx?v=111&f=sec_consumerdefensive,sh_avgvol_o500,ta_pattern_doublebottom&ft=4"
 # Double Bottom (Technology)
 FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL = "https://finviz.com/screener.ashx?v=111&f=sec_technology,sh_avgvol_o500,ta_pattern_doublebottom&ft=4"
+
+# Large Cap with Major News
+FINVIZ_MAJOR_NEWS_LARGE_CAP_URL = "https://finviz.com/screener.ashx?v=111&s=n_majornews&f=cap_largeover&o=marketcap"

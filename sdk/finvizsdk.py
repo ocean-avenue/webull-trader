@@ -1,12 +1,13 @@
 import time
 import requests
 from bs4 import BeautifulSoup
-from sdk.config import FINVIZ_CHANNEL_UP_TECHNOLOGY_URL, FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL, FINVIZ_EARNING_DAY_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_QUOTE_URL, FINVIZ_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_CHANNEL_UP_ENERGY_URL, FINVIZ_DOUBLE_BOTTOM_ENERGY_URL
+from sdk.config import FINVIZ_CHANNEL_UP_TECHNOLOGY_URL, FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL, FINVIZ_EARNING_DAY_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_MAJOR_NEWS_LARGE_CAP_URL, FINVIZ_QUOTE_URL, FINVIZ_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_CHANNEL_UP_ENERGY_URL, FINVIZ_DOUBLE_BOTTOM_ENERGY_URL
 
 EARNING_DAY_SCREENER = "earning_day"
 UNUSUAL_VOLUME_SCREENER = "unusual_volume"
 CHANNEL_UP_SCREENER = "channel_up"
 DOUBLE_BOTTOM_SCREENER = "double_bottom"
+MAJOR_NEWS_SCREENER = "major_news"
 
 # screener url config
 _EARNING_DAY_URLS = [
@@ -22,6 +23,9 @@ _CHANNEL_UP_URLS = [
 _DOUBLE_BOTTOM_URLS = [
     FINVIZ_DOUBLE_BOTTOM_ENERGY_URL,
     FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL,
+]
+_MAJOR_NEWS_URLS = [
+    FINVIZ_MAJOR_NEWS_LARGE_CAP_URL,
 ]
 
 
@@ -68,8 +72,11 @@ def fetch_screeners(screener_type):
         urls = _CHANNEL_UP_URLS
     elif screener_type == DOUBLE_BOTTOM_SCREENER:
         urls = _DOUBLE_BOTTOM_URLS
+    elif screener_type == MAJOR_NEWS_SCREENER:
+        urls = _MAJOR_NEWS_URLS
     else:
-        print("Unknown screener type!")
+        # unknown screener type
+        urls = []
 
     screened_list = []
     for url in urls:
