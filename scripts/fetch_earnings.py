@@ -27,7 +27,7 @@ def start():
             "revenue_estimated": calendar["revenueEstimated"],
         }
 
-    earning_quotes = fmpsdk.get_quotes(symbol_list)
+    earning_quotes = fmpsdk.batch_quotes(symbol_list)
     print("[{}] Importing earnings for {} symbols...".format(
         utils.get_now(), len(earning_quotes)))
     # only add earning with quote into datebase

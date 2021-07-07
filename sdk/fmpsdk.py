@@ -56,11 +56,58 @@ def get_quotes(symbol_list):
     )
 
 
+def batch_quotes(symbol_list):
+    batch_symbol_list = []
+    quote_list = []
+    for symbol in symbol_list:
+        batch_symbol_list.append(symbol)
+        # batch 100 symbol request
+        if len(batch_symbol_list) == 100:
+            quotes = get_quotes(batch_symbol_list)
+            quote_list = quote_list + quotes
+            # reset batch symbol list
+            batch_symbol_list = []
+    # last batch symbol request
+    if len(batch_symbol_list) > 0:
+        quotes = get_quotes(batch_symbol_list)
+        quote_list = quote_list + quotes
+        # reset batch symbol list
+        batch_symbol_list = []
+    return quote_list
+
+
 def get_quote_short(symbol):
     return _get_jsonparsed_data(
         "{}/quote-short/{}?apikey={}".format(FMP_API_BASE_URL,
                                              symbol, FMP_API_KEY)
     )[0]
+
+
+def get_quotes_short(symbol_list):
+    return _get_jsonparsed_data(
+        "{}/quote-short/{}?apikey={}".format(
+            FMP_API_BASE_URL, ",".join(symbol_list), FMP_API_KEY)
+    )
+
+
+def batch_quotes_short(symbol_list):
+    batch_symbol_list = []
+    quote_list = []
+    for symbol in symbol_list:
+        batch_symbol_list.append(symbol)
+        # batch 100 symbol request
+        if len(batch_symbol_list) == 100:
+            quotes = get_quotes_short(batch_symbol_list)
+            quote_list = quote_list + quotes
+            # reset batch symbol list
+            batch_symbol_list = []
+    # last batch symbol request
+    if len(batch_symbol_list) > 0:
+        quotes = get_quotes_short(batch_symbol_list)
+        quote_list = quote_list + quotes
+        # reset batch symbol list
+        batch_symbol_list = []
+    return quote_list
 
 
 def get_profile(symbol):
