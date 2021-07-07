@@ -34,7 +34,7 @@ class DayTradingBreakout(StrategyBase):
         close = bar["close"]
         vwap = bar["vwap"]
         volume = int(bar["volume"])
-        if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close >= vwap:
+        if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close > vwap:
             utils.print_trading_log(
                 "Found <{}> to trade!".format(ticker["symbol"]))
             return True
@@ -45,7 +45,7 @@ class DayTradingBreakout(StrategyBase):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
         # check if above vwap
-        if current_price < current_candle['vwap']:
+        if current_price <= current_candle['vwap']:
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
