@@ -459,12 +459,16 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
     avg_candle_size = 0.0
     if len(period_bars) > 0:
         avg_candle_size = total_candle_size / len(period_bars)
+    prev_row = None
     for _, row in period_bars.iterrows():
         close = row["close"]
         high = row["high"]
         low = row["low"]
         # make sure long wick body is larger than average candle size
-        if (high - low) <= avg_candle_size:
+        if (high - low) < avg_candle_size * 1.4:
+            continue
+        # marke sure no less than prev bar
+        if prev_row and (high - low) < (prev_row["high"] - prev_row["low"]):
             continue
         # make sure wick tail is larger than body
         if (high - max(row["close"], row["open"])) <= abs(row["close"] - row["open"]):
@@ -473,6 +477,7 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
             long_wick_up_count += 1
         elif (close - low) == 0 and (high - close) > 0:
             long_wick_up_count += 1
+        prev_row = row
     return long_wick_up_count >= count
 
 
