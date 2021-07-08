@@ -415,6 +415,13 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     period_bars = period_bars.head(period)
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
+        # check if time is match
+        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+            continue
+        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+            continue
+        if is_after_market_hour_exact() and not is_after_market_time(time):
+            continue
         confirm_amount = get_avg_confirm_amount(time) * time_scale
         volume = row["volume"]
         price = row["close"]
