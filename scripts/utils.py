@@ -1105,7 +1105,8 @@ def check_day_trade_order(setup):
             setup == enums.SetupType.DAY_30_CANDLES_NEW_HIGH or setup == enums.SetupType.DAY_BULL_FLAG or \
             setup == enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH or setup == enums.SetupType.DAY_GAP_AND_GO or \
             setup == enums.SetupType.DAY_RED_TO_GREEN or setup == enums.SetupType.DAY_REVERSAL or \
-            setup == enums.SetupType.DAY_EARNINGS_GAP or setup == enums.SetupType.DAY_VWAP_RECLAIM:
+            setup == enums.SetupType.DAY_EARNINGS_GAP or setup == enums.SetupType.DAY_VWAP_RECLAIM or \
+            setup == enums.SetupType.DAY_GRINDING_UP:
         return True
     return False
 

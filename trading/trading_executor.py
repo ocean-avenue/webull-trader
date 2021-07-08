@@ -219,6 +219,7 @@ def start():
     from trading.day_breakout_prelosers import DayTradingBreakoutPreLosers
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.day_vwap_largecap import DayTradingVWAPLargeCap
+    from trading.day_grinding_largecap import DayTradingGrindingLargeCap
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
@@ -287,6 +288,10 @@ def start():
     elif algo_type == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
         # DAY_VWAP_RECLAIM_LARGE_CAP: vwap reclaim day trade with large cap
         strategies.append(DayTradingVWAPLargeCap(
+            paper=paper, trading_hour=trading_hour))
+    elif algo_type == AlgorithmType.DAY_GRINDING_LARGE_CAP:
+        # DAY_GRINDING_LARGE_CAP: grinding day trade with large cap
+        strategies.append(DayTradingGrindingLargeCap(
             paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days

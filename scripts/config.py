@@ -37,6 +37,9 @@ MIN_EARNING_GAP_RATIO = 0.05
 # long wick up candle ratio
 LONG_WICK_UP_RATIO = 2.5
 
+# large cap requirements
+LARGE_CAP_MARKET_CAP = 2000000000
+
 # color config
 
 PROFIT_COLOR = "#4bbf73"
