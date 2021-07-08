@@ -1,5 +1,6 @@
 import time
 import requests
+from datetime import datetime
 from bs4 import BeautifulSoup
 from sdk.config import FINVIZ_CHANNEL_UP_TECHNOLOGY_URL, FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL, FINVIZ_EARNING_DAY_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_MAJOR_NEWS_LARGE_CAP_URL, FINVIZ_QUOTE_URL, FINVIZ_UNUSUAL_VOLUME_MID_CAP_URL, FINVIZ_CHANNEL_UP_ENERGY_URL, FINVIZ_DOUBLE_BOTTOM_ENERGY_URL
 
@@ -50,13 +51,41 @@ def get_quote(symbol):
             short_float = container.find("span").contents[0].replace("%", "")
         else:
             short_float = container.contents[0].contents[0].replace("%", "")
-
+        # parse news
+        news = []
+        news_table = sp.find("table", {"id": "news-table"})
+        news_table_all_tr = news_table.findAll("tr")
+        last_news_date = ""
+        for news_table_tr in news_table_all_tr:
+            news_date_str = news_table_tr.find(
+                "td", {"align": "right"}).contents[0].strip()
+            news_date_parts = news_date_str.split(" ")
+            if len(news_date_parts) >= 2:
+                last_news_date = news_date_parts[0]
+            else:
+                news_date_str = last_news_date + " " + news_date_str
+            news_datetime = datetime.strptime(
+                news_date_str, "%b-%d-%y %I:%M%p")
+            news_link_a = news_table_tr.find(
+                "a", {"class": "tab-link-news"}, href=True)
+            title = news_link_a.contents[0]
+            news_link = news_link_a["href"]
+            source = news_table_tr.find(
+                "span", {"style": "color:#aa6dc0;font-size:9px"}).contents[0].strip()
+            news.append({
+                "title": title,
+                "source": source,
+                "news_link": news_link,
+                "news_time": news_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+            })
         return {
             "shortFloat": short_float,
+            "news": news,
         }
     except:
         return {
             "shortFloat": None,
+            "news": [],
         }
 
 
