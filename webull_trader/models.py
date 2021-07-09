@@ -45,6 +45,14 @@ class TradingLog(models.Model):
         return "[{}] {}: {}".format(self.date, self.tag, self.log_text)
 
 
+class TradingSymbols(models.Model):
+    symbols = models.TextField(blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.symbols
+
+
 class WebullCredentials(models.Model):
     cred = models.TextField(null=True, blank=True)
     trade_pwd = models.CharField(max_length=32)

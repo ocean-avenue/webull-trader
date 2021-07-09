@@ -176,6 +176,7 @@ class AlgorithmType:
     DAY_BREAKOUT_55 = 14
     DAY_VWAP_RECLAIM_LARGE_CAP = 15
     DAY_GRINDING_LARGE_CAP = 16
+    DAY_GRINDING_SYMBOLS = 17
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -223,6 +224,8 @@ class AlgorithmType:
             return 'VWAP reclaim day trade, entry if price reclaim vwap for large cap tickers.'
         if val == AlgorithmType.DAY_GRINDING_LARGE_CAP:
             return 'Grinding day trading with large cap and major news.'
+        if val == AlgorithmType.DAY_GRINDING_SYMBOLS:
+            return 'Grinding day trading with specific symbols.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -273,6 +276,8 @@ class AlgorithmType:
             return 'DAY (VWAP LARGE CAP)'
         if val == AlgorithmType.DAY_GRINDING_LARGE_CAP:
             return 'DAY (GRINDING LARGE CAP)'
+        if val == AlgorithmType.DAY_GRINDING_SYMBOLS:
+            return 'DAY (GRINDING SYMBOLS)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -324,6 +329,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP)),
             (AlgorithmType.DAY_GRINDING_LARGE_CAP, AlgorithmType.tostr(
                 AlgorithmType.DAY_GRINDING_LARGE_CAP)),
+            (AlgorithmType.DAY_GRINDING_SYMBOLS, AlgorithmType.tostr(
+                AlgorithmType.DAY_GRINDING_SYMBOLS)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(

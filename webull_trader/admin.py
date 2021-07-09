@@ -32,6 +32,16 @@ class TradingLogAdmin(admin.ModelAdmin):
 admin.site.register(models.TradingLog, TradingLogAdmin)
 
 
+class TradingSymbolsAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbols',
+        'updated_at',
+    ]
+
+
+admin.site.register(models.TradingSymbols, TradingSymbolsAdmin)
+
+
 class WebullCredentialsAdmin(admin.ModelAdmin):
 
     list_display = [

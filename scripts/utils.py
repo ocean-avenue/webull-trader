@@ -8,7 +8,7 @@ from datetime import datetime, date
 from scripts import config
 from sdk import fmpsdk, webullsdk
 from webull_trader import enums
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 # sector values
 BASIC_MATERIALS = "Basic Materials"
@@ -650,6 +650,16 @@ def get_algo_type():
         print("[{}] Cannot find trading settings, default algo type!".format(get_now()))
         return enums.AlgorithmType.DAY_MOMENTUM
     return settings.algo_type
+
+
+def get_trading_symbols():
+    trading_symbols = TradingSymbols.objects.first()
+    if trading_symbols:
+        symbol_text = trading_symbols.symbols
+        if len(symbol_text) == 0:
+            return []
+        return symbol_text.upper().split("\r\n")
+    return []
 
 
 def get_avg_confirm_volume(time):
