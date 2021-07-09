@@ -21,19 +21,16 @@ class TradingExecutor:
     def start(self):
 
         if not self.load_settings():
-            print("[{}] Cannot find trading settings, quit!".format(
-                utils.get_now()))
+            utils.print_trading_log("Cannot find trading settings, quit!")
             return
 
         if len(self.strategies) == 0:
-            print("[{}] Cannot find trading strategy, quit!".format(
-                utils.get_now()))
+            utils.print_trading_log("Cannot find trading strategy, quit!")
             return
 
-        print("[{}] Trading started...".format(utils.get_now()))
+        utils.print_trading_log("Trading started...")
 
-        print("[{}] {}".format(utils.get_now(),
-              AlgorithmType.tostr(self.algo_type)))
+        utils.print_trading_log(AlgorithmType.tostr(self.algo_type))
 
         while not utils.is_market_hour():
             print("[{}] Waiting for market hour...".format(utils.get_now()))
@@ -41,11 +38,10 @@ class TradingExecutor:
 
         # login
         if not webullsdk.login(paper=self.paper):
-            print("[{}] Webull login failed, quit!".format(
-                utils.get_now()))
+            utils.print_trading_log("Webull login failed, quit!")
             # TODO, send message
             return
-        print("[{}] Webull logged in".format(utils.get_now()))
+        utils.print_trading_log("Webull logged in")
         last_login_refresh_time = datetime.now()
 
         # check unsold tickers
@@ -76,11 +72,11 @@ class TradingExecutor:
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
                 if webullsdk.login(paper=self.paper):
-                    print("[{}] Refresh webull login".format(utils.get_now()))
+                    utils.print_trading_log("Refresh webull login")
                     last_login_refresh_time = datetime.now()
                 else:
-                    print("[{}] Webull refresh login failed, quit!".format(
-                        utils.get_now()))
+                    utils.print_trading_log(
+                        "Webull refresh login failed, quit!")
                     # TODO, send message
                     break
 
@@ -101,15 +97,14 @@ class TradingExecutor:
         # notify if has short position
         self.notify_if_has_short_positions()
 
-        print("[{}] Trading ended!".format(utils.get_now()))
+        utils.print_trading_log("Trading ended!")
 
         # output today's proft loss
         day_profit_loss = webullsdk.get_day_profit_loss()
-        print("[{}] Today's P&L: {}".format(
-            utils.get_now(), day_profit_loss))
+        utils.print_trading_log("Today's P&L: {}".format(day_profit_loss))
 
         # webullsdk.logout()
-        # print("[{}] Webull logged out".format(utils.get_now()))
+        # utils.print_trading_log("Webull logged out")
 
     # load settings
     def load_settings(self):
@@ -190,14 +185,18 @@ class TradingExecutor:
                         ticker_id=ticker['ticker_id'],
                         price=bid_price,
                         quant=ticker['positions'])
-                    if 'orderId' in order_response:
+
+                    order_id = utils.get_order_id_from_response(
+                        order_response, paper=self.paper)
+                    if order_id:
                         # mark pending sell
                         self.unsold_tickers[symbol]['pending_sell'] = True
                         self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
                         self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
-                    elif 'msg' in order_response:
-                        print(order_response['msg'])
+                    else:
+                        utils.print_trading_log(
+                            "⚠️  Invalid sell order response: {}".format(order_response))
                 else:
                     # delete position object
                     self.unsold_tickers[symbol]['position_obj'].delete()
@@ -225,7 +224,7 @@ def start():
     paper = utils.check_paper()
     trading_hour = utils.get_trading_hour()
     if trading_hour == None:
-        print("[{}] Not in trading hour, skip...".format(utils.get_now()))
+        utils.print_trading_log("Not in trading hour, skip...")
         return
     strategies = []
     # load algo type

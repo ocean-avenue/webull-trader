@@ -216,12 +216,12 @@ class StrategyBase:
                         quant=abs(position_size))
                     utils.print_trading_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
                         symbol, abs(position_size), buy_price))
-                    if 'orderId' in order_response:
-                        self.error_short_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                    order_id = utils.get_order_id_from_response(
+                        order_response, paper=self.paper)
+                    if order_id:
+                        self.error_short_tickers[symbol]['pending_order_id'] = order_id
                         self.error_short_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
-                    elif 'msg' in order_response:
-                        utils.print_trading_log(order_response['msg'])
                     else:
                         utils.print_trading_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
@@ -286,9 +286,11 @@ class StrategyBase:
                         utils.print_trading_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
                             symbol, buy_quant, ask_price))
                         self.update_pending_buy_order(symbol, order_response)
-                        if 'orderId' in order_response:
+                        order_id = utils.get_order_id_from_response(
+                            order_response, paper=self.paper)
+                        if order_id:
                             utils.save_webull_order_note(
-                                order_response['orderId'], setup=self.get_setup(), note="Resubmit buy order.")
+                                order_id, setup=self.get_setup(), note="Resubmit buy order.")
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_buy'] = False
@@ -369,14 +371,16 @@ class StrategyBase:
                         utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
                             symbol, holding_quantity, bid_price))
                         self.update_pending_sell_order(symbol, order_response)
-                        if 'orderId' in order_response:
+                        order_id = utils.get_order_id_from_response(
+                            order_response, paper=self.paper)
+                        if order_id:
                             exit_note = self.tracking_tickers[symbol]['exit_note']
                             # also save exit note if have
                             if exit_note:
                                 utils.save_webull_order_note(
-                                    order_response['orderId'], setup=self.get_setup(), note=exit_note)
+                                    order_id, setup=self.get_setup(), note=exit_note)
                             utils.save_webull_order_note(
-                                order_response['orderId'], setup=self.get_setup(), note="Resubmit sell order.")
+                                order_id, setup=self.get_setup(), note="Resubmit sell order.")
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_sell'] = False
@@ -423,40 +427,42 @@ class StrategyBase:
             self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
     def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
-        if 'orderId' in order_response:
+        order_id = utils.get_order_id_from_response(
+            order_response, paper=self.paper)
+        if order_id:
             # mark pending buy
             self.tracking_tickers[symbol]['pending_buy'] = True
-            self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            self.tracking_tickers[symbol]['pending_order_id'] = order_id
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
             # set stop loss at prev low
             self.tracking_tickers[symbol]['stop_loss'] = stop_loss
-        elif 'msg' in order_response:
-            utils.print_trading_log(order_response['msg'])
         else:
             utils.print_trading_log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
 
     def update_pending_sell_order(self, symbol, order_response, exit_note=""):
-        if 'orderId' in order_response:
+        order_id = utils.get_order_id_from_response(
+            order_response, paper=self.paper)
+        if order_id:
             # mark pending sell
             self.tracking_tickers[symbol]['pending_sell'] = True
-            self.tracking_tickers[symbol]['pending_order_id'] = order_response['orderId']
+            self.tracking_tickers[symbol]['pending_order_id'] = order_id
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
             self.tracking_tickers[symbol]['exit_note'] = exit_note
-        elif 'msg' in order_response:
-            utils.print_trading_log(order_response['msg'])
         else:
             utils.print_trading_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
     def update_pending_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
-        if 'orderId' in order_response:
+        order_id = utils.get_order_id_from_response(
+            order_response, paper=self.paper)
+        if order_id:
             # create swing position
             position = SwingPosition(
                 symbol=symbol,
-                order_id=order_response['orderId'],
+                order_id=order_id,
                 cost=cost,
                 quantity=quant,
                 buy_time=buy_time,
@@ -464,14 +470,14 @@ class StrategyBase:
                 setup=setup,
             )
             position.save()
-        elif 'msg' in order_response:
-            utils.print_trading_log(order_response['msg'])
         else:
             utils.print_trading_log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
     def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time, manual_request=None):
-        if 'orderId' in order_response:
+        order_id = utils.get_order_id_from_response(
+            order_response, paper=self.paper)
+        if order_id:
             # create swing position
             trade = SwingTrade(
                 symbol=symbol,
@@ -481,7 +487,7 @@ class StrategyBase:
                 buy_time=position.buy_time,
                 buy_date=position.buy_date,
                 setup=position.setup,
-                sell_order_id=order_response['orderId'],
+                sell_order_id=order_id,
                 sell_price=price,
                 sell_time=sell_time,
                 sell_date=sell_time.date(),
@@ -492,8 +498,6 @@ class StrategyBase:
             # clear manual request if exist
             if manual_request:
                 manual_request.delete()
-        elif 'msg' in order_response:
-            utils.print_trading_log(order_response['msg'])
         else:
             utils.print_trading_log(
                 "⚠️  Invalid swing sell order response: {}".format(order_response))

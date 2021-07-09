@@ -671,6 +671,17 @@ def get_webull_order_time(order_time):
     return pytz.timezone(settings.TIME_ZONE).localize(datetime.strptime(order_time, time_fmt))
 
 
+def get_order_id_from_response(order_response, paper=True):
+    order_id = None
+    if paper:
+        if 'orderId' in order_response:
+            order_id = order_response['orderId']
+    else:
+        if 'data' in order_response and 'orderId' in order_response['data']:
+            order_id = order_response['data']['orderId']
+    return order_id
+
+
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:

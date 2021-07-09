@@ -476,7 +476,10 @@ def get_1d_bars(ticker_id=None, count=20):
 def get_sample_ticker():
     return 913256135
 
+# Paper
 # {'orderId': 41947352}
+# Live
+# {'success': True, 'data': {'orderId': 466848369441001472}}
 
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):
@@ -498,7 +501,10 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
         utils.print_trading_log("⚠️  Exception buy_limit_order: {}".format(e))
         return {'msg': "Exception during submit buy limit order!"}
 
+# Paper
 # {'orderId': 41995367}
+# Live
+# {'success': True, 'data': {'orderId': 466848369441001472}}
 
 
 def buy_market_order(ticker_id=None, quant=0):
@@ -519,7 +525,10 @@ def buy_market_order(ticker_id=None, quant=0):
         utils.print_trading_log("⚠️  Exception buy_market_order: {}".format(e))
         return {'msg': "Exception during submit buy market order!"}
 
+# Paper
 # {'orderId': 41947378}
+# Live
+# {'success': True, 'data': {'orderId': 466847988010979328}}
 
 
 def sell_limit_order(ticker_id=None, price=0, quant=0):
@@ -542,7 +551,10 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
         return {'msg': "Exception during submit sell limit order!"}
 
 
+# Paper
 # {'orderId': 41995648}
+# Live
+# {'success': True, 'data': {'orderId': 466847988010979328}}
 
 def sell_market_order(ticker_id=None, quant=0):
     global wb_paper
