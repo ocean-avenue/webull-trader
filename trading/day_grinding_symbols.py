@@ -50,6 +50,9 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
         for trading_ticker in self.trading_tickers:
             symbol = trading_ticker["symbol"]
             ticker_id = trading_ticker["ticker_id"]
+             # check if ticker already in monitor
+            if symbol in self.tracking_tickers:
+                continue
             ticker = self.build_tracking_ticker(symbol, ticker_id)
             # found trading ticker
             self.tracking_tickers[symbol] = ticker
