@@ -432,6 +432,36 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     return has_amount
 
 
+def check_bars_amount_grinding(bars, period=10):
+    """
+    check if bar chart has enough amount
+    """
+    # make sure not use the last candle
+    period = min(len(bars) - 1, period)
+    amount_grinding = True
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    prev_amount = 0
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        # check if time is match
+        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+            continue
+        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+            continue
+        if is_after_market_hour_exact() and not is_after_market_time(time):
+            continue
+        volume = row["volume"]
+        price = row["close"]
+        current_amount = volume * price
+        if current_amount < prev_amount:
+            amount_grinding = False
+            break
+        prev_amount = current_amount
+
+    return amount_grinding
+
+
 def check_bars_has_long_wick_up(bars, period=5, count=1):
     """
     check if bar chart has long wick up

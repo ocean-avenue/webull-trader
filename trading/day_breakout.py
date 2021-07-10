@@ -86,7 +86,7 @@ class DayTradingBreakout(StrategyBase):
 
         if self.is_regular_market_hour() and  \
                 not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
-                not utils.check_bars_rel_volume(bars):
+                not utils.check_bars_amount_grinding(bars, period=5) and not utils.check_bars_rel_volume(bars):
             # has no volume and no relative volume
             utils.print_trading_log(
                 "<{}> candle chart has not enough amount and volume, stop trading!".format(symbol))
