@@ -231,8 +231,10 @@ class DayTradingBreakout(StrategyBase):
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
+                    stop_loss = round(
+                        (prev_candle['high'] + prev_candle['low']) / 2, 2)
                     self.update_pending_buy_order(
-                        symbol, order_response, stop_loss=prev_candle['low'])
+                        symbol, order_response, stop_loss=stop_loss)
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
