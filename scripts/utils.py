@@ -352,6 +352,16 @@ def convert_5m_bars(bars):
     return pd.DataFrame()
 
 
+def check_trading_time_match(time):
+    if is_regular_market_hour_exact() and not is_regular_market_time(time):
+        return False
+    if is_pre_market_hour_exact() and not is_pre_market_time(time):
+        return False
+    if is_after_market_hour_exact() and not is_after_market_time(time):
+        return False
+    return True
+
+
 def check_bars_updated(bars, time_scale=1):
     """
     check if have valid latest chart data, delay no more than 1 minute
@@ -373,6 +383,8 @@ def check_bars_continue(bars, time_scale=1, period=10):
     period_bars = bars.tail(period)
     for index, _ in period_bars.iterrows():
         time = index.to_pydatetime()
+        if not check_trading_time_match(time):
+            continue
         if last_minute == -1:
             last_minute = time.minute
             continue
@@ -395,6 +407,8 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
     period_bars = period_bars.head(period)
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
+        if not check_trading_time_match(time):
+            continue
         confirm_volume = get_avg_confirm_volume(time) * time_scale
         volume = row["volume"]
         if volume < confirm_volume:
@@ -415,12 +429,7 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     period_bars = period_bars.head(period)
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
-        # check if time is match
-        if is_regular_market_hour_exact() and not is_regular_market_time(time):
-            continue
-        if is_pre_market_hour_exact() and not is_pre_market_time(time):
-            continue
-        if is_after_market_hour_exact() and not is_after_market_time(time):
+        if not check_trading_time_match(time):
             continue
         confirm_amount = get_avg_confirm_amount(time) * time_scale
         volume = row["volume"]
@@ -444,12 +453,7 @@ def check_bars_amount_grinding(bars, period=10):
     prev_amount = 0
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
-        # check if time is match
-        if is_regular_market_hour_exact() and not is_regular_market_time(time):
-            continue
-        if is_pre_market_hour_exact() and not is_pre_market_time(time):
-            continue
-        if is_after_market_hour_exact() and not is_after_market_time(time):
+        if not check_trading_time_match(time):
             continue
         volume = row["volume"]
         price = row["close"]
