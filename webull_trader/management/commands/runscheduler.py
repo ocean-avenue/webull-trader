@@ -10,6 +10,8 @@ from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch
 from trading import trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
+ALL_HOURS = ["05", "06", "07", "08", "09", "10", "11",
+             "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 REGULAR_HOURS = ["10", "11", "12", "13", "14", "15", "16"]
 
 scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
@@ -60,13 +62,29 @@ def fetch_account_job():
 def fetch_stock_quote_job():
     holiday = _check_market_holiday()
     if holiday != None:
-        print("[{}] {}, skip fetch stock quote job...".format(
+        print("[{}] {}, skip fetch stock quotes job...".format(
             utils.get_now(), holiday))
         return
 
     print("[{}] Start fetch quotes job...".format(utils.get_now()))
     fetch_quotes.start()
     print("[{}] Done fetch quotes job!".format(utils.get_now()))
+
+
+def fetch_webull_order_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip fetch webull orders job...".format(
+            utils.get_now(), holiday))
+        return
+
+    print("[{}] Start webull orders job...".format(utils.get_now()))
+    fetch_orders.start()
+    print("[{}] Done webull orders job!".format(utils.get_now()))
+
+    print("[{}] Start calculate hist data job...".format(utils.get_now()))
+    calculate_histdata.start()
+    print("[{}] Done calculate hist data job!".format(utils.get_now()))
 
 
 def fetch_stats_data_job():
@@ -114,15 +132,29 @@ def add_weekday_jobs(job, job_name, hour, minute, second="00"):
         )
 
 
-def add_regular_hour_jobs(job, job_name):
+def add_regular_hour_jobs(job, job_name, minute="00"):
     for weekday in WEEKDAYS:
         for regular_hour in REGULAR_HOURS:
             scheduler.add_job(
                 job,
                 trigger=CronTrigger(
-                    day_of_week=weekday, hour=regular_hour, minute="00", second="00"
+                    day_of_week=weekday, hour=regular_hour, minute=minute, second="00"
                 ),
                 id="{}_{}_{}".format(job_name, weekday, regular_hour),
+                max_instances=1,
+                replace_existing=True,
+            )
+
+
+def add_all_hour_jobs(job, job_name, minute="00"):
+    for weekday in WEEKDAYS:
+        for all_hour in ALL_HOURS:
+            scheduler.add_job(
+                job,
+                trigger=CronTrigger(
+                    day_of_week=weekday, hour=all_hour, minute=minute, second="00"
+                ),
+                id="{}_{}_{}".format(job_name, weekday, all_hour),
                 max_instances=1,
                 replace_existing=True,
             )
@@ -165,12 +197,21 @@ class Command(BaseCommand):
         add_regular_hour_jobs(
             job=fetch_account_job,
             job_name="fetch_account_job",
+            minute="00",
         )
 
-        # fetch stock quote
+        # fetch orders
+        add_regular_hour_jobs(
+            job=fetch_webull_order_job,
+            job_name="fetch_webull_order_job",
+            minute="05",
+        )
+
+        # fetch webull orders
         add_regular_hour_jobs(
             job=fetch_stock_quote_job,
             job_name="fetch_stock_quote_job",
+            minute="10",
         )
 
         try:
