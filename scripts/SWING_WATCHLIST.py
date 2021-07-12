@@ -14,7 +14,7 @@ WATCHLIST_SYMBOLS = [
     "JPM", "JD", "JKS", "JMIA",
     "KO",
     "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI",
-    "MA", "MSFT", "MP", "MMM", "MCD", "MTCH",
+    "MA", "MSFT", "MP", "MMM", "MCD", "MTCH", "MU",
     "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK", "NKE",
     "OPEN", "OTLY",
     "PYPL", "PLTR", "PINS", "PLUG", "PDD", "PSTG", "PAGS", "PTON", "PAY",
