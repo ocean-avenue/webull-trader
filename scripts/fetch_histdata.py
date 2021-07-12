@@ -8,7 +8,7 @@ def start(day=None):
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
-    from webull_trader.models import WebullOrder, WebullOrderNote, SwingWatchlist, SwingPosition, SwingTrade, OvernightPosition, OvernightTrade
+    from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade, OvernightPosition, OvernightTrade
 
     if day == None:
         day = date.today()
@@ -228,14 +228,6 @@ def start(day=None):
             order.setup = overnight_trade.setup
             order.save()
             continue
-
-    # fill all order with setup
-    for order in all_day_orders:
-        order_id = order.order_id
-        order_note = WebullOrderNote.objects.filter(order_id=order_id).first()
-        if order_note:
-            order.setup = order_note.setup
-            order.save()
 
 
 if __name__ == "django.core.management.commands.shell":
