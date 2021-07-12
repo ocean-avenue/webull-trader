@@ -21,8 +21,8 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
         return SetupType.DAY_GRINDING_UP
 
     def on_begin(self):
-        # only trade in regular hour
-        if not self.is_regular_market_hour():
+        # only trade in pre-market and regular hour
+        if self.is_after_market_hour():
             return
 
         # trading specific symbols
@@ -37,8 +37,8 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
                 "Tracking <{}> for grinding up...".format(symbol))
 
     def on_update(self):
-        # only trade in regular hour
-        if not self.is_regular_market_hour():
+        # only trade in pre-market and regular hour
+        if not self.is_after_market_hour():
             return
 
         # trading tickers
@@ -50,7 +50,7 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
         for trading_ticker in self.trading_tickers:
             symbol = trading_ticker["symbol"]
             ticker_id = trading_ticker["ticker_id"]
-             # check if ticker already in monitor
+            # check if ticker already in monitor
             if symbol in self.tracking_tickers:
                 continue
             ticker = self.build_tracking_ticker(symbol, ticker_id)
