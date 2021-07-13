@@ -46,7 +46,7 @@ class SwingTurtle(StrategyBase):
                     entry_period_highest = daily_bar.close
                     entry_period_highest_idx = i
             # check if entry_period new high, and period high is not in last 5 days
-            if latest_close > entry_period_highest and entry_period_highest_idx < (len(daily_bars) - 6):
+            if latest_close > entry_period_highest: # and entry_period_highest_idx < (len(daily_bars) - 6):
                 return True
         return False
 
