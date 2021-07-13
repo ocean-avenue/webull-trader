@@ -233,9 +233,9 @@ class DayTradingBreakout(StrategyBase):
                     # default set stop loss at prev candle middle
                     stop_loss = round(
                         (prev_candle['high'] + prev_candle['low']) / 2, 2)
-                    # use bid price as stop loss price
+                    # use min of (bid price, candle middle)
                     if bid_price:
-                        stop_loss = round(bid_price * 0.98, 2)
+                        stop_loss = min(stop_loss, round(bid_price * 0.98, 2))
                     # update pending buy
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=stop_loss)

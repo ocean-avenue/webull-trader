@@ -72,7 +72,7 @@ class TradingExecutor:
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
                 if webullsdk.login(paper=self.paper):
-                    utils.print_trading_log("Refresh webull login")
+                    # utils.print_trading_log("Refresh webull login")
                     last_login_refresh_time = datetime.now()
                 else:
                     utils.print_trading_log(
