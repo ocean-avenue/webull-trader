@@ -38,7 +38,7 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
 
     def on_update(self):
         # only trade in pre-market and regular hour
-        if not self.is_after_market_hour():
+        if self.is_after_market_hour():
             return
 
         # trading tickers
