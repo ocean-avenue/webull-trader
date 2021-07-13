@@ -2215,7 +2215,7 @@ def get_day_trade_stat_record_for_render(symbol, trade_stat, date):
     if trade_stat["profit_loss"] < 0:
         profit_loss = "-${}".format(abs(round(trade_stat["profit_loss"], 2)))
         profit_loss_style = "text-danger"
-    gap_value = get_gap_by_symbol_date(symbol, key_statistics.date)
+    gap_value = get_gap_by_symbol_date(symbol, date)
     gap = "0.0%"
     if gap_value > 0:
         gap = "+{}%".format(gap_value)
@@ -2227,7 +2227,7 @@ def get_day_trade_stat_record_for_render(symbol, trade_stat, date):
     news_count = 0
     for webull_new in webull_news:
         news_time = webull_new.news_time.split('.')[0]
-        if datetime.strptime(news_time, "%Y-%m-%dT%H:%M:%S").date() == key_statistics.date:
+        if datetime.strptime(news_time, "%Y-%m-%dT%H:%M:%S").date() == date:
             news_count += 1
 
     return {
