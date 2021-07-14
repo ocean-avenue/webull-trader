@@ -1864,6 +1864,8 @@ def get_swing_daily_candle_high_by_date(symbol, date):
 
 
 def get_gap_by_symbol_date(symbol, date):
+    if type(date) == str:
+        date = datetime.strptime(date, '%Y-%m-%d').date()
     hist_daily_bars = HistoricalDailyBar.objects.filter(symbol=symbol)
     day_index = 0
     for i in range(0, len(hist_daily_bars)):
