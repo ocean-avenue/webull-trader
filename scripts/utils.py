@@ -471,15 +471,6 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
     check if bar chart has long wick up
     """
     long_wick_up_count = 0
-    # if len(bars) + 1 <= count:
-    #     return False
-    # for i in range(2, count + 2):
-    #     candle = bars.iloc[-i]
-    #     mid = max(candle["close"], candle["open"])
-    #     high = candle["high"]
-    #     low = candle["low"]
-    #     if (mid - low) > 0 and (high - mid) / (mid - low) >= 2:
-    #         long_wick_up_count += 1
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
@@ -495,21 +486,21 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
         avg_candle_size = total_candle_size / len(period_bars)
     prev_row = pd.Series()
     for _, row in period_bars.iterrows():
-        close = row["close"]
+        mid = max(row["close"], row["open"])
         high = row["high"]
         low = row["low"]
         # make sure long wick body is larger than average candle size
-        if (high - low) < avg_candle_size * 1.4:
+        if (high - low) < avg_candle_size * config.LONG_WICK_BODY_RATIO:
             continue
         # marke sure no less than prev bar
         if not prev_row.empty and (high - low) < (prev_row["high"] - prev_row["low"]):
             continue
         # make sure wick tail is larger than body
-        if (high - max(row["close"], row["open"])) <= abs(row["close"] - row["open"]):
+        if (high - mid) <= abs(row["close"] - row["open"]):
             continue
-        if (close - low) > 0 and (high - close) / (close - low) >= config.LONG_WICK_UP_RATIO:
+        if (mid - low) > 0 and (high - mid) / (mid - low) >= config.LONG_WICK_UP_RATIO:
             long_wick_up_count += 1
-        elif (close - low) == 0 and (high - close) > 0:
+        elif (mid - low) == 0 and (high - mid) > 0:
             long_wick_up_count += 1
         prev_row = row
     return long_wick_up_count >= count
