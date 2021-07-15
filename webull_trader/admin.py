@@ -300,7 +300,7 @@ class SwingWatchlistAdmin(admin.ModelAdmin):
         'symbol',
         'screener_type',
         'sector',
-        'units',
+        'unit_weight',
         'is_etf',
         'updated_date',
         'created_date',
@@ -314,12 +314,14 @@ admin.site.register(models.SwingWatchlist,
 class SwingPositionAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
-        'order_id',
-        'setup',
+        'total_cost',
         'quantity',
-        'cost',
+        'setup',
+        'add_unit_price',
+        'stop_loss_price',
         'buy_date',
         'buy_time',
+        'order_ids',
     ]
 
 
@@ -330,17 +332,14 @@ admin.site.register(models.SwingPosition,
 class SwingTradeAdmin(admin.ModelAdmin):
     list_display = [
         'symbol',
+        'total_cost',
+        'total_sold',
         'quantity',
         'buy_date',
-        'buy_price',
-        'buy_order_id',
         'sell_date',
-        'sell_price',
-        'sell_order_id',
         'setup',
         'note',
-        'buy_time',
-        'sell_time',
+        'order_ids',
     ]
 
 

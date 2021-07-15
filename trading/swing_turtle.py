@@ -26,8 +26,8 @@ class SwingTurtle(StrategyBase):
             return SetupType.SWING_20_DAYS_NEW_HIGH
         return SetupType.SWING_55_DAYS_NEW_HIGH
 
-    def get_buy_order_limit(self, units):
-        return self.swing_position_amount_limit * units
+    def get_buy_order_limit(self, unit_weight):
+        return self.swing_position_amount_limit * unit_weight
 
     def check_period_high(self, daily_bars):
         if len(daily_bars) <= self.entry_period:
@@ -68,7 +68,7 @@ class SwingTurtle(StrategyBase):
 
     def trade(self, watchlist):
         symbol = watchlist["symbol"]
-        units = watchlist["units"]
+        unit_weight = watchlist["unit_weight"]
         # check if already has possition
         position = SwingPosition.objects.filter(
             symbol=symbol, setup=self.get_setup()).first()
@@ -107,7 +107,7 @@ class SwingTurtle(StrategyBase):
                 latest_close = current_daily_bars[-1].close
                 # buy swing position amount
                 usable_cash = webullsdk.get_usable_cash()
-                buy_position_amount = self.get_buy_order_limit(units)
+                buy_position_amount = self.get_buy_order_limit(unit_weight)
                 if usable_cash <= buy_position_amount:
                     utils.print_trading_log(
                         "Not enough cash to buy <{}>, price: {}!".format(symbol, latest_close))
@@ -185,7 +185,7 @@ class SwingTurtle(StrategyBase):
         for swing_watch in swing_watchlist:
             self.trading_watchlist.append({
                 "symbol": swing_watch.symbol,
-                "units": swing_watch.units,
+                "unit_weight": swing_watch.unit_weight,
             })
 
     def on_update(self):

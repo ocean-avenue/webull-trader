@@ -338,7 +338,7 @@ class SwingWatchlist(models.Model):
         choices=enums.ScreenerType.tochoices(),
         default=enums.ScreenerType.MANUAL
     )
-    units = models.PositiveSmallIntegerField(default=1)
+    unit_weight = models.PositiveSmallIntegerField(default=1)
     sector = models.CharField(max_length=64, default="Technology")
     exchange = models.CharField(max_length=64, default="NASDAQ")
     is_etf = models.BooleanField(default=False)
@@ -351,11 +351,23 @@ class SwingWatchlist(models.Model):
 
 
 class SwingPosition(models.Model):
-    order_id = models.CharField(max_length=128)
     symbol = models.CharField(max_length=64)
-    cost = models.FloatField()
+
+    # temp save order id list, split by comma ','
+    order_ids = models.CharField(max_length=1024)
+    # webull order list based on order_ids
+    orders = models.ManyToManyField(WebullOrder)
+
+    total_cost = models.FloatField(default=0)
     quantity = models.PositiveIntegerField(default=0)
+    units = models.PositiveIntegerField(default=0)
+    target_units = models.PositiveIntegerField(default=4)
+    add_unit_price = models.FloatField(default=0)
+    stop_loss_price = models.FloatField(default=0)
+
+    # initial buy date
     buy_date = models.DateField()
+    # initial buy time
     buy_time = models.DateTimeField()
 
     setup = models.PositiveSmallIntegerField(
@@ -364,22 +376,29 @@ class SwingPosition(models.Model):
     )
 
     def __str__(self):
-        return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
+        return "[{}] <{}> x{}, ${}".format(self.buy_date, self.symbol, self.quantity, self.total_cost)
 
 
 class SwingTrade(models.Model):
     symbol = models.CharField(max_length=64)
-    quantity = models.PositiveIntegerField()
 
+    # temp save order id list, split by comma ','
+    order_ids = models.CharField(max_length=1024)
+    # webull order list based on order_ids
+    orders = models.ManyToManyField(WebullOrder)
+
+    total_cost = models.FloatField(default=0)
+    total_sold = models.FloatField(default=0)
+    quantity = models.PositiveIntegerField(default=0)
+
+    # initial buy date
     buy_date = models.DateField()
+    # initial buy time
     buy_time = models.DateTimeField()
-    buy_price = models.FloatField()
-    buy_order_id = models.CharField(max_length=128)
 
+    # last sell date
     sell_date = models.DateField()
     sell_time = models.DateTimeField()
-    sell_price = models.FloatField()
-    sell_order_id = models.CharField(max_length=128)
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
@@ -388,7 +407,7 @@ class SwingTrade(models.Model):
     note = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
+        return "[{}] <{}> x{}, ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.total_cost, self.total_sold)
 
 
 class SwingHistoricalDailyBar(models.Model):
