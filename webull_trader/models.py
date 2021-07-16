@@ -362,8 +362,8 @@ class SwingPosition(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     units = models.PositiveIntegerField(default=0)
     target_units = models.PositiveIntegerField(default=4)
-    add_unit_price = models.FloatField(default=0)
-    stop_loss_price = models.FloatField(default=0)
+    add_unit_price = models.FloatField(default=9999)
+    stop_loss_price = models.FloatField(default=9999)
 
     # initial buy date
     buy_date = models.DateField()
@@ -433,6 +433,8 @@ class SwingHistoricalDailyBar(models.Model):
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
 
 # TODO, depricated, use DayPosition
+
+
 class OvernightPosition(models.Model):
     order_id = models.CharField(max_length=128)
     symbol = models.CharField(max_length=64)

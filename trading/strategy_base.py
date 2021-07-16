@@ -460,7 +460,6 @@ class StrategyBase:
             order_response, paper=self.paper)
         if order_id:
             # TODO, support add unit
-            # TODO, set add_unit_price, stop_loss_price
             # create swing position
             position = SwingPosition(
                 symbol=symbol,

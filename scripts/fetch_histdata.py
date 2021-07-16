@@ -171,6 +171,8 @@ def start(day=None):
     # adjust swing position data by filled order
     swing_positions = SwingPosition.objects.filter(require_adjustment=True)
     for swing_position in swing_positions:
+        symbol = swing_position.symbol
+        N = utils.get_avg_true_range(symbol)
         order_ids = swing_position.order_ids.split(',')
         total_cost = 0.0
         quantity = 0
@@ -186,10 +188,18 @@ def start(day=None):
             if i == 0:
                 swing_position.buy_date = webull_order.filled_time.date()
                 swing_position.buy_time = webull_order.filled_time
+            # update add_unit_price, stop_loss_price
+            if i == len(order_ids) - 1:
+                # add unit price
+                add_unit_price = round(webull_order.avg_price + N / 2, 2)
+                swing_position.add_unit_price = add_unit_price
+                # stop loss price
+                stop_loss_price = round(webull_order.avg_price - 2 * N, 2)
+                swing_position.stop_loss_price = stop_loss_price
             # adding a second time is ok, it will not duplicate the relation
             swing_position.orders.add(webull_order)
         # update total cost
-        swing_position.total_cost = total_cost
+        swing_position.total_cost = round(total_cost, 2)
         # update quantity
         swing_position.quantity = quantity
         # save
@@ -224,9 +234,9 @@ def start(day=None):
             # adding a second time is ok, it will not duplicate the relation
             swing_trade.orders.add(webull_order)
         # update total cost
-        swing_trade.total_cost = total_cost
+        swing_trade.total_cost = round(total_cost, 2)
         # update total sold
-        swing_trade.total_sold = total_sold
+        swing_trade.total_sold = round(total_sold, 2)
         # update quantity
         swing_trade.quantity = quantity
         # save

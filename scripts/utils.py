@@ -613,6 +613,20 @@ def calculate_charts_ema9(charts):
     return charts
 
 
+def get_avg_true_range(symbol, count=20):
+    daily_bars = SwingHistoricalDailyBar.objects.filter(
+        symbol=symbol).order_by('-id')[:(count + 1)][::-1]
+    true_range_list = []
+    for i in range(1, len(daily_bars)):
+        prev_bar = daily_bars[i - 1]
+        current_bar = daily_bars[i]
+        true_range = max(current_bar.high - current_bar.low, current_bar.high -
+                         prev_bar.close, prev_bar.close - current_bar.low)
+        true_range_list.append(true_range)
+    N = sum(true_range_list)/len(true_range_list)
+    return N
+
+
 def get_hist_key_stat(symbol, date):
     key_statistics = HistoricalKeyStatistics.objects.filter(
         symbol=symbol).filter(date=date).first()
@@ -2028,36 +2042,36 @@ def get_swing_profit_loss_for_render(trades):
         "swing_win_rate": "0.0%",
         "swing_pl_ratio": "1.0",
     }
-    total_cost = 0.0
-    total_sold = 0.0
-    win_count = 0
-    loss_count = 0
-    total_profit = 0.0
-    total_loss = 0.0
+    overall_total_cost = 0.0
+    overall_total_sold = 0.0
+    overall_win_count = 0
+    overall_loss_count = 0
+    overall_total_profit = 0.0
+    overall_total_loss = 0.0
     for trade in trades:
-        total_cost += trade.total_cost
-        total_sold += trade.total_sold
+        overall_total_cost += trade.total_cost
+        overall_total_sold += trade.total_sold
         if trade.total_sold > trade.total_cost:
-            win_count += 1
-            total_profit += (trade.total_sold - trade.total_cost)
+            overall_win_count += 1
+            overall_total_profit += (trade.total_sold - trade.total_cost)
         if trade.total_sold < trade.total_cost:
-            loss_count += 1
-            total_loss += (trade.total_cost - trade.total_sold)
+            overall_loss_count += 1
+            overall_total_loss += (trade.total_cost - trade.total_sold)
     if len(trades) > 0:
         swing_profit_loss["swing_win_rate"] = "{}%".format(
-            round(win_count / len(trades) * 100, 2))
-    avg_profit = 0.0
-    if win_count > 0:
-        avg_profit = total_profit / win_count
-    avg_loss = 0.0
-    if loss_count > 0:
-        avg_loss = total_loss / loss_count
-    if avg_loss > 0:
-        swing_profit_loss["swing_pl_ratio"] = round(avg_profit/avg_loss)
-    profit_loss = total_sold - total_cost
+            round(overall_win_count / len(trades) * 100, 2))
+    overall_avg_profit = 0.0
+    if overall_win_count > 0:
+        overall_avg_profit = overall_total_profit / overall_win_count
+    overall_avg_loss = 0.0
+    if overall_loss_count > 0:
+        overall_avg_loss = overall_total_loss / overall_loss_count
+    if overall_avg_loss > 0:
+        swing_profit_loss["swing_pl_ratio"] = round(overall_avg_profit/overall_avg_loss, 2)
+    profit_loss = overall_total_sold - overall_total_cost
     profit_loss_rate = 0.0
-    if total_cost > 0:
-        profit_loss_rate = (total_sold - total_cost) / total_cost
+    if overall_total_cost > 0:
+        profit_loss_rate = (overall_total_sold - overall_total_cost) / overall_total_cost
     swing_profit_loss["value"] = "${}".format(abs(round(profit_loss, 2)))
     swing_profit_loss["swing_pl_rate"] = "{}%".format(
         round(profit_loss_rate * 100, 2))
