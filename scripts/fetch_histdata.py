@@ -176,6 +176,7 @@ def start(day=None):
         order_ids = swing_position.order_ids.split(',')
         total_cost = 0.0
         quantity = 0
+        units = 0
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
@@ -184,6 +185,7 @@ def start(day=None):
                 total_cost += (webull_order.avg_price *
                                webull_order.filled_quantity)
                 quantity += webull_order.filled_quantity
+                units += 1
             # update buy date, buy time
             if i == 0:
                 swing_position.buy_date = webull_order.filled_time.date()
@@ -202,6 +204,8 @@ def start(day=None):
         swing_position.total_cost = round(total_cost, 2)
         # update quantity
         swing_position.quantity = quantity
+        # update units
+        swing_position.units = units
         # save
         swing_position.save()
 
