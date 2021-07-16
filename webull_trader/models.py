@@ -432,7 +432,7 @@ class SwingHistoricalDailyBar(models.Model):
     def __str__(self):
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
 
-
+# TODO, depricated, use DayPosition
 class OvernightPosition(models.Model):
     order_id = models.CharField(max_length=128)
     symbol = models.CharField(max_length=64)
@@ -451,6 +451,7 @@ class OvernightPosition(models.Model):
         return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
 
 
+# TODO, depricated, use DayTrade
 class OvernightTrade(models.Model):
     symbol = models.CharField(max_length=64)
     quantity = models.PositiveIntegerField()

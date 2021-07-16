@@ -120,8 +120,8 @@ def start(day=None):
     swing_total_buy_amount = 0.0
     swing_total_sell_amount = 0.0
     for trade in swing_trades:
-        swing_total_buy_amount += (trade.buy_price * trade.quantity)
-        swing_total_sell_amount += (trade.sell_price * trade.quantity)
+        swing_total_buy_amount += trade.total_cost
+        swing_total_sell_amount += trade.total_sold
     swing_profit_loss = swing_total_sell_amount - swing_total_buy_amount
     # save hist swingtrade perf object
     hist_swingtrade_perf = HistoricalSwingTradePerformance.objects.filter(

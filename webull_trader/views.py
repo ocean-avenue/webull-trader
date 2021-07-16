@@ -1371,13 +1371,13 @@ def swing_analytics_symbol(request, symbol=None):
     # swing trade records
     trade_records = []
     for trade in trades:
-        buy_price = trade.buy_price
-        sell_price = trade.sell_price
+        buy_price = round(trade.total_cost / trade.quantity, 2)
+        sell_price = round(trade.total_sold / trade.quantity, 2)
         buy_date = trade.buy_date
         sell_date = trade.sell_date
         quantity = trade.quantity
-        total_cost = buy_price * quantity
-        total_sold = sell_price * quantity
+        total_cost = trade.total_cost
+        total_sold = trade.total_sold
         realized_pl = total_sold - total_cost
         realized_pl_percent = (total_sold - total_cost) / total_cost
         setup = SetupType.tostr(trade.setup)

@@ -23,25 +23,22 @@ def start():
     # fill all swing positions's order
     all_positions = SwingPosition.objects.all()
     for position in all_positions:
-        order_id = position.order_id
-        order = WebullOrder.objects.filter(order_id=order_id).first()
-        if order:
-            order.setup = position.setup
-            order.save()
+        order_ids = position.order_ids.split(',')
+        for order_id in order_ids:
+            order = WebullOrder.objects.filter(order_id=order_id).first()
+            if order:
+                order.setup = position.setup
+                order.save()
 
     # fill all swing trades's order
     all_trades = SwingTrade.objects.all()
     for trade in all_trades:
-        buy_order_id = trade.buy_order_id
-        order = WebullOrder.objects.filter(order_id=buy_order_id).first()
-        if order:
-            order.setup = trade.setup
-            order.save()
-        sell_order_id = trade.sell_order_id
-        order = WebullOrder.objects.filter(order_id=sell_order_id).first()
-        if order:
-            order.setup = trade.setup
-            order.save()
+        order_ids = trade.order_ids.split(',')
+        for order_id in order_ids:
+            order = WebullOrder.objects.filter(order_id=order_id).first()
+            if order:
+                order.setup = trade.setup
+                order.save()
 
     print("[{}] Migrate {} webull orders setup done".format(
         utils.get_now(), len(all_orders)))

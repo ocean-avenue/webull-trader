@@ -1203,6 +1203,7 @@ def get_day_trade_orders(date=None, symbol=None):
 
 
 def get_trades_from_orders(buy_orders, sell_orders):
+    # TODO, support dynamic add unit
     trades = []
     for buy_order in buy_orders:
         # fill buy side
@@ -1809,12 +1810,9 @@ def get_trade_stat_dist_from_swing_trades(swing_trades):
     trades_dist = {}
     for trade in swing_trades:
         symbol = trade.symbol
-        buy_price = trade.buy_price
-        sell_price = trade.sell_price
-        quantity = trade.quantity
-        total_cost = buy_price * quantity
-        total_sold = sell_price * quantity
-        gain = round((sell_price - buy_price) * quantity, 2)
+        total_cost = trade.total_cost
+        total_sold = trade.total_sold
+        gain = round(total_sold - total_cost, 2)
         # build trades_dist
         if symbol not in trades_dist:
             trades_dist[symbol] = {
@@ -2037,15 +2035,14 @@ def get_swing_profit_loss_for_render(trades):
     total_profit = 0.0
     total_loss = 0.0
     for trade in trades:
-        total_cost += trade.buy_price * trade.quantity
-        total_sold += trade.sell_price * trade.quantity
-        if trade.sell_price > trade.buy_price:
+        total_cost += trade.total_cost
+        total_sold += trade.total_sold
+        if trade.total_sold > trade.total_cost:
             win_count += 1
-            total_profit += (trade.sell_price -
-                             trade.buy_price) * trade.quantity
-        if trade.sell_price < trade.buy_price:
+            total_profit += (trade.total_sold - trade.total_cost)
+        if trade.total_sold < trade.total_cost:
             loss_count += 1
-            total_loss += (trade.buy_price - trade.sell_price) * trade.quantity
+            total_loss += (trade.total_cost - trade.total_sold)
     if len(trades) > 0:
         swing_profit_loss["swing_win_rate"] = "{}%".format(
             round(win_count / len(trades) * 100, 2))
@@ -2445,15 +2442,16 @@ def get_daily_trade_marker_from_trades_for_render(trades):
     for trade in trades:
         symbol = trade.symbol
         buy_date = trade.buy_date
+        buy_price = round(trade.total_cost / trade.quantity, 2)
         coord = [
             buy_date.strftime("%Y/%m/%d"),
             # use high price avoid block candle
             get_swing_daily_candle_high_by_date(symbol, buy_date) + 0.01,
         ]
         trade_price_records.append({
-            "name": "{}".format(trade.buy_price),
+            "name": str(buy_price),
             "coord": coord,
-            "value": trade.buy_price,
+            "value": buy_price,
             "itemStyle": {"color": config.BUY_COLOR},
             "label": {"fontSize": 10},
         })
@@ -2465,15 +2463,16 @@ def get_daily_trade_marker_from_trades_for_render(trades):
             "label": {"fontSize": 10},
         })
         sell_date = trade.sell_date
+        sell_price = round(trade.total_sold / trade.quantity, 2)
         coord = [
             sell_date.strftime("%Y/%m/%d"),
             # use high price avoid block candle
             get_swing_daily_candle_high_by_date(symbol, sell_date) + 0.01,
         ]
         trade_price_records.append({
-            "name": "{}".format(trade.sell_price),
+            "name": str(sell_price),
             "coord": coord,
-            "value": trade.sell_price,
+            "value": sell_price,
             "itemStyle": {"color": config.SELL_COLOR},
             "label": {"fontSize": 10},
         })
