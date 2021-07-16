@@ -76,8 +76,8 @@ def start():
         if not position:
             position = SwingPosition(symbol=swing_position["symbol"])
         position.symbol = swing_position["symbol"]
-        position.order_id = swing_position["order_id"]
-        position.cost = swing_position["cost"]
+        position.order_ids = swing_position["order_id"]
+        position.total_cost = swing_position["cost"] * swing_position["quantity"]
         position.quantity = swing_position["quantity"]
         position.setup = swing_position["setup"]
         position.buy_time = timezone.now()

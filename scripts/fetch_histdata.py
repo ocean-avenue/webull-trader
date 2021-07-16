@@ -9,6 +9,7 @@ def start(day=None):
     from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
     from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade, OvernightPosition, OvernightTrade
+    from webull_trader.enums import ActionType
 
     if day == None:
         day = date.today()
@@ -167,38 +168,71 @@ def start(day=None):
                 }
                 utils.save_swing_hist_daily_bar(bar_data)
 
-    # fill swing/overnight position and trade data
+    # adjust swing position data by filled order
+    swing_positions = SwingPosition.objects.filter(require_adjustment=True)
+    for swing_position in swing_positions:
+        order_ids = swing_position.order_ids.split(',')
+        total_cost = 0.0
+        quantity = 0
+        for i in range(0, len(order_ids)):
+            order_id = order_ids[i]
+            webull_order = WebullOrder.objects.filter(
+                order_id=order_id).first()
+            if webull_order.action == ActionType.BUY:
+                total_cost += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+                quantity += webull_order.filled_quantity
+            # update buy date, buy time
+            if i == 0:
+                swing_position.buy_date = webull_order.filled_time.date()
+                swing_position.buy_time = webull_order.filled_time
+            # adding a second time is ok, it will not duplicate the relation
+            swing_position.orders.add(webull_order)
+        # update total cost
+        swing_position.total_cost = total_cost
+        # update quantity
+        swing_position.quantity = quantity
+        # save
+        swing_position.save()
+
+    # adjust swing trade data by filled order
+    swing_trades = SwingTrade.objects.filter(require_adjustment=True)
+    for swing_trade in swing_trades:
+        order_ids = swing_position.order_ids.split(',')
+        total_cost = 0.0
+        total_sold = 0.0
+        quantity = 0
+        for i in range(0, len(order_ids)):
+            order_id = order_ids[i]
+            webull_order = WebullOrder.objects.filter(
+                order_id=order_id).first()
+            if webull_order.action == ActionType.BUY:
+                total_cost += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+                quantity += webull_order.filled_quantity
+            elif webull_order.action == ActionType.SELL:
+                total_sold += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+            # update buy date, buy time
+            if i == 0:
+                swing_trade.buy_date = webull_order.filled_time.date()
+                swing_trade.buy_time = webull_order.filled_time
+            # update sell date, sell time
+            if i == len(order_ids) - 1:
+                swing_trade.sell_date = webull_order.filled_time.date()
+                swing_trade.sell_time = webull_order.filled_time
+            # adding a second time is ok, it will not duplicate the relation
+            swing_trade.orders.add(webull_order)
+        # update total cost
+        swing_trade.total_cost = total_cost
+        # update total sold
+        swing_trade.total_sold = total_sold
+        # update quantity
+        swing_trade.quantity = quantity
+        # save
+        swing_trade.save()
+
     for order in all_day_orders:
-        # check swing position
-        swing_position = SwingPosition.objects.filter(
-            order_id=order.order_id).first()
-        if swing_position:
-            swing_position.cost = order.avg_price
-            swing_position.quantity = order.filled_quantity
-            swing_position.buy_time = order.filled_time
-            swing_position.buy_date = order.filled_time.date()
-            # save
-            swing_position.save()
-            # fill order setup
-            order.setup = swing_position.setup
-            order.save()
-            continue
-
-        # check swing trade
-        swing_trade = SwingTrade.objects.filter(
-            sell_order_id=order.order_id).first()
-        if swing_trade:
-            swing_trade.sell_price = order.avg_price
-            swing_trade.quantity = order.filled_quantity
-            swing_trade.sell_time = order.filled_time
-            swing_trade.sell_date = order.filled_time.date()
-            # save
-            swing_trade.save()
-            # fill order setup
-            order.setup = swing_trade.setup
-            order.save()
-            continue
-
         # check overnight position
         overnight_position = OvernightPosition.objects.filter(
             order_id=order.order_id).first()

@@ -459,15 +459,19 @@ class StrategyBase:
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
         if order_id:
+            # TODO, support add unit
+            # TODO, set add_unit_price, stop_loss_price
             # create swing position
             position = SwingPosition(
                 symbol=symbol,
-                order_id=order_id,
-                cost=cost,
+                order_ids=order_id,
+                total_cost=cost * quant,
                 quantity=quant,
+                units=1,
                 buy_time=buy_time,
                 buy_date=buy_time.date(),
                 setup=setup,
+                require_adjustment=True,
             )
             position.save()
         else:
@@ -478,19 +482,20 @@ class StrategyBase:
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
         if order_id:
+            order_ids = "{},{}".format(position.order_ids, order_id)
             # create swing position
             trade = SwingTrade(
                 symbol=symbol,
-                buy_order_id=position.order_id,
-                buy_price=position.cost,
+                order_ids=order_ids,
+                total_cost=position.total_cost,
+                total_sold=price * position.quantity,
                 quantity=position.quantity,
                 buy_time=position.buy_time,
                 buy_date=position.buy_date,
-                setup=position.setup,
-                sell_order_id=order_id,
-                sell_price=price,
                 sell_time=sell_time,
                 sell_date=sell_time.date(),
+                setup=position.setup,
+                require_adjustment=True,
             )
             trade.save()
             # clear position

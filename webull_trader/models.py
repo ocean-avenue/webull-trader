@@ -370,6 +370,9 @@ class SwingPosition(models.Model):
     # initial buy time
     buy_time = models.DateTimeField()
 
+    # check if require adjustment by filled order
+    require_adjustment = models.BooleanField(default=True)
+
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
         default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
@@ -399,6 +402,9 @@ class SwingTrade(models.Model):
     # last sell date
     sell_date = models.DateField()
     sell_time = models.DateTimeField()
+
+    # check if require adjustment by filled order
+    require_adjustment = models.BooleanField(default=True)
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),

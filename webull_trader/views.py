@@ -1108,7 +1108,7 @@ def swing_positions(request):
         setup = SetupType.tostr(position.setup)
         buy_date = position.buy_date
         holding_days = (date.today() - buy_date).days
-        unit_cost = position.cost
+        unit_cost = round(position.total_cost / position.quantity, 2)
         quantity = position.quantity
         total_cost = unit_cost * quantity
 
@@ -1217,7 +1217,7 @@ def swing_positions_symbol(request, symbol=None):
     }
 
     # swing position
-    unit_cost = position.cost
+    unit_cost = round(position.total_cost / position.quantity, 2)
     quantity = position.quantity
     total_cost = unit_cost * quantity
     last_price = quote.price
