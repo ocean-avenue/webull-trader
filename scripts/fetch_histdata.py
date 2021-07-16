@@ -206,6 +206,8 @@ def start(day=None):
         swing_position.quantity = quantity
         # update units
         swing_position.units = units
+        # reset require_adjustment
+        swing_position.require_adjustment = False
         # save
         swing_position.save()
 
@@ -243,6 +245,8 @@ def start(day=None):
         swing_trade.total_sold = round(total_sold, 2)
         # update quantity
         swing_trade.quantity = quantity
+        # reset require_adjustment
+        swing_trade.require_adjustment = False
         # save
         swing_trade.save()
 

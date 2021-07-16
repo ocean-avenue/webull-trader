@@ -46,7 +46,8 @@ class SwingTurtle(StrategyBase):
                     entry_period_highest = daily_bar.close
                     entry_period_highest_idx = i
             # check if entry_period new high, and period high is not in last 5 days
-            if latest_close > entry_period_highest: # and entry_period_highest_idx < (len(daily_bars) - 6):
+            # and entry_period_highest_idx < (len(daily_bars) - 6):
+            if latest_close > entry_period_highest:
                 return True
         return False
 
@@ -66,6 +67,57 @@ class SwingTurtle(StrategyBase):
             return True
         return False
 
+    def submit_buy_order(self, symbol, position, unit_weight, latest_close, reason):
+        usable_cash = webullsdk.get_usable_cash()
+        # buy swing position amount
+        buy_position_amount = self.get_buy_order_limit(unit_weight)
+        if usable_cash <= buy_position_amount:
+            utils.print_trading_log(
+                "Not enough cash to buy <{}>, price: {}!".format(symbol, latest_close))
+            return
+        buy_quant = (int)(buy_position_amount / latest_close)
+        # make sure usable cash is enough
+        if buy_quant > 0 and usable_cash > self.day_trade_usable_cash_threshold:
+            ticker_id = webullsdk.get_ticker(symbol)
+            # submit market buy order
+            order_response = webullsdk.buy_market_order(
+                ticker_id=ticker_id,
+                quant=buy_quant)
+            utils.print_trading_log("🟢 Submit buy order <{}> for {}, quant: {}, latest price: {}".format(
+                symbol, reason, buy_quant, latest_close))
+            # add swing position
+            self.update_pending_swing_position(
+                symbol,
+                order_response,
+                position=position,
+                cost=latest_close,
+                quant=buy_quant,
+                buy_time=timezone.now(),
+                setup=self.get_setup())
+        else:
+            if buy_quant == 0:
+                utils.print_trading_log(
+                    "Order amount limit not enough for to buy <{}>, price: {}".format(symbol, latest_close))
+            if usable_cash <= self.day_trade_usable_cash_threshold:
+                utils.print_trading_log(
+                    "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, latest_close))
+
+    def submit_sell_order(self, symbol, position, latest_close, reason):
+        ticker_id = webullsdk.get_ticker(symbol)
+        # submit market sell order
+        order_response = webullsdk.sell_market_order(
+            ticker_id=ticker_id,
+            quant=position.quantity)
+        utils.print_trading_log("🔴 Submit sell order <{}> for {}, quant: {}, latest price: {}".format(
+            symbol, reason, position.quantity, latest_close))
+        # add swing trade
+        self.update_pending_swing_trade(
+            symbol=symbol,
+            order_response=order_response,
+            position=position,
+            price=latest_close,
+            sell_time=timezone.now())
+
     def trade(self, watchlist):
         symbol = watchlist["symbol"]
         unit_weight = watchlist["unit_weight"]
@@ -73,27 +125,20 @@ class SwingTurtle(StrategyBase):
         position = SwingPosition.objects.filter(
             symbol=symbol, setup=self.get_setup()).first()
         if position:
-            # check if sell
             # get exit_period+1 daily bars
             hist_daily_bars = SwingHistoricalDailyBar.objects.filter(
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
-            if self.check_period_low(current_daily_bars):
-                latest_close = current_daily_bars[-1].close
-                ticker_id = webullsdk.get_ticker(symbol)
-                # submit market sell order
-                order_response = webullsdk.sell_market_order(
-                    ticker_id=ticker_id,
-                    quant=position.quantity)
-                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, latest price: {}".format(
-                    symbol, position.quantity, latest_close))
-                # add swing trade
-                self.update_pending_swing_trade(
-                    symbol=symbol,
-                    order_response=order_response,
-                    position=position,
-                    price=latest_close,
-                    sell_time=timezone.now())
+            latest_close = current_daily_bars[-1].close
+            if self.check_period_low(current_daily_bars):  # check if period low
+                self.submit_sell_order(
+                    symbol, position, latest_close, "period low")
+            elif latest_close < position.stop_loss_price:  # check if stop loss
+                self.submit_sell_order(
+                    symbol, position, latest_close, "stop loss")
+            elif latest_close > position.add_unit_price:  # check if add unit
+                self.submit_buy_order(
+                    symbol, position, unit_weight, latest_close, "add unit")
         else:
             # check if buy
             # get entry_period+1 daily bars
@@ -101,42 +146,11 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             # prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
-
+            latest_close = current_daily_bars[-1].close
             # first period high
             if self.check_period_high(current_daily_bars):
-                latest_close = current_daily_bars[-1].close
-                # buy swing position amount
-                usable_cash = webullsdk.get_usable_cash()
-                buy_position_amount = self.get_buy_order_limit(unit_weight)
-                if usable_cash <= buy_position_amount:
-                    utils.print_trading_log(
-                        "Not enough cash to buy <{}>, price: {}!".format(symbol, latest_close))
-                    return
-                buy_quant = (int)(buy_position_amount / latest_close)
-                # make sure usable cash is enough
-                if buy_quant > 0 and usable_cash > self.day_trade_usable_cash_threshold:
-                    ticker_id = webullsdk.get_ticker(symbol)
-                    # submit market buy order
-                    order_response = webullsdk.buy_market_order(
-                        ticker_id=ticker_id,
-                        quant=buy_quant)
-                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, latest price: {}".format(
-                        symbol, buy_quant, latest_close))
-                    # add swing position
-                    self.update_pending_swing_position(
-                        symbol,
-                        order_response,
-                        cost=latest_close,
-                        quant=buy_quant,
-                        buy_time=timezone.now(),
-                        setup=self.get_setup())
-                else:
-                    if buy_quant == 0:
-                        utils.print_trading_log(
-                            "Order amount limit not enough for to buy <{}>, price: {}".format(symbol, latest_close))
-                    if usable_cash <= self.day_trade_usable_cash_threshold:
-                        utils.print_trading_log(
-                            "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, latest_close))
+                self.submit_buy_order(
+                    symbol, None, unit_weight, latest_close, "period high")
 
     def manual_trade(self, request):
         symbol = request.symbol

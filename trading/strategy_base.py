@@ -455,23 +455,31 @@ class StrategyBase:
             utils.print_trading_log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
-    def update_pending_swing_position(self, symbol, order_response, cost, quant, buy_time, setup):
+    def update_pending_swing_position(self, symbol, order_response, position, cost, quant, buy_time, setup):
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
         if order_id:
-            # TODO, support add unit
-            # create swing position
-            position = SwingPosition(
-                symbol=symbol,
-                order_ids=order_id,
-                total_cost=cost * quant,
-                quantity=quant,
-                units=1,
-                buy_time=buy_time,
-                buy_date=buy_time.date(),
-                setup=setup,
-                require_adjustment=True,
-            )
+            if not position:
+                # create swing position
+                position = SwingPosition(
+                    symbol=symbol,
+                    order_ids=order_id,
+                    total_cost=cost * quant,
+                    quantity=quant,
+                    units=1,
+                    buy_time=buy_time,
+                    buy_date=buy_time.date(),
+                    setup=setup,
+                    require_adjustment=True,
+                )
+            else:
+                # update swing position for add unit
+                position.order_ids = "{},{}".format(
+                    position.order_ids, order_id)
+                position.total_cost = position.total_cost + cost * quant
+                position.quantity = position.quantity + quant
+                position.units = position.units + 1
+                position.require_adjustment = True
             position.save()
         else:
             utils.print_trading_log(

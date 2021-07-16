@@ -363,7 +363,7 @@ class SwingPosition(models.Model):
     units = models.PositiveIntegerField(default=0)
     target_units = models.PositiveIntegerField(default=4)
     add_unit_price = models.FloatField(default=9999)
-    stop_loss_price = models.FloatField(default=9999)
+    stop_loss_price = models.FloatField(default=0)
 
     # initial buy date
     buy_date = models.DateField()
