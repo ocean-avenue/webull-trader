@@ -101,7 +101,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if utils.check_bars_has_long_wick_up(bars, period=3):
+        if utils.check_bars_has_long_wick_up(bars, period=5):
             # has long wick up
             utils.print_trading_log(
                 "<{}> candle chart has long wick up, stop trading!".format(symbol))
@@ -149,7 +149,7 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, period_low_price))
         # check if has long wick up
-        elif utils.check_bars_has_long_wick_up(bars, period=5):
+        elif utils.check_bars_has_long_wick_up(bars, period=10):
             utils.print_trading_log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
             exit_trading = True
