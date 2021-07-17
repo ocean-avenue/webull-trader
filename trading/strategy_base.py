@@ -479,6 +479,9 @@ class StrategyBase:
                 position.total_cost = position.total_cost + cost * quant
                 position.quantity = position.quantity + quant
                 position.units = position.units + 1
+                # temp add unit, stop loss price
+                position.add_unit_price = 9999
+                position.stop_loss_price = 0
                 position.require_adjustment = True
             position.save()
         else:

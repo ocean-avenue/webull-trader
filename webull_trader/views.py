@@ -1149,6 +1149,9 @@ def swing_positions(request):
             "day_profit_loss_percent": day_profit_loss_percent,
             "day_profit_loss_style": day_profit_loss_style,
             "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
+            "units": position.units,
+            "add_unit_price": "${}".format(position.add_unit_price),
+            "stop_loss_price": "${}".format(position.stop_loss_price),
         })
 
     context = {
@@ -1210,7 +1213,7 @@ def swing_positions_symbol(request, symbol=None):
         "beta": beta,
         "pe": pe,
         "eps": eps,
-        "sector": quote.sector,
+        "sector": utils.get_quote_sector(quote),
         "next_earning": next_earning,
         "change_percent": change_percent,
         "change_percent_style": change_percent_style,
@@ -1240,6 +1243,9 @@ def swing_positions_symbol(request, symbol=None):
         "profit_loss_percent": "{}%".format(round(unrealized_pl_percent * 100, 2)),
         "profit_loss_style": profit_loss_style,
         "portfolio_percent": "{}%".format(round(portfolio_percent * 100, 2)),
+        "units": position.units,
+        "add_unit_price": "${}".format(position.add_unit_price),
+        "stop_loss_price": "${}".format(position.stop_loss_price),
     }
 
     # calculate daily candle
@@ -1413,7 +1419,7 @@ def swing_analytics_symbol(request, symbol=None):
         "symbol": symbol,
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "sector": quote.sector,
+        "sector": utils.get_quote_sector(quote),
         "trade_records": trade_records,
         "trade_stats": trade_stats,
         "d1_candle_data": d1_candle_data,

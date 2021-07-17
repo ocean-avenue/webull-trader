@@ -613,6 +613,14 @@ def calculate_charts_ema9(charts):
     return charts
 
 
+def get_quote_sector(quote=None):
+    if quote:
+        if quote.is_etf:
+            return "ETF"
+        return quote.sector
+    return ""
+
+
 def get_avg_true_range(symbol, count=20):
     daily_bars = SwingHistoricalDailyBar.objects.filter(
         symbol=symbol).order_by('-id')[:(count + 1)][::-1]
@@ -1642,7 +1650,7 @@ def get_sector_index(sector):
         index = 9
     elif sector == UTILITIES:
         index = 10
-    elif sector == None:
+    elif sector == None or sector == "":
         index = 11
     return index
 
@@ -1827,6 +1835,7 @@ def get_trade_stat_dist_from_swing_trades(swing_trades):
         total_cost = trade.total_cost
         total_sold = trade.total_sold
         gain = round(total_sold - total_cost, 2)
+        quantity = trade.quantity
         # build trades_dist
         if symbol not in trades_dist:
             trades_dist[symbol] = {
@@ -1840,11 +1849,13 @@ def get_trade_stat_dist_from_swing_trades(swing_trades):
                 "total_sold": 0,
                 "top_gain": 0,
                 "top_loss": 0,
+                "total_quantity": 0,
             }
         trades_dist[symbol]["trades"] += 1
         trades_dist[symbol]["profit_loss"] += gain
         trades_dist[symbol]["total_cost"] += total_cost
         trades_dist[symbol]["total_sold"] += total_sold
+        trades_dist[symbol]["total_quantity"] += quantity
         if gain > 0:
             trades_dist[symbol]["win_trades"] += 1
             trades_dist[symbol]["total_gain"] += gain
@@ -2067,11 +2078,13 @@ def get_swing_profit_loss_for_render(trades):
     if overall_loss_count > 0:
         overall_avg_loss = overall_total_loss / overall_loss_count
     if overall_avg_loss > 0:
-        swing_profit_loss["swing_pl_ratio"] = round(overall_avg_profit/overall_avg_loss, 2)
+        swing_profit_loss["swing_pl_ratio"] = round(
+            overall_avg_profit/overall_avg_loss, 2)
     profit_loss = overall_total_sold - overall_total_cost
     profit_loss_rate = 0.0
     if overall_total_cost > 0:
-        profit_loss_rate = (overall_total_sold - overall_total_cost) / overall_total_cost
+        profit_loss_rate = (overall_total_sold -
+                            overall_total_cost) / overall_total_cost
     swing_profit_loss["value"] = "${}".format(abs(round(profit_loss, 2)))
     swing_profit_loss["swing_pl_rate"] = "{}%".format(
         round(profit_loss_rate * 100, 2))
@@ -2270,9 +2283,9 @@ def get_swing_trade_stat_record_for_render(symbol, trade_stat):
     if avg_loss > 0:
         profit_loss_ratio = round(avg_profit/avg_loss, 2)
     avg_cost = "${}".format(
-        round(trade_stat["total_cost"] / trade_stat["trades"], 2))
+        round(trade_stat["total_cost"] / trade_stat["total_quantity"], 2))
     avg_sold = "${}".format(
-        round(trade_stat["total_sold"] / trade_stat["trades"], 2))
+        round(trade_stat["total_sold"] / trade_stat["total_quantity"], 2))
     profit_loss = "+${}".format(round(trade_stat["profit_loss"], 2))
     profit_loss_style = "text-success"
     if trade_stat["profit_loss"] < 0:

@@ -25,34 +25,40 @@
       <thead>
         <tr>
           <th>Symbol</th>
-          <th class="d-none d-xl-table-cell">Holding</th>
-          <th class="d-none d-xl-table-cell">Unit Cost</th>
-          <th class="d-none d-xl-table-cell">Price</th>
-          <th class="d-none d-xl-table-cell">Quantity</th>
-          <th class="d-none d-xl-table-cell">Cost</th>
-          <th class="d-none d-xl-table-cell">Value</th>
-          <th class="d-none d-xl-table-cell">Day P&L</th>
-          <th class="d-none d-xl-table-cell">Day P&L %</th>
-          <th class="d-none d-xl-table-cell">Unrealized P&L</th>
-          <th class="d-none d-xl-table-cell">Unrealized P&L %</th>
-          <th class="d-none d-xl-table-cell">Portfolio %</th>
+          <th class="d-none d-xl-table-cell text-end">Holding</th>
+          <th class="d-none d-xl-table-cell text-end">Unit Cost</th>
+          <th class="d-none d-xl-table-cell text-end">Price</th>
+          <th class="d-none d-xl-table-cell text-end">Quantity</th>
+          <th class="d-none d-xl-table-cell text-end">Unit</th>
+          <th class="d-none d-xl-table-cell text-end">Add Unit $</th>
+          <th class="d-none d-xl-table-cell text-end">Stop Loss $</th>
+          <th class="d-none d-xl-table-cell text-end">Cost</th>
+          <th class="d-none d-xl-table-cell text-end">Value</th>
+          <th class="d-none d-xl-table-cell text-end">Day P&L</th>
+          <th class="d-none d-xl-table-cell text-end">Day P&L %</th>
+          <th class="d-none d-xl-table-cell text-end">Unrealized P&L</th>
+          <th class="d-none d-xl-table-cell text-end">Unrealized P&L %</th>
+          <th class="d-none d-xl-table-cell text-end">Portfolio %</th>
         </tr>
       </thead>
       <tbody>
         {% for position in swing_positions %}
         <tr>
           <td><a href="/swing-positions/{{position.symbol|safe}}"><span class="badge badge-soft-dark">{{position.symbol|safe}}</span></a></td>
-          <td class="d-none d-xl-table-cell">{{position.holding_days|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{position.unit_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{position.price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{position.quantity|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{position.total_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{position.total_value|safe}}</td>
-          <td class="d-none d-md-table-cell {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss|safe}}</td>
-          <td class="d-none d-md-table-cell {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss_percent|safe}}</td>
-          <td class="d-none d-md-table-cell {{position.profit_loss_style|safe}}">{{position.profit_loss|safe}}</td>
-          <td class="d-none d-md-table-cell {{position.profit_loss_style|safe}}">{{position.profit_loss_percent|safe}}</td>
-          <td class="d-none d-md-table-cell">{{position.portfolio_percent|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.holding_days|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.unit_cost|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.price|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.quantity|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.units|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.add_unit_price|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.stop_loss_price|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.total_cost|safe}}</td>
+          <td class="d-none d-xl-table-cell text-end">{{position.total_value|safe}}</td>
+          <td class="d-none d-md-table-cell text-end {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss|safe}}</td>
+          <td class="d-none d-md-table-cell text-end {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss_percent|safe}}</td>
+          <td class="d-none d-md-table-cell text-end {{position.profit_loss_style|safe}}">{{position.profit_loss|safe}}</td>
+          <td class="d-none d-md-table-cell text-end {{position.profit_loss_style|safe}}">{{position.profit_loss_percent|safe}}</td>
+          <td class="d-none d-md-table-cell text-end">{{position.portfolio_percent|safe}}</td>
         </tr>
         {% endfor %}
       </tbody>
