@@ -37,7 +37,7 @@ MIN_EARNING_GAP_RATIO = 0.05
 # long wick avg candle body ratio
 LONG_WICK_AVG_CANDLE_RATIO = 1.4
 # long wick pre candle body ratio
-LONG_WICK_PREV_CANDLE_RATIO = 1.5
+LONG_WICK_PREV_CANDLE_RATIO = 0.9
 # long wick up candle ratio
 LONG_WICK_UP_RATIO = 2.5
 
