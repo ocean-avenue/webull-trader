@@ -216,6 +216,7 @@ def start():
     from trading.day_breakout import DayTradingBreakout
     from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
     from trading.day_breakout_prelosers import DayTradingBreakoutPreLosers
+    from trading.day_breakout_earnings import DayTradingBreakoutEarnings
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.day_vwap_largecap import DayTradingVWAPLargeCap
     from trading.day_grinding_largecap import DayTradingGrindingLargeCap
@@ -276,6 +277,10 @@ def start():
         # DAY_BREAKOUT_PRE_LOSERS: breakout trade with pre-market losers
         strategies.append(DayTradingBreakoutPreLosers(
             paper=paper, trading_hour=trading_hour, entry_period=10, exit_period=5))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_EARNINGS:
+        # DAY_BREAKOUT_EARNINGS: breakout trade for earnings if earning day
+        strategies.append(DayTradingBreakoutEarnings(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
         # TODO, use other earning strategy

@@ -205,7 +205,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_BREAKOUT_30:
             return 'Breakout day trade, entry if price reach 30 candles new high.'
         if val == AlgorithmType.DAY_BREAKOUT_EARNINGS:
-            return 'Breakout and earning day trade, entry if price reach 10 candles new high.'
+            return 'Breakout and earning day trade, entry if price reach period new high.'
         if val == AlgorithmType.DAY_BREAKOUT_NEW_HIGH:
             return 'Breakout day trade, no entry if the price not break max of last high trade price.'
         if val == AlgorithmType.DAY_BREAKOUT_10_5:
