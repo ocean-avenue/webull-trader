@@ -34,6 +34,8 @@ MAX_PREV_DAY_CLOSE_GAP_RATIO = 0.02
 MIN_RELATIVE_VOLUME = 3.0
 # earning gap ratio for earning strategy
 MIN_EARNING_GAP_RATIO = 0.05
+# period high price gap ratio
+PERIOD_HIGH_PRICE_GAP_RATIO = 1.01
 # long wick avg candle body ratio
 LONG_WICK_AVG_CANDLE_RATIO = 1.4
 # long wick pre candle body ratio

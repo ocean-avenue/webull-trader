@@ -58,18 +58,19 @@ class DayTradingBreakout(StrategyBase):
             return False
         if not self.check_if_trade_price_new_high(symbol, current_price):
             return False
+
         # check ema 9
         if current_price < current_candle['ema9']:
             utils.print_trading_log(
-                "<{}> price is not above ema9, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
+                "<{}> price is not above ema9, no entry!".format(symbol))
             return False
+
         # check if gap already too large
-        if period_high_price * 1.1 < current_price:
+        if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
             utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
                 ticker['symbol'], current_price, period_high_price))
             return False
+
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
             utils.print_trading_log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
@@ -89,41 +90,31 @@ class DayTradingBreakout(StrategyBase):
                 not utils.check_bars_amount_grinding(bars, period=5) and not utils.check_bars_rel_volume(bars):
             # has no volume and no relative volume
             utils.print_trading_log(
-                "<{}> candle chart has not enough amount and volume, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
+                "<{}> candle chart has not enough amount and volume, no entry!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_volatility(bars):
             utils.print_trading_log(
-                "<{}> candle chart is not volatility, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
+                "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
         if utils.check_bars_has_long_wick_up(bars, period=5):
             # has long wick up
             utils.print_trading_log(
-                "<{}> candle chart has long wick up, stop trading!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
+                "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
         if not utils.check_bars_roc_strong(bars, period=self.entry_period):
             # price rate of change is weak
             utils.print_trading_log(
-                "<{}> candle chart price rate of change for {} period is weak!".format(symbol, self.entry_period))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
+                "<{}> candle chart price rate of change for {} period is weak, no entry!".format(symbol, self.entry_period))
             return False
 
         if symbol in self.tracking_stats:
             last_trade_time = self.tracking_stats[symbol]['last_trade_time']
             if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC * self.time_scale):
                 utils.print_trading_log(
-                    "<{}> try buy too soon after last sell, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
+                    "<{}> try buy too soon after last sell, no entry!".format(symbol))
                 return False
 
         return True
