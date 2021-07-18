@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from sdk import fmpsdk
 from scripts import utils, config
-from webull_trader.enums import SetupType
+from webull_trader.enums import ActionType, SetupType
 from webull_trader.config import CACHE_TIMEOUT
 from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
 
@@ -323,25 +323,25 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         date=analytics_date, symbol=symbol)
     # 1m trade records
     m1_trade_price_buy_records, m1_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m1_candle_data, 1, config.BUY_COLOR)
+        buy_orders, m1_candle_data, 1, ActionType.BUY)
     m1_trade_price_sell_records, m1_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m1_candle_data, 1, config.SELL_COLOR)
+        sell_orders, m1_candle_data, 1, ActionType.SELL)
     m1_trade_price_records = m1_trade_price_buy_records + m1_trade_price_sell_records
     m1_trade_quantity_records = m1_trade_quantity_buy_records + \
         m1_trade_quantity_sell_records
     # 2m trade records
     m2_trade_price_buy_records, m2_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m2_candle_data, 2, config.BUY_COLOR)
+        buy_orders, m2_candle_data, 2, ActionType.BUY)
     m2_trade_price_sell_records, m2_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m2_candle_data, 2, config.SELL_COLOR)
+        sell_orders, m2_candle_data, 2, ActionType.SELL)
     m2_trade_price_records = m2_trade_price_buy_records + m2_trade_price_sell_records
     m2_trade_quantity_records = m2_trade_quantity_buy_records + \
         m2_trade_quantity_sell_records
     # 5m trade records
     m5_trade_price_buy_records, m5_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m5_candle_data, 5, config.BUY_COLOR)
+        buy_orders, m5_candle_data, 5, ActionType.BUY)
     m5_trade_price_sell_records, m5_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m5_candle_data, 5, config.SELL_COLOR)
+        sell_orders, m5_candle_data, 5, ActionType.SELL)
     m5_trade_price_records = m5_trade_price_buy_records + m5_trade_price_sell_records
     m5_trade_quantity_records = m5_trade_quantity_buy_records + \
         m5_trade_quantity_sell_records

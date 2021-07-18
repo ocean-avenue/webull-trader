@@ -8,7 +8,9 @@ from datetime import datetime, date
 from scripts import config
 from sdk import fmpsdk, webullsdk
 from webull_trader import enums
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, \
+    OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
+    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 # sector values
 BASIC_MATERIALS = "Basic Materials"
@@ -2436,9 +2438,15 @@ def get_hourly_stat_from_trades_for_render(day_trades):
     }
 
 
-def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale, color):
+def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale, action):
     trade_price_records = []
     trade_quantity_records = []
+
+    sign = "+"
+    color = config.BUY_COLOR
+    if action == enums.ActionType.SELL:
+        sign = "-"
+        color = config.SELL_COLOR
 
     for order in orders:
         coord = [
@@ -2455,7 +2463,7 @@ def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale,
             "label": {"fontSize": 10},
         })
         trade_quantity_records.append({
-            "name": "+{}".format(order.filled_quantity),
+            "name": "{}{}".format(sign, order.filled_quantity),
             "coord": coord,
             "value": order.filled_quantity,
             "itemStyle": {"color": color},
