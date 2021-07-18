@@ -209,9 +209,9 @@ class DayTradingBreakout(StrategyBase):
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                # bid_price = webullsdk.get_bid_price_from_quote(quote)
+                bid_price = webullsdk.get_bid_price_from_quote(quote)
                 ask_price = webullsdk.get_ask_price_from_quote(quote)
-                if ask_price == None:
+                if bid_price == None or ask_price == None:
                     return
                 usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
@@ -219,26 +219,27 @@ class DayTradingBreakout(StrategyBase):
                     utils.print_trading_log(
                         "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
                     return
-                buy_quant = (int)(buy_position_amount / ask_price)
+                buy_price = min(ask_price, round(bid_price * 1.01, 2))
+                buy_quant = (int)(buy_position_amount / buy_price)
                 if buy_quant > 0:
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
                         ticker_id=ticker_id,
-                        price=ask_price,
+                        price=buy_price,
                         quant=buy_quant)
                     utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
                         symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, ask_price))
+                        symbol, buy_quant, buy_price))
                     # use min of (ask price, prev candle middle)
                     stop_loss = min(round(
-                        (prev_candle['high'] + prev_candle['low']) / 2, 2), round(ask_price * 0.98, 2))
+                        (prev_candle['high'] + prev_candle['low']) / 2, 2), round(buy_price * 0.98, 2))
                     # update pending buy
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=stop_loss)
                 else:
                     utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
+                        "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
 
         else:
             ticker_position = self.get_position(ticker)
