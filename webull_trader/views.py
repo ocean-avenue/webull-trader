@@ -1251,21 +1251,8 @@ def swing_positions_symbol(request, symbol=None):
     # calculate daily candle
     d1_candle_data = utils.get_swing_daily_candle_data_for_render(symbol)
 
-    # 1m trade records
-    d1_trade_quantity_records = []
-    d1_coord = [
-        position.buy_date.strftime("%Y/%m/%d"),
-        # use high price avoid block candle
-        utils.get_swing_daily_candle_high_by_date(
-            symbol, position.buy_date) + 0.01,
-    ]
-    d1_trade_quantity_records.append({
-        "name": "+{}".format(position.quantity),
-        "coord": d1_coord,
-        "value": position.quantity,
-        "itemStyle": {"color": config.BUY_COLOR},
-        "label": {"fontSize": 10},
-    })
+    # 1d trade records
+    _, d1_trade_quantity_records = utils.get_daily_trade_marker_from_position_for_render(position)
 
     # fmp news
     news = fmpsdk.get_news(symbol, count=16)

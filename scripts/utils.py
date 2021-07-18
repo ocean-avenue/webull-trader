@@ -2006,6 +2006,15 @@ def get_color_profit_loss_style_for_render(old_value, new_value):
     return (profit_loss, profit_loss_percent, profit_loss_style)
 
 
+def get_color_sign_of_action(action):
+    sign = "+"
+    color = config.BUY_COLOR
+    if action == enums.ActionType.SELL:
+        sign = "-"
+        color = config.SELL_COLOR
+    return (color, sign)
+
+
 def get_net_profit_loss_for_render(acc_stat):
     day_profit_loss = {
         "value": "$0.0",
@@ -2455,11 +2464,7 @@ def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale,
     trade_price_records = []
     trade_quantity_records = []
 
-    sign = "+"
-    color = config.BUY_COLOR
-    if action == enums.ActionType.SELL:
-        sign = "-"
-        color = config.SELL_COLOR
+    color, sign = get_color_sign_of_action(action)
 
     for order in orders:
         coord = [
@@ -2486,53 +2491,72 @@ def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale,
     return (trade_price_records, trade_quantity_records)
 
 
+def get_daily_trade_marker_from_position_for_render(position):
+    trade_price_records = []
+    trade_quantity_records = []
+
+    symbol = position.symbol
+    orders = position.orders.all()
+    for order in orders:
+        filled_date = order.filled_time.date()
+        filled_price = order.avg_price
+        filled_quantity = order.filled_quantity
+        coord = [
+            filled_date.strftime("%Y/%m/%d"),
+            # use high price avoid block candle
+            get_swing_daily_candle_high_by_date(
+                symbol, filled_date) + 0.01,
+        ]
+        color, sign = get_color_sign_of_action(order.action)
+        trade_price_records.append({
+            "name": str(filled_price),
+            "coord": coord,
+            "value": filled_price,
+            "itemStyle": {"color": color},
+            "label": {"fontSize": 10},
+        })
+        trade_quantity_records.append({
+            "name": "{}{}".format(sign, filled_quantity),
+            "coord": coord,
+            "value": filled_quantity,
+            "itemStyle": {"color": color},
+            "label": {"fontSize": 10},
+        })
+
+    return (trade_price_records, trade_quantity_records)
+
+
 def get_daily_trade_marker_from_trades_for_render(trades):
     trade_price_records = []
     trade_quantity_records = []
 
     for trade in trades:
         symbol = trade.symbol
-        buy_date = trade.buy_date
-        buy_price = round(trade.total_cost / trade.quantity, 2)
-        coord = [
-            buy_date.strftime("%Y/%m/%d"),
-            # use high price avoid block candle
-            get_swing_daily_candle_high_by_date(symbol, buy_date) + 0.01,
-        ]
-        trade_price_records.append({
-            "name": str(buy_price),
-            "coord": coord,
-            "value": buy_price,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-        trade_quantity_records.append({
-            "name": "+{}".format(trade.quantity),
-            "coord": coord,
-            "value": trade.quantity,
-            "itemStyle": {"color": config.BUY_COLOR},
-            "label": {"fontSize": 10},
-        })
-        sell_date = trade.sell_date
-        sell_price = round(trade.total_sold / trade.quantity, 2)
-        coord = [
-            sell_date.strftime("%Y/%m/%d"),
-            # use high price avoid block candle
-            get_swing_daily_candle_high_by_date(symbol, sell_date) + 0.01,
-        ]
-        trade_price_records.append({
-            "name": str(sell_price),
-            "coord": coord,
-            "value": sell_price,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
-        trade_quantity_records.append({
-            "name": "-{}".format(trade.quantity),
-            "coord": coord,
-            "value": trade.quantity,
-            "itemStyle": {"color": config.SELL_COLOR},
-            "label": {"fontSize": 10},
-        })
+        orders = trade.orders.all()
+        for order in orders:
+            filled_date = order.filled_time.date()
+            filled_price = order.avg_price
+            filled_quantity = order.filled_quantity
+            coord = [
+                filled_date.strftime("%Y/%m/%d"),
+                # use high price avoid block candle
+                get_swing_daily_candle_high_by_date(
+                    symbol, filled_date) + 0.01,
+            ]
+            color, sign = get_color_sign_of_action(order.action)
+            trade_price_records.append({
+                "name": str(filled_price),
+                "coord": coord,
+                "value": filled_price,
+                "itemStyle": {"color": color},
+                "label": {"fontSize": 10},
+            })
+            trade_quantity_records.append({
+                "name": "{}{}".format(sign, filled_quantity),
+                "coord": coord,
+                "value": filled_quantity,
+                "itemStyle": {"color": color},
+                "label": {"fontSize": 10},
+            })
 
     return (trade_price_records, trade_quantity_records)
