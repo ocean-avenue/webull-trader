@@ -591,3 +591,24 @@ class StrategyBase:
         if self.is_regular_market_hour():
             return self.order_amount_limit
         return self.extended_order_amount_limit
+
+    def get_buy_price(self, ticker):
+        ticker_id = ticker['ticker_id']
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        if quote == None:
+            return None
+        bid_price = webullsdk.get_bid_price_from_quote(quote)
+        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        if ask_price == None or bid_price == None:
+            return None
+        return min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+
+    def get_sell_price(self, ticker):
+        ticker_id = ticker['ticker_id']
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        if quote == None:
+            return None
+        bid_price = webullsdk.get_bid_price_from_quote(quote)
+        if bid_price == None:
+            return None
+        return bid_price

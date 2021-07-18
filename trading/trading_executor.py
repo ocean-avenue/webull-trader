@@ -217,6 +217,7 @@ def start():
     from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
     from trading.day_breakout_prelosers import DayTradingBreakoutPreLosers
     from trading.day_breakout_earnings import DayTradingBreakoutEarnings
+    from trading.day_breakout_ask import DayTradingBreakoutAsk
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.day_vwap_largecap import DayTradingVWAPLargeCap
     from trading.day_grinding_largecap import DayTradingGrindingLargeCap
@@ -302,6 +303,10 @@ def start():
         # DAY_GRINDING_SYMBOLS: grinding day trade with specific symbols
         strategies.append(DayTradingGrindingSymbols(
             paper=paper, trading_hour=trading_hour))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_ASK:
+        # DAY_BREAKOUT_ASK: breakout trade with ask price limit order
+        strategies.append(DayTradingBreakoutAsk(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days
         strategies.append(SwingTurtle(

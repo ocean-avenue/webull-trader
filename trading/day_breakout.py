@@ -216,18 +216,15 @@ class DayTradingBreakout(StrategyBase):
 
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                bid_price = webullsdk.get_bid_price_from_quote(quote)
-                ask_price = webullsdk.get_ask_price_from_quote(quote)
-                if bid_price == None or ask_price == None:
-                    return
                 usable_cash = webullsdk.get_usable_cash()
                 buy_position_amount = self.get_buy_order_limit(symbol)
                 if usable_cash <= buy_position_amount:
                     utils.print_trading_log(
-                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
+                        "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
                     return
-                buy_price = min(ask_price, round(bid_price * 1.01, 2))
+                buy_price = self.get_buy_price(ticker)
+                if buy_price == None:
+                    return
                 buy_quant = (int)(buy_position_amount / buy_price)
                 if buy_quant > 0:
                     # submit limit order at ask price
@@ -297,20 +294,17 @@ class DayTradingBreakout(StrategyBase):
 
             # exit trading
             if exit_trading:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None:
-                    return
-                bid_price = webullsdk.get_bid_price_from_quote(quote)
-                if bid_price == None:
+                sell_price = self.get_sell_price(ticker)
+                if sell_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
-                    price=bid_price,
+                    price=sell_price,
                     quant=holding_quantity)
                 utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
                 utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                    symbol, holding_quantity, bid_price))
+                    symbol, holding_quantity, sell_price))
                 # update pending sell
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)

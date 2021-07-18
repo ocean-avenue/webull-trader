@@ -44,6 +44,8 @@ LONG_WICK_UP_RATIO = 2.5
 PRICE_RATE_OF_CHANGE = 10
 # large cap requirements
 LARGE_CAP_MARKET_CAP = 2000000000
+# incrase ratio of bid price for buy
+BUY_BID_PRICE_RATIO = 1.01
 
 # color config
 
