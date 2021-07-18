@@ -511,6 +511,19 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
     return long_wick_up_count >= count
 
 
+def check_bars_roc_strong(bars, period=10):
+    """
+    check if price rate of change is strong
+    """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    period_price = period_bars.iloc[0]['close']
+    current_price = bars.iloc[-1]['close']
+    ROC = (current_price - period_price) / period_price * 100
+    return ROC > config.PRICE_RATE_OF_CHANGE
+
+
 def check_bars_rel_volume(bars):
     """
     check if bar chart relative volume

@@ -109,6 +109,14 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
+        if not utils.check_bars_roc_strong(bars, period=self.entry_period):
+            # price rate of change is weak
+            utils.print_trading_log(
+                "<{}> candle chart price rate of change for {} period is weak!".format(symbol, self.entry_period))
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            return False
+
         if symbol in self.tracking_stats:
             last_trade_time = self.tracking_stats[symbol]['last_trade_time']
             if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC * self.time_scale):
