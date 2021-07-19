@@ -133,20 +133,21 @@ class DayTradingBreakout(StrategyBase):
         symbol = ticker['symbol']
         exit_trading = False
         exit_note = None
-        current_candle = bars.iloc[-1]
-        current_price = current_candle['close']
-        period_bars = bars.head(len(bars) - 1).tail(self.exit_period)
+        # last formed candle
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
+        period_bars = bars.head(len(bars) - 2).tail(self.exit_period)
         period_low_price = 99999
         for _, row in period_bars.iterrows():
             close_price = row['close']
             if close_price < period_low_price:
                 period_low_price = close_price
         # check if new low
-        if current_price < period_low_price:
+        if last_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(self.exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
-                symbol, current_price, period_low_price))
+                symbol, last_price, period_low_price))
         # check if has long wick up
         elif utils.check_bars_has_long_wick_up(bars, period=10):
             utils.print_trading_log(
