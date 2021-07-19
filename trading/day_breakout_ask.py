@@ -2,11 +2,11 @@
 
 # Breakout day trading class, using ask price for entry
 
-from trading.strategy_base import StrategyBase
+from trading.day_breakout import DayTradingBreakout
 from sdk import webullsdk
 
 
-class DayTradingBreakoutAsk(StrategyBase):
+class DayTradingBreakoutAsk(DayTradingBreakout):
 
     def get_tag(self):
         return "DayTradingBreakoutAsk"
