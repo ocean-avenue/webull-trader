@@ -42,8 +42,10 @@ LONG_WICK_AVG_CANDLE_RATIO = 1.4
 LONG_WICK_PREV_CANDLE_RATIO = 0.9
 # long wick up candle ratio
 LONG_WICK_UP_RATIO = 2.5
-# ROC for entry
-PRICE_RATE_OF_CHANGE = 10
+# ROC for day trade entry
+DAY_PRICE_RATE_OF_CHANGE = 10
+# ROC for swing trade entry
+SWING_PRICE_RATE_OF_CHANGE = 30
 # large cap requirements
 LARGE_CAP_MARKET_CAP = 2000000000
 # incrase ratio of bid price for buy

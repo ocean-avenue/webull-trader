@@ -8,7 +8,7 @@ from trading.strategy_base import StrategyBase
 from webull_trader.enums import ActionType, SetupType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 from sdk import webullsdk
-from scripts import utils
+from scripts import utils, config
 
 
 class SwingTurtle(StrategyBase):
@@ -32,20 +32,22 @@ class SwingTurtle(StrategyBase):
     def check_period_high(self, daily_bars):
         if len(daily_bars) <= self.entry_period:
             return False
-        latest_bar = daily_bars[-1]
-        latest_close = latest_bar.close
-        latest_sma120 = latest_bar.sma_120
-        # make sure is uptrend
-        if latest_close > latest_sma120:
+        latest_close = daily_bars[-1].close
+        latest_sma120 = daily_bars[-1].sma_120
+        period_close = daily_bars[self.entry_period].close
+        ROC = (latest_close - period_close) / period_close * 100
+        # make sure is uptrend and trend is strong
+        if latest_close > latest_sma120 and ROC > config.SWING_PRICE_RATE_OF_CHANGE:
             # get entry_period highest
             entry_period_highest = 0
-            entry_period_highest_idx = -1
+            # entry_period_highest_idx = -1
             for i in range(len(daily_bars) - self.entry_period - 1, len(daily_bars) - 1):
                 daily_bar = daily_bars[i]
                 if daily_bar.close > entry_period_highest:
                     entry_period_highest = daily_bar.close
-                    entry_period_highest_idx = i
+                    # entry_period_highest_idx = i
             # check if entry_period new high, and period high is not in last 5 days
+
             # and entry_period_highest_idx < (len(daily_bars) - 6):
             if latest_close > entry_period_highest:
                 return True
@@ -54,8 +56,7 @@ class SwingTurtle(StrategyBase):
     def check_period_low(self, daily_bars):
         if len(daily_bars) <= self.exit_period:
             return False
-        latest_bar = daily_bars[-1]
-        latest_close = latest_bar.close
+        latest_close = daily_bars[-1].close
         # get exit_period lowest
         exit_period_lowest = 99999
         for i in range(len(daily_bars) - self.exit_period - 1, len(daily_bars) - 1):
@@ -73,7 +74,7 @@ class SwingTurtle(StrategyBase):
         buy_position_amount = self.get_buy_order_limit(unit_weight)
         if usable_cash <= buy_position_amount:
             utils.print_trading_log(
-                "Not enough cash to buy <{}>, price: {}!".format(symbol, latest_close))
+                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
             return
         buy_quant = (int)(buy_position_amount / latest_close)
         # make sure usable cash is enough
@@ -130,7 +131,7 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             latest_close = current_daily_bars[-1].close
-            if self.check_period_low(current_daily_bars):  # check if period low
+            if self.check_period_low(current_daily_bars):  # check period low for exit
                 self.submit_sell_order(
                     symbol, position, latest_close, "period low")
             elif latest_close < position.stop_loss_price:  # check if stop loss
@@ -146,9 +147,9 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             # prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
-            latest_close = current_daily_bars[-1].close
-            # first period high
+            # check period high for entry
             if self.check_period_high(current_daily_bars):
+                latest_close = current_daily_bars[-1].close
                 self.submit_buy_order(
                     symbol, None, unit_weight, latest_close, "period high")
 
