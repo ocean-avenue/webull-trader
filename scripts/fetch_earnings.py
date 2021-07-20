@@ -14,6 +14,9 @@ def start():
 
     for calendar in earning_calendars:
         symbol = calendar["symbol"]
+        if '.' in symbol:
+            symbol_parts = symbol.split('.')
+            symbol = "{}-{}".format(symbol_parts[0], symbol_parts[1])
         # append symbol list
         symbol_list.append(symbol)
         # fill dist
@@ -48,19 +51,19 @@ def start():
         earning.eps = earning_data["eps"]
         earning.eps_estimated = earning_data["eps_estimated"]
         earning.revenue = earning_data["revenue"]
-        earning.revenue_estimated = earning_data["revenue_estimated"] or 0
+        earning.revenue_estimated = earning_data["revenue_estimated"]
         earning.price = quote["price"]
         earning.change = quote["change"]
         earning.change_percentage = quote["changesPercentage"]
         earning.year_high = quote["yearHigh"]
         earning.year_low = quote["yearLow"]
-        earning.market_value = quote["marketCap"] or 0
+        earning.market_value = quote["marketCap"]
         earning.avg_price_50d = quote["priceAvg50"]
         earning.avg_price_200d = quote["priceAvg200"]
-        earning.volume = quote["volume"] or 0
-        earning.avg_volume = quote["avgVolume"] or 0
+        earning.volume = quote["volume"]
+        earning.avg_volume = quote["avgVolume"]
         earning.exchange = quote["exchange"]
-        earning.outstanding_shares = quote["sharesOutstanding"] or 0
+        earning.outstanding_shares = quote["sharesOutstanding"]
         earning.save()
 
 
