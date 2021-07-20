@@ -42,7 +42,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 latest_candle = m1_bars.iloc[-1]
                 latest_candle2 = m1_bars.iloc[-2]
                 # check if trasaction amount and volume meets requirement
-                if self.check_surge(latest_candle) or self.check_surge(latest_candle2):
+                if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
                     # found trading ticker
                     self.tracking_tickers[symbol] = ticker
                     utils.print_trading_log(
