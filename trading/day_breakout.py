@@ -65,11 +65,11 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> price is not above ema9, no entry!".format(symbol))
             return False
 
-        # check if gap already too large
-        if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
-            utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
-                ticker['symbol'], current_price, period_high_price))
-            return False
+        # # check if gap already too large
+        # if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
+        #     utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
+        #         ticker['symbol'], current_price, period_high_price))
+        #     return False
 
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
             utils.print_trading_log(
