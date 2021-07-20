@@ -5,6 +5,7 @@ WATCHLIST_SYMBOLS = [
     "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",
     "BYND", "BETZ", "BARK",
     "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV", "CPSR", "CRSR",
+    "CCL",
     "DBX", "DOCU", "DQ", "DIS", "DAL", "DKNG", "DDOG", "DHI", "DIDI",
     "EBAY", "EH", "ETSY", "ENPH", "ELF",
     "F", "FB", "FCX", "FUTU", "FSLY", "FVRR", "FCEL", "FI", "FLYW", "FSLR",
