@@ -214,7 +214,7 @@ def start(day=None):
     # adjust swing trade data by filled order
     swing_trades = SwingTrade.objects.filter(require_adjustment=True)
     for swing_trade in swing_trades:
-        order_ids = swing_position.order_ids.split(',')
+        order_ids = swing_trade.order_ids.split(',')
         total_cost = 0.0
         total_sold = 0.0
         quantity = 0
