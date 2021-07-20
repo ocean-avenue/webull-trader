@@ -119,11 +119,13 @@ class DayTradingBreakout(StrategyBase):
 
         return True
 
-    def check_stop_loss(self, ticker, position):
+    def check_stop_loss(self, ticker, bars):
         exit_trading = False
         exit_note = None
-        last_price = float(position['lastPrice'])
-        # stop loss for buy prev low
+        # last formed candle
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
+        # check stop loss
         if ticker['stop_loss'] and last_price < ticker['stop_loss']:
             exit_trading = True
             exit_note = "Stop loss at {}!".format(last_price)
@@ -260,28 +262,28 @@ class DayTradingBreakout(StrategyBase):
             if profit_loss_rate > max_profit_loss_rate:
                 self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
 
-            # check stop loss
-            exit_trading, exit_note = self.check_stop_loss(
-                ticker, ticker_position)
+            # get 1m bar charts
+            m1_bars = webullsdk.get_1m_bars(
+                ticker_id, count=(self.exit_period*self.time_scale+5))
 
-            if not exit_trading:
-                # get 1m bar charts
-                m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.exit_period*self.time_scale+5))
-
-                # get bars error
-                if m1_bars.empty:
-                    utils.print_trading_log(
-                        "<{}> bars data error!".format(symbol))
-                    exit_trading = True
-                    exit_note = "Bars data error!"
-                else:
-                    bars = m1_bars
-                    if self.time_scale == 5:
-                        bars = utils.convert_5m_bars(m1_bars)
-                    # check exit trade
+            # get bars error
+            if m1_bars.empty:
+                utils.print_trading_log(
+                    "<{}> bars data error!".format(symbol))
+                exit_trading = True
+                exit_note = "Bars data error!"
+            else:
+                # convert bars
+                bars = m1_bars
+                if self.time_scale == 5:
+                    bars = utils.convert_5m_bars(m1_bars)
+                # check stop loss
+                exit_trading, exit_note = self.check_stop_loss(ticker, bars)
+                # check exit trading
+                if not exit_trading:
                     utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
                         symbol, round(profit_loss_rate * 100, 2)))
+                    # check exit trade
                     exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
