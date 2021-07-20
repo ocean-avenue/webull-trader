@@ -2,17 +2,21 @@
 
 # fetch account status from webull into database
 
-def start():
+def start(day=None):
+    from datetime import date
     from sdk import webullsdk
     from scripts import utils
 
     paper = utils.check_paper()
 
+    if day == None:
+        day = date.today()
+
     if webullsdk.login(paper=paper):
 
         account_data = webullsdk.get_account()
 
-        utils.save_webull_account(account_data, paper=paper)
+        utils.save_webull_account(account_data, paper=paper, day=day)
 
 
 if __name__ == "django.core.management.commands.shell":

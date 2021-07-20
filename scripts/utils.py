@@ -781,10 +781,11 @@ def save_webull_credentials(cred_data, paper=True):
     credentials.save()
 
 
-def save_webull_account(acc_data, paper=True):
-    today = date.today()
+def save_webull_account(acc_data, paper=True, day=None):
+    if day == None:
+        day = date.today()
     print("[{}] Importing daily account status ({})...".format(
-        get_now(), today.strftime("%Y-%m-%d")))
+        get_now(), day.strftime("%Y-%m-%d")))
     if paper:
         if "accountMembers" in acc_data:
             account_members = acc_data['accountMembers']
@@ -793,9 +794,9 @@ def save_webull_account(acc_data, paper=True):
                 if account_member['key'] == 'dayProfitLoss':
                     day_profit_loss = float(account_member['value'])
             acc_stat = WebullAccountStatistics.objects.filter(
-                date=today).first()
+                date=day).first()
             if not acc_stat:
-                acc_stat = WebullAccountStatistics(date=today)
+                acc_stat = WebullAccountStatistics(date=day)
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
             acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
             acc_stat.total_profit_loss_rate = float(
@@ -806,17 +807,17 @@ def save_webull_account(acc_data, paper=True):
         if "accountMembers" in acc_data:
             account_members = acc_data['accountMembers']
             acc_stat = WebullAccountStatistics.objects.filter(
-                date=today).first()
+                date=day).first()
             if not acc_stat:
-                acc_stat = WebullAccountStatistics(date=today)
+                acc_stat = WebullAccountStatistics(date=day)
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
-            # get today's P&L
+            # get day's P&L
             daily_pl = webullsdk.get_daily_profitloss()
             day_profit_loss = 0
             if len(daily_pl) > 0:
-                today_pl = daily_pl[-1]
-                if today_pl['periodName'] == today.strftime("%Y-%m-%d"):
-                    day_profit_loss = float(today_pl['profitLoss'])
+                day_pl = daily_pl[-1]
+                if day_pl['periodName'] == day.strftime("%Y-%m-%d"):
+                    day_profit_loss = float(day_pl['profitLoss'])
             acc_stat.total_profit_loss = acc_stat.total_profit_loss or 0
             acc_stat.total_profit_loss_rate = acc_stat.total_profit_loss_rate or 0
             acc_stat.day_profit_loss = day_profit_loss

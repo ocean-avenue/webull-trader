@@ -12,7 +12,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         date = datetime.strptime(options['date'], '%Y-%m-%d').date()
         print("[{}] Start fetch account job...".format(utils.get_now()))
-        fetch_account.start()
+        fetch_account.start(day=date)
         print("[{}] Done fetch account job!".format(utils.get_now()))
 
         print("[{}] Start fetch orders job...".format(utils.get_now()))
