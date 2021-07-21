@@ -218,6 +218,7 @@ def start(day=None):
         total_cost = 0.0
         total_sold = 0.0
         quantity = 0
+        setup = swing_trade.setup
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
@@ -239,6 +240,9 @@ def start(day=None):
                 swing_trade.sell_time = webull_order.filled_time
             # adding a second time is ok, it will not duplicate the relation
             swing_trade.orders.add(webull_order)
+            # fill webull order setup
+            webull_order.setup = setup
+            webull_order.save()
         # update total cost
         swing_trade.total_cost = round(total_cost, 2)
         # update total sold

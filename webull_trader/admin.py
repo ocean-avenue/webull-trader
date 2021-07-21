@@ -321,6 +321,7 @@ class SwingPositionAdmin(admin.ModelAdmin):
         'stop_loss_price',
         'buy_date',
         'buy_time',
+        'require_adjustment',
         'order_ids',
     ]
 
@@ -338,8 +339,9 @@ class SwingTradeAdmin(admin.ModelAdmin):
         'buy_date',
         'sell_date',
         'setup',
-        'note',
+        'require_adjustment',
         'order_ids',
+        'note',
     ]
 
 
