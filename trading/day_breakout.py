@@ -104,10 +104,12 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
-        if not utils.check_bars_roc_strong(bars, period=self.entry_period):
+        ROC = utils.get_bars_price_rate_of_change(
+            bars, period=self.entry_period)
+        if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
             utils.print_trading_log(
-                "<{}> candle chart price rate of change for {} period is weak, no entry!".format(symbol, self.entry_period))
+                "<{}> candle chart price rate of change for {} period is weak [{}], no entry!".format(symbol, self.entry_period, ROC))
             return False
 
         if symbol in self.tracking_stats:

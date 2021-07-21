@@ -364,6 +364,19 @@ def check_trading_time_match(time):
     return True
 
 
+def get_bars_price_rate_of_change(bars, period=10):
+    """
+    get price rate of change
+    """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    period_price = period_bars.iloc[0]['close']
+    current_price = bars.iloc[-1]['close']
+    ROC = (current_price - period_price) / period_price * 100
+    return ROC
+
+
 def check_bars_updated(bars, time_scale=1):
     """
     check if have valid latest chart data, delay no more than 1 minute
@@ -509,19 +522,6 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
             long_wick_up_count += 1
         prev_row = row
     return long_wick_up_count >= count
-
-
-def check_bars_roc_strong(bars, period=10):
-    """
-    check if price rate of change is strong
-    """
-    period = min(len(bars) - 1, period)
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    period_price = period_bars.iloc[0]['close']
-    current_price = bars.iloc[-1]['close']
-    ROC = (current_price - period_price) / period_price * 100
-    return ROC > config.DAY_PRICE_RATE_OF_CHANGE
 
 
 def check_bars_rel_volume(bars):
