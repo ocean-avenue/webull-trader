@@ -897,10 +897,13 @@ def get_pre_market_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(values_obj["price"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -908,6 +911,7 @@ def get_pre_market_gainers(count=10):
                             "change": change,
                             "change_percentage": change_percentage,
                             "price": price,
+                            "close": close,
                             "market_value": market_value,
                         }
                     )
@@ -947,11 +951,13 @@ def get_top_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(ticker_obj["pprice"])
-                    close = float(ticker_obj["close"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -986,10 +992,13 @@ def get_after_market_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(values_obj["price"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -997,6 +1006,7 @@ def get_after_market_gainers(count=10):
                             "change": change,
                             "change_percentage": change_percentage,
                             "price": price,
+                            "close": close,
                             "market_value": market_value,
                         }
                     )
@@ -1024,10 +1034,13 @@ def get_pre_market_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(values_obj["price"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     losers.append(
                         {
                             "symbol": symbol,
@@ -1035,6 +1048,7 @@ def get_pre_market_losers(count=10):
                             "change": change,
                             "change_percentage": change_percentage,
                             "price": price,
+                            "close": close,
                             "market_value": market_value,
                         }
                     )
@@ -1074,11 +1088,13 @@ def get_top_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(ticker_obj["pprice"])
-                    close = float(ticker_obj["close"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     losers.append(
                         {
                             "symbol": symbol,
@@ -1113,10 +1129,13 @@ def get_after_market_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
-                    change = float(values_obj["change"])
-                    change_percentage = float(values_obj["changeRatio"])
-                    price = float(values_obj["price"])
-                    market_value = float(ticker_obj["marketValue"])
+                    change = utils.get_attr_to_float(values_obj, "change")
+                    change_percentage = utils.get_attr_to_float(
+                        values_obj, "changeRatio")
+                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    close = utils.get_attr_to_float(values_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -1124,6 +1143,7 @@ def get_after_market_losers(count=10):
                             "change": change,
                             "change_percentage": change_percentage,
                             "price": price,
+                            "close": close,
                             "market_value": market_value,
                         }
                     )
