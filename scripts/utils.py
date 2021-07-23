@@ -507,6 +507,9 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
         mid = max(row["close"], row["open"])
         high = row["high"]
         low = row["low"]
+        # make sure the candle is red
+        if row["close"] > row["open"]:
+            continue
         # make sure long wick body is larger than average candle size
         if (high - low) < avg_candle_size * config.LONG_WICK_AVG_CANDLE_RATIO:
             continue
