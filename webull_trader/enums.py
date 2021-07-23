@@ -171,6 +171,7 @@ class AlgorithmType:
     DAY_EARNINGS_BREAKOUT = 9
     DAY_BREAKOUT_10 = 10
     DAY_BREAKOUT_NEW_HIGH = 11
+    # breakout entry with 10 candles new high (5min candle)
     DAY_BREAKOUT_10_5 = 12
     DAY_BREAKOUT_PRE_LOSERS = 13
     DAY_BREAKOUT_55 = 14
@@ -178,6 +179,8 @@ class AlgorithmType:
     DAY_GRINDING_LARGE_CAP = 16
     DAY_GRINDING_SYMBOLS = 17
     DAY_BREAKOUT_ASK = 18
+    # breakout entry with 20 candles new high, 11 candles new low
+    DAY_BREAKOUT_20_11 = 19
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -229,6 +232,8 @@ class AlgorithmType:
             return 'Grinding day trading with specific symbols.'
         if val == AlgorithmType.DAY_BREAKOUT_ASK:
             return 'Breakout day trade, entry with ask price limit order.'
+        if val == AlgorithmType.DAY_BREAKOUT_20_11:
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 11 candles new low'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -283,6 +288,8 @@ class AlgorithmType:
             return 'DAY (GRINDING SYMBOLS)'
         if val == AlgorithmType.DAY_BREAKOUT_ASK:
             return 'DAY (BREAKOUT ASK)'
+        if val == AlgorithmType.DAY_BREAKOUT_20_11:
+            return 'DAY (BREAKOUT 20,11)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -338,6 +345,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_GRINDING_SYMBOLS)),
             (AlgorithmType.DAY_BREAKOUT_ASK, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_ASK)),
+            (AlgorithmType.DAY_BREAKOUT_20_11, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_20_11)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
