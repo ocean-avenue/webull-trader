@@ -161,7 +161,8 @@
     series: [{
       data: {{net_assets.daily_values|safe}},
       type: 'line',
-      areaStyle: {}
+      areaStyle: {},
+      smooth: true
     }]
   };
   net_assets_chart.setOption(net_assets_option);
