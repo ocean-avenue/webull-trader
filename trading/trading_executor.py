@@ -260,8 +260,16 @@ def start():
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_20_11:
         # DAY_BREAKOUT: breakout trade 20,11 candles
-        strategies.append(DayTradingBreakoutAsk(
+        strategies.append(DayTradingBreakout(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=11))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_20_9:
+        # DAY_BREAKOUT: breakout trade 20,9 candles
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_20_8:
+        # DAY_BREAKOUT: breakout trade 20,8 candles
+        strategies.append(DayTradingBreakout(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=8))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
         # DAY_BREAKOUT: breakout trade 30 candles
         strategies.append(DayTradingBreakout(
