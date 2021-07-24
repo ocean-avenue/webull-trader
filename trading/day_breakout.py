@@ -232,9 +232,9 @@ class DayTradingBreakout(StrategyBase):
                         symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, buy_price))
-                    # use min of (ask price, prev candle middle)
-                    stop_loss = min(round(
-                        (prev_candle['high'] + prev_candle['low']) / 2, 2), round(buy_price * 0.98, 2))
+                    # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+                    stop_loss = max(min(round((prev_candle['high'] + prev_candle['low']) / 2, 2), round(
+                        buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)), round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
                     # update pending buy
                     self.update_pending_buy_order(
                         symbol, order_response, stop_loss=stop_loss)

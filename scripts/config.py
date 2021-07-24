@@ -50,6 +50,10 @@ SWING_PRICE_RATE_OF_CHANGE = 30
 LARGE_CAP_MARKET_CAP = 2000000000
 # incrase ratio of bid price for buy
 BUY_BID_PRICE_RATIO = 1.01
+# day trading min stop loss 2%
+MIN_DAY_STOP_LOSS = 0.02
+# day trading max stop loss 5%
+MAX_DAY_STOP_LOSS = 0.05
 
 # color config
 
