@@ -544,11 +544,11 @@ def check_bars_rel_volume(bars):
     return False
 
 
-def check_bars_volatility(bars):
+def check_bars_volatility(bars, period=10):
     """
     check if has bar's ohlc has different price
     """
-    period_bars = bars.tail(10)
+    period_bars = bars.tail(period)
     flat_count = 0
     price_set = set()
     for index, row in period_bars.iterrows():
