@@ -64,7 +64,7 @@ def start():
             # update add_unit_price, stop_loss_price
             if i == len(order_ids) - 1:
                 # add unit price
-                add_unit_price = round(webull_order.avg_price + N / 2, 2)
+                add_unit_price = round(webull_order.avg_price + N, 2)
                 swing_position.add_unit_price = add_unit_price
                 # stop loss price
                 stop_loss_price = round(webull_order.avg_price - 2 * N, 2)
