@@ -261,6 +261,43 @@ class HistoricalDailyBarAdmin(admin.ModelAdmin):
 admin.site.register(models.HistoricalDailyBar, HistoricalDailyBarAdmin)
 
 
+class DayPositionAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'total_cost',
+        'quantity',
+        'setup',
+        'add_unit_price',
+        'stop_loss_price',
+        'buy_date',
+        'buy_time',
+        'require_adjustment',
+        'order_ids',
+    ]
+
+
+admin.site.register(models.DayPosition,
+                    DayPositionAdmin)
+
+
+class DayTradeAdmin(admin.ModelAdmin):
+    list_display = [
+        'symbol',
+        'total_cost',
+        'total_sold',
+        'quantity',
+        'buy_date',
+        'sell_date',
+        'setup',
+        'require_adjustment',
+        'order_ids',
+    ]
+
+
+admin.site.register(models.DayTrade,
+                    DayTradeAdmin)
+
+
 class HistoricalDayTradePerformanceAdmin(admin.ModelAdmin):
     list_display = [
         'date',
@@ -364,43 +401,6 @@ class SwingHistoricalDailyBarAdmin(admin.ModelAdmin):
 
 admin.site.register(models.SwingHistoricalDailyBar,
                     SwingHistoricalDailyBarAdmin)
-
-
-class OvernightPositionAdmin(admin.ModelAdmin):
-    list_display = [
-        'symbol',
-        'order_id',
-        'setup',
-        'quantity',
-        'cost',
-        'buy_date',
-        'buy_time',
-    ]
-
-
-admin.site.register(models.OvernightPosition,
-                    OvernightPositionAdmin)
-
-
-class OvernightTradeAdmin(admin.ModelAdmin):
-    list_display = [
-        'symbol',
-        'quantity',
-        'buy_date',
-        'buy_price',
-        'buy_order_id',
-        'sell_date',
-        'sell_price',
-        'sell_order_id',
-        'setup',
-        'note',
-        'buy_time',
-        'sell_time',
-    ]
-
-
-admin.site.register(models.OvernightTrade,
-                    OvernightTradeAdmin)
 
 
 class ManualTradeRequestAdmin(admin.ModelAdmin):
