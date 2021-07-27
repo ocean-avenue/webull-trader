@@ -301,50 +301,6 @@ class HistoricalDailyBar(models.Model):
         return "[{}] <{}> O:{}, H:{}, L:{}, C:{}".format(self.date, self.symbol, self.open, self.high, self.low, self.close)
 
 
-# TODO, depricated, use DayPosition
-class OvernightPosition(models.Model):
-    order_id = models.CharField(max_length=128)
-    symbol = models.CharField(max_length=64)
-    ticker_id = models.CharField(max_length=128)
-    cost = models.FloatField()
-    quantity = models.PositiveIntegerField(default=0)
-    buy_date = models.DateField()
-    buy_time = models.DateTimeField()
-
-    setup = models.PositiveSmallIntegerField(
-        choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.DAY_EARNINGS_GAP
-    )
-
-    def __str__(self):
-        return "[{}] <{}> x{} ${}".format(self.buy_date, self.symbol, self.quantity, self.cost)
-
-
-# TODO, depricated, use DayTrade
-class OvernightTrade(models.Model):
-    symbol = models.CharField(max_length=64)
-    quantity = models.PositiveIntegerField()
-
-    buy_date = models.DateField()
-    buy_time = models.DateTimeField()
-    buy_price = models.FloatField()
-    buy_order_id = models.CharField(max_length=128)
-
-    sell_date = models.DateField()
-    sell_time = models.DateTimeField()
-    sell_price = models.FloatField()
-    sell_order_id = models.CharField(max_length=128)
-
-    setup = models.PositiveSmallIntegerField(
-        choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.DAY_EARNINGS_GAP
-    )
-    note = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return "[{}] <{}> x{} ${}/${}".format(self.sell_date, self.symbol, self.quantity, self.buy_price, self.sell_price)
-
-
 class DayPosition(models.Model):
     symbol = models.CharField(max_length=64)
     ticker_id = models.CharField(max_length=128)

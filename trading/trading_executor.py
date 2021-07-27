@@ -5,7 +5,7 @@
 import time
 from datetime import datetime, timedelta
 from webull_trader.enums import AlgorithmType, SetupType
-from webull_trader.models import OvernightPosition, TradingSettings
+from webull_trader.models import DayPosition, TradingSettings
 from sdk import webullsdk
 from scripts import utils, config
 
@@ -45,7 +45,7 @@ class TradingExecutor:
         last_login_refresh_time = datetime.now()
 
         # check unsold tickers
-        unsold_positions = OvernightPosition.objects.filter(
+        unsold_positions = DayPosition.objects.filter(
             setup=SetupType.ERROR_FAILED_TO_SELL)
         for position in unsold_positions:
             self.unsold_tickers[position.symbol] = {

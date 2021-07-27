@@ -8,7 +8,7 @@ def start(day=None):
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
     from scripts import utils
-    from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade, OvernightPosition, OvernightTrade
+    from webull_trader.models import WebullOrder, SwingWatchlist, SwingPosition, SwingTrade, DayPosition, DayTrade
     from webull_trader.enums import ActionType
 
     if day == None:
@@ -254,36 +254,77 @@ def start(day=None):
         # save
         swing_trade.save()
 
-    for order in all_day_orders:
-        # check overnight position
-        overnight_position = OvernightPosition.objects.filter(
-            order_id=order.order_id).first()
-        if overnight_position:
-            overnight_position.cost = order.avg_price
-            overnight_position.quantity = order.filled_quantity
-            overnight_position.buy_time = order.filled_time
-            overnight_position.buy_date = order.filled_time.date()
-            # save
-            overnight_position.save()
-            # fill order setup
-            order.setup = overnight_position.setup
-            order.save()
-            continue
+    # adjust day position data by filled order
+    day_positions = DayPosition.objects.filter(require_adjustment=True)
+    for day_position in day_positions:
+        order_ids = day_position.order_ids.split(',')
+        total_cost = 0.0
+        quantity = 0
+        for i in range(0, len(order_ids)):
+            order_id = order_ids[i]
+            webull_order = WebullOrder.objects.filter(
+                order_id=order_id).first()
+            if webull_order.action == ActionType.BUY:
+                total_cost += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+                quantity += webull_order.filled_quantity
+            # update buy date, buy time
+            if i == 0:
+                day_position.buy_date = webull_order.filled_time.date()
+                day_position.buy_time = webull_order.filled_time
+            # adding a second time is ok, it will not duplicate the relation
+            day_position.orders.add(webull_order)
+        # update total cost
+        day_position.total_cost = round(total_cost, 2)
+        # update quantity
+        day_position.quantity = quantity
+        # reset require_adjustment
+        day_position.require_adjustment = False
+        # save
+        day_position.save()
 
-        # check overnight trade
-        overnight_trade = OvernightTrade.objects.filter(
-            sell_order_id=order.order_id).first()
-        if overnight_trade:
-            overnight_trade.sell_price = order.avg_price
-            overnight_trade.quantity = order.filled_quantity
-            overnight_trade.sell_time = order.filled_time
-            overnight_trade.sell_date = order.filled_time.date()
-            # save
-            overnight_trade.save()
-            # fill order setup
-            order.setup = overnight_trade.setup
-            order.save()
-            continue
+    # adjust day trade data by filled order
+    day_trades = DayTrade.objects.filter(require_adjustment=True)
+    for day_trade in day_trades:
+        order_ids = day_trade.order_ids.split(',')
+        total_cost = 0.0
+        total_sold = 0.0
+        quantity = 0
+        setup = day_trade.setup
+        for i in range(0, len(order_ids)):
+            order_id = order_ids[i]
+            webull_order = WebullOrder.objects.filter(
+                order_id=order_id).first()
+            if webull_order.action == ActionType.BUY:
+                total_cost += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+                quantity += webull_order.filled_quantity
+            elif webull_order.action == ActionType.SELL:
+                total_sold += (webull_order.avg_price *
+                               webull_order.filled_quantity)
+            # update buy date, buy time
+            if i == 0:
+                day_trade.buy_date = webull_order.filled_time.date()
+                day_trade.buy_time = webull_order.filled_time
+            # update sell date, sell time
+            if i == len(order_ids) - 1:
+                day_trade.sell_date = webull_order.filled_time.date()
+                day_trade.sell_time = webull_order.filled_time
+            # adding a second time is ok, it will not duplicate the relation
+            day_trade.orders.add(webull_order)
+            # fill webull order setup
+            webull_order.setup = setup
+            webull_order.save()
+        # update total cost
+        day_trade.total_cost = round(total_cost, 2)
+        # update total sold
+        day_trade.total_sold = round(total_sold, 2)
+        # update quantity
+        day_trade.quantity = quantity
+        # reset require_adjustment
+        day_trade.require_adjustment = False
+        # save
+        day_trade.save()
 
 
 if __name__ == "django.core.management.commands.shell":

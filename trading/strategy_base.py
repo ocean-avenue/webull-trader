@@ -289,6 +289,8 @@ class StrategyBase:
                         order_id = utils.get_order_id_from_response(
                             order_response, paper=self.paper)
                         if order_id:
+                            # update pending_order_id
+                            self.tracking_tickers[symbol]['pending_order_id'] = order_id
                             utils.save_webull_order_note(
                                 order_id, setup=self.get_setup(), note="Resubmit buy order.")
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
@@ -374,6 +376,8 @@ class StrategyBase:
                         order_id = utils.get_order_id_from_response(
                             order_response, paper=self.paper)
                         if order_id:
+                            # update pending_order_id
+                            self.tracking_tickers[symbol]['pending_order_id'] = order_id
                             exit_note = self.tracking_tickers[symbol]['exit_note']
                             # also save exit note if have
                             if exit_note:
@@ -393,7 +397,7 @@ class StrategyBase:
                         utils.print_trading_log(
                             "Failed to sell order <{}>!".format(symbol))
                         # add to overnight position for next sell
-                        utils.save_overnight_position(
+                        utils.add_day_position(
                             symbol,
                             ticker["ticker_id"],
                             # fill random order id, no use
@@ -541,7 +545,7 @@ class StrategyBase:
         # add unsold_tickers to overnight position
         for symbol in list(unsold_tickers):
             ticker = unsold_tickers[symbol]
-            utils.save_overnight_position(
+            utils.add_day_position(
                 symbol,
                 ticker["ticker_id"],
                 # fill random order id, no use

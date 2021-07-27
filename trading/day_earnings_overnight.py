@@ -4,7 +4,7 @@
 
 from django.utils import timezone
 from datetime import date, datetime
-from webull_trader.models import EarningCalendar, OvernightPosition
+from webull_trader.models import EarningCalendar, DayPosition
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk
@@ -47,7 +47,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 # add overnight position
                 cost = self.trading_price[symbol]['cost']
                 quantity = self.trading_price[symbol]['quantity']
-                utils.save_overnight_position(
+                utils.add_day_position(
                     symbol, ticker_id, order_id, self.get_setup(), cost, quantity, timezone.now())
             return
 
@@ -55,13 +55,13 @@ class DayTradingEarningsOvernight(StrategyBase):
             order_id = ticker['pending_order_id']
             if self.check_sell_order_filled(ticker, resubmit=50):
                 # remove overnight position
-                position = OvernightPosition.objects.filter(symbol=symbol).filter(
-                    ticker_id=ticker_id).filter(setup=self.get_setup()).first()
+                position = DayPosition.objects.filter(
+                    symbol=symbol, setup=self.get_setup()).first()
                 if position:
                     # add overnight trade
                     sell_price = self.trading_price[symbol]['sell_price']
-                    utils.save_overnight_trade(
-                        symbol, position, order_id, sell_price, timezone.now())
+                    utils.add_day_trade(
+                        symbol, ticker_id, position, order_id, sell_price, timezone.now())
                 else:
                     utils.print_trading_log(
                         "❌ Cannot find overnight position for <{}>!".format(symbol))
@@ -149,7 +149,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                     "Add ticker <{}> to check earning gap!".format(symbol))
         # prepare tickers for sell
         if self.is_regular_market_hour():
-            earning_positions = OvernightPosition.objects.filter(
+            earning_positions = DayPosition.objects.filter(
                 setup=self.get_setup())
             for position in earning_positions:
                 symbol = position.symbol

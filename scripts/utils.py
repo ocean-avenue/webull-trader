@@ -8,9 +8,9 @@ from datetime import datetime, date
 from scripts import config
 from sdk import fmpsdk, webullsdk
 from webull_trader import enums
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, OvernightPosition, \
-    OvernightTrade, StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
-    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
+    StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, \
+    WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 # sector values
 BASIC_MATERIALS = "Basic Materials"
@@ -1122,35 +1122,40 @@ def save_swing_hist_daily_bar(bar_data):
         bar.save()
 
 
-def save_overnight_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time):
-    position = OvernightPosition.objects.filter(order_id=order_id).first()
-    if not position:
-        position = OvernightPosition(order_id=order_id)
-    position.symbol = symbol
-    position.ticker_id = ticker_id
-    position.setup = setup
-    position.cost = cost
-    position.quantity = quant
-    position.buy_time = buy_time
-    position.buy_date = buy_time.date()
+def add_day_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time, units=1, target_units=4, add_unit_price=9999, stop_loss_price=0):
+    position = DayPosition(
+        symbol=symbol,
+        ticker_id=ticker_id,
+        order_ids=order_id,
+        total_cost=round(cost * quant, 2),
+        quantity=quant,
+        units=units,
+        target_units=target_units,
+        add_unit_price=add_unit_price,
+        stop_loss_price=stop_loss_price,
+        buy_date=buy_time.date(),
+        buy_time=buy_time,
+        setup=setup,
+        require_adjustment=True,
+    )
     position.save()
 
 
-def save_overnight_trade(symbol, position, order_id, sell_price, sell_time):
-    trade = OvernightTrade.objects.filter(sell_order_id=order_id).first()
-    if not trade:
-        trade = OvernightTrade(sell_order_id=order_id)
-    trade.symbol = symbol
-    trade.quantity = position.quantity
-    trade.buy_date = position.buy_date
-    trade.buy_time = position.buy_time
-    trade.buy_price = position.cost
-    trade.buy_order_id = position.order_id
-    trade.sell_time = sell_time
-    trade.sell_date = sell_time.date()
-    trade.sell_price = sell_price
-    trade.sell_order_id = order_id
-    trade.setup = position.setup
+def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):
+    trade = DayTrade(
+        symbol=symbol,
+        ticker_id=ticker_id,
+        order_ids="{},{}".format(position.order_ids, order_id),
+        total_cost=position.total_cost,
+        total_sold=round(sell_price * position.quantity, 2),
+        quantity=position.quantity,
+        buy_date=position.buy_date,
+        buy_time=position.buy_time,
+        sell_date=sell_time.date(),
+        sell_time=sell_time,
+        setup=position.setup,
+        require_adjustment=True,
+    )
     trade.save()
 
 
