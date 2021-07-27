@@ -118,6 +118,7 @@ class StrategyBase:
             "prev_close": prev_close,
             "prev_high": prev_high,
             "resubmit_count": 0,
+            "position_obj": None,
         }
 
     def build_error_short_ticker(self, symbol, ticker_id):

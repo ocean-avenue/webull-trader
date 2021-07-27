@@ -185,6 +185,7 @@ class AlgorithmType:
     DAY_BREAKOUT_20_9 = 20
     # breakout entry with 20 candles new high, 8 candles new low
     DAY_BREAKOUT_20_8 = 21
+    DAY_BREAKOUT_SCALE = 22
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -237,11 +238,13 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_BREAKOUT_ASK:
             return 'Breakout day trade, entry with ask price limit order.'
         if val == AlgorithmType.DAY_BREAKOUT_20_11:
-            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 11 candles new low'
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 11 candles new low.'
         if val == AlgorithmType.DAY_BREAKOUT_20_9:
-            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 9 candles new low'
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 9 candles new low.'
         if val == AlgorithmType.DAY_BREAKOUT_20_8:
-            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 8 candles new low'
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 8 candles new low.'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE:
+            return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -302,6 +305,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT 20,9)'
         if val == AlgorithmType.DAY_BREAKOUT_20_8:
             return 'DAY (BREAKOUT 20,8)'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE:
+            return 'DAY (BREAKOUT SCALE)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -363,6 +368,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_20_9)),
             (AlgorithmType.DAY_BREAKOUT_20_8, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_20_8)),
+            (AlgorithmType.DAY_BREAKOUT_SCALE, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_SCALE)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
