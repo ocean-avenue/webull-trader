@@ -106,8 +106,8 @@ class StrategyBase:
             "pending_sell": False,
             "pending_order_id": None,
             "pending_order_time": None,
-            "order_filled_time": None,
             "last_profit_loss_rate": None,
+            "last_buy_time": None,
             "last_sell_time": None,
             "positions": 0,
             "start_time": datetime.now(),
@@ -250,7 +250,7 @@ class StrategyBase:
                 self.tracking_tickers[symbol]['pending_order_id'] = None
                 self.tracking_tickers[symbol]['pending_order_time'] = None
                 self.tracking_tickers[symbol]['resubmit_count'] = 0
-                self.tracking_tickers[symbol]['order_filled_time'] = datetime.now(
+                self.tracking_tickers[symbol]['last_buy_time'] = datetime.now(
                 )
                 utils.print_trading_log(
                     "Buy order <{}> filled, cost: {}".format(symbol, cost))

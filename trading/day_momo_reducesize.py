@@ -24,7 +24,8 @@ class DayTradingMomoReduceSize(DayTradingMomo):
                 self.order_amount_limit * win_rate, self.order_amount_limit * 0.3)
         return buy_position_amount
 
-    def check_if_track_symbol(self, symbol):
+    def check_if_track_ticker(self, ticker):
+        symbol = ticker['symbol']
         # # check if sell not long ago
         # if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
         #     return False

@@ -219,6 +219,7 @@ def start():
     from trading.day_breakout_earnings import DayTradingBreakoutEarnings
     from trading.day_breakout_ask import DayTradingBreakoutAsk
     from trading.day_breakout_scale import DayTradingBreakoutScale
+    from trading.day_breakout_period import DayTradingBreakoutPeriod
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.day_vwap_largecap import DayTradingVWAPLargeCap
     from trading.day_grinding_largecap import DayTradingGrindingLargeCap
@@ -274,6 +275,10 @@ def start():
     elif algo_type == AlgorithmType.DAY_BREAKOUT_SCALE:
         # DAY_BREAKOUT: breakout trade 20 candles with scale in
         strategies.append(DayTradingBreakoutScale(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_PERIOD:
+        # DAY_BREAKOUT: breakout trade 20 candles with period exit
+        strategies.append(DayTradingBreakoutPeriod(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
         # DAY_BREAKOUT: breakout trade 30 candles

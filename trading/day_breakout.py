@@ -56,7 +56,7 @@ class DayTradingBreakout(StrategyBase):
         # check if new high
         if current_price < period_high_price:
             return False
-        if not self.check_if_trade_price_new_high(symbol, current_price):
+        if not self.check_if_trade_price_new_high(ticker, current_price):
             return False
 
         # check ema 9
@@ -164,11 +164,19 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
+        elif self.check_if_trade_period_timeout(ticker):
+            utils.print_trading_log(
+                "<{}> trading period timeout, exit!".format(symbol))
+            exit_trading = True
+            exit_note = "Trading period timeout."
 
         return (exit_trading, exit_note)
 
-    def check_if_trade_price_new_high(self, symbol, price):
+    def check_if_trade_price_new_high(self, ticker, price):
         return True
+
+    def check_if_trade_period_timeout(self, ticker):
+        return False
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 

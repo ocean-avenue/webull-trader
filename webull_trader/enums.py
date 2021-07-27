@@ -169,15 +169,20 @@ class AlgorithmType:
     DAY_EARNINGS = 7
     DAY_EARNINGS_OVERNIGHT = 8
     DAY_EARNINGS_BREAKOUT = 9
+    # breakout entry with 10 candles new high
     DAY_BREAKOUT_10 = 10
+    # breakout entry with 10 candles new high, only entry if price reach new high
     DAY_BREAKOUT_NEW_HIGH = 11
     # breakout entry with 10 candles new high (5min candle)
     DAY_BREAKOUT_10_5 = 12
+    # breakout entry with 10 candles new high with pre day losers
     DAY_BREAKOUT_PRE_LOSERS = 13
+    # breakout entry with 55 candles new high
     DAY_BREAKOUT_55 = 14
     DAY_VWAP_RECLAIM_LARGE_CAP = 15
     DAY_GRINDING_LARGE_CAP = 16
     DAY_GRINDING_SYMBOLS = 17
+    # breakout entry with 20 candles new high, entry with ask price
     DAY_BREAKOUT_ASK = 18
     # breakout entry with 20 candles new high, 11 candles new low
     DAY_BREAKOUT_20_11 = 19
@@ -185,7 +190,10 @@ class AlgorithmType:
     DAY_BREAKOUT_20_9 = 20
     # breakout entry with 20 candles new high, 8 candles new low
     DAY_BREAKOUT_20_8 = 21
+    # breakout entry with 20 candles new high with scale in
     DAY_BREAKOUT_SCALE = 22
+    # breakout entry with 20 candles new high with period exit
+    DAY_BREAKOUT_PERIOD = 23
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -245,6 +253,8 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 8 candles new low.'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price.'
+        if val == AlgorithmType.DAY_BREAKOUT_PERIOD:
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if period time exceed'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -307,6 +317,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT 20,8)'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE:
             return 'DAY (BREAKOUT SCALE)'
+        if val == AlgorithmType.DAY_BREAKOUT_PERIOD:
+            return 'DAY (BREAKOUT PERIOD)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -370,6 +382,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_20_8)),
             (AlgorithmType.DAY_BREAKOUT_SCALE, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_SCALE)),
+            (AlgorithmType.DAY_BREAKOUT_PERIOD, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_PERIOD)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(

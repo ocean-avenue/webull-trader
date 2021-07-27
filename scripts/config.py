@@ -54,6 +54,8 @@ BUY_BID_PRICE_RATIO = 1.01
 MIN_DAY_STOP_LOSS = 0.02
 # day trading max stop loss 5%
 MAX_DAY_STOP_LOSS = 0.05
+# trading period timeout in seconds
+OBSERVE_TIMEOUT_IN_SEC = 45
 
 # color config
 

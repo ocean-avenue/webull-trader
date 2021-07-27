@@ -36,7 +36,7 @@ class DayTradingMomo(StrategyBase):
         # check current price above vwap, ema9 and first candle make new high
         if current_price > current_candle['vwap'] and current_price > current_candle['ema9'] \
                 and current_candle['high'] > prev_candle['high'] \
-                and self.check_if_trade_price_new_high(ticker['symbol'], current_price):
+                and self.check_if_trade_price_new_high(ticker, current_price):
             return True
         return False
 
@@ -242,10 +242,10 @@ class DayTradingMomo(StrategyBase):
                 self.update_trading_stats(
                     symbol, last_price, cost_price, profit_loss_rate)
 
-    def check_if_trade_price_new_high(self, symbol, price):
+    def check_if_trade_price_new_high(self, ticker, price):
         return True
 
-    def check_if_track_symbol(self, symbol):
+    def check_if_track_ticker(self, ticker):
         # # check if sell not long ago
         # if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
         #     return False
@@ -275,10 +275,11 @@ class DayTradingMomo(StrategyBase):
             if symbol in self.tracking_tickers:
                 continue
             ticker_id = gainer["ticker_id"]
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
-            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_symbol(symbol):
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_ticker(ticker):
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
                 m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty:
@@ -289,8 +290,6 @@ class DayTradingMomo(StrategyBase):
                 # check if trasaction amount meets requirement
                 if self.check_track(latest_candle) or self.check_track(latest_candle2):
                     # found trading ticker
-                    ticker = self.build_tracking_ticker(
-                        symbol, ticker_id)
                     self.tracking_tickers[symbol] = ticker
                     utils.print_trading_log(
                         "Found <{}> to trade!".format(symbol))
