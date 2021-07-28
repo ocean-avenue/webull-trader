@@ -193,12 +193,18 @@ class DayTradingBreakout(StrategyBase):
 
         holding_quantity = ticker['positions']
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
-        if holding_quantity == 0 and (datetime.now() - ticker['start_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
-            utils.print_trading_log(
-                "Trading <{}> session timeout!".format(symbol))
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-            return
+        if holding_quantity == 0:
+            timeout = False
+            if ticker['last_buy_time'] and (datetime.now() - ticker['last_buy_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+                timeout = True
+            elif (datetime.now() - ticker['start_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+                timeout = True
+            if timeout:
+                utils.print_trading_log(
+                    "Trading <{}> session timeout!".format(symbol))
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                return
 
         if holding_quantity == 0:
             # fetch 1m bar charts
