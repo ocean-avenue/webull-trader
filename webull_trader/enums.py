@@ -194,6 +194,8 @@ class AlgorithmType:
     DAY_BREAKOUT_SCALE = 22
     # breakout entry with 20 candles new high with period exit
     DAY_BREAKOUT_PERIOD = 23
+    # breakout entry with 20 candles new high, 1 candles new low
+    DAY_BREAKOUT_20_1 = 24
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -251,6 +253,8 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 9 candles new low.'
         if val == AlgorithmType.DAY_BREAKOUT_20_8:
             return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 8 candles new low.'
+        if val == AlgorithmType.DAY_BREAKOUT_20_1:
+            return 'Breakout day trade, entry if price reach 20 candles new high, exit if price reach 1 candles new low.'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price.'
         if val == AlgorithmType.DAY_BREAKOUT_PERIOD:
@@ -315,6 +319,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT 20,9)'
         if val == AlgorithmType.DAY_BREAKOUT_20_8:
             return 'DAY (BREAKOUT 20,8)'
+        if val == AlgorithmType.DAY_BREAKOUT_20_1:
+            return 'DAY (BREAKOUT 20,1)'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE:
             return 'DAY (BREAKOUT SCALE)'
         if val == AlgorithmType.DAY_BREAKOUT_PERIOD:
@@ -380,6 +386,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_20_9)),
             (AlgorithmType.DAY_BREAKOUT_20_8, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_20_8)),
+            (AlgorithmType.DAY_BREAKOUT_20_1, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_20_1)),
             (AlgorithmType.DAY_BREAKOUT_SCALE, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_SCALE)),
             (AlgorithmType.DAY_BREAKOUT_PERIOD, AlgorithmType.tostr(

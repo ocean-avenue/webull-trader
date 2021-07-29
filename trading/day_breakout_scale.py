@@ -9,3 +9,5 @@ class DayTradingBreakoutScale(DayTradingBreakout):
 
     def get_tag(self):
         return "DayTradingBreakoutScale"
+
+    # TODO
