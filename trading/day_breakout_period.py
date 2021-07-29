@@ -13,6 +13,6 @@ class DayTradingBreakoutPeriod(DayTradingBreakout):
         return "DayTradingBreakoutPeriod"
 
     def check_if_trade_period_timeout(self, ticker):
-        if (datetime.now() - ticker['last_buy_time']) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+        if (datetime.now() - ticker['last_buy_time']) >= timedelta(seconds=config.DAY_PERIOD_TIMEOUT_IN_SEC):
             return True
         return False
