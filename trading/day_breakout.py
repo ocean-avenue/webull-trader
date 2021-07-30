@@ -123,10 +123,17 @@ class DayTradingBreakout(StrategyBase):
 
     def check_exit(self, ticker, bars):
         symbol = ticker['symbol']
-        exit_trading = False
-        exit_note = None
         # last formed candle
         last_candle = bars.iloc[-2]
+        last_candle_time = bars.index[-2].to_pydatetime()
+        last_buy_time = ticker['last_buy_time']
+        # align timezone info
+        last_buy_time = last_buy_time.replace(tzinfo=last_candle_time.tzinfo)
+        # make sure last formed candle is not same as buy candle
+        if ((last_buy_time - last_candle_time).seconds//60) % 60 == 0:
+            return (False, None)
+        exit_trading = False
+        exit_note = None
         last_price = last_candle['close']
         period_bars = bars.head(len(bars) - 2).tail(self.exit_period)
         period_low_price = 99999
