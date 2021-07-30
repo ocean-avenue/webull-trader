@@ -121,27 +121,6 @@ class DayTradingBreakout(StrategyBase):
 
         return True
 
-    def check_stop_profit(self, position):
-        exit_trading = False
-        exit_note = None
-        profit_loss_rate = float(position['unrealizedProfitLossRate'])
-        if profit_loss_rate >= 1:
-            exit_trading = True
-            exit_note = "Home run at {}!".format(position['lastPrice'])
-        return (exit_trading, exit_note)
-
-    def check_stop_loss(self, ticker, bars):
-        exit_trading = False
-        exit_note = None
-        # last formed candle
-        last_candle = bars.iloc[-2]
-        last_price = last_candle['close']
-        # check stop loss
-        if ticker['stop_loss'] and last_price < ticker['stop_loss']:
-            exit_trading = True
-            exit_note = "Stop loss at {}!".format(last_price)
-        return (exit_trading, exit_note)
-
     def check_exit(self, ticker, bars):
         symbol = ticker['symbol']
         exit_trading = False
@@ -181,6 +160,27 @@ class DayTradingBreakout(StrategyBase):
 
         return (exit_trading, exit_note)
 
+    def check_stop_profit(self, position):
+        exit_trading = False
+        exit_note = None
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        if profit_loss_rate >= 1:
+            exit_trading = True
+            exit_note = "Home run at {}!".format(position['lastPrice'])
+        return (exit_trading, exit_note)
+
+    def check_stop_loss(self, ticker, bars):
+        exit_trading = False
+        exit_note = None
+        # last formed candle
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
+        # check stop loss
+        if ticker['stop_loss'] and last_price < ticker['stop_loss']:
+            exit_trading = True
+            exit_note = "Stop loss at {}!".format(last_price)
+        return (exit_trading, exit_note)
+
     def check_if_trade_price_new_high(self, ticker, price):
         return True
 
@@ -197,7 +197,8 @@ class DayTradingBreakout(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, resubmit_count=50)
+            self.check_sell_order_filled(
+                ticker, resubmit_count=50, stop_tracking=False)
             return
 
         holding_quantity = ticker['positions']

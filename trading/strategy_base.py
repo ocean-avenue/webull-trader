@@ -393,8 +393,7 @@ class StrategyBase:
                         self.tracking_tickers[symbol]['pending_order_time'] = None
                         self.tracking_tickers[symbol]['resubmit_count'] = 0
                         # remove from monitor
-                        if stop_tracking:
-                            del self.tracking_tickers[symbol]
+                        del self.tracking_tickers[symbol]
                         utils.print_trading_log(
                             "Failed to sell order <{}>!".format(symbol))
                         # add to overnight position for next sell
