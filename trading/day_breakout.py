@@ -121,6 +121,15 @@ class DayTradingBreakout(StrategyBase):
 
         return True
 
+    def check_stop_profit(self, position):
+        exit_trading = False
+        exit_note = None
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        if profit_loss_rate >= 1:
+            exit_trading = True
+            exit_note = "Home run at {}!".format(position['lastPrice'])
+        return (exit_trading, exit_note)
+
     def check_stop_loss(self, ticker, bars):
         exit_trading = False
         exit_note = None
@@ -278,29 +287,33 @@ class DayTradingBreakout(StrategyBase):
             if profit_loss_rate > max_profit_loss_rate:
                 self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
 
-            # get 1m bar charts
-            m1_bars = webullsdk.get_1m_bars(
-                ticker_id, count=(self.exit_period*self.time_scale+5))
+            # check stop profit, home run
+            exit_trading, exit_note = self.check_stop_profit(ticker_position)
+            if not exit_trading:
+                # get 1m bar charts
+                m1_bars = webullsdk.get_1m_bars(
+                    ticker_id, count=(self.exit_period*self.time_scale+5))
 
-            # get bars error
-            if m1_bars.empty:
-                utils.print_trading_log(
-                    "<{}> bars data error!".format(symbol))
-                exit_trading = True
-                exit_note = "Bars data error!"
-            else:
-                # convert bars
-                bars = m1_bars
-                if self.time_scale == 5:
-                    bars = utils.convert_5m_bars(m1_bars)
-                # check stop loss
-                exit_trading, exit_note = self.check_stop_loss(ticker, bars)
-                # check exit trading
-                if not exit_trading:
-                    utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
-                        symbol, round(profit_loss_rate * 100, 2)))
-                    # check exit trade
-                    exit_trading, exit_note = self.check_exit(ticker, bars)
+                # get bars error
+                if m1_bars.empty:
+                    utils.print_trading_log(
+                        "<{}> bars data error!".format(symbol))
+                    exit_trading = True
+                    exit_note = "Bars data error!"
+                else:
+                    # convert bars
+                    bars = m1_bars
+                    if self.time_scale == 5:
+                        bars = utils.convert_5m_bars(m1_bars)
+                    # check stop loss
+                    exit_trading, exit_note = self.check_stop_loss(
+                        ticker, bars)
+                    # check exit trading
+                    if not exit_trading:
+                        utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                            symbol, round(profit_loss_rate * 100, 2)))
+                        # check exit trade
+                        exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
             if exit_trading:
