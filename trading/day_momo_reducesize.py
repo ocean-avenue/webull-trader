@@ -12,7 +12,8 @@ class DayTradingMomoReduceSize(DayTradingMomo):
     def get_tag(self):
         return "DayTradingMomoReduceSize"
 
-    def get_buy_order_limit(self, symbol):
+    def get_buy_order_limit(self, ticker):
+        symbol = ticker['symbol']
         buy_position_amount = self.extended_order_amount_limit
         if self.is_regular_market_hour():
             buy_position_amount = self.order_amount_limit

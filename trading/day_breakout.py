@@ -227,7 +227,7 @@ class DayTradingBreakout(StrategyBase):
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
                 usable_cash = webullsdk.get_usable_cash()
-                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_position_amount = self.get_buy_order_limit(ticker)
                 if usable_cash <= buy_position_amount:
                     utils.print_trading_log(
                         "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))

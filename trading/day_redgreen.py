@@ -89,7 +89,7 @@ class DayTradingRedGreen(StrategyBase):
                         symbol, ask_price, prev_day_close))
                     return
                 usable_cash = webullsdk.get_usable_cash()
-                buy_position_amount = self.get_buy_order_limit(symbol)
+                buy_position_amount = self.get_buy_order_limit(ticker)
                 if usable_cash <= buy_position_amount:
                     utils.print_trading_log(
                         "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))

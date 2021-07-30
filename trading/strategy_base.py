@@ -274,7 +274,7 @@ class StrategyBase:
                         if ask_price == None:
                             return False
                         usable_cash = webullsdk.get_usable_cash()
-                        buy_position_amount = self.get_buy_order_limit(symbol)
+                        buy_position_amount = self.get_buy_order_limit(ticker)
                         if usable_cash <= buy_position_amount:
                             utils.print_trading_log(
                                 "Not enough cash to buy <{}> again, ask price: {}!".format(symbol, ask_price))
@@ -592,7 +592,7 @@ class StrategyBase:
     def get_setup(self):
         return 999
 
-    def get_buy_order_limit(self, symbol):
+    def get_buy_order_limit(self, ticker):
         if self.is_regular_market_hour():
             return self.order_amount_limit
         return self.extended_order_amount_limit
@@ -606,7 +606,8 @@ class StrategyBase:
         ask_price = webullsdk.get_ask_price_from_quote(quote)
         if ask_price == None or bid_price == None:
             return None
-        return min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+        # return min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+        return round((ask_price + bid_price) / 2, 2)
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
