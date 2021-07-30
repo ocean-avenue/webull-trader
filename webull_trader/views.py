@@ -1007,6 +1007,90 @@ def day_reports_holding(request):
 
 
 @login_required
+def day_reports_plpct(request):
+
+    cached_context = cache.get('day_reports_plpct_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    buy_orders, sell_orders = utils.get_day_trade_orders()
+    # day trades
+    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    plpct_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_plpct_range_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by P/L percentage
+    for day_trade in day_trades:
+        if 'sell_price' in day_trade:
+            percentage = round(
+                (day_trade['sell_price'] - day_trade['buy_price']) / day_trade['buy_price'] * 100, 2)
+            percentage_idx = utils.get_plpct_range_index(percentage)
+            gain = (day_trade['sell_price'] -
+                    day_trade['buy_price']) * day_trade['quantity']
+            if gain > 0:
+                plpct_statistics[percentage_idx]['win_trades'] += 1
+                plpct_statistics[percentage_idx]['total_profit'] += gain
+            else:
+                plpct_statistics[percentage_idx]['loss_trades'] += 1
+                plpct_statistics[percentage_idx]['total_loss'] += gain
+            plpct_statistics[percentage_idx]['profit_loss'] += gain
+            plpct_statistics[percentage_idx]['trades'] += 1
+    plpct_profit_loss = []
+    plpct_total_profit = []
+    plpct_total_loss = []
+    plpct_win_rate = []
+    plpct_profit_loss_ratio = []
+    plpct_trades = []
+    # calculate win rate and profit/loss ratio
+    for holding_stat in plpct_statistics:
+        plpct_trades.append(holding_stat['trades'])
+        plpct_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(holding_stat['profit_loss'], 2)))
+        plpct_total_profit.append(round(holding_stat['total_profit'], 2))
+        plpct_total_loss.append(round(holding_stat['total_loss'], 2))
+        if holding_stat['trades'] > 0:
+            plpct_win_rate.append(
+                round(holding_stat['win_trades']/holding_stat['trades'] * 100, 2))
+        else:
+            plpct_win_rate.append(0.0)
+        avg_profit = 1.0
+        if holding_stat['win_trades'] > 0:
+            avg_profit = holding_stat['total_profit'] / \
+                holding_stat['win_trades']
+        avg_loss = 1.0
+        if holding_stat['loss_trades'] > 0:
+            avg_loss = holding_stat['total_loss'] / holding_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if holding_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if holding_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        plpct_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "P/L %",
+        "labels": utils.get_plpct_range_labels(),
+        "profit_loss": plpct_profit_loss,
+        "total_profit": plpct_total_profit,
+        "total_loss": plpct_total_loss,
+        "win_rate": plpct_win_rate,
+        "profit_loss_ratio": plpct_profit_loss_ratio,
+        "trades": plpct_trades,
+    }
+
+    cache.set('day_reports_plpct_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
 def day_reports_hourly(request):
 
     cached_context = cache.get('day_reports_hourly_cache')
@@ -1252,7 +1336,8 @@ def swing_positions_symbol(request, symbol=None):
     d1_candle_data = utils.get_swing_daily_candle_data_for_render(symbol)
 
     # 1d trade records
-    _, d1_trade_quantity_records = utils.get_daily_trade_marker_from_position_for_render(position)
+    _, d1_trade_quantity_records = utils.get_daily_trade_marker_from_position_for_render(
+        position)
 
     # fmp news
     news = fmpsdk.get_news(symbol, count=16)

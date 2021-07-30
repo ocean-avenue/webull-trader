@@ -1605,6 +1605,52 @@ def get_holding_time_index(holding_sec):
     return index
 
 
+def get_plpct_range_labels():
+    return [
+        "-80~100%",  # 0
+        "-60~80%",  # 1
+        "-40~60%",  # 2
+        "-20~40%",  # 3
+        "-0~20%",  # 4
+        "+0~20%",  # 5
+        "+20~40%",  # 6
+        "+40~60%",  # 7
+        "+60~80%",  # 8
+        "+80~100%",  # 9
+        "+100~120%",  # 10
+        "+120%+",  # 11
+    ]
+
+
+def get_plpct_range_index(percentage):
+    index = -1
+    if percentage <= -80:
+        index = 0
+    elif percentage <= -60:
+        index = 1
+    elif percentage <= -40:
+        index = 2
+    elif percentage <= -20:
+        index = 3
+    elif percentage <= 0:
+        index = 4
+    elif percentage <= 20:
+        index = 5
+    elif percentage <= 40:
+        index = 6
+    elif percentage <= 60:
+        index = 7
+    elif percentage <= 80:
+        index = 8
+    elif percentage <= 100:
+        index = 9
+    elif percentage <= 120:
+        index = 10
+    else:
+        index = 11
+    return index
+
+
 def get_relative_volume_labels():
     return [
         "0-0.5",  # 0
