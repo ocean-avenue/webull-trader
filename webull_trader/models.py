@@ -525,3 +525,11 @@ class ManualTradeRequest(models.Model):
 
     def __str__(self):
         return "{} <{}> x{}".format(enums.ActionType.tostr(self.action), self.symbol, self.quantity)
+
+
+class NotifiedErrorExecution(models.Model):
+    execution_id = models.PositiveIntegerField()
+    notified_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "[{}] {}".format(self.notified_time, self.execution_id)

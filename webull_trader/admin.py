@@ -417,3 +417,14 @@ class ManualTradeRequestAdmin(admin.ModelAdmin):
 
 admin.site.register(models.ManualTradeRequest,
                     ManualTradeRequestAdmin)
+
+
+class NotifiedErrorExecutionAdmin(admin.ModelAdmin):
+    list_display = [
+        'execution_id',
+        'notified_time',
+    ]
+
+
+admin.site.register(models.NotifiedErrorExecution,
+                    NotifiedErrorExecutionAdmin)

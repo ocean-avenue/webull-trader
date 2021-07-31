@@ -6,7 +6,8 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
-from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, utils
+from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, \
+    check_exception, calculate_histdata, utils
 from trading import trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -119,6 +120,18 @@ def fetch_stats_data_job():
     print("[{}] Done calculate hist data job!".format(utils.get_now()))
 
 
+def check_exception_job():
+    holiday = _check_market_holiday()
+    if holiday != None:
+        print("[{}] {}, skip check exception job...".format(
+            utils.get_now(), holiday))
+        return
+
+    print("[{}] Start check exception job...".format(utils.get_now()))
+    check_exception.start()
+    print("[{}] Done check exception job!".format(utils.get_now()))
+
+
 def add_weekday_jobs(job, job_name, hour, minute, second="00"):
     for weekday in WEEKDAYS:
         scheduler.add_job(
@@ -158,6 +171,22 @@ def add_all_hour_jobs(job, job_name, minute="00"):
                 max_instances=1,
                 replace_existing=True,
             )
+
+
+def add_all_10minutes_jobs(job, job_name):
+    for weekday in WEEKDAYS:
+        for all_hour in ALL_HOURS:
+            for minute in ["00", "10", "20", "30", "40", "50"]:
+                scheduler.add_job(
+                    job,
+                    trigger=CronTrigger(
+                        day_of_week=weekday, hour=all_hour, minute=minute, second="00"
+                    ),
+                    id="{}_{}_{}_{}".format(
+                        job_name, weekday, all_hour, minute),
+                    max_instances=1,
+                    replace_existing=True,
+                )
 
 
 class Command(BaseCommand):
@@ -212,6 +241,12 @@ class Command(BaseCommand):
             job=fetch_stock_quote_job,
             job_name="fetch_stock_quote_job",
             minute="10",
+        )
+
+        # check job exceptions
+        add_all_10minutes_jobs(
+            job=check_exception_job,
+            job_name="check_exception_job",
         )
 
         try:
