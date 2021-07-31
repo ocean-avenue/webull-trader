@@ -267,7 +267,7 @@ class DayTradingBreakout(StrategyBase):
                         buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)), round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
                     # update pending buy
                     self.update_pending_buy_order(
-                        symbol, order_response, stop_loss=stop_loss)
+                        ticker, order_response, stop_loss=stop_loss)
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
@@ -339,7 +339,7 @@ class DayTradingBreakout(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                self.update_trading_stats(symbol, float(ticker_position['lastPrice']), float(
+                self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
                     ticker_position['costPrice']), profit_loss_rate)
 
     def on_update(self):

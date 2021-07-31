@@ -1151,6 +1151,7 @@ def add_day_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time, 
         require_adjustment=True,
     )
     position.save()
+    return position
 
 
 def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):
@@ -1169,6 +1170,7 @@ def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):
         require_adjustment=True,
     )
     trade.save()
+    return trade
 
 
 def fetch_stock_quotes(symbol_list):

@@ -159,7 +159,7 @@ class DayTradingMomo(StrategyBase):
                         symbol, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(
-                        symbol, order_response, stop_loss=prev_candle['low'])
+                        ticker, order_response, stop_loss=prev_candle['low'])
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
@@ -240,7 +240,7 @@ class DayTradingMomo(StrategyBase):
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
                 self.update_trading_stats(
-                    symbol, last_price, cost_price, profit_loss_rate)
+                    ticker, last_price, cost_price, profit_loss_rate)
 
     def check_if_trade_price_new_high(self, ticker, price):
         return True

@@ -107,7 +107,7 @@ class DayTradingRedGreen(StrategyBase):
                         symbol, buy_quant, ask_price))
                     # update pending buy
                     self.update_pending_buy_order(
-                        symbol, order_response, stop_loss=prev_day_close)
+                        ticker, order_response, stop_loss=prev_day_close)
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))

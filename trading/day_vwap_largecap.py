@@ -120,7 +120,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
-                    self.update_pending_buy_order(symbol, order_response)
+                    self.update_pending_buy_order(ticker, order_response)
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
@@ -185,7 +185,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 self.update_pending_sell_order(
                     symbol, order_response, exit_note=exit_note)
                 # update trading stats
-                self.update_trading_stats(symbol, float(ticker_position['lastPrice']), float(
+                self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
                     ticker_position['costPrice']), profit_loss_rate)
 
     def on_update(self):

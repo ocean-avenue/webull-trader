@@ -313,7 +313,6 @@ def start():
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
         # DAY_EARNINGS: earnings trade
-        # TODO, use other earning strategy
         strategies.append(DayTradingEarningsOvernight(
             paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_EARNINGS_OVERNIGHT:

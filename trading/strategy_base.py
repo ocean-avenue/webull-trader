@@ -286,7 +286,7 @@ class StrategyBase:
                             quant=buy_quant)
                         utils.print_trading_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
                             symbol, buy_quant, ask_price))
-                        self.update_pending_buy_order(symbol, order_response)
+                        self.update_pending_buy_order(ticker, order_response)
                         order_id = utils.get_order_id_from_response(
                             order_response, paper=self.paper)
                         if order_id:
@@ -418,7 +418,8 @@ class StrategyBase:
 
         return order_filled
 
-    def update_trading_stats(self, symbol, price, cost, profit_loss_rate):
+    def update_trading_stats(self, ticker, price, cost, profit_loss_rate):
+        symbol = ticker['symbol']
         # after perform 1 trade
         self.tracking_stats[symbol]['trades'] += 1
         self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
@@ -432,7 +433,8 @@ class StrategyBase:
             self.tracking_stats[symbol]['lose_trades'] += 1
             self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
-    def update_pending_buy_order(self, symbol, order_response, stop_loss=None):
+    def update_pending_buy_order(self, ticker, order_response, stop_loss=None):
+        symbol = ticker['symbol']
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
         if order_id:
@@ -447,7 +449,8 @@ class StrategyBase:
             utils.print_trading_log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
 
-    def update_pending_sell_order(self, symbol, order_response, exit_note=""):
+    def update_pending_sell_order(self, ticker, order_response, exit_note=""):
+        symbol = ticker['symbol']
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
         if order_id:

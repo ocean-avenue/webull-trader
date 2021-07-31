@@ -98,7 +98,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                         symbol, buy_quant, ask_price))
                     # update pending buy
-                    self.update_pending_buy_order(symbol, order_response)
+                    self.update_pending_buy_order(ticker, order_response)
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
