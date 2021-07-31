@@ -230,6 +230,7 @@ class StrategyBase:
     def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
+        order_id = ticker['pending_order_id']
         utils.print_trading_log(
             "Checking buy order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
@@ -237,13 +238,33 @@ class StrategyBase:
             return False
         order_filled = False
         for position in positions:
-            if position['ticker']['symbol'] == symbol:
-                order_filled = True
+            if position['ticker']['symbol'] != symbol:
+                continue
+            quantity = int(position['position'])
+            cost = float(position['costPrice'])
+            position_obj = ticker['position_obj']
+            if position_obj:
+                # TODO, support add unit position update
+                pass
+            else:
                 # order filled
-                quantity = int(position['position'])
-                cost = float(position['costPrice'])
+                order_filled = True
+                # add position obj
+                stop_loss = ticker['stop_loss'] or 0.0
+                position_obj = utils.add_day_position(
+                    symbol=symbol,
+                    ticker_id=ticker_id,
+                    order_id=order_id,
+                    setup=self.get_setup(),
+                    cost=round(cost * quantity, 2),
+                    quant=quantity,
+                    buy_time=timezone.now(),
+                    stop_loss=stop_loss,
+                )
+            if order_filled:
+                # save order note
                 utils.save_webull_order_note(
-                    ticker['pending_order_id'], setup=self.get_setup(), note="Entry point.")
+                    order_id, setup=self.get_setup(), note="Entry point.")
                 # update tracking_tickers
                 self.tracking_tickers[symbol]['positions'] = quantity
                 self.tracking_tickers[symbol]['pending_buy'] = False
@@ -252,11 +273,14 @@ class StrategyBase:
                 self.tracking_tickers[symbol]['resubmit_count'] = 0
                 self.tracking_tickers[symbol]['last_buy_time'] = datetime.now(
                 )
+                self.tracking_tickers[symbol]['position_obj'] = position_obj
+                # print log
                 utils.print_trading_log(
                     "Buy order <{}> filled, cost: {}".format(symbol, cost))
                 # remove from monitor
                 if stop_tracking:
                     del self.tracking_tickers[symbol]
+                # exit loop
                 break
         if not order_filled:
             # check order timeout
@@ -315,6 +339,7 @@ class StrategyBase:
     def check_sell_order_filled(self, ticker, resubmit=True, resubmit_count=10, stop_tracking=True):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
+        order_id = ticker['pending_order_id']
         utils.print_trading_log(
             "Checking sell order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
@@ -322,15 +347,34 @@ class StrategyBase:
             return False
         order_filled = True
         for position in positions:
+            if position['ticker']['symbol'] != symbol:
+                continue
             # make sure position is positive
-            if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
+            if float(position['position']) > 0:
                 order_filled = False
+                break
         if order_filled:
             # check if have any exit note
             exit_note = self.tracking_tickers[symbol]['exit_note']
             if exit_note:
+                # save order note
                 utils.save_webull_order_note(
-                    self.tracking_tickers[symbol]['pending_order_id'], setup=self.get_setup(), note=exit_note)
+                    order_id, setup=self.get_setup(), note=exit_note)
+            # add trade object
+            position_obj = ticker['position_obj']
+            profit_loss_rate = ticker['last_profit_loss_rate'] or 0.0
+            sell_price = round((position_obj.total_cost /
+                                position_obj.quantity) * (1+profit_loss_rate), 2)
+            utils.add_day_trade(
+                symbol=symbol,
+                ticker_id=ticker_id,
+                position=position_obj,
+                order_id=order_id,
+                sell_price=sell_price,
+                sell_time=timezone.now(),
+            )
+            # remove position object
+            position_obj.delete()
             # update tracking_tickers
             self.tracking_tickers[symbol]['positions'] = 0
             self.tracking_tickers[symbol]['pending_sell'] = False
@@ -339,9 +383,7 @@ class StrategyBase:
             self.tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             self.tracking_tickers[symbol]['exit_note'] = None
             self.tracking_tickers[symbol]['resubmit_count'] = 0
-            # last_profit_loss_rate = self.tracking_tickers[symbol]['last_profit_loss_rate']
-            # # keep in track if > 10% profit, prevent buy back too quick
-            # if last_profit_loss_rate != None and last_profit_loss_rate < 0.1:
+            self.tracking_tickers[symbol]['position_obj'] = None
             # remove from monitor
             if stop_tracking:
                 del self.tracking_tickers[symbol]
