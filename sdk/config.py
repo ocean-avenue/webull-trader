@@ -57,3 +57,9 @@ FINVIZ_DOUBLE_BOTTOM_TECHNOLOGY_URL = "https://finviz.com/screener.ashx?v=111&f=
 
 # Large Cap with Major News
 FINVIZ_MAJOR_NEWS_LARGE_CAP_URL = "https://finviz.com/screener.ashx?v=111&s=n_majornews&f=cap_largeover&o=marketcap"
+
+# https://www.twilio.com/docs/sms
+TWLO_ACCOUNT_SID = "AC1b70f86293f12502e751f8973e31851c"
+TWLO_AUTH_TOKEN = "ffaa9171e6d1b13b2159b2dcb22e410d"
+TWLO_SENDER_NUMBER = "+19789484010"
+TWLO_MESSAGE_MAX_LENGTH = 1000

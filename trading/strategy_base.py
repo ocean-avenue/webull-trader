@@ -406,7 +406,9 @@ class StrategyBase:
                             1.0,  # fill $1 cost, no use
                             ticker['positions'],
                             timezone.now())
-                        # TODO, send message
+                        # send message
+                        utils.notify_message(
+                            "Failed to sell <{}>, add day position object.".format(symbol))
                 else:
                     utils.print_trading_log(
                         "Failed to cancel timeout sell order <{}>!".format(symbol))

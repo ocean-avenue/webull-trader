@@ -38,8 +38,10 @@ class TradingExecutor:
 
         # login
         if not webullsdk.login(paper=self.paper):
-            utils.print_trading_log("Webull login failed, quit!")
-            # TODO, send message
+            message = "Webull login failed, quit trading!"
+            # send message
+            utils.notify_message(message)
+            utils.print_trading_log(message)
             return
         utils.print_trading_log("Webull logged in")
         last_login_refresh_time = datetime.now()
@@ -75,9 +77,10 @@ class TradingExecutor:
                     # utils.print_trading_log("Refresh webull login")
                     last_login_refresh_time = datetime.now()
                 else:
-                    utils.print_trading_log(
-                        "Webull refresh login failed, quit!")
-                    # TODO, send message
+                    message = "Webull refresh login failed, quit trading!"
+                    # send message
+                    utils.notify_message(message)
+                    utils.print_trading_log(message)
                     break
 
             # clear unsold positions

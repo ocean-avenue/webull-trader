@@ -4,9 +4,10 @@ import pytz
 import math
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
 from datetime import datetime, date
 from scripts import config
-from sdk import fmpsdk, webullsdk
+from sdk import fmpsdk, webullsdk, twiliosdk
 from webull_trader import enums
 from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
     StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, \
@@ -98,6 +99,14 @@ def local_time_minute_second(t):
     localtz = utc.astimezone(timezone.get_current_timezone())
     format = '%H:%M:%S'
     return localtz.strftime(format)
+
+
+def notify_message(message):
+    twiliosdk.send_message([
+        get_account_user_desc(),
+        ", ".join(get_algo_type_tags()),
+        message
+    ])
 
 
 # hack to delay 1 minute
@@ -1994,6 +2003,19 @@ def get_algo_type_tags():
     if settings:
         tag = enums.AlgorithmType.totag(settings.algo_type)
     return tag.split(" / ")
+
+
+def get_account_user_desc():
+    account_type = "LIVE"
+    account_email = ""
+    if check_paper():
+        account_type = "PAPER"
+    users = User.objects.all()
+    for user in users:
+        if user.is_staff:
+            account_email = user.email
+            break
+    return "[{}] {}".format(account_type, account_email)
 
 
 # utils for render UI
