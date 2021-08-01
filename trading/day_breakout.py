@@ -123,6 +123,7 @@ class DayTradingBreakout(StrategyBase):
 
     def check_exit(self, ticker, bars):
         symbol = ticker['symbol']
+        exit_period = ticker['exit_period']
         # last formed candle
         last_candle = bars.iloc[-2]
         last_candle_time = bars.index[-2].to_pydatetime()
@@ -135,7 +136,7 @@ class DayTradingBreakout(StrategyBase):
         exit_trading = False
         exit_note = None
         last_price = last_candle['close']
-        period_bars = bars.head(len(bars) - 2).tail(self.exit_period)
+        period_bars = bars.head(len(bars) - 2).tail(exit_period)
         period_low_price = 99999
         for _, row in period_bars.iterrows():
             close_price = row['close']
@@ -144,7 +145,7 @@ class DayTradingBreakout(StrategyBase):
         # check if new low
         if last_price < period_low_price:
             exit_trading = True
-            exit_note = "{} candles new low.".format(self.exit_period)
+            exit_note = "{} candles new low.".format(exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, last_price, period_low_price))
         # check if has long wick up
@@ -193,6 +194,9 @@ class DayTradingBreakout(StrategyBase):
 
     def check_if_trade_period_timeout(self, ticker):
         return False
+
+    def update_exit_period(self, ticker, position):
+        return
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
@@ -252,6 +256,8 @@ class DayTradingBreakout(StrategyBase):
                 if buy_price == None:
                     return
                 buy_quant = (int)(buy_position_amount / buy_price)
+                # reset exit period
+                self.tracking_tickers[symbol]['exit_period'] = self.exit_period
                 if buy_quant > 0:
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
@@ -271,7 +277,6 @@ class DayTradingBreakout(StrategyBase):
                 else:
                     utils.print_trading_log(
                         "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
-
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -288,6 +293,9 @@ class DayTradingBreakout(StrategyBase):
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
             self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
+            # update exit period by profit loss rate
+            self.update_exit_period(ticker, ticker_position)
+            exit_period = ticker['exit_period']
 
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
             max_profit_loss_rate = self.tracking_tickers[symbol]['max_profit_loss_rate']
@@ -299,7 +307,7 @@ class DayTradingBreakout(StrategyBase):
             if not exit_trading:
                 # get 1m bar charts
                 m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.exit_period*self.time_scale+5))
+                    ticker_id, count=(exit_period*self.time_scale+5))
 
                 # get bars error
                 if m1_bars.empty:
