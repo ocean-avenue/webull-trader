@@ -259,7 +259,7 @@ class StrategyBase:
                     cost=round(cost * quantity, 2),
                     quant=quantity,
                     buy_time=timezone.now(),
-                    stop_loss=stop_loss,
+                    stop_loss_price=stop_loss,
                 )
             if order_filled:
                 # save order note
