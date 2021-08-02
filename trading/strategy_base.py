@@ -415,7 +415,7 @@ class StrategyBase:
                             quant=holding_quantity)
                         utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
                             symbol, holding_quantity, bid_price))
-                        self.update_pending_sell_order(symbol, order_response)
+                        self.update_pending_sell_order(ticker, order_response)
                         order_id = utils.get_order_id_from_response(
                             order_response, paper=self.paper)
                         if order_id:
@@ -628,7 +628,7 @@ class StrategyBase:
         utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
             symbol, holding_quantity, bid_price))
         self.update_pending_sell_order(
-            symbol, order_response, exit_note="Clear position.")
+            ticker, order_response, exit_note="Clear position.")
         # there is issue with submit order
         if 'msg' in order_response:
             # remove from monitor

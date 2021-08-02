@@ -237,7 +237,7 @@ class DayTradingMomo(StrategyBase):
                     symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
-                    symbol, order_response, exit_note=exit_note)
+                    ticker, order_response, exit_note=exit_note)
                 # update trading stats
                 self.update_trading_stats(
                     ticker, last_price, cost_price, profit_loss_rate)

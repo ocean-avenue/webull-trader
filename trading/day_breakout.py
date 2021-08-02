@@ -345,7 +345,7 @@ class DayTradingBreakout(StrategyBase):
                     symbol, holding_quantity, sell_price))
                 # update pending sell
                 self.update_pending_sell_order(
-                    symbol, order_response, exit_note=exit_note)
+                    ticker, order_response, exit_note=exit_note)
                 # update trading stats
                 self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
                     ticker_position['costPrice']), profit_loss_rate)

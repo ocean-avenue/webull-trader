@@ -125,7 +125,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                     symbol, holding_quantity, bid_price))
                 # update pending sell
                 self.update_pending_sell_order(
-                    symbol, order_response, exit_note=exit_note)
+                    ticker, order_response, exit_note=exit_note)
 
     def on_begin(self):
         # prepare tickers for buy
