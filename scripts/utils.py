@@ -1879,6 +1879,28 @@ def get_minute_candle_high_by_time_minute(candle_data, time):
     return candle_data['candles'][idx][3]
 
 
+def get_minute_candle_low_by_time_minute(candle_data, time):
+    # candle_data = {
+    #     "times": ...,
+    #     "candles": ...,
+    #     "volumes": ...,
+    #     ...
+    # }
+    idx = 0
+    for i in range(0, len(candle_data['times'])):
+        if candle_data['times'][i] == time:
+            idx = i
+            break
+    return candle_data['candles'][idx][2]
+
+
+def get_minute_candle_y_by_time_minute_action(candle_data, time, action):
+    if action == enums.ActionType.BUY:
+        return get_minute_candle_low_by_time_minute(candle_data, time) - 0.01
+    else:
+        return get_minute_candle_high_by_time_minute(candle_data, time) + 0.01
+
+
 def get_trade_stat_dist_from_day_trades(day_trades):
     trades_dist = {}
     for trade in day_trades:
@@ -1962,6 +1984,21 @@ def get_swing_daily_candle_high_by_date(symbol, date):
     if day_bar:
         return day_bar.high
     return 0
+
+
+def get_swing_daily_candle_low_by_date(symbol, date):
+    day_bar = SwingHistoricalDailyBar.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    if day_bar:
+        return day_bar.low
+    return 0
+
+
+def get_swing_daily_candle_y_by_date_action(symbol, date, action):
+    if action == enums.ActionType.BUY:
+        return get_swing_daily_candle_low_by_date(symbol, date) - 0.01
+    else:
+        return get_swing_daily_candle_high_by_date(symbol, date) + 0.01
 
 
 def get_gap_by_symbol_date(symbol, date):
@@ -2088,13 +2125,17 @@ def get_color_profit_loss_style_for_render(old_value, new_value):
     return (profit_loss, profit_loss_percent, profit_loss_style)
 
 
-def get_color_sign_of_action(action):
+def get_label_style_from_action(action):
     sign = "+"
     color = config.BUY_COLOR
+    rotate = 180
+    escape = "\n\n"
     if action == enums.ActionType.SELL:
         sign = "-"
         color = config.SELL_COLOR
-    return (color, sign)
+        rotate = 0
+        escape = ""
+    return (color, sign, rotate, escape)
 
 
 def get_net_profit_loss_for_render(acc_stat):
@@ -2542,31 +2583,30 @@ def get_hourly_stat_from_trades_for_render(day_trades):
     }
 
 
-def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale, action):
+def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale):
     trade_price_records = []
     trade_quantity_records = []
 
-    color, sign = get_color_sign_of_action(action)
-
     for order in orders:
+        color, sign, rotate, escape = get_label_style_from_action(order.action)
         coord = [
             local_time_minute_scale(order.filled_time, time_scale),
             # use high price avoid block candle
-            get_minute_candle_high_by_time_minute(
-                candles, local_time_minute_scale(order.filled_time, time_scale)) + 0.01,
+            get_minute_candle_y_by_time_minute_action(
+                candles, local_time_minute_scale(order.filled_time, time_scale), order.action),
         ]
         trade_price_records.append({
-            "name": "{}".format(order.avg_price),
+            "name": "{}{}".format(escape, order.avg_price),
             "coord": coord,
             "value": order.avg_price,
-            "itemStyle": {"color": color},
+            "itemStyle": {"color": color, "rotate": rotate},
             "label": {"fontSize": 10},
         })
         trade_quantity_records.append({
-            "name": "{}{}".format(sign, order.filled_quantity),
+            "name": "{}{}{}".format(escape, sign, order.filled_quantity),
             "coord": coord,
             "value": order.filled_quantity,
-            "itemStyle": {"color": color},
+            "itemStyle": {"color": color, "rotate": rotate},
             "label": {"fontSize": 10},
         })
 
@@ -2586,22 +2626,22 @@ def get_daily_trade_marker_from_position_for_render(position):
         coord = [
             filled_date.strftime("%Y/%m/%d"),
             # use high price avoid block candle
-            get_swing_daily_candle_high_by_date(
-                symbol, filled_date) + 0.01,
+            get_swing_daily_candle_y_by_date_action(
+                symbol, filled_date, order.action),
         ]
-        color, sign = get_color_sign_of_action(order.action)
+        color, sign, rotate, escape = get_label_style_from_action(order.action)
         trade_price_records.append({
-            "name": str(filled_price),
+            "name": "{}{}".format(escape, filled_price),
             "coord": coord,
             "value": filled_price,
-            "itemStyle": {"color": color},
+            "itemStyle": {"color": color, "rotate": rotate},
             "label": {"fontSize": 10},
         })
         trade_quantity_records.append({
-            "name": "{}{}".format(sign, filled_quantity),
+            "name": "{}{}{}".format(escape, sign, filled_quantity),
             "coord": coord,
             "value": filled_quantity,
-            "itemStyle": {"color": color},
+            "itemStyle": {"color": color, "rotate": rotate},
             "label": {"fontSize": 10},
         })
 
@@ -2622,22 +2662,23 @@ def get_daily_trade_marker_from_trades_for_render(trades):
             coord = [
                 filled_date.strftime("%Y/%m/%d"),
                 # use high price avoid block candle
-                get_swing_daily_candle_high_by_date(
-                    symbol, filled_date) + 0.01,
+                get_swing_daily_candle_y_by_date_action(
+                    symbol, filled_date, order.action),
             ]
-            color, sign = get_color_sign_of_action(order.action)
+            color, sign, rotate, escape = get_label_style_from_action(
+                order.action)
             trade_price_records.append({
-                "name": str(filled_price),
+                "name": "{}{}".format(escape, filled_price),
                 "coord": coord,
                 "value": filled_price,
-                "itemStyle": {"color": color},
+                "itemStyle": {"color": color, "rotate": rotate},
                 "label": {"fontSize": 10},
             })
             trade_quantity_records.append({
-                "name": "{}{}".format(sign, filled_quantity),
+                "name": "{}{}{}".format(escape, sign, filled_quantity),
                 "coord": coord,
                 "value": filled_quantity,
-                "itemStyle": {"color": color},
+                "itemStyle": {"color": color, "rotate": rotate},
                 "label": {"fontSize": 10},
             })
 

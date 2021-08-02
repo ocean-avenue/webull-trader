@@ -407,7 +407,10 @@
             formatter: function (param) {
               return param.name + '<br>' + (param.data.coord || '');
             }
-          }
+          },
+          symbolRotate: (_, obj) => {
+            return obj['data']['itemStyle']['rotate'];
+          },
         },
       },
       {

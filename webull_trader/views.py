@@ -323,25 +323,25 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         date=analytics_date, symbol=symbol)
     # 1m trade records
     m1_trade_price_buy_records, m1_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m1_candle_data, 1, ActionType.BUY)
+        buy_orders, m1_candle_data, 1)
     m1_trade_price_sell_records, m1_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m1_candle_data, 1, ActionType.SELL)
+        sell_orders, m1_candle_data, 1)
     m1_trade_price_records = m1_trade_price_buy_records + m1_trade_price_sell_records
     m1_trade_quantity_records = m1_trade_quantity_buy_records + \
         m1_trade_quantity_sell_records
     # 2m trade records
     m2_trade_price_buy_records, m2_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m2_candle_data, 2, ActionType.BUY)
+        buy_orders, m2_candle_data, 2)
     m2_trade_price_sell_records, m2_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m2_candle_data, 2, ActionType.SELL)
+        sell_orders, m2_candle_data, 2)
     m2_trade_price_records = m2_trade_price_buy_records + m2_trade_price_sell_records
     m2_trade_quantity_records = m2_trade_quantity_buy_records + \
         m2_trade_quantity_sell_records
     # 5m trade records
     m5_trade_price_buy_records, m5_trade_quantity_buy_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        buy_orders, m5_candle_data, 5, ActionType.BUY)
+        buy_orders, m5_candle_data, 5)
     m5_trade_price_sell_records, m5_trade_quantity_sell_records = utils.get_minutes_trade_marker_from_orders_for_render(
-        sell_orders, m5_candle_data, 5, ActionType.SELL)
+        sell_orders, m5_candle_data, 5)
     m5_trade_price_records = m5_trade_price_buy_records + m5_trade_price_sell_records
     m5_trade_quantity_records = m5_trade_quantity_buy_records + \
         m5_trade_quantity_sell_records
