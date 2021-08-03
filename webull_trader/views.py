@@ -356,6 +356,10 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             gain = round((sell_price - buy_price) * quantity, 2)
             profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
                 gain)
+            profit_loss_percent = "{}%".format(
+                round(gain / (buy_price * quantity) * 100, 2))
+            if gain >= 0:
+                profit_loss_percent = "+{}".format(profit_loss_percent)
 
             setup = None
             buy_order_notes = WebullOrderNote.objects.filter(
@@ -378,6 +382,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
                 "setup": setup,
                 "notes": " ".join(notes),
                 "profit_loss": profit_loss,
+                "profit_loss_percent": profit_loss_percent,
                 "profit_loss_style": profit_loss_style,
             })
     # stats
