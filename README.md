@@ -10,33 +10,27 @@ Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
 
 ### Get Started:
 
-1. Install latest webull package:
-
-```
-pip install git+https://github.com/tedchou12/webull
-```
-
-2. Install required packages:
+1. Install required packages:
 
 ```
 pip install -r requirements.txt
 ```
 
-3. Run initialize script:
+2. Run initialize script:
 
 ```
 python manage.py shell < scripts/initialize.py
 ```
 
-4. Create webull credentials object and write cred data, trade password.
+3. Create webull credentials object and write cred data, trade password.
 
-5. Run server:
+4. Run server:
 
 ```
 python manage.py runserver
 ```
 
-6. Run scheduler:
+5. Run scheduler:
 
 ```
 python manage.py runscheduler
