@@ -262,9 +262,13 @@ class StrategyBase:
                     stop_loss_price=stop_loss,
                 )
             if order_filled:
+                entry_note = "Entry point."
+                if ticker['resubmit_count'] > 0:
+                    entry_note = "{} {}".format(
+                        entry_note, "Resubmit buy order.")
                 # save order note
                 utils.save_webull_order_note(
-                    order_id, setup=self.get_setup(), note="Entry point.")
+                    order_id, setup=self.get_setup(), note=entry_note)
                 # update tracking_tickers
                 self.tracking_tickers[symbol]['positions'] = quantity
                 self.tracking_tickers[symbol]['pending_buy'] = False
@@ -311,13 +315,6 @@ class StrategyBase:
                         utils.print_trading_log("Resubmit buy order <{}>, quant: {}, limit price: {}".format(
                             symbol, buy_quant, ask_price))
                         self.update_pending_buy_order(ticker, order_response)
-                        order_id = utils.get_order_id_from_response(
-                            order_response, paper=self.paper)
-                        if order_id:
-                            # update pending_order_id
-                            self.tracking_tickers[symbol]['pending_order_id'] = order_id
-                            utils.save_webull_order_note(
-                                order_id, setup=self.get_setup(), note="Resubmit buy order.")
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_buy'] = False
@@ -340,6 +337,7 @@ class StrategyBase:
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         order_id = ticker['pending_order_id']
+        exit_note = ticker['exit_note']
         utils.print_trading_log(
             "Checking sell order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
@@ -355,7 +353,6 @@ class StrategyBase:
                 break
         if order_filled:
             # check if have any exit note
-            exit_note = self.tracking_tickers[symbol]['exit_note']
             if exit_note:
                 # save order note
                 utils.save_webull_order_note(
@@ -415,19 +412,8 @@ class StrategyBase:
                             quant=holding_quantity)
                         utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
                             symbol, holding_quantity, bid_price))
-                        self.update_pending_sell_order(ticker, order_response)
-                        order_id = utils.get_order_id_from_response(
-                            order_response, paper=self.paper)
-                        if order_id:
-                            # update pending_order_id
-                            self.tracking_tickers[symbol]['pending_order_id'] = order_id
-                            exit_note = self.tracking_tickers[symbol]['exit_note']
-                            # also save exit note if have
-                            if exit_note:
-                                utils.save_webull_order_note(
-                                    order_id, setup=self.get_setup(), note=exit_note)
-                            utils.save_webull_order_note(
-                                order_id, setup=self.get_setup(), note="Resubmit sell order.")
+                        self.update_pending_sell_order(
+                            ticker, order_response, "{} {}".format(exit_note, "Resubmit sell order."))
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
                         self.tracking_tickers[symbol]['pending_sell'] = False

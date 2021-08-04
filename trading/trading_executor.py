@@ -194,7 +194,7 @@ class TradingExecutor:
                     if order_id:
                         # mark pending sell
                         self.unsold_tickers[symbol]['pending_sell'] = True
-                        self.unsold_tickers[symbol]['pending_order_id'] = order_response['orderId']
+                        self.unsold_tickers[symbol]['pending_order_id'] = order_id
                         self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
                         )
                     else:
