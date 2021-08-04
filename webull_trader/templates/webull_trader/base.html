@@ -91,8 +91,20 @@
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="/admin" target="_blank">
+              <a class="sidebar-link" href="/admin/webull_trader/webullcredentials" target="_blank">
                 <i class="align-middle" data-feather="key"></i>
+                <span class="align-middle">Credentials</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="/admin/webull_trader/tradinglog" target="_blank">
+                <i class="align-middle" data-feather="file-text"></i>
+                <span class="align-middle">Logs</span>
+              </a>
+            </li>
+            <li class="sidebar-item">
+              <a class="sidebar-link" href="/admin" target="_blank">
+                <i class="align-middle" data-feather="user"></i>
                 <span class="align-middle">Admin</span>
               </a>
             </li>
@@ -382,7 +394,7 @@
                   data-bs-toggle="dropdown"
                 >
                   {% if user.is_authenticated %}
-                  <span class="text-dark">{{ user.get_full_name }}</span>
+                  <span class="text-dark">{{ user.email }}</span>
                   {% endif %}
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
