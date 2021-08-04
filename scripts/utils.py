@@ -1277,6 +1277,8 @@ def get_trades_from_orders(buy_orders, sell_orders):
             "buy_price": buy_order.avg_price,
             "buy_time": buy_order.filled_time,
             "buy_order_id": buy_order.order_id,
+            "setup": buy_order.setup,
+            "buy_order": buy_order,
         })
     for sell_order in sell_orders:
         # fill sell side
@@ -1285,6 +1287,7 @@ def get_trades_from_orders(buy_orders, sell_orders):
                 trade["sell_price"] = sell_order.avg_price
                 trade["sell_time"] = sell_order.filled_time
                 trade["sell_order_id"] = sell_order.order_id
+                trade["sell_order"] = sell_order
                 break
     return trades
 
