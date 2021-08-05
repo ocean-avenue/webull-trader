@@ -30,7 +30,7 @@ class SwingTurtle(StrategyBase):
         return self.swing_position_amount_limit * unit_weight
 
     def check_has_volume(self, daily_bars):
-        if not utils.check_daily_bars_volume_grinding(daily_bars, period=5) and \
+        if not utils.check_daily_bars_volume_grinding(daily_bars, period=4) and \
                 not utils.check_daily_bars_rel_volume(daily_bars):
             return False
         return True
