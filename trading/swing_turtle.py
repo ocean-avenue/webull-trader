@@ -152,19 +152,20 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             # prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
-            if len(current_daily_bars) <= self.entry_period:
+            if len(current_daily_bars) > self.entry_period:
+                # check period high for entry
+                if self.check_period_high(current_daily_bars):
+                    # check daily bars has volume
+                    if self.check_has_volume(current_daily_bars):
+                        latest_close = current_daily_bars[-1].close
+                        self.submit_buy_order(
+                            symbol, None, unit_weight, latest_close, "period high")
+                    else:
+                        utils.print_trading_log(
+                            "<{}> daily chart has not enough volume, no entry!".format(symbol))
+            else:
                 utils.print_trading_log(
                     "<{}> daily chart has not enough data, no entry!".format(symbol))
-            # check daily bars has volume
-            elif not self.check_has_volume(current_daily_bars):
-                utils.print_trading_log(
-                    "<{}> daily chart has not enough volume, no entry!".format(symbol))
-            # check period high for entry
-            else:
-                if self.check_period_high(current_daily_bars):
-                    latest_close = current_daily_bars[-1].close
-                    self.submit_buy_order(
-                        symbol, None, unit_weight, latest_close, "period high")
 
     def manual_trade(self, request):
         symbol = request.symbol
