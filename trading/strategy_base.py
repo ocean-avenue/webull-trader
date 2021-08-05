@@ -256,7 +256,7 @@ class StrategyBase:
                     ticker_id=ticker_id,
                     order_id=order_id,
                     setup=self.get_setup(),
-                    cost=round(cost * quantity, 2),
+                    cost=cost,
                     quant=quantity,
                     buy_time=timezone.now(),
                     stop_loss_price=stop_loss,

@@ -7,7 +7,7 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import ActionType, SetupType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
 
 # Create your views here.
 
@@ -190,25 +190,23 @@ def day_analytics_date(request, date=None):
         "symbol": daytrade_perf.top_loss_symbol
     }
 
-    buy_orders, sell_orders = utils.get_day_trade_orders(date=acc_stat.date)
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.filter(sell_date=acc_stat.date)
+    print(len(day_trades))
     hourly_statistics = utils.get_stats_empty_list(size=32)
     # for hourly P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
         hourly_idx = utils.get_market_hourly_interval_index(
-            utils.local_datetime(day_trade['buy_time']))
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                hourly_statistics[hourly_idx]['win_trades'] += 1
-                hourly_statistics[hourly_idx]['total_profit'] += gain
-            else:
-                hourly_statistics[hourly_idx]['loss_trades'] += 1
-                hourly_statistics[hourly_idx]['total_loss'] += gain
-            hourly_statistics[hourly_idx]['profit_loss'] += gain
-            hourly_statistics[hourly_idx]['trades'] += 1
+            utils.local_datetime(day_trade.buy_time))
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            hourly_statistics[hourly_idx]['win_trades'] += 1
+            hourly_statistics[hourly_idx]['total_profit'] += gain
+        else:
+            hourly_statistics[hourly_idx]['loss_trades'] += 1
+            hourly_statistics[hourly_idx]['total_loss'] += gain
+        hourly_statistics[hourly_idx]['profit_loss'] += gain
+        hourly_statistics[hourly_idx]['trades'] += 1
     hourly_profit_loss = []
     hourly_win_rate = []
     hourly_profit_loss_ratio = []
@@ -243,7 +241,7 @@ def day_analytics_date(request, date=None):
     trade_records = []
     for symbol, trade_stat in trades_dist.items():
         trade_record_for_render = utils.get_day_trade_stat_record_for_render(
-            symbol, trade_stat, date)
+            symbol, trade_stat, acc_stat.date)
         trade_records.append(trade_record_for_render)
     # sort trade records
     trade_records.sort(key=lambda t: t['profit_loss_value'], reverse=True)
@@ -346,45 +344,51 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     m5_trade_quantity_records = m5_trade_quantity_buy_records + \
         m5_trade_quantity_sell_records
 
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    # day trades
+    day_trades = DayTrade.objects.filter(
+        symbol=symbol, sell_date=analytics_date)
     trade_records = []
     for day_trade in day_trades:
-        buy_price = day_trade["buy_price"]
-        if "sell_price" in day_trade:
-            sell_price = day_trade["sell_price"]
-            quantity = day_trade["quantity"]
-            gain = round((sell_price - buy_price) * quantity, 2)
-            profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
-                gain)
-            profit_loss_percent = "{}%".format(
-                round(gain / (buy_price * quantity) * 100, 2))
-            if gain >= 0:
-                profit_loss_percent = "+{}".format(profit_loss_percent)
+        buy_price = round(day_trade.total_cost / day_trade.quantity, 3)
+        sell_price = round(day_trade.total_sold / day_trade.quantity, 3)
+        quantity = day_trade.quantity
+        gain = round(day_trade.total_sold - day_trade.total_cost, 3)
+        profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
+            gain)
+        profit_loss_percent = "{}%".format(
+            round(gain / day_trade.total_cost * 100, 2))
+        if gain >= 0:
+            profit_loss_percent = "+{}".format(profit_loss_percent)
 
-            setup = None
-            buy_order_notes = WebullOrderNote.objects.filter(
-                order_id=day_trade["buy_order_id"])
-            if len(buy_order_notes) > 0:
-                setup = SetupType.tostr(buy_order_notes[0].setup)
-            notes = []
-            sell_order_notes = WebullOrderNote.objects.filter(
-                order_id=day_trade["sell_order_id"])
-            for sell_order_note in sell_order_notes:
-                notes.append(sell_order_note.note)
-            trade_records.append({
-                "symbol": symbol,
-                "quantity": quantity,
-                "total_cost": "${}".format(round(quantity * buy_price, 2)),
-                "buy_price": "${}".format(buy_price),
-                "sell_price": "${}".format(sell_price),
-                "buy_time": utils.local_time_minute_second(day_trade["buy_time"]),
-                "sell_time": utils.local_time_minute_second(day_trade["sell_time"]),
-                "setup": setup,
-                "notes": " ".join(notes),
-                "profit_loss": profit_loss,
-                "profit_loss_percent": profit_loss_percent,
-                "profit_loss_style": profit_loss_style,
-            })
+        # TODO, support multi buy order
+        order_ids = day_trade.order_ids.split(",")
+        buy_order_id = order_ids[0]
+        sell_order_id = order_ids[1]
+
+        setup = None
+        buy_order_notes = WebullOrderNote.objects.filter(order_id=buy_order_id)
+        if len(buy_order_notes) > 0:
+            setup = SetupType.tostr(buy_order_notes[0].setup)
+        notes = []
+        sell_order_notes = WebullOrderNote.objects.filter(
+            order_id=sell_order_id)
+        for sell_order_note in sell_order_notes:
+            notes.append(sell_order_note.note)
+        trade_records.append({
+            "symbol": symbol,
+            "quantity": quantity,
+            "total_cost": "${}".format(day_trade.total_cost),
+            "buy_price": "${}".format(buy_price),
+            "sell_price": "${}".format(sell_price),
+            "buy_time": utils.local_time_minute_second(day_trade.buy_time),
+            "sell_time": utils.local_time_minute_second(day_trade.sell_time),
+            "setup": setup,
+            "notes": " ".join(notes),
+            "profit_loss": profit_loss,
+            "profit_loss_percent": profit_loss_percent,
+            "profit_loss_style": profit_loss_style,
+        })
+
     # stats
     trades_dist = utils.get_trade_stat_dist_from_day_trades(day_trades)
     trade_stats = utils.get_day_trade_stat_record_for_render(
@@ -441,24 +445,22 @@ def day_reports_price(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     price_statistics = utils.get_stats_empty_list(size=16)
     # for price range P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
-        price_idx = utils.get_entry_price_range_index(day_trade['buy_price'])
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                price_statistics[price_idx]['win_trades'] += 1
-                price_statistics[price_idx]['total_profit'] += gain
-            else:
-                price_statistics[price_idx]['loss_trades'] += 1
-                price_statistics[price_idx]['total_loss'] += gain
-            price_statistics[price_idx]['profit_loss'] += gain
-            price_statistics[price_idx]['trades'] += 1
+        buy_price = (day_trade.total_cost / day_trade.quantity)
+        price_idx = utils.get_entry_price_range_index(buy_price)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            price_statistics[price_idx]['win_trades'] += 1
+            price_statistics[price_idx]['total_profit'] += gain
+        else:
+            price_statistics[price_idx]['loss_trades'] += 1
+            price_statistics[price_idx]['total_loss'] += gain
+        price_statistics[price_idx]['profit_loss'] += gain
+        price_statistics[price_idx]['trades'] += 1
     price_profit_loss = []
     price_total_profit = []
     price_total_loss = []
@@ -522,9 +524,8 @@ def day_reports_mktcap(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "market_value",
@@ -562,9 +563,8 @@ def day_reports_float(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "outstanding_shares",
@@ -602,9 +602,8 @@ def day_reports_turnover(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "turnover_rate",
@@ -642,9 +641,8 @@ def day_reports_short(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "short_float",
@@ -682,27 +680,24 @@ def day_reports_gap(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     gap_statistics = utils.get_stats_empty_list(
         size=len(utils.get_gap_range_labels()))
     # for P&L, win rate and profit/loss ratio, trades by gap
     for day_trade in day_trades:
         gap = utils.get_gap_by_symbol_date(
-            day_trade['symbol'], day_trade['buy_time'].date())
+            day_trade.symbol, day_trade.buy_date)
         gap_idx = utils.get_gap_range_index(gap)
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                gap_statistics[gap_idx]['win_trades'] += 1
-                gap_statistics[gap_idx]['total_profit'] += gain
-            else:
-                gap_statistics[gap_idx]['loss_trades'] += 1
-                gap_statistics[gap_idx]['total_loss'] += gain
-            gap_statistics[gap_idx]['profit_loss'] += gain
-            gap_statistics[gap_idx]['trades'] += 1
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            gap_statistics[gap_idx]['win_trades'] += 1
+            gap_statistics[gap_idx]['total_profit'] += gain
+        else:
+            gap_statistics[gap_idx]['loss_trades'] += 1
+            gap_statistics[gap_idx]['total_loss'] += gain
+        gap_statistics[gap_idx]['profit_loss'] += gain
+        gap_statistics[gap_idx]['trades'] += 1
     gap_profit_loss = []
     gap_total_profit = []
     gap_total_loss = []
@@ -766,31 +761,28 @@ def day_reports_relvol(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     relvol_statistics = utils.get_stats_empty_list(
         size=len(utils.get_relative_volume_labels()))
     # for P&L, win rate and profit/loss ratio, trades by relative volume
     for day_trade in day_trades:
-        symbol = day_trade['symbol']
-        buy_date = day_trade['buy_time'].date()
+        symbol = day_trade.symbol
+        buy_date = day_trade.buy_date
         key_statistics = utils.get_hist_key_stat(symbol, buy_date)
         if key_statistics:
             relative_volume = round(
                 key_statistics.volume / key_statistics.avg_vol_3m, 2)
             relvol_idx = utils.get_relative_volume_index(relative_volume)
-            if 'sell_price' in day_trade:
-                gain = (day_trade['sell_price'] -
-                        day_trade['buy_price']) * day_trade['quantity']
-                if gain > 0:
-                    relvol_statistics[relvol_idx]['win_trades'] += 1
-                    relvol_statistics[relvol_idx]['total_profit'] += gain
-                else:
-                    relvol_statistics[relvol_idx]['loss_trades'] += 1
-                    relvol_statistics[relvol_idx]['total_loss'] += gain
-                relvol_statistics[relvol_idx]['profit_loss'] += gain
-                relvol_statistics[relvol_idx]['trades'] += 1
+            gain = day_trade.total_sold - day_trade.total_cost
+            if gain > 0:
+                relvol_statistics[relvol_idx]['win_trades'] += 1
+                relvol_statistics[relvol_idx]['total_profit'] += gain
+            else:
+                relvol_statistics[relvol_idx]['loss_trades'] += 1
+                relvol_statistics[relvol_idx]['total_loss'] += gain
+            relvol_statistics[relvol_idx]['profit_loss'] += gain
+            relvol_statistics[relvol_idx]['trades'] += 1
     relvol_profit_loss = []
     relvol_total_profit = []
     relvol_total_loss = []
@@ -854,29 +846,26 @@ def day_reports_sector(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     sector_statistics = utils.get_stats_empty_list(
         size=len(utils.get_sector_labels()))
     # for P&L, win rate and profit/loss ratio, trades by sector
     for day_trade in day_trades:
         sector = None
-        quote = StockQuote.objects.filter(symbol=day_trade['symbol']).first()
+        quote = StockQuote.objects.filter(symbol=day_trade.symbol).first()
         if quote:
             sector = quote.sector
         sector_idx = utils.get_sector_index(sector)
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                sector_statistics[sector_idx]['win_trades'] += 1
-                sector_statistics[sector_idx]['total_profit'] += gain
-            else:
-                sector_statistics[sector_idx]['loss_trades'] += 1
-                sector_statistics[sector_idx]['total_loss'] += gain
-            sector_statistics[sector_idx]['profit_loss'] += gain
-            sector_statistics[sector_idx]['trades'] += 1
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            sector_statistics[sector_idx]['win_trades'] += 1
+            sector_statistics[sector_idx]['total_profit'] += gain
+        else:
+            sector_statistics[sector_idx]['loss_trades'] += 1
+            sector_statistics[sector_idx]['total_loss'] += gain
+        sector_statistics[sector_idx]['profit_loss'] += gain
+        sector_statistics[sector_idx]['trades'] += 1
     sector_profit_loss = []
     sector_total_profit = []
     sector_total_loss = []
@@ -940,27 +929,23 @@ def day_reports_holding(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     holding_statistics = utils.get_stats_empty_list(
         size=len(utils.get_holding_time_labels()))
     # for P&L, win rate and profit/loss ratio, trades by holding time
     for day_trade in day_trades:
-        if 'sell_price' in day_trade:
-            holding_sec = (day_trade['sell_time'] -
-                           day_trade['buy_time']).seconds
-            holding_idx = utils.get_holding_time_index(holding_sec)
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                holding_statistics[holding_idx]['win_trades'] += 1
-                holding_statistics[holding_idx]['total_profit'] += gain
-            else:
-                holding_statistics[holding_idx]['loss_trades'] += 1
-                holding_statistics[holding_idx]['total_loss'] += gain
-            holding_statistics[holding_idx]['profit_loss'] += gain
-            holding_statistics[holding_idx]['trades'] += 1
+        holding_sec = (day_trade.sell_time - day_trade.buy_time).seconds
+        holding_idx = utils.get_holding_time_index(holding_sec)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            holding_statistics[holding_idx]['win_trades'] += 1
+            holding_statistics[holding_idx]['total_profit'] += gain
+        else:
+            holding_statistics[holding_idx]['loss_trades'] += 1
+            holding_statistics[holding_idx]['total_loss'] += gain
+        holding_statistics[holding_idx]['profit_loss'] += gain
+        holding_statistics[holding_idx]['trades'] += 1
     holding_profit_loss = []
     holding_total_profit = []
     holding_total_loss = []
@@ -1024,27 +1009,24 @@ def day_reports_plpct(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     plpct_statistics = utils.get_stats_empty_list(
         size=len(utils.get_plpct_range_labels()))
     # for P&L, win rate and profit/loss ratio, trades by P/L percentage
     for day_trade in day_trades:
-        if 'sell_price' in day_trade:
-            percentage = round(
-                (day_trade['sell_price'] - day_trade['buy_price']) / day_trade['buy_price'] * 100, 2)
-            percentage_idx = utils.get_plpct_range_index(percentage)
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                plpct_statistics[percentage_idx]['win_trades'] += 1
-                plpct_statistics[percentage_idx]['total_profit'] += gain
-            else:
-                plpct_statistics[percentage_idx]['loss_trades'] += 1
-                plpct_statistics[percentage_idx]['total_loss'] += gain
-            plpct_statistics[percentage_idx]['profit_loss'] += gain
-            plpct_statistics[percentage_idx]['trades'] += 1
+        percentage = round(
+            (day_trade.total_sold - day_trade.total_cost) / day_trade.total_cost * 100, 2)
+        percentage_idx = utils.get_plpct_range_index(percentage)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            plpct_statistics[percentage_idx]['win_trades'] += 1
+            plpct_statistics[percentage_idx]['total_profit'] += gain
+        else:
+            plpct_statistics[percentage_idx]['loss_trades'] += 1
+            plpct_statistics[percentage_idx]['total_loss'] += gain
+        plpct_statistics[percentage_idx]['profit_loss'] += gain
+        plpct_statistics[percentage_idx]['trades'] += 1
     plpct_profit_loss = []
     plpct_total_profit = []
     plpct_total_loss = []
@@ -1108,9 +1090,8 @@ def day_reports_hourly(request):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    buy_orders, sell_orders = utils.get_day_trade_orders()
     # day trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.all()
     hourly_stat = utils.get_hourly_stat_from_trades_for_render(day_trades)
 
     context = {

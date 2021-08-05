@@ -1302,7 +1302,6 @@ def get_day_trade_orders(date=None, symbol=None):
 
 
 def get_trades_from_orders(buy_orders, sell_orders):
-    # TODO, support dynamic add unit
     trades = []
     for buy_order in buy_orders:
         # fill buy side
@@ -1943,36 +1942,34 @@ def get_minute_candle_y_by_time_minute_action(candle_data, time, action):
 def get_trade_stat_dist_from_day_trades(day_trades):
     trades_dist = {}
     for trade in day_trades:
-        if "sell_price" in trade:
-            symbol = trade["symbol"]
-            gain = round(
-                (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
-            # build trades_dist
-            if symbol not in trades_dist:
-                trades_dist[symbol] = {
-                    "trades": 0,
-                    "win_trades": 0,
-                    "loss_trades": 0,
-                    "total_gain": 0,
-                    "total_loss": 0,
-                    "profit_loss": 0,
-                    "total_cost": 0,
-                    "top_gain": 0,
-                    "top_loss": 0,
-                }
-            trades_dist[symbol]["trades"] += 1
-            trades_dist[symbol]["profit_loss"] += gain
-            trades_dist[symbol]["total_cost"] += trade["buy_price"]
-            if gain > 0:
-                trades_dist[symbol]["win_trades"] += 1
-                trades_dist[symbol]["total_gain"] += gain
-            else:
-                trades_dist[symbol]["loss_trades"] += 1
-                trades_dist[symbol]["total_loss"] += gain
-            if gain > trades_dist[symbol]["top_gain"]:
-                trades_dist[symbol]["top_gain"] = gain
-            if gain < trades_dist[symbol]["top_loss"]:
-                trades_dist[symbol]["top_loss"] = gain
+        symbol = trade.symbol
+        gain = round(trade.total_sold - trade.total_cost, 2)
+        # build trades_dist
+        if symbol not in trades_dist:
+            trades_dist[symbol] = {
+                "trades": 0,
+                "win_trades": 0,
+                "loss_trades": 0,
+                "total_gain": 0,
+                "total_loss": 0,
+                "profit_loss": 0,
+                "sum_cost": 0,
+                "top_gain": 0,
+                "top_loss": 0,
+            }
+        trades_dist[symbol]["trades"] += 1
+        trades_dist[symbol]["profit_loss"] += gain
+        trades_dist[symbol]["sum_cost"] += (trade.total_cost / trade.quantity)
+        if gain > 0:
+            trades_dist[symbol]["win_trades"] += 1
+            trades_dist[symbol]["total_gain"] += gain
+        else:
+            trades_dist[symbol]["loss_trades"] += 1
+            trades_dist[symbol]["total_loss"] += gain
+        if gain > trades_dist[symbol]["top_gain"]:
+            trades_dist[symbol]["top_gain"] = gain
+        if gain < trades_dist[symbol]["top_loss"]:
+            trades_dist[symbol]["top_loss"] = gain
     return trades_dist
 
 
@@ -2415,7 +2412,7 @@ def get_day_trade_stat_record_for_render(symbol, trade_stat, date):
     if avg_loss > 0:
         profit_loss_ratio = round(avg_profit/avg_loss, 2)
     avg_price = "${}".format(
-        round(trade_stat["total_cost"] / trade_stat["trades"], 2))
+        round(trade_stat["sum_cost"] / trade_stat["trades"], 2))
     profit_loss = "+${}".format(round(trade_stat["profit_loss"], 2))
     profit_loss_style = "text-success"
     if trade_stat["profit_loss"] < 0:
@@ -2510,23 +2507,21 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
     statistics_list = get_stats_empty_list(size=len(value_labels))
     # for P&L, win rate and profit/loss ratio, trades by value
     for day_trade in day_trades:
-        symbol = day_trade['symbol']
-        buy_date = day_trade['buy_time'].date()
+        symbol = day_trade.symbol
+        buy_date = day_trade.buy_date
         key_statistics = get_hist_key_stat(symbol, buy_date)
         if key_statistics:
             value = getattr(key_statistics, field_name)
             value_idx = value_idx_func(value)
-            if 'sell_price' in day_trade:
-                gain = (day_trade['sell_price'] -
-                        day_trade['buy_price']) * day_trade['quantity']
-                if gain > 0:
-                    statistics_list[value_idx]['win_trades'] += 1
-                    statistics_list[value_idx]['total_profit'] += gain
-                else:
-                    statistics_list[value_idx]['loss_trades'] += 1
-                    statistics_list[value_idx]['total_loss'] += gain
-                statistics_list[value_idx]['profit_loss'] += gain
-                statistics_list[value_idx]['trades'] += 1
+            gain = day_trade.total_sold - day_trade.total_cost
+            if gain > 0:
+                statistics_list[value_idx]['win_trades'] += 1
+                statistics_list[value_idx]['total_profit'] += gain
+            else:
+                statistics_list[value_idx]['loss_trades'] += 1
+                statistics_list[value_idx]['total_loss'] += gain
+            statistics_list[value_idx]['profit_loss'] += gain
+            statistics_list[value_idx]['trades'] += 1
     value_profit_loss = []
     value_total_profit = []
     value_total_loss = []
@@ -2574,18 +2569,16 @@ def get_hourly_stat_from_trades_for_render(day_trades):
     # for hourly P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
         hourly_idx = get_market_hourly_interval_index(
-            local_datetime(day_trade['buy_time']))
-        if 'sell_price' in day_trade:
-            gain = (day_trade['sell_price'] -
-                    day_trade['buy_price']) * day_trade['quantity']
-            if gain > 0:
-                hourly_statistics[hourly_idx]['win_trades'] += 1
-                hourly_statistics[hourly_idx]['total_profit'] += gain
-            else:
-                hourly_statistics[hourly_idx]['loss_trades'] += 1
-                hourly_statistics[hourly_idx]['total_loss'] += gain
-            hourly_statistics[hourly_idx]['profit_loss'] += gain
-            hourly_statistics[hourly_idx]['trades'] += 1
+            local_datetime(day_trade.buy_time))
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            hourly_statistics[hourly_idx]['win_trades'] += 1
+            hourly_statistics[hourly_idx]['total_profit'] += gain
+        else:
+            hourly_statistics[hourly_idx]['loss_trades'] += 1
+            hourly_statistics[hourly_idx]['total_loss'] += gain
+        hourly_statistics[hourly_idx]['profit_loss'] += gain
+        hourly_statistics[hourly_idx]['trades'] += 1
     hourly_profit_loss = []
     hourly_win_rate = []
     hourly_profit_loss_ratio = []

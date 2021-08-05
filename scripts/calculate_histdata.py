@@ -4,15 +4,12 @@
 
 def start(day=None):
     from datetime import date
-    from scripts import utils
-    from webull_trader.models import HistoricalDayTradePerformance, HistoricalSwingTradePerformance, SwingTrade
+    from webull_trader.models import HistoricalDayTradePerformance, HistoricalSwingTradePerformance, DayTrade, SwingTrade
 
     if day == None:
         day = date.today()
-    # day trade
-    buy_orders, sell_orders = utils.get_day_trade_orders(date=day)
     # trades
-    day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)
+    day_trades = DayTrade.objects.filter(sell_date=day)
     # trade count
     total_day_trades = len(day_trades)
     # top gain & loss
@@ -36,50 +33,28 @@ def start(day=None):
     #     day_total_sell_amount += (order.avg_price * order.filled_quantity)
     # day_profit_loss = day_total_sell_amount - day_total_buy_amount
     # trade records
-    trades_dist = {}
     for trade in day_trades:
-        if "sell_price" in trade:
-            symbol = trade["symbol"]
-            gain = round(
-                (trade["sell_price"] - trade["buy_price"]) * trade["quantity"], 2)
-            day_total_buy_amount += (trade["buy_price"] * trade["quantity"])
-            day_total_sell_amount += (trade["sell_price"] * trade["quantity"])
-            # calculate win rate, profit/loss ratio
-            if gain > 0:
-                total_profit += gain
-                total_win_trades += 1
-            else:
-                total_loss += gain
-                total_loss_trades += 1
-            # calculate top gain & loss
-            if gain > top_gain_amount:
-                top_gain_symbol = symbol
-                top_gain_amount = gain
-            if gain < top_loss_amount:
-                top_loss_symbol = symbol
-                top_loss_amount = gain
-            # calculate day profit loss
-            day_profit_loss += gain
-            # build trades_dist
-            if symbol not in trades_dist:
-                trades_dist[symbol] = {
-                    "trades": 0,
-                    "win_trades": 0,
-                    "loss_trades": 0,
-                    "total_gain": 0,
-                    "total_loss": 0,
-                    "profit_loss": 0,
-                    "total_cost": 0,
-                }
-            trades_dist[symbol]["trades"] += 1
-            trades_dist[symbol]["profit_loss"] += gain
-            trades_dist[symbol]["total_cost"] += trade["buy_price"]
-            if gain > 0:
-                trades_dist[symbol]["win_trades"] += 1
-                trades_dist[symbol]["total_gain"] += gain
-            else:
-                trades_dist[symbol]["loss_trades"] += 1
-                trades_dist[symbol]["total_loss"] += gain
+        symbol = trade.symbol
+        gain = round(trade.total_sold - trade.total_cost, 2)
+        day_total_buy_amount += trade.total_cost
+        day_total_sell_amount += trade.total_sold
+        # calculate win rate, profit/loss ratio
+        if gain > 0:
+            total_profit += gain
+            total_win_trades += 1
+        else:
+            total_loss += gain
+            total_loss_trades += 1
+        # calculate top gain & loss
+        if gain > top_gain_amount:
+            top_gain_symbol = symbol
+            top_gain_amount = gain
+        if gain < top_loss_amount:
+            top_loss_symbol = symbol
+            top_loss_amount = gain
+        # calculate day profit loss
+        day_profit_loss += gain
+
     # win rate
     overall_win_rate = 0.0
     if total_day_trades > 0:
