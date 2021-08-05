@@ -467,7 +467,7 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
 
 def check_bars_amount_grinding(bars, period=10):
     """
-    check if bar chart has enough amount
+    check if bar chart amount is grinding
     """
     # make sure not use the last candle
     period = min(len(bars) - 1, period)
@@ -546,8 +546,8 @@ def check_bars_rel_volume(bars):
     last_candle3 = bars.iloc[-3]
     last_candle4 = bars.iloc[-4]
 
-    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > config.MIN_RELATIVE_VOLUME or \
-            last_candle["volume"] / last_candle2["volume"] > config.MIN_RELATIVE_VOLUME or last_candle2["volume"] / last_candle3["volume"] > config.MIN_RELATIVE_VOLUME:
+    if (last_candle["volume"] + last_candle2["volume"]) / (last_candle3["volume"] + last_candle4["volume"]) > config.DAY_MIN_RELATIVE_VOLUME or \
+            last_candle["volume"] / last_candle2["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle2["volume"] / last_candle3["volume"] > config.DAY_MIN_RELATIVE_VOLUME:
         # relative volume ok
         return True
     return False
@@ -644,6 +644,42 @@ def calculate_charts_ema9(charts):
             candle['ema9'] = round(
                 (candle['close'] - prev_candle['ema9']) * multiplier + prev_candle['ema9'], 2)
     return charts
+
+
+def check_daily_bars_volume_grinding(bars, period=10):
+    """
+    check if daily bar chart volume is grinding
+    """
+    period_bars = bars[-period:]
+    prev_vol = 0
+    vol_grinding = True
+    for period_bar in period_bars:
+        volume = period_bar.volume
+        if volume < prev_vol:
+            vol_grinding = False
+            break
+        prev_vol = volume
+    return vol_grinding
+
+
+def check_daily_bars_rel_volume(bars):
+    """
+    check if daily bar chart relative volume
+    """
+    # check relative volume over 2
+    for i in range(1, 5):
+        curent_period_bars = bars[-i:]
+        current_period_vol = 0
+        for bar in curent_period_bars:
+            current_period_vol += bar.volume
+        prev_period_bars = bars[-i*2:-i]
+        prev_period_vol = 0
+        for bar in prev_period_bars:
+            prev_period_vol += bar.volume
+        if current_period_vol / prev_period_vol > config.SWING_MIN_RELATIVE_VOLUME:
+            # relative volume ok
+            return True
+    return False
 
 
 def get_quote_sector(quote=None):

@@ -29,9 +29,13 @@ class SwingTurtle(StrategyBase):
     def get_buy_order_limit(self, unit_weight):
         return self.swing_position_amount_limit * unit_weight
 
-    def check_period_high(self, daily_bars):
-        if len(daily_bars) <= self.entry_period:
+    def check_has_volume(self, daily_bars):
+        if not utils.check_daily_bars_volume_grinding(daily_bars, period=5) and \
+                not utils.check_daily_bars_rel_volume(daily_bars):
             return False
+        return True
+
+    def check_period_high(self, daily_bars):
         latest_close = daily_bars[-1].close
         latest_sma120 = daily_bars[-1].sma_120
         period_close = daily_bars[self.entry_period].close
@@ -131,7 +135,8 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             latest_close = current_daily_bars[-1].close
-            if self.check_period_low(current_daily_bars):  # check period low for exit
+            # check period low for exit
+            if self.check_period_low(current_daily_bars):
                 self.submit_sell_order(
                     symbol, position, latest_close, "period low")
             elif latest_close < position.stop_loss_price:  # check if stop loss
@@ -147,11 +152,19 @@ class SwingTurtle(StrategyBase):
                 symbol=symbol)
             current_daily_bars = list(hist_daily_bars)
             # prev_daily_bars = current_daily_bars[0:len(current_daily_bars)-1]
+            if len(current_daily_bars) <= self.entry_period:
+                utils.print_trading_log(
+                    "<{}> daily chart has not enough data, no entry!".format(symbol))
+            # check daily bars has volume
+            elif not self.check_has_volume(current_daily_bars):
+                utils.print_trading_log(
+                    "<{}> daily chart has not enough volume, no entry!".format(symbol))
             # check period high for entry
-            if self.check_period_high(current_daily_bars):
-                latest_close = current_daily_bars[-1].close
-                self.submit_buy_order(
-                    symbol, None, unit_weight, latest_close, "period high")
+            else:
+                if self.check_period_high(current_daily_bars):
+                    latest_close = current_daily_bars[-1].close
+                    self.submit_buy_order(
+                        symbol, None, unit_weight, latest_close, "period high")
 
     def manual_trade(self, request):
         symbol = request.symbol
