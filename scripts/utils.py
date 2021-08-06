@@ -2616,6 +2616,9 @@ def get_hourly_stat_from_trades_for_render(day_trades):
 
 
 def get_minutes_trade_marker_from_orders_for_render(orders, candles, time_scale):
+    if len(candles['candles']) == 0:
+        return ([], [])
+
     trade_price_records = []
     trade_quantity_records = []
 

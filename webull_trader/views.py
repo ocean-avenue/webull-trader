@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import date
+from datetime import date, datetime
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
@@ -267,8 +267,10 @@ def day_analytics_date(request, date=None):
 
 @login_required
 def day_analytics_date_symbol(request, date=None, symbol=None):
-    minute_bars = get_list_or_404(
-        HistoricalMinuteBar, date=date, symbol=symbol)
+    # minute_bars = get_list_or_404(
+    #     HistoricalMinuteBar, date=date, symbol=symbol)
+
+    minute_bars = HistoricalMinuteBar.objects.filter(symbol=symbol, date=date)
 
     # account type data
     account_type = utils.get_account_type_for_render()
@@ -294,6 +296,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         m1_data_for_df['close'].append(minute_bar.close)
         m1_data_for_df['volume'].append(minute_bar.volume)
         m1_data_for_df['vwap'].append(minute_bar.vwap)
+
     m1_bars = pd.DataFrame(m1_data_for_df, index=timestamps)
     # calculate and fill ema 9 data
     m1_bars['ema9'] = m1_bars['close'].ewm(span=9, adjust=False).mean()
@@ -302,17 +305,19 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     # calculate 2m bars
     m2_bars = utils.convert_2m_bars(m1_bars)
     # calculate and fill ema 9 data
-    m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
+    if not m2_bars.empty:
+        m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
     # load 2m data for render
     m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
     # calculate 5m bars
     m5_bars = utils.convert_5m_bars(m1_bars)
     # calculate and fill ema 9 data
-    m5_bars['ema9'] = m5_bars['close'].ewm(span=9, adjust=False).mean()
+    if not m5_bars.empty:
+        m5_bars['ema9'] = m5_bars['close'].ewm(span=9, adjust=False).mean()
     # load 5m data for render
     m5_candle_data = utils.get_minute_candle_data_for_render(m5_bars)
-    # borrow minute bar for date
-    analytics_date = minute_bars[0].date
+    # analytics date
+    analytics_date = datetime.strptime(date, '%Y-%m-%d').date()
     # calculate daily candle
     d1_candle_data = utils.get_last_60d_daily_candle_data_for_render(
         symbol, analytics_date)
