@@ -768,6 +768,15 @@ def get_algo_type():
     return settings.algo_type
 
 
+def is_swing_algo_type():
+    algo_type = get_algo_type()
+    if algo_type == enums.AlgorithmType.SWING_TURTLE_20 or algo_type == enums.AlgorithmType.SWING_TURTLE_55 or \
+        algo_type == enums.AlgorithmType.DAY_SWING_MOMO_TURTLE or algo_type == enums.AlgorithmType.DAY_SWING_RG_TURTLE or \
+        algo_type == enums.AlgorithmType.DAY_SWING_BREAKOUT_TURTLE or algo_type == enums.AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
+        return True
+    return False
+
+
 def get_trading_symbols():
     trading_symbols = TradingSymbols.objects.first()
     if trading_symbols:

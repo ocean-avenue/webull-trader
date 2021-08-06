@@ -223,14 +223,14 @@ class Command(BaseCommand):
             minute="15")
 
         # fetch account
-        add_regular_hour_jobs(
+        add_all_hour_jobs(
             job=fetch_account_job,
             job_name="fetch_account_job",
             minute="00",
         )
 
         # fetch orders
-        add_regular_hour_jobs(
+        add_all_hour_jobs(
             job=fetch_webull_order_job,
             job_name="fetch_webull_order_job",
             minute="05",
