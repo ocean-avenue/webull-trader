@@ -191,7 +191,7 @@ def day_analytics_date(request, date=None):
     }
 
     # day trades
-    day_trades = DayTrade.objects.filter(sell_date=acc_stat.date)
+    day_trades = DayTrade.objects.filter(sell_date=acc_stat.date, require_adjustment=False)
     print(len(day_trades))
     hourly_statistics = utils.get_stats_empty_list(size=32)
     # for hourly P&L, win rate and profit/loss ratio, trades
@@ -351,7 +351,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
 
     # day trades
     day_trades = DayTrade.objects.filter(
-        symbol=symbol, sell_date=analytics_date)
+        symbol=symbol, sell_date=analytics_date, require_adjustment=False)
     trade_records = []
     for day_trade in day_trades:
         buy_price = round(day_trade.total_cost / day_trade.quantity, 3)
@@ -451,7 +451,7 @@ def day_reports_price(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     price_statistics = utils.get_stats_empty_list(size=16)
     # for price range P&L, win rate and profit/loss ratio, trades
     for day_trade in day_trades:
@@ -530,7 +530,7 @@ def day_reports_mktcap(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "market_value",
@@ -569,7 +569,7 @@ def day_reports_float(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "outstanding_shares",
@@ -608,7 +608,7 @@ def day_reports_turnover(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "turnover_rate",
@@ -647,7 +647,7 @@ def day_reports_short(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     stat_render = utils.get_value_stat_from_trades_for_render(
         day_trades,
         "short_float",
@@ -686,7 +686,7 @@ def day_reports_gap(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     gap_statistics = utils.get_stats_empty_list(
         size=len(utils.get_gap_range_labels()))
     # for P&L, win rate and profit/loss ratio, trades by gap
@@ -767,7 +767,7 @@ def day_reports_relvol(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     relvol_statistics = utils.get_stats_empty_list(
         size=len(utils.get_relative_volume_labels()))
     # for P&L, win rate and profit/loss ratio, trades by relative volume
@@ -852,7 +852,7 @@ def day_reports_sector(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     sector_statistics = utils.get_stats_empty_list(
         size=len(utils.get_sector_labels()))
     # for P&L, win rate and profit/loss ratio, trades by sector
@@ -935,7 +935,7 @@ def day_reports_holding(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     holding_statistics = utils.get_stats_empty_list(
         size=len(utils.get_holding_time_labels()))
     # for P&L, win rate and profit/loss ratio, trades by holding time
@@ -1015,7 +1015,7 @@ def day_reports_plpct(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     plpct_statistics = utils.get_stats_empty_list(
         size=len(utils.get_plpct_range_labels()))
     # for P&L, win rate and profit/loss ratio, trades by P/L percentage
@@ -1096,7 +1096,7 @@ def day_reports_hourly(request):
     algo_type_texts = utils.get_algo_type_texts()
 
     # day trades
-    day_trades = DayTrade.objects.all()
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
     hourly_stat = utils.get_hourly_stat_from_trades_for_render(day_trades)
 
     context = {

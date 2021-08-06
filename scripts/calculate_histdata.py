@@ -9,7 +9,7 @@ def start(day=None):
     if day == None:
         day = date.today()
     # trades
-    day_trades = DayTrade.objects.filter(sell_date=day)
+    day_trades = DayTrade.objects.filter(sell_date=day, require_adjustment=False)
     # trade count
     total_day_trades = len(day_trades)
     # top gain & loss
