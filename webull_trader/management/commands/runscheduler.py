@@ -12,8 +12,8 @@ from trading import trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 ALL_HOURS = ["04", "05", "06", "07", "08", "09", "10", "11",
-             "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-REGULAR_HOURS = ["10", "11", "12", "13", "14", "15", "16"]
+             "12", "13", "14", "15", "16", "17", "18", "19"]
+REGULAR_HOURS = ["10", "11", "12", "13", "14", "15"]
 
 scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
 scheduler.add_jobstore(DjangoJobStore(), "default")
