@@ -7,7 +7,9 @@ def start():
     from scripts import utils
     from webull_trader.models import SwingWatchlist
 
-    if utils.is_swing_algo_type():
+    algo_type = utils.get_algo_type()
+
+    if utils.check_swing_trade_algo(algo_type):
         swing_watchlist = SwingWatchlist.objects.all()
         symbol_list = []
         for swing_watch in swing_watchlist:

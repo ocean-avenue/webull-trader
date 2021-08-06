@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, \
-    check_exception, calculate_histdata, utils
+    check_exception, adjust_trades, calculate_histdata, utils
 from trading import trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
@@ -83,6 +83,10 @@ def fetch_webull_order_job():
     fetch_orders.start()
     print("[{}] Done webull orders job!".format(utils.get_now()))
 
+    print("[{}] Start adjust trades job...".format(utils.get_now()))
+    adjust_trades.start()
+    print("[{}] Done adjust trades job!".format(utils.get_now()))
+
     print("[{}] Start calculate hist data job...".format(utils.get_now()))
     calculate_histdata.start()
     print("[{}] Done calculate hist data job!".format(utils.get_now()))
@@ -102,6 +106,10 @@ def fetch_stats_data_job():
     print("[{}] Start fetch orders job...".format(utils.get_now()))
     fetch_orders.start()
     print("[{}] Done fetch orders job!".format(utils.get_now()))
+
+    print("[{}] Start adjust trades job...".format(utils.get_now()))
+    adjust_trades.start()
+    print("[{}] Done adjust trades job!".format(utils.get_now()))
 
     print("[{}] Start fetch news job...".format(utils.get_now()))
     fetch_news.start()
