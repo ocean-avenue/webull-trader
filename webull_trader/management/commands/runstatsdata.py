@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.core.management.base import BaseCommand
-from scripts import utils, fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata
+from scripts import utils, fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, adjust_trades
 
 
 class Command(BaseCommand):
@@ -18,6 +18,10 @@ class Command(BaseCommand):
         print("[{}] Start fetch orders job...".format(utils.get_now()))
         fetch_orders.start()
         print("[{}] Done fetch orders job!".format(utils.get_now()))
+
+        print("[{}] Start adjust trades job...".format(utils.get_now()))
+        adjust_trades.start()
+        print("[{}] Done adjust trades job!".format(utils.get_now()))
 
         print("[{}] Start fetch news job...".format(utils.get_now()))
         fetch_news.start(day=date)
