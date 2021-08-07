@@ -3,11 +3,16 @@
 # check scheduler job exception and send notify message
 
 def start():
+    from datetime import datetime
     from django_apscheduler.models import DjangoJobExecution
     from webull_trader.models import NotifiedErrorExecution
     from scripts import utils
 
-    executions = DjangoJobExecution.objects.order_by("-id")[:10]
+    today = datetime.today()
+    # all today's executions
+    executions = DjangoJobExecution.objects.filter(
+        run_time__year=today.year, run_time__month=today.month, run_time__day=today.day)
+
     for execution in executions:
         if execution.status == DjangoJobExecution.ERROR:
             execution_id = execution.id
