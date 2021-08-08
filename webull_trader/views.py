@@ -126,12 +126,33 @@ def trading_logs(request):
                 TradingHourType.tostr(log.trading_hour)),
             "tag": log.tag,
             "days_ago": days_ago,
+            "date_hour_url": "{}/{}".format(log.date.strftime("%Y-%m-%d"), log.trading_hour)
         })
 
     return render(request, 'webull_trader/trading_logs.html', {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
         "trading_logs": log_records,
+    })
+
+
+@login_required
+def trading_logs_date_hour(request, date=None, hour=None):
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    log = get_object_or_404(TradingLog, date=date, trading_hour=hour)
+    log_lines = log.log_text.splitlines()
+
+    return render(request, 'webull_trader/trading_logs_date_hour.html', {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "log_lines": log_lines,
+        "date": log.date.strftime("%Y-%m-%d"),
+        "trading_hour": TradingHourType.tostr(log.trading_hour),
     })
 
 

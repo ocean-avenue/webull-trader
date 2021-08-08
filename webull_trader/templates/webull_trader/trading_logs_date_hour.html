@@ -1,0 +1,36 @@
+{% extends 'webull_trader/base.html' %} 
+
+{% block title %} Trading Logs {% endblock %} 
+
+{% load static %} 
+
+{% block content %}
+
+<div class="container-fluid p-0">
+    <div class="row mb-2 mb-xl-3">
+        <div class="col-auto d-none d-sm-block">
+            <span class="badge {{account_type.value_style|safe}} text-dark">
+            {{account_type.value|safe}}
+            </span>
+        </div>
+        <div class="col-auto d-none d-sm-block">
+            <h3>
+                <a class="link-dark no-underline" href="{% url 'trading_logs' %}">Trading Logs</a>
+                /
+                {{date|safe}}
+                /
+                {{trading_hour|safe}}
+            </h3>
+        </div>
+    </div>
+    <div class="card text-dark" style="font-family: monospace;">
+        <div class="card-body">
+            {% for log_line in log_lines %}
+            {{log_line}}
+            </br>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

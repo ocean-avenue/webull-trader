@@ -18,14 +18,13 @@
         </div>
     </div>
     <div class="card">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Logs</h5>
-        </div>
         <div class="card-body">
             <ul class="timeline mt-2 mb-0">
                 {% for trading_log in trading_logs %}
                 <li class="timeline-item">
-                    <strong>{{trading_log.date_hour}}</strong>
+                    <a class="no-underline" href="/trading-logs/{{trading_log.date_hour_url}}">
+                        <strong>{{trading_log.date_hour}}</strong>
+                    </a>
                     <span class="float-end text-muted text-sm">{{trading_log.days_ago}}</span>
                     <p>{{trading_log.tag}}</p>
                 </li>
