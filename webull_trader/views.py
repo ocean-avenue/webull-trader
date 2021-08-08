@@ -5,9 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from sdk import fmpsdk
 from scripts import utils, config
-from webull_trader.enums import ActionType, SetupType
+from webull_trader.enums import SetupType, TradingHourType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, WebullNews, WebullOrderNote
+from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, \
+    HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, \
+    WebullAccountStatistics, WebullNews, WebullOrderNote, TradingLog
 
 # Create your views here.
 
@@ -97,6 +99,39 @@ def index(request):
         "day_profit_loss": day_profit_loss,
         "net_assets": net_assets,
         "profit_loss": profit_loss,
+    })
+
+
+@login_required
+def trading_logs(request):
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    log_records = []
+    logs = list(TradingLog.objects.order_by('-id')[:100])
+    for log in logs:
+        days = (date.today() - log.date).days
+        if days == 0:
+            days_ago = "Today"
+        elif days == 1:
+            days_ago = "Yesterday"
+        else:
+            days_ago = "{}d ago".format(days)
+        log_records.append({
+            "date_hour": "{} ({})".format(
+                log.date.strftime("%b %d, %Y"),
+                TradingHourType.tostr(log.trading_hour)),
+            "tag": log.tag,
+            "days_ago": days_ago,
+        })
+
+    return render(request, 'webull_trader/trading_logs.html', {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "trading_logs": log_records,
     })
 
 
@@ -191,7 +226,8 @@ def day_analytics_date(request, date=None):
     }
 
     # day trades
-    day_trades = DayTrade.objects.filter(sell_date=acc_stat.date, require_adjustment=False)
+    day_trades = DayTrade.objects.filter(
+        sell_date=acc_stat.date, require_adjustment=False)
     print(len(day_trades))
     hourly_statistics = utils.get_stats_empty_list(size=32)
     # for hourly P&L, win rate and profit/loss ratio, trades
