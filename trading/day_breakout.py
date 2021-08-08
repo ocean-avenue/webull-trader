@@ -109,7 +109,7 @@ class DayTradingBreakout(StrategyBase):
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
             utils.print_trading_log(
-                "<{}> candle chart price rate of change for {} period is weak [{}], no entry!".format(symbol, self.entry_period, round(ROC, 2)))
+                "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
         if symbol in self.tracking_stats:
