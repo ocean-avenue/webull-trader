@@ -913,7 +913,7 @@ def save_webull_order(order_data, paper=True):
     else:
         order_obj = order_data['orders'][0]
         order_id = str(order_obj['orderId'])
-        if "symbol" in order_data['ticker']:
+        if "symbol" in order_obj['ticker']:
             symbol = order_obj['ticker']['symbol']
         else:
             symbol = order_obj['ticker']['disSymbol']
