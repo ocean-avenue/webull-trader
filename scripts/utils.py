@@ -536,6 +536,37 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
     return long_wick_up_count >= count
 
 
+def check_bars_at_peak(bars, long_period=10, short_period=3):
+    """
+    check if bar chart is at peak
+    """
+    prev_bar2 = bars.iloc[-2]
+    # prev_bar2 should be red
+    if prev_bar2['close'] > prev_bar2['open']:
+        return False
+    prev_bar3 = bars.iloc[-3]
+    # prev_bar3 should be green
+    if prev_bar3['close'] < prev_bar3['open']:
+        return False
+    # prev_bar3 vol should > prev_bar2 vol
+    if prev_bar3['volume'] < prev_bar2['volume']:
+        return False
+    # prev_bar3 vol should > avg long_period vol
+    total_vol = 0
+    for i in range(0, long_period):
+        total_vol += bars.iloc[-4 - i]['volume']
+    avg_vol = total_vol / long_period
+    if prev_bar3['volume'] < avg_vol:
+        return False
+    # prev_bar3 vol should > each short_period vol
+    for i in range(0, short_period):
+        short_vol = bars.iloc[-4 - i]['volume']
+        if prev_bar3['volume'] < short_vol:
+            return False
+    # at peak
+    return True
+
+
 def check_bars_rel_volume(bars):
     """
     check if bar chart relative volume
