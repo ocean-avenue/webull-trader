@@ -412,9 +412,9 @@ class StrategyBase:
                             quant=holding_quantity)
                         utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
                             symbol, holding_quantity, bid_price))
-                        self.update_pending_sell_order(
-                            ticker, order_response, "{} {}".format(exit_note, "Resubmit sell order."))
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
+                        self.update_pending_sell_order(
+                            ticker, order_response, "{} Resubmit sell order ({}).".format(exit_note, self.tracking_tickers[symbol]['resubmit_count']))
                     else:
                         self.tracking_tickers[symbol]['pending_sell'] = False
                         self.tracking_tickers[symbol]['pending_order_id'] = None
