@@ -1251,8 +1251,10 @@ def day_reports_weekly(request):
             weekly_labels.append("Week {}".format(last_week_no))
             weekly_profit_loss.append(
                 utils.get_color_bar_chart_item_for_render(round(last_week_profit_loss, 2)))
-            weekly_win_rate.append(round(last_week_win_rate / last_week_count, 2))
-            weekly_profit_loss_ratio.append(round(last_week_profit_loss_ratio / last_week_count, 2))
+            weekly_win_rate.append(
+                round(last_week_win_rate / last_week_count, 2))
+            weekly_profit_loss_ratio.append(
+                round(last_week_profit_loss_ratio / last_week_count, 2))
             weekly_trades.append(last_week_trades)
             # reset current week data
             last_week_no = week_no
@@ -1268,6 +1270,16 @@ def day_reports_weekly(request):
             last_week_win_rate += daytrade_perf.win_rate
             last_week_profit_loss_ratio += daytrade_perf.profit_loss_ratio
             last_week_trades += daytrade_perf.trades
+    # attach remaining week data
+    if last_week_count > 0:
+        weekly_labels.append("Week {}".format(last_week_no))
+        weekly_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(last_week_profit_loss, 2)))
+        weekly_win_rate.append(
+            round(last_week_win_rate / last_week_count, 2))
+        weekly_profit_loss_ratio.append(
+            round(last_week_profit_loss_ratio / last_week_count, 2))
+        weekly_trades.append(last_week_trades)
 
     context = {
         "account_type": account_type,
@@ -1318,11 +1330,13 @@ def day_reports_monthly(request):
         month_no = daytrade_perf.date.strftime("%Y/%m")
         if month_no != last_month_no:
             # attach last month data
-            monthly_labels.append(month_no)
+            monthly_labels.append(last_month_no)
             monthly_profit_loss.append(
                 utils.get_color_bar_chart_item_for_render(round(last_month_profit_loss, 2)))
-            monthly_win_rate.append(round(last_month_win_rate / last_month_count, 2))
-            monthly_profit_loss_ratio.append(round(last_month_profit_loss_ratio / last_month_count, 2))
+            monthly_win_rate.append(
+                round(last_month_win_rate / last_month_count, 2))
+            monthly_profit_loss_ratio.append(
+                round(last_month_profit_loss_ratio / last_month_count, 2))
             monthly_trades.append(last_month_trades)
             # reset current month data
             last_month_no = month_no
@@ -1338,6 +1352,16 @@ def day_reports_monthly(request):
             last_month_win_rate += daytrade_perf.win_rate
             last_month_profit_loss_ratio += daytrade_perf.profit_loss_ratio
             last_month_trades += daytrade_perf.trades
+    # attach remaining month data
+    if last_month_count > 0:
+        monthly_labels.append(last_month_no)
+        monthly_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(last_month_profit_loss, 2)))
+        monthly_win_rate.append(
+            round(last_month_win_rate / last_month_count, 2))
+        monthly_profit_loss_ratio.append(
+            round(last_month_profit_loss_ratio / last_month_count, 2))
+        monthly_trades.append(last_month_trades)
 
     context = {
         "account_type": account_type,
