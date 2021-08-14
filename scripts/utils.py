@@ -576,9 +576,14 @@ def check_bars_rel_volume(bars):
     last_candle3 = bars.iloc[-3]
     last_candle4 = bars.iloc[-4]
     last_candle5 = bars.iloc[-5]
+    last_candle6 = bars.iloc[-6]
+    last_candle7 = bars.iloc[-7]
 
     if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) > config.DAY_MIN_RELATIVE_VOLUME or \
-            last_candle2["volume"] / last_candle3["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle3["volume"] / last_candle4["volume"] > config.DAY_MIN_RELATIVE_VOLUME:
+        (last_candle2["volume"] + last_candle3["volume"] + last_candle4["volume"]) / (last_candle5["volume"] + last_candle6["volume"] + last_candle7["volume"]) > config.DAY_MIN_RELATIVE_VOLUME or \
+        last_candle2["volume"] / last_candle3["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle3["volume"] / last_candle4["volume"] > config.DAY_MIN_RELATIVE_VOLUME or \
+        last_candle4["volume"] / last_candle5["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle5["volume"] / last_candle6["volume"] > config.DAY_MIN_RELATIVE_VOLUME or \
+            last_candle6["volume"] / last_candle7["volume"] > config.DAY_MIN_RELATIVE_VOLUME:
         # relative volume ok
         return True
     return False
