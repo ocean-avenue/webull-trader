@@ -1202,7 +1202,7 @@ def day_reports_daily(request):
     context = {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "title": "Hourly",
+        "title": "Daily",
         "daily_labels": daily_labels,
         "daily_profit_loss": daily_profit_loss,
         "daily_win_rate": daily_win_rate,
@@ -1213,6 +1213,76 @@ def day_reports_daily(request):
     cache.set('day_reports_daily_cache', context, CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_daily.html', context)
+
+
+@login_required
+def day_reports_weekly(request):
+
+    cached_context = cache.get('day_reports_weekly_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_weekly.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    weekly_labels = []
+    weekly_profit_loss = []
+    weekly_win_rate = []
+    weekly_profit_loss_ratio = []
+    weekly_trades = []
+    daytrade_perfs = HistoricalDayTradePerformance.objects.all()
+
+    last_week_no = -1
+    last_week_count = 0
+    if daytrade_perfs.first():
+        last_week_no = daytrade_perfs.first().date.isocalendar()[1]
+    last_week_profit_loss = 0.0
+    last_week_win_rate = 0.0
+    last_week_profit_loss_ratio = 0.0
+    last_week_trades = 0
+
+    for daytrade_perf in daytrade_perfs:
+        week_no = daytrade_perf.date.isocalendar()[1]
+        if week_no != last_week_no:
+            # attach last week data
+            weekly_labels.append("Week {}".format(last_week_no))
+            weekly_profit_loss.append(
+                utils.get_color_bar_chart_item_for_render(round(last_week_profit_loss, 2)))
+            weekly_win_rate.append(round(last_week_win_rate / last_week_count, 2))
+            weekly_profit_loss_ratio.append(round(last_week_profit_loss_ratio / last_week_count, 2))
+            weekly_trades.append(last_week_trades)
+            # reset current week data
+            last_week_no = week_no
+            last_week_count = 1
+            last_week_profit_loss = daytrade_perf.day_profit_loss
+            last_week_win_rate = daytrade_perf.win_rate
+            last_week_profit_loss_ratio = daytrade_perf.profit_loss_ratio
+            last_week_trades = daytrade_perf.trades
+        else:
+            # accumulate current week data
+            last_week_count += 1
+            last_week_profit_loss += daytrade_perf.day_profit_loss
+            last_week_win_rate += daytrade_perf.win_rate
+            last_week_profit_loss_ratio += daytrade_perf.profit_loss_ratio
+            last_week_trades += daytrade_perf.trades
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Weekly",
+        "weekly_labels": weekly_labels,
+        "weekly_profit_loss": weekly_profit_loss,
+        "weekly_win_rate": weekly_win_rate,
+        "weekly_profit_loss_ratio": weekly_profit_loss_ratio,
+        "weekly_trades": weekly_trades,
+    }
+
+    cache.set('day_reports_weekly_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_weekly.html', context)
 
 
 @login_required
