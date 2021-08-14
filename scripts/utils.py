@@ -563,6 +563,13 @@ def check_bars_at_peak(bars, long_period=10, short_period=3):
         short_vol = bars.iloc[-4 - i]['volume']
         if prev_bar3['volume'] < short_vol:
             return False
+    # long period vol should > pre long period vol * 4
+    prev_total_vol = 0
+    for i in range(0, long_period):
+        prev_total_vol += bars.iloc[-4 - long_period - i]['volume']
+    prev_avg_vol = prev_total_vol / long_period
+    if avg_vol < prev_avg_vol * 4:
+        return False
     # at peak
     return True
 
