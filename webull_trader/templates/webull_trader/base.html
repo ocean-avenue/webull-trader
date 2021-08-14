@@ -238,8 +238,12 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'day_reports_weekly' %}">Weekly</a>
                 </li>
+                {% if request.path == '/day-reports/monthly' %}
+                <li class="sidebar-item active">
+                {% else  %}
                 <li class="sidebar-item">
-                  <a class="sidebar-link" href="{% url 'day_reports_hourly' %}">Monthly</a>
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_monthly' %}">Monthly</a>
                 </li>
               </ul>
             </li>

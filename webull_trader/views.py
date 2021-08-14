@@ -1286,6 +1286,76 @@ def day_reports_weekly(request):
 
 
 @login_required
+def day_reports_monthly(request):
+
+    cached_context = cache.get('day_reports_monthly_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_monthly.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    monthly_labels = []
+    monthly_profit_loss = []
+    monthly_win_rate = []
+    monthly_profit_loss_ratio = []
+    monthly_trades = []
+    daytrade_perfs = HistoricalDayTradePerformance.objects.all()
+
+    last_month_no = "0000/00"
+    last_month_count = 0
+    if daytrade_perfs.first():
+        last_month_no = daytrade_perfs.first().date.strftime("%Y/%m")
+    last_month_profit_loss = 0.0
+    last_month_win_rate = 0.0
+    last_month_profit_loss_ratio = 0.0
+    last_month_trades = 0
+
+    for daytrade_perf in daytrade_perfs:
+        month_no = daytrade_perf.date.strftime("%Y/%m")
+        if month_no != last_month_no:
+            # attach last month data
+            monthly_labels.append(month_no)
+            monthly_profit_loss.append(
+                utils.get_color_bar_chart_item_for_render(round(last_month_profit_loss, 2)))
+            monthly_win_rate.append(round(last_month_win_rate / last_month_count, 2))
+            monthly_profit_loss_ratio.append(round(last_month_profit_loss_ratio / last_month_count, 2))
+            monthly_trades.append(last_month_trades)
+            # reset current month data
+            last_month_no = month_no
+            last_month_count = 1
+            last_month_profit_loss = daytrade_perf.day_profit_loss
+            last_month_win_rate = daytrade_perf.win_rate
+            last_month_profit_loss_ratio = daytrade_perf.profit_loss_ratio
+            last_month_trades = daytrade_perf.trades
+        else:
+            # accumulate current month data
+            last_month_count += 1
+            last_month_profit_loss += daytrade_perf.day_profit_loss
+            last_month_win_rate += daytrade_perf.win_rate
+            last_month_profit_loss_ratio += daytrade_perf.profit_loss_ratio
+            last_month_trades += daytrade_perf.trades
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Monthly",
+        "monthly_labels": monthly_labels,
+        "monthly_profit_loss": monthly_profit_loss,
+        "monthly_win_rate": monthly_win_rate,
+        "monthly_profit_loss_ratio": monthly_profit_loss_ratio,
+        "monthly_trades": monthly_trades,
+    }
+
+    cache.set('day_reports_monthly_cache', context, CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_monthly.html', context)
+
+
+@login_required
 def swing_positions(request):
 
     cached_context = cache.get('swing_positions_cache')
