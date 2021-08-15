@@ -243,14 +243,22 @@ class StrategyBase:
             quantity = int(position['position'])
             cost = float(position['costPrice'])
             position_obj = ticker['position_obj']
+            stop_loss = ticker['stop_loss'] or 0.0
             if position_obj:
-                # TODO, support add unit position update
-                pass
+                if quantity > position_obj.quantity:
+                    # order filled
+                    order_filled = True
+                    # update position obj
+                    position_obj.order_ids = "{},{}".format(
+                        position_obj.order_ids, order_id)
+                    position_obj.quantity = quantity
+                    position_obj.total_cost = round(quantity * cost, 2)
+                    position_obj.units = position_obj.units + 1
+                    position_obj.save()
             else:
                 # order filled
                 order_filled = True
                 # add position obj
-                stop_loss = ticker['stop_loss'] or 0.0
                 position_obj = utils.add_day_position(
                     symbol=symbol,
                     ticker_id=ticker_id,
@@ -263,9 +271,10 @@ class StrategyBase:
                 )
             if order_filled:
                 entry_note = "Entry point."
-                if ticker['resubmit_count'] > 0:
+                resubmit_count = ticker['resubmit_count']
+                if resubmit_count > 0:
                     entry_note = "{} {}".format(
-                        entry_note, "Resubmit buy order.")
+                        entry_note, "Resubmit buy order ({}).".format(resubmit_count))
                 # save order note
                 utils.save_webull_order_note(
                     order_id, setup=self.get_setup(), note=entry_note)
@@ -414,7 +423,8 @@ class StrategyBase:
                             symbol, holding_quantity, bid_price))
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                         self.update_pending_sell_order(
-                            ticker, order_response, "{} Resubmit sell order ({}).".format(exit_note, self.tracking_tickers[symbol]['resubmit_count']))
+                            ticker, order_response, "{} Resubmit sell order ({}).".format(
+                                exit_note, self.tracking_tickers[symbol]['resubmit_count']))
                     else:
                         self.tracking_tickers[symbol]['pending_sell'] = False
                         self.tracking_tickers[symbol]['pending_order_id'] = None

@@ -174,6 +174,9 @@ class DayTradingBreakout(StrategyBase):
 
         return (exit_trading, exit_note)
 
+    def check_scale_in(self, ticker, position, bars):
+        return False
+
     def check_stop_profit(self, position):
         exit_trading = False
         exit_note = None
@@ -203,6 +206,67 @@ class DayTradingBreakout(StrategyBase):
 
     def update_exit_period(self, ticker, position):
         return
+
+    def submit_buy_order(self, ticker, bars):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        usable_cash = webullsdk.get_usable_cash()
+        buy_position_amount = self.get_buy_order_limit(ticker)
+        if usable_cash <= buy_position_amount:
+            utils.print_trading_log(
+                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
+            return
+        buy_price = self.get_buy_price(ticker)
+        if buy_price == None:
+            return
+        # candle data
+        current_candle = bars.iloc[-1]
+        prev_candle = bars.iloc[-2]
+        buy_quant = (int)(buy_position_amount / buy_price)
+        # reset exit period
+        self.tracking_tickers[symbol]['exit_period'] = self.exit_period
+        if buy_quant > 0:
+            # submit limit order at ask price
+            order_response = webullsdk.buy_limit_order(
+                ticker_id=ticker_id,
+                price=buy_price,
+                quant=buy_quant)
+            utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
+            utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+                symbol, buy_quant, buy_price))
+            # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+            stop_loss = max(min(round((prev_candle['high'] + prev_candle['low']) / 2, 2), round(
+                buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)), round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+            # update pending buy
+            self.update_pending_buy_order(
+                ticker, order_response, stop_loss=stop_loss)
+        else:
+            utils.print_trading_log(
+                "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
+
+    def submit_sell_order(self, ticker, position, note):
+        symbol = ticker['symbol']
+        ticker_id = ticker['ticker_id']
+        holding_quantity = ticker['positions']
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        sell_price = self.get_sell_price(ticker)
+        if sell_price == None:
+            return
+        order_response = webullsdk.sell_limit_order(
+            ticker_id=ticker_id,
+            price=sell_price,
+            quant=holding_quantity)
+        utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
+            symbol, round(profit_loss_rate * 100, 2)))
+        utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+            symbol, holding_quantity, sell_price))
+        # update pending sell
+        self.update_pending_sell_order(
+            ticker, order_response, exit_note=note)
+        # update trading stats
+        self.update_trading_stats(ticker, float(position['lastPrice']), float(
+            position['costPrice']), profit_loss_rate)
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
@@ -246,43 +310,9 @@ class DayTradingBreakout(StrategyBase):
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
 
-            # candle data
-            current_candle = bars.iloc[-1]
-            prev_candle = bars.iloc[-2]
-
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
-                usable_cash = webullsdk.get_usable_cash()
-                buy_position_amount = self.get_buy_order_limit(ticker)
-                if usable_cash <= buy_position_amount:
-                    utils.print_trading_log(
-                        "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
-                    return
-                buy_price = self.get_buy_price(ticker)
-                if buy_price == None:
-                    return
-                buy_quant = (int)(buy_position_amount / buy_price)
-                # reset exit period
-                self.tracking_tickers[symbol]['exit_period'] = self.exit_period
-                if buy_quant > 0:
-                    # submit limit order at ask price
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=buy_price,
-                        quant=buy_quant)
-                    utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
-                        symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
-                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, buy_price))
-                    # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-                    stop_loss = max(min(round((prev_candle['high'] + prev_candle['low']) / 2, 2), round(
-                        buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)), round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
-                    # update pending buy
-                    self.update_pending_buy_order(
-                        ticker, order_response, stop_loss=stop_loss)
-                else:
-                    utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
+                self.submit_buy_order(ticker, bars)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -314,47 +344,32 @@ class DayTradingBreakout(StrategyBase):
                 # get 1m bar charts
                 m1_bars = webullsdk.get_1m_bars(
                     ticker_id, count=(exit_period*self.time_scale+5))
-
-                # get bars error
+                # check bars error
                 if m1_bars.empty:
                     utils.print_trading_log(
                         "<{}> bars data error!".format(symbol))
                     exit_trading = True
                     exit_note = "Bars data error!"
-                else:
-                    # convert bars
-                    bars = m1_bars
-                    if self.time_scale == 5:
-                        bars = utils.convert_5m_bars(m1_bars)
-                    # check stop loss
-                    exit_trading, exit_note = self.check_stop_loss(
-                        ticker, bars)
-                    # check exit trading
-                    if not exit_trading:
-                        utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
-                            symbol, round(profit_loss_rate * 100, 2)))
-                        # check exit trade
-                        exit_trading, exit_note = self.check_exit(ticker, bars)
+            if not exit_trading:
+                # convert bars
+                bars = m1_bars
+                if self.time_scale == 5:
+                    bars = utils.convert_5m_bars(m1_bars)
+                # check stop loss
+                exit_trading, exit_note = self.check_stop_loss(ticker, bars)
+            if not exit_trading:
+                utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                    symbol, round(profit_loss_rate * 100, 2)))
+                # check exit trade
+                exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
             if exit_trading:
-                sell_price = self.get_sell_price(ticker)
-                if sell_price == None:
-                    return
-                order_response = webullsdk.sell_limit_order(
-                    ticker_id=ticker_id,
-                    price=sell_price,
-                    quant=holding_quantity)
-                utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
-                    symbol, round(profit_loss_rate * 100, 2)))
-                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                    symbol, holding_quantity, sell_price))
-                # update pending sell
-                self.update_pending_sell_order(
-                    ticker, order_response, exit_note=exit_note)
-                # update trading stats
-                self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
-                    ticker_position['costPrice']), profit_loss_rate)
+                self.submit_sell_order(ticker, ticker_position, exit_note)
+            # check scale in position
+            elif self.check_scale_in(ticker_position):
+                # check scale in position
+                self.submit_buy_order(ticker, bars)
 
     def on_update(self):
         # trading tickers
