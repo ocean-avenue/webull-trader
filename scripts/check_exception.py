@@ -23,7 +23,8 @@ def start():
                 # already notified
                 continue
             # notify message
-            utils.notify_message("Job execution exception, fix now!")
+            utils.notify_message(
+                "Job {} execution exception, fix now!".format(execution.job.id))
             # mark already notified
             notified_execution = NotifiedErrorExecution(
                 execution_id=execution_id)
