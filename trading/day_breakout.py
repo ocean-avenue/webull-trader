@@ -341,6 +341,7 @@ class DayTradingBreakout(StrategyBase):
             exit_trading, exit_note = self.check_stop_profit(ticker_position)
             if not exit_trading:
                 # get 1m bar charts
+                # check_bars_at_peak require 30 bars
                 m1_bars = webullsdk.get_1m_bars(
                     ticker_id, count=(self.exit_period*self.time_scale + 30))
                 # check bars error
