@@ -174,7 +174,7 @@ class DayTradingBreakout(StrategyBase):
 
         return (exit_trading, exit_note)
 
-    def check_scale_in(self, ticker, position, bars):
+    def check_scale_in(self, ticker, position):
         return False
 
     def check_stop_profit(self, position):
@@ -367,7 +367,7 @@ class DayTradingBreakout(StrategyBase):
             if exit_trading:
                 self.submit_sell_order(ticker, ticker_position, exit_note)
             # check scale in position
-            elif self.check_scale_in(ticker_position):
+            elif self.check_scale_in(ticker, ticker_position):
                 # check scale in position
                 self.submit_buy_order(ticker, bars)
 
