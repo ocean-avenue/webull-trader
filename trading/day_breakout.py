@@ -331,7 +331,6 @@ class DayTradingBreakout(StrategyBase):
             self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
             # update exit period by profit loss rate
             self.update_exit_period(ticker, ticker_position)
-            exit_period = ticker['exit_period']
 
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
             max_profit_loss_rate = self.tracking_tickers[symbol]['max_profit_loss_rate']
@@ -343,7 +342,7 @@ class DayTradingBreakout(StrategyBase):
             if not exit_trading:
                 # get 1m bar charts
                 m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(exit_period*self.time_scale+5))
+                    ticker_id, count=(self.exit_period*self.time_scale + 30))
                 # check bars error
                 if m1_bars.empty:
                     utils.print_trading_log(
