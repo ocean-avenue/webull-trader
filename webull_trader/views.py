@@ -422,10 +422,9 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         if gain >= 0:
             profit_loss_percent = "+{}".format(profit_loss_percent)
 
-        # TODO, support multi buy order
         order_ids = day_trade.order_ids.split(",")
         buy_order_id = order_ids[0]
-        sell_order_id = order_ids[1]
+        sell_order_id = order_ids[-1]
 
         setup = None
         buy_order_notes = WebullOrderNote.objects.filter(order_id=buy_order_id)
