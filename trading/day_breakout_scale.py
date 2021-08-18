@@ -34,14 +34,32 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             return True
         return False
 
+    def check_stop_profit(self, ticker, position):
+        exit_trading = False
+        exit_note = None
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        initial_cost = ticker['initial_cost']
+        last_price = float(position['lastPrice'])
+        if initial_cost and initial_cost > 0:
+            profit_loss_rate = (last_price - initial_cost) / initial_cost
+        if profit_loss_rate >= 1:
+            exit_trading = True
+            exit_note = "Home run at {}!".format(last_price)
+        return (exit_trading, exit_note)
+
     def update_exit_period(self, ticker, position):
         symbol = ticker['symbol']
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
-        if profit_loss_rate >= 0.9:
+        initial_cost = ticker['initial_cost']
+        last_price = float(position['lastPrice'])
+        if initial_cost and initial_cost > 0:
+            profit_loss_rate = (last_price - initial_cost) / initial_cost
+        current_exit_period = ticker['exit_period']
+        if profit_loss_rate >= 0.9 and current_exit_period > 1:
             self.tracking_tickers[symbol]['exit_period'] = 1
-        elif profit_loss_rate >= 0.7:
+        elif profit_loss_rate >= 0.7 and current_exit_period > 3:
             self.tracking_tickers[symbol]['exit_period'] = 3
-        elif profit_loss_rate >= 0.5:
+        elif profit_loss_rate >= 0.5 and current_exit_period > 5:
             self.tracking_tickers[symbol]['exit_period'] = 5
-        elif profit_loss_rate >= 0.3:
+        elif profit_loss_rate >= 0.3 and current_exit_period > 7:
             self.tracking_tickers[symbol]['exit_period'] = 7

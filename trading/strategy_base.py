@@ -118,6 +118,7 @@ class StrategyBase:
             "prev_close": prev_close,
             "prev_high": prev_high,
             "resubmit_count": 0,
+            "initial_cost": None,
             "position_obj": None,
         }
 
@@ -270,6 +271,8 @@ class StrategyBase:
                     stop_loss_price=stop_loss,
                     target_units=target_units,
                 )
+                # set initial cost
+                self.tracking_tickers[symbol]['initial_cost'] = cost
             if order_filled:
                 entry_note = "Entry point."
                 resubmit_count = ticker['resubmit_count']
@@ -391,6 +394,7 @@ class StrategyBase:
             self.tracking_tickers[symbol]['exit_note'] = None
             self.tracking_tickers[symbol]['resubmit_count'] = 0
             self.tracking_tickers[symbol]['position_obj'] = None
+            self.tracking_tickers[symbol]['initial_cost'] = None
             # remove from monitor
             if stop_tracking:
                 del self.tracking_tickers[symbol]
@@ -427,24 +431,14 @@ class StrategyBase:
                             ticker, order_response, "{} Resubmit sell order ({}).".format(
                                 exit_note, self.tracking_tickers[symbol]['resubmit_count']))
                     else:
-                        self.tracking_tickers[symbol]['pending_sell'] = False
-                        self.tracking_tickers[symbol]['pending_order_id'] = None
-                        self.tracking_tickers[symbol]['pending_order_time'] = None
-                        self.tracking_tickers[symbol]['resubmit_count'] = 0
+                        position_obj = ticker['position_obj']
+                        # update setup
+                        position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
+                        position_obj.save()
                         # remove from monitor
                         del self.tracking_tickers[symbol]
                         utils.print_trading_log(
                             "Failed to sell order <{}>!".format(symbol))
-                        # add to overnight position for next sell
-                        utils.add_day_position(
-                            symbol,
-                            ticker["ticker_id"],
-                            # fill random order id, no use
-                            str(int(timezone.now().timestamp())),
-                            SetupType.ERROR_FAILED_TO_SELL,
-                            1.0,  # fill $1 cost, no use
-                            ticker['positions'],
-                            timezone.now())
                         # send message
                         utils.notify_message(
                             "Failed to sell <{}>, add day position object.".format(symbol))

@@ -177,7 +177,7 @@ class DayTradingBreakout(StrategyBase):
     def check_scale_in(self, ticker, position):
         return False
 
-    def check_stop_profit(self, position):
+    def check_stop_profit(self, ticker, position):
         exit_trading = False
         exit_note = None
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
@@ -186,12 +186,10 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "Home run at {}!".format(position['lastPrice'])
         return (exit_trading, exit_note)
 
-    def check_stop_loss(self, ticker, bars):
+    def check_stop_loss(self, ticker, position):
         exit_trading = False
         exit_note = None
-        # last formed candle
-        last_candle = bars.iloc[-2]
-        last_price = last_candle['close']
+        last_price = float(position['lastPrice'])
         # check stop loss
         if ticker['stop_loss'] and last_price < ticker['stop_loss']:
             exit_trading = True
@@ -277,7 +275,7 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker, target_units=8)
+            self.check_buy_order_filled(ticker, target_units=10)
             return
 
         if ticker['pending_sell']:
@@ -341,7 +339,8 @@ class DayTradingBreakout(StrategyBase):
                 self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
 
             # check stop profit, home run
-            exit_trading, exit_note = self.check_stop_profit(ticker_position)
+            exit_trading, exit_note = self.check_stop_profit(
+                ticker, ticker_position)
             if not exit_trading:
                 # get 1m bar charts
                 # check_bars_at_peak require 30 bars
@@ -359,7 +358,8 @@ class DayTradingBreakout(StrategyBase):
                 if self.time_scale == 5:
                     bars = utils.convert_5m_bars(m1_bars)
                 # check stop loss
-                exit_trading, exit_note = self.check_stop_loss(ticker, bars)
+                exit_trading, exit_note = self.check_stop_loss(
+                    ticker, ticker_position)
             if not exit_trading:
                 utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
