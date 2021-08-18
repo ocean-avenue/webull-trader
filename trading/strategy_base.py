@@ -482,7 +482,8 @@ class StrategyBase:
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
             # set stop loss at prev low
-            self.tracking_tickers[symbol]['stop_loss'] = stop_loss
+            if stop_loss:
+                self.tracking_tickers[symbol]['stop_loss'] = stop_loss
         else:
             utils.print_trading_log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
