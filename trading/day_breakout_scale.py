@@ -16,8 +16,20 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         symbol = ticker['symbol']
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
         last_buy_time = ticker['last_buy_time']
+        target_units = 4
+        units = 1
+        position_obj = ticker['position_obj']
+        if position_obj:
+            target_units = position_obj.target_units
+            units = position_obj.units
+        # check if already reach target units
+        if units >= target_units:
+            utils.print_trading_log("Scale in <{}> position reject, already has {} units, unrealized P&L: {}%".format(
+                symbol, units, round(profit_loss_rate * 100, 2)))
+            return False
+        # check if P&L > 5% and pass 5 minutes long
         if profit_loss_rate >= 0.05 and (datetime.now() - last_buy_time).seconds >= 300:
-            utils.print_trading_log("Scale in position for <{}>, unrealized P&L: {}%".format(
+            utils.print_trading_log("Scale in <{}> position, unrealized P&L: {}%".format(
                 symbol, round(profit_loss_rate * 100, 2)))
             return True
         return False

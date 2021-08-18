@@ -277,7 +277,7 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker)
+            self.check_buy_order_filled(ticker, target_units=8)
             return
 
         if ticker['pending_sell']:

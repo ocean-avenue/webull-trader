@@ -227,7 +227,7 @@ class StrategyBase:
                         utils.print_trading_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
-    def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False):
+    def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False, target_units=4):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         order_id = ticker['pending_order_id']
@@ -268,6 +268,7 @@ class StrategyBase:
                     quant=quantity,
                     buy_time=timezone.now(),
                     stop_loss_price=stop_loss,
+                    target_units=target_units,
                 )
             if order_filled:
                 entry_note = "Entry point."
