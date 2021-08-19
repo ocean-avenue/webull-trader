@@ -58,6 +58,8 @@ MIN_DAY_STOP_LOSS = 0.02
 MAX_DAY_STOP_LOSS = 0.05
 # trading period timeout in seconds
 DAY_PERIOD_TIMEOUT_IN_SEC = 90
+# iterations for clear position
+CLEAR_POSITION_ITERATIONS = 120
 
 # color config
 

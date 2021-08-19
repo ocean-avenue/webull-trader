@@ -573,59 +573,50 @@ class StrategyBase:
         return ticker_position
 
     def clear_positions(self):
-        unsold_tickers = copy.deepcopy(self.tracking_tickers)
+        iteration = 0
         while len(list(self.tracking_tickers)) > 0:
             for symbol in list(self.tracking_tickers):
                 ticker = self.tracking_tickers[symbol]
-                if self.clear_position(ticker):
-                    del unsold_tickers[symbol]
+                self.clear_position(ticker)
             # at least sleep 1 sec
             time.sleep(1)
-        # add unsold_tickers to overnight position
-        for symbol in list(unsold_tickers):
-            ticker = unsold_tickers[symbol]
-            utils.add_day_position(
-                symbol,
-                ticker["ticker_id"],
-                # fill random order id, no use
-                str(int(timezone.now().timestamp())),
-                SetupType.ERROR_FAILED_TO_SELL,
-                1.0,  # fill $1 cost, no use
-                ticker["positions"],
-                timezone.now())
+            iteration += 1
+            if iteration >= config.CLEAR_POSITION_ITERATIONS:
+                break
 
     def clear_position(self, ticker):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
 
+        if ticker['pending_buy']:
+            self.check_buy_order_filled(ticker, stop_tracking=True)
+            return
+
         if ticker['pending_sell']:
-            return self.check_sell_order_filled(ticker, resubmit_count=10)
+            self.check_sell_order_filled(ticker, resubmit_count=10)
+            return
 
         holding_quantity = ticker['positions']
         if holding_quantity == 0:
             # remove from monitor
             del self.tracking_tickers[symbol]
-            return True
+            return
 
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         if quote == None:
-            return False
+            return
         bid_price = webullsdk.get_bid_price_from_quote(quote)
         if bid_price == None:
-            return False
+            return
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
         utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
             symbol, holding_quantity, bid_price))
-        self.update_pending_sell_order(
-            ticker, order_response, exit_note="Clear position.")
-        # there is issue with submit order
-        if 'msg' in order_response:
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-        return False
+        if utils.get_order_id_from_response(order_response, paper=self.paper):
+            self.update_pending_sell_order(
+                ticker, order_response, exit_note="Clear position.")
 
     def get_setup(self):
         return 999
