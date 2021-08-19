@@ -56,6 +56,8 @@ BUY_BID_PRICE_RATIO = 1.01
 MIN_DAY_STOP_LOSS = 0.02
 # day trading max stop loss 5%
 MAX_DAY_STOP_LOSS = 0.05
+# day trading trailing stop loss 3%
+DAY_TRAILING_STOP_LOSS = 0.03
 # trading period timeout in seconds
 DAY_PERIOD_TIMEOUT_IN_SEC = 90
 # iterations for clear position

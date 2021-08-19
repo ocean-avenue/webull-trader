@@ -235,10 +235,14 @@ class DayTradingBreakout(StrategyBase):
                 symbol, buy_quant, buy_price))
             if initial_order:
                 # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-                stop_loss = max(min(round((prev_candle['high'] + prev_candle['low']) / 2, 2), round(
-                    buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)), round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+                stop_loss = max(
+                    min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+                        round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+                    round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
             else:
-                stop_loss = None
+                # use trailing stop loss buy price -3%
+                stop_loss = round(
+                    buy_price * (1 - config.DAY_TRAILING_STOP_LOSS), 2)
             # update pending buy
             self.update_pending_buy_order(
                 ticker, order_response, stop_loss=stop_loss)
