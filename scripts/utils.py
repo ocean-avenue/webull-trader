@@ -602,6 +602,20 @@ def check_bars_rel_volume(bars):
     return False
 
 
+def check_bars_all_green(bars, period=5):
+    """
+    check if has bar's candle all green
+    """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    all_candle_green = True
+    for _, row in period_bars.iterrows():
+        if row['open'] > row['close']:
+            all_candle_green = False
+    return all_candle_green
+
+
 def check_bars_volatility(bars, period=2):
     """
     check if has bar's ohlc has different price

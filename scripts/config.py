@@ -46,6 +46,8 @@ LONG_WICK_PREV_CANDLE_RATIO = 0.9
 LONG_WICK_UP_RATIO = 2.5
 # ROC for day trade entry
 DAY_PRICE_RATE_OF_CHANGE = 5
+# ROC for day trade scale in
+DAY_SCALE_PRICE_RATE_OF_CHANGE = 2
 # ROC for swing trade entry
 SWING_PRICE_RATE_OF_CHANGE = 30
 # large cap requirements
@@ -56,8 +58,6 @@ BUY_BID_PRICE_RATIO = 1.01
 MIN_DAY_STOP_LOSS = 0.02
 # day trading max stop loss 5%
 MAX_DAY_STOP_LOSS = 0.05
-# day trading trailing stop loss 3%
-DAY_TRAILING_STOP_LOSS = 0.03
 # trading period timeout in seconds
 DAY_PERIOD_TIMEOUT_IN_SEC = 90
 # iterations for clear position

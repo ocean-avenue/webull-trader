@@ -178,7 +178,7 @@ class DayTradingBreakout(StrategyBase):
 
         return (exit_trading, exit_note)
 
-    def check_scale_in(self, ticker, position):
+    def check_scale_in(self, ticker, bars, position):
         return False
 
     def check_stop_profit(self, ticker, position):
@@ -209,7 +209,7 @@ class DayTradingBreakout(StrategyBase):
     def update_exit_period(self, ticker, position):
         return
 
-    def submit_buy_order(self, ticker, bars, initial_order=True):
+    def submit_buy_order(self, ticker, bars):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         usable_cash = webullsdk.get_usable_cash()
@@ -237,16 +237,11 @@ class DayTradingBreakout(StrategyBase):
                 symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
             utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                 symbol, buy_quant, buy_price))
-            if initial_order:
-                # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-                stop_loss = max(
-                    min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
-                        round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
-                    round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
-            else:
-                # use trailing stop loss buy price -3%
-                stop_loss = round(
-                    buy_price * (1 - config.DAY_TRAILING_STOP_LOSS), 2)
+            # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+            stop_loss = max(
+                min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+                    round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+                round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
             # update pending buy
             self.update_pending_buy_order(
                 ticker, order_response, stop_loss=stop_loss)
@@ -283,7 +278,11 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker, target_units=10)
+            target_units = 10
+            # reduce size in low volume market hour
+            if self.is_extended_market_hour():
+                target_units = 4
+            self.check_buy_order_filled(ticker, target_units=target_units)
             return
 
         if ticker['pending_sell']:
@@ -321,7 +320,7 @@ class DayTradingBreakout(StrategyBase):
 
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
-                self.submit_buy_order(ticker, bars, initial_order=True)
+                self.submit_buy_order(ticker, bars)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -378,9 +377,9 @@ class DayTradingBreakout(StrategyBase):
             if exit_trading:
                 self.submit_sell_order(ticker, ticker_position, exit_note)
             # check scale in position
-            elif self.check_scale_in(ticker, ticker_position):
+            elif self.check_scale_in(ticker, bars, ticker_position):
                 # check scale in position
-                self.submit_buy_order(ticker, bars, initial_order=False)
+                self.submit_buy_order(ticker, bars)
 
     def on_update(self):
         # trading tickers
