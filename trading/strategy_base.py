@@ -2,11 +2,10 @@
 
 # Base trading class
 
-import copy
 import time
 from datetime import datetime, timedelta
 from django.utils import timezone
-from webull_trader.models import SwingPosition, SwingTrade, TradingSettings
+from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
 from webull_trader.enums import SetupType, TradingHourType
 from sdk import webullsdk, fmpsdk
 from scripts import utils, config
@@ -23,6 +22,8 @@ class StrategyBase:
         self.tracking_stats = {}
         # may have error short sell due to latency
         self.error_short_tickers = {}
+        # sometime system may not cancel order correctly
+        self.canceled_orders = {}
         # for swing trade
         self.trading_watchlist = []
         # init trading logs
@@ -228,6 +229,41 @@ class StrategyBase:
                         utils.print_trading_log(
                             "⚠️  Invalid short cover order response: {}".format(order_response))
 
+    # check if have failed to cancel order positions
+    def check_error_cancel_order(self, positions):
+        for position in positions:
+            symbol = position['ticker']['symbol']
+            # still in tracking
+            if symbol in self.tracking_tickers:
+                continue
+            # is day position
+            if DayPosition.objects.filter(symbol=symbol).first():
+                continue
+            # is swing position
+            if SwingPosition.objects.filter(symbol=symbol).first():
+                continue
+            ticker_id = position['ticker']['tickerId']
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            ticker['positions'] = int(position['position'])
+            order_id = utils.get_attr_to_num(self.canceled_orders, symbol)
+            # save order note
+            utils.save_webull_order_note(
+                order_id,
+                setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
+                note="Failed to cancel buy order")
+            # recover day position
+            position_obj = utils.add_day_position(
+                symbol,
+                ticker_id,
+                order_id,
+                SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
+                float(position['costPrice']),
+                int(position['position']),
+                datetime.now())
+            ticker['position_obj'] = position_obj
+            # recover tracking
+            self.tracking_tickers[symbol] = ticker
+
     def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False, target_units=4):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
@@ -330,6 +366,9 @@ class StrategyBase:
                         self.update_pending_buy_order(ticker, order_response)
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                     else:
+                        # cache cancel order
+                        self.canceled_orders[symbol] = ticker['pending_order_id']
+                        # reset tracking_tickers
                         self.tracking_tickers[symbol]['pending_buy'] = False
                         self.tracking_tickers[symbol]['pending_order_id'] = None
                         self.tracking_tickers[symbol]['pending_order_time'] = None
@@ -343,6 +382,9 @@ class StrategyBase:
 
         # check short order
         self.check_error_short_order(positions)
+
+        # check failed to cancel order
+        self.check_error_cancel_order(positions)
 
         return order_filled
 
@@ -448,6 +490,9 @@ class StrategyBase:
 
         # check short order
         self.check_error_short_order(positions)
+
+        # check failed to cancel order
+        self.check_error_cancel_order(positions)
 
         return order_filled
 
@@ -572,6 +617,7 @@ class StrategyBase:
                 break
         return ticker_position
 
+    # clear unsold positions
     def clear_positions(self):
         iteration = 0
         while len(list(self.tracking_tickers)) > 0:
@@ -619,7 +665,7 @@ class StrategyBase:
                 ticker, order_response, exit_note="Clear position.")
 
     def get_setup(self):
-        return 999
+        return SetupType.UNKNOWN
 
     def get_buy_order_limit(self, ticker):
         if self.is_regular_market_hour():

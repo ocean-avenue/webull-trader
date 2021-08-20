@@ -60,6 +60,12 @@ def get_attr(obj, key):
     return ''
 
 
+def get_attr_to_num(obj, key):
+    if key in obj:
+        return int(obj[key])
+    return 0
+
+
 def get_attr_to_float(obj, key):
     if key in obj:
         return float(obj[key])
