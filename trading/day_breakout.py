@@ -131,8 +131,12 @@ class DayTradingBreakout(StrategyBase):
         # align timezone info
         last_buy_time = last_buy_time.replace(tzinfo=last_candle_time.tzinfo)
         # make sure last formed candle is not same as buy candle
-        if ((last_buy_time - last_candle_time).seconds//60) % 60 == 0:
-            return (False, None)
+        if last_buy_time > last_candle_time:
+            if ((last_buy_time - last_candle_time).seconds//60) % 60 == 0:
+                return (False, None)
+        else:
+            if ((last_candle_time - last_buy_time).seconds//60) % 60 == 0:
+                return (False, None)
         exit_trading = False
         exit_note = None
         last_price = last_candle['close']
@@ -155,7 +159,7 @@ class DayTradingBreakout(StrategyBase):
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
-        elif not utils.check_bars_volatility(bars):
+        elif not utils.check_bars_volatility(bars, period=2):
             utils.print_trading_log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True

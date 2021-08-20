@@ -596,12 +596,11 @@ def check_bars_rel_volume(bars):
     return False
 
 
-def check_bars_volatility(bars):
+def check_bars_volatility(bars, period=2):
     """
     check if has bar's ohlc has different price
     """
-    # minimal period is 2
-    period = min(len(bars) - 1, 2)
+    period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
     flat_count = 0
