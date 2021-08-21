@@ -12,7 +12,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
     def get_tag(self):
         return "DayTradingBreakoutScale"
 
-    def check_scale_in(self, ticker, bars):
+    def check_scale_in(self, ticker, bars, position):
         symbol = ticker['symbol']
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
@@ -26,8 +26,16 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         # check if already reach target units
         if units >= target_units:
             return False
-        # check if pass 1 minute during last buy
-        if (datetime.now() - last_buy_time).seconds <= 60:
+        # check if pass 5 minutes from initial buy or 1 minute from last buy
+        trade_interval_sec = 60
+        if units == 1:
+            # give some time for trading to work out
+            trade_interval_sec = 300
+        if (datetime.now() - last_buy_time).seconds <= trade_interval_sec:
+            return False
+        # check if has 5% gain already
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        if profit_loss_rate < 0.05:
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
