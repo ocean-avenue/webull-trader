@@ -96,7 +96,7 @@ class StrategyBase:
                 "sector": None,
                 "free_float": None,
                 "continue_lose_trades": 0,
-                "last_trade_high": None,
+                "last_high_price": None,
                 "last_trade_time": None,
             }
         # init tracking tocker
@@ -501,9 +501,9 @@ class StrategyBase:
         # after perform 1 trade
         self.tracking_stats[symbol]['trades'] += 1
         self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
-        last_trade_high = self.tracking_stats[symbol]['last_trade_high'] or 0
-        self.tracking_stats[symbol]['last_trade_high'] = max(
-            cost, price, last_trade_high)
+        last_high_price = self.tracking_stats[symbol]['last_high_price'] or 0
+        self.tracking_stats[symbol]['last_high_price'] = max(
+            cost, price, last_high_price)
         if profit_loss_rate > 0:
             self.tracking_stats[symbol]['win_trades'] += 1
             self.tracking_stats[symbol]['continue_lose_trades'] = 0
