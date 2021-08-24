@@ -629,6 +629,20 @@ class StrategyBase:
             iteration += 1
             if iteration >= config.CLEAR_POSITION_ITERATIONS:
                 break
+        # may still have left tickers
+        for symbol in list(self.tracking_tickers):
+            ticker = self.tracking_tickers[symbol]
+            position_obj = ticker['position_obj']
+            # update setup
+            position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
+            position_obj.save()
+            # remove from monitor
+            del self.tracking_tickers[symbol]
+            utils.print_trading_log(
+                "Failed to clear position <{}>!".format(symbol))
+            # send message
+            utils.notify_message(
+                "Failed to clear position <{}>, add day position object.".format(symbol))
 
     def clear_position(self, ticker):
         symbol = ticker['symbol']
@@ -658,11 +672,14 @@ class StrategyBase:
             ticker_id=ticker_id,
             price=bid_price,
             quant=holding_quantity)
-        utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+        utils.print_trading_log("🔴 Submit clear position order <{}>, quant: {}, limit price: {}".format(
             symbol, holding_quantity, bid_price))
         if utils.get_order_id_from_response(order_response, paper=self.paper):
             self.update_pending_sell_order(
                 ticker, order_response, exit_note="Clear position.")
+        else:
+            utils.print_trading_log(
+                "⚠️  Invalid clear position order response: {}".format(order_response))
 
     def get_setup(self):
         return SetupType.UNKNOWN
