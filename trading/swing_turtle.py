@@ -72,6 +72,18 @@ class SwingTurtle(StrategyBase):
             return True
         return False
 
+    def check_scale_in(self, daily_bars, swing_position):
+        latest_close = daily_bars[-1].close
+        # not meet add unit price
+        if latest_close < swing_position.add_unit_price:
+            return False
+        # check ROC
+        period_close = daily_bars[self.entry_period].close
+        ROC = (latest_close - period_close) / period_close * 100
+        if ROC < config.SWING_SCALE_PRICE_RATE_OF_CHANGE:
+            return False
+        return True
+
     def submit_buy_order(self, symbol, position, unit_weight, latest_close, reason):
         usable_cash = webullsdk.get_usable_cash()
         # buy swing position amount
@@ -138,13 +150,13 @@ class SwingTurtle(StrategyBase):
             # check period low for exit
             if self.check_period_low(current_daily_bars):
                 self.submit_sell_order(
-                    symbol, position, latest_close, "period low")
+                    symbol, position, latest_close, reason="period low")
             elif latest_close < position.stop_loss_price:  # check if stop loss
                 self.submit_sell_order(
-                    symbol, position, latest_close, "stop loss")
-            elif latest_close > position.add_unit_price:  # check if add unit
+                    symbol, position, latest_close, reason="stop loss")
+            elif self.check_scale_in(current_daily_bars, position):  # check if add unit
                 self.submit_buy_order(
-                    symbol, position, unit_weight, latest_close, "add unit")
+                    symbol, position, unit_weight, latest_close, reason="add unit")
         else:
             # check if buy
             # get entry_period+1 daily bars
@@ -159,7 +171,7 @@ class SwingTurtle(StrategyBase):
                     if self.check_has_volume(current_daily_bars):
                         latest_close = current_daily_bars[-1].close
                         self.submit_buy_order(
-                            symbol, None, unit_weight, latest_close, "period high")
+                            symbol, None, unit_weight, latest_close, reason="period high")
                     else:
                         utils.print_trading_log(
                             "<{}> daily chart has not enough volume, no entry!".format(symbol))

@@ -50,6 +50,8 @@ DAY_PRICE_RATE_OF_CHANGE = 5
 DAY_SCALE_PRICE_RATE_OF_CHANGE = 2
 # ROC for swing trade entry
 SWING_PRICE_RATE_OF_CHANGE = 30
+# ROC for swing trade scale in
+SWING_SCALE_PRICE_RATE_OF_CHANGE = 12
 # large cap requirements
 LARGE_CAP_MARKET_CAP = 2000000000
 # incrase ratio of bid price for buy
