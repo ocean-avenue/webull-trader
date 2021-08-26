@@ -97,7 +97,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         last_price = float(position['lastPrice'])
         if initial_cost and initial_cost > 0:
             profit_loss_rate = (last_price - initial_cost) / initial_cost
-        current_exit_period = ticker['exit_period']
+        current_exit_period = ticker['exit_period'] or 1
         if profit_loss_rate >= 0.9 and current_exit_period > 1:
             self.tracking_tickers[symbol]['exit_period'] = 1
         elif profit_loss_rate >= 0.7 and current_exit_period > 3:

@@ -120,6 +120,7 @@ class StrategyBase:
             "prev_high": prev_high,
             "resubmit_count": 0,
             "initial_cost": None,
+            "exit_period": None,
             "position_obj": None,
         }
 
