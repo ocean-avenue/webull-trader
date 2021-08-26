@@ -699,7 +699,7 @@ class StrategyBase:
         if ask_price == None or bid_price == None:
             return None
         # return min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
-        return round((ask_price + bid_price) / 2, 2)
+        return min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
