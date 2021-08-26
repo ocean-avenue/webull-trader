@@ -314,6 +314,7 @@ def get_daily_profitloss():
     result = response.json()
     return result
 
+# Level 2
 # {
 #    "tickerId":925348770,
 #    "exchangeId":10,
@@ -397,6 +398,81 @@ def get_daily_profitloss():
 #    "estimateEarningsDate":"",
 #    "tradeStatus":"D"
 # }
+# Level 1
+# {
+#    "tickerId":913256135,
+#    "exchangeId":96,
+#    "type":2,
+#    "secType":[
+#       61
+#    ],
+#    "regionId":6,
+#    "regionCode":"US",
+#    "currencyId":247,
+#    "name":"Apple",
+#    "symbol":"AAPL",
+#    "disSymbol":"AAPL",
+#    "disExchangeCode":"NASDAQ",
+#    "exchangeCode":"NSQ",
+#    "listStatus":1,
+#    "template":"stock",
+#    "derivativeSupport":1,
+#    "tradeTime":"2021-08-26T19:25:08.618+0000",
+#    "status":"T",
+#    "close":"147.80",
+#    "change":"-0.56",
+#    "changeRatio":"-0.0038",
+#    "marketValue":"2527754820800.00",
+#    "volume":"39258748",
+#    "turnoverRate":"0.0023",
+#    "timeZone":"America/New_York",
+#    "tzName":"EDT",
+#    "preClose":"148.36",
+#    "open":"148.35",
+#    "high":"149.12",
+#    "low":"147.51",
+#    "vibrateRatio":"0.0109",
+#    "avgVol10D":"73969303",
+#    "avgVol3M":"76582930",
+#    "negMarketValue":"2526102450941.80",
+#    "pe":"45.12",
+#    "forwardPe":"26.47",
+#    "indicatedPe":"28.52",
+#    "peTtm":"28.95",
+#    "eps":"3.275",
+#    "epsTtm":"5.11",
+#    "pb":"38.07",
+#    "totalShares":"17102536000",
+#    "outstandingShares":"17091356231",
+#    "fiftyTwoWkHigh":"151.68",
+#    "fiftyTwoWkLow":"103.10",
+#    "dividend":"0.8800",
+#    "yield":"0.0060",
+#    "baSize":1,
+#    "ntvSize":0,
+#    "askList":[
+#       {
+#          "price":"147.81",
+#          "volume":"742"
+#       }
+#    ],
+#    "bidList":[
+#       {
+#          "price":"147.79",
+#          "volume":"1142"
+#       }
+#    ],
+#    "currencyCode":"USD",
+#    "lotSize":"1",
+#    "latestDividendDate":"2021-08-06",
+#    "latestSplitDate":"2020-08-31",
+#    "latestEarningsDate":"2021-07-27",
+#    "ps":"7.25",
+#    "bps":"3.882",
+#    "estimateEarningsDate":"10/27-11/01",
+#    "tradeStatus":"T",
+#    "bboValve":0
+# }
 
 
 def get_quote(ticker_id=None):
@@ -410,19 +486,21 @@ def get_quote(ticker_id=None):
 
 
 def get_ask_price_from_quote(quote):
-    if quote == None or 'depth' not in quote or 'ntvAggAskList' not in quote['depth']:
-        return None
-    if len(quote['depth']['ntvAggAskList']) == 0:
-        return None
-    return float(quote['depth']['ntvAggAskList'][0]['price'])
+    if quote:
+        if 'askList' in quote and len(quote['askList']) > 0:
+            return float(quote['askList'][0]['price'])
+        if 'depth' in quote and 'ntvAggAskList' in quote['depth'] and len(quote['depth']['ntvAggAskList']) > 0:
+            return float(quote['depth']['ntvAggAskList'][0]['price'])
+    return None
 
 
 def get_bid_price_from_quote(quote):
-    if quote == None or 'depth' not in quote or 'ntvAggBidList' not in quote['depth']:
-        return None
-    if len(quote['depth']['ntvAggBidList']) == 0:
-        return None
-    return float(quote['depth']['ntvAggBidList'][0]['price'])
+    if quote:
+        if 'bidList' in quote and len(quote['bidList']) > 0:
+            return float(quote['bidList'][0]['price'])
+        if 'depth' in quote and 'ntvAggBidList' in quote['depth'] and len(quote['depth']['ntvAggBidList']) > 0:
+            return float(quote['depth']['ntvAggBidList'][0]['price'])
+    return None
 
 
 def get_ticker(symbol=None):
