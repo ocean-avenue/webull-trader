@@ -278,10 +278,10 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_buy']:
-            target_units = 10
+            target_units = config.DAY_TARGET_UNITS
             # reduce size in low volume market hour
             if self.is_extended_market_hour():
-                target_units = 4
+                target_units = config.DAY_EXTENDED_TARGET_UNITS
             self.check_buy_order_filled(ticker, target_units=target_units)
             return
 
