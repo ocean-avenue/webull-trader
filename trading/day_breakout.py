@@ -206,6 +206,14 @@ class DayTradingBreakout(StrategyBase):
     def check_if_trade_period_timeout(self, ticker):
         return False
 
+    def get_stop_loss_price(self, buy_price, bars):
+        prev_candle = bars.iloc[-2]
+        # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+        return max(
+            min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+                round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+            round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+
     def update_exit_period(self, ticker, position):
         return
 
@@ -223,7 +231,6 @@ class DayTradingBreakout(StrategyBase):
             return
         # candle data
         current_candle = bars.iloc[-1]
-        prev_candle = bars.iloc[-2]
         buy_quant = (int)(buy_position_amount / buy_price)
         # reset exit period
         self.tracking_tickers[symbol]['exit_period'] = self.exit_period
@@ -237,13 +244,7 @@ class DayTradingBreakout(StrategyBase):
                 symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
             utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                 symbol, buy_quant, buy_price))
-            # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-            # stop_loss = max(
-            #     min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
-            #         round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
-            #     round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
-            # use max stop loss
-            stop_loss = round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2)
+            stop_loss = self.get_stop_loss_price(buy_price, bars)
             # update pending buy
             self.update_pending_buy_order(
                 ticker, order_response, stop_loss=stop_loss)
