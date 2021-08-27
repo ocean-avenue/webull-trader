@@ -246,6 +246,8 @@ class StrategyBase:
             ticker_id = position['ticker']['tickerId']
             ticker = self.build_tracking_ticker(symbol, ticker_id)
             ticker['positions'] = int(position['position'])
+            ticker['last_buy_time'] = datetime.now()
+            ticker['initial_cost'] = float(position['costPrice'])
             order_id = utils.get_attr_to_num(self.canceled_orders, symbol)
             # save order note
             utils.save_webull_order_note(
