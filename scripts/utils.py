@@ -948,29 +948,33 @@ def save_webull_account(acc_data, paper=True, day=None):
 
 
 def save_webull_order(order_data, paper=True):
+    avg_price = 0.0
+    price = 0.0
+    filled_time = None
+    placed_time = None
+    create_time = None
     if paper:
         order_id = str(order_data['orderId'])
         if "symbol" in order_data['ticker']:
             symbol = order_data['ticker']['symbol']
         else:
             symbol = order_data['ticker']['disSymbol']
-        create_time = order_data['placedTime']
         ticker_id = str(order_data['ticker']['tickerId'])
         action = get_order_action_enum(order_data['action'])
         status = order_data['statusStr']
         order_type = get_order_type_enum(order_data['orderType'])
         total_quantity = int(order_data['totalQuantity'])
         filled_quantity = int(order_data['filledQuantity'])
-        avg_price = 0
         if 'avgFilledPrice' in order_data:
             avg_price = float(order_data['avgFilledPrice'])
             price = avg_price
         if 'lmtPrice' in order_data:
             price = float(order_data['lmtPrice'])
-        filled_time = None
         if 'filledTime' in order_data:
             filled_time = get_webull_order_time(order_data['filledTime'])
-        placed_time = get_webull_order_time(order_data['placedTime'])
+        if 'placedTime' in order_data:
+            placed_time = get_webull_order_time(order_data['placedTime'])
+            create_time = order_data['placedTime']
         time_in_force = get_time_in_force_enum(order_data['timeInForce'])
     else:
         order_obj = order_data['orders'][0]
@@ -979,15 +983,12 @@ def save_webull_order(order_data, paper=True):
             symbol = order_obj['ticker']['symbol']
         else:
             symbol = order_obj['ticker']['disSymbol']
-        create_time = order_obj['createTime']
         ticker_id = str(order_obj['ticker']['tickerId'])
         action = get_order_action_enum(order_obj['action'])
         status = order_obj['statusStr']
         order_type = get_order_type_enum(order_obj['orderType'])
         total_quantity = int(order_obj['totalQuantity'])
         filled_quantity = int(order_obj['filledQuantity'])
-        avg_price = 0.0
-        price = 0.0
         if 'avgFilledPrice' in order_obj:
             avg_price = float(order_obj['avgFilledPrice'])
             price = avg_price
@@ -995,10 +996,11 @@ def save_webull_order(order_data, paper=True):
             price = float(order_obj['lmtPrice'])
         if 'auxPrice' in order_obj:  # for stop order
             price = float(order_obj['auxPrice'])
-        filled_time = None
         if 'filledTime' in order_obj:
             filled_time = get_webull_order_time(order_obj['filledTime'])
-        placed_time = get_webull_order_time(order_obj['createTime'])
+        if 'createTime' in order_obj:
+            placed_time = get_webull_order_time(order_obj['createTime'])
+            create_time = order_obj['createTime']
         time_in_force = get_time_in_force_enum(order_obj['timeInForce'])
 
     order = WebullOrder.objects.filter(order_id=order_id).first()
