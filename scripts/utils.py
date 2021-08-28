@@ -554,6 +554,9 @@ def check_bars_at_peak(bars, long_period=10, short_period=3):
     # prev_bar3 should be green
     if prev_bar3['close'] < prev_bar3['open']:
         return False
+    # prev_bar3 should has enough up percentage (5%)
+    if (prev_bar3['close'] - prev_bar3['open']) / prev_bar3['open'] < 0.05:
+        return False
     # prev_bar3 vol should > prev_bar2 vol
     if prev_bar3['volume'] < prev_bar2['volume']:
         return False
