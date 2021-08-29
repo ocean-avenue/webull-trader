@@ -4,9 +4,9 @@ Day/Swing Trading System powered by Webull Platform
 
 ### Strategy:
 
-Day Trading [[Momentum](https://www.warriortrading.com/momentum-day-trading-strategy/)] [[R-to-G](https://community.humbledtrader.com/products/video-library/categories/4074208/posts/13662620)]
+Day Trading [[Breakout](https://github.com/quanturtleteam/webull-trader/blob/main/trading/day_breakout.py)] [[Grinding](https://github.com/quanturtleteam/webull-trader/blob/main/trading/day_grinding_largecap.py)] [[Momentum](https://github.com/quanturtleteam/webull-trader/blob/main/trading/day_momo.py)] [[Red to Green](https://github.com/quanturtleteam/webull-trader/blob/main/trading/day_redgreen.py)] [[VWAP Reclaim](https://github.com/quanturtleteam/webull-trader/blob/main/trading/day_vwap_largecap.py)]
 
-Swing Trading [[Way of the turtle](https://zhuanlan.zhihu.com/p/34794101)]
+Swing Trading [[Turtle](https://github.com/quanturtleteam/webull-trader/blob/main/trading/swing_turtle.py)]
 
 ### Get Started:
 
