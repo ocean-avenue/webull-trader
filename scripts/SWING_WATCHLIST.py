@@ -7,7 +7,7 @@ WATCHLIST_SYMBOLS = [
     "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV", "CPSR", "CRSR",
     "CCL",
     "DBX", "DOCU", "DQ", "DIS", "DAL", "DKNG", "DDOG", "DHI", "DIDI",
-    "EBAY", "EH", "ETSY", "ENPH", "ELF",
+    "EBAY", "EH", "ETSY", "ENPH", "ELF", "EDU",
     "F", "FB", "FCX", "FUTU", "FSLY", "FVRR", "FCEL", "FI", "FLYW", "FSLR",
     "GOOG", "GME", "GOCO", "GM", "GOTU",
     "HD", "HOME", "HOFV", "HOOD",
