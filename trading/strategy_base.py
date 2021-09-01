@@ -341,7 +341,7 @@ class StrategyBase:
                 break
         if not order_filled:
             # check order timeout
-            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
+            if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC) or self.trading_end:
                 # cancel timeout order
                 if webullsdk.cancel_order(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
@@ -653,7 +653,7 @@ class StrategyBase:
         ticker_id = ticker['ticker_id']
 
         if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker, stop_tracking=True)
+            self.check_buy_order_filled(ticker)
             return
 
         if ticker['pending_sell']:
