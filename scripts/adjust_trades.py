@@ -17,13 +17,13 @@ def start():
         total_cost = 0.0
         quantity = 0
         units = 0
-        missing_order = False
+        uncompleted_order = False
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
                 order_id=order_id).first()
-            if not webull_order:
-                missing_order = True
+            if not webull_order or webull_order.status != "Filled":
+                uncompleted_order = True
                 break
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
@@ -45,7 +45,7 @@ def start():
             # adding a second time is ok, it will not duplicate the relation
             swing_position.orders.add(webull_order)
         # skip if miss order
-        if missing_order:
+        if uncompleted_order:
             continue
         # update total cost
         swing_position.total_cost = round(total_cost, 2)
@@ -66,13 +66,13 @@ def start():
         total_sold = 0.0
         quantity = 0
         setup = swing_trade.setup
-        missing_order = False
+        uncompleted_order = False
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
                 order_id=order_id).first()
-            if not webull_order:
-                missing_order = True
+            if not webull_order or webull_order.status != "Filled":
+                uncompleted_order = True
                 break
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
@@ -95,7 +95,7 @@ def start():
             webull_order.setup = setup
             webull_order.save()
         # skip if miss order
-        if missing_order:
+        if uncompleted_order:
             continue
         # update total cost
         swing_trade.total_cost = round(total_cost, 2)
@@ -114,13 +114,13 @@ def start():
         order_ids = day_position.order_ids.split(',')
         total_cost = 0.0
         quantity = 0
-        missing_order = False
+        uncompleted_order = False
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
                 order_id=order_id).first()
-            if not webull_order:
-                missing_order = True
+            if not webull_order or webull_order.status != "Filled":
+                uncompleted_order = True
                 break
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
@@ -133,7 +133,7 @@ def start():
             # adding a second time is ok, it will not duplicate the relation
             day_position.orders.add(webull_order)
         # skip if miss order
-        if missing_order:
+        if uncompleted_order:
             continue
         # update total cost
         day_position.total_cost = round(total_cost, 2)
@@ -152,13 +152,13 @@ def start():
         total_sold = 0.0
         quantity = 0
         setup = day_trade.setup
-        missing_order = False
+        uncompleted_order = False
         for i in range(0, len(order_ids)):
             order_id = order_ids[i]
             webull_order = WebullOrder.objects.filter(
                 order_id=order_id).first()
-            if not webull_order:
-                missing_order = True
+            if not webull_order or webull_order.status != "Filled":
+                uncompleted_order = True
                 break
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
@@ -181,7 +181,7 @@ def start():
             webull_order.setup = setup
             webull_order.save()
         # skip if miss order
-        if missing_order:
+        if uncompleted_order:
             continue
         # update total cost
         day_trade.total_cost = round(total_cost, 2)
