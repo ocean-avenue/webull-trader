@@ -1251,6 +1251,9 @@ def save_swing_hist_daily_bar(bar_data):
 
 
 def add_day_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time, units=1, target_units=4, add_unit_price=9999, stop_loss_price=0):
+    position = DayPosition.objects.filter(symbol=symbol, ticker_id=ticker_id, order_ids=order_id).first()
+    if position:
+        return position
     position = DayPosition(
         symbol=symbol,
         ticker_id=ticker_id,
