@@ -277,6 +277,9 @@ class DayTradingBreakout(StrategyBase):
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
+        positions = webullsdk.get_positions()
+        self.check_error_cancel_order(positions)
+
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
 
