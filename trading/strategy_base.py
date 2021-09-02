@@ -249,25 +249,24 @@ class StrategyBase:
             ticker['last_buy_time'] = datetime.now()
             ticker['initial_cost'] = float(position['costPrice'])
             order_id = utils.get_attr_to_num(self.canceled_orders, symbol)
-            if order_id:
-                # save order note
-                utils.save_webull_order_note(
-                    order_id,
-                    setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
-                    note="Failed to cancel buy order")
-                # recover day position
-                position_obj = utils.add_day_position(
-                    symbol=symbol,
-                    ticker_id=ticker_id,
-                    order_id=order_id,
-                    setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
-                    cost=float(position['costPrice']),
-                    quant=int(position['position']),
-                    buy_time=datetime.now(),
-                )
-                ticker['position_obj'] = position_obj
-                # recover tracking
-                self.tracking_tickers[symbol] = ticker
+            # save order note
+            utils.save_webull_order_note(
+                order_id,
+                setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
+                note="Failed to cancel buy order")
+            # recover day position
+            position_obj = utils.add_day_position(
+                symbol=symbol,
+                ticker_id=ticker_id,
+                order_id=order_id,
+                setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
+                cost=float(position['costPrice']),
+                quant=int(position['position']),
+                buy_time=datetime.now(),
+            )
+            ticker['position_obj'] = position_obj
+            # recover tracking
+            self.tracking_tickers[symbol] = ticker
 
     def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False, target_units=4):
         symbol = ticker['symbol']
