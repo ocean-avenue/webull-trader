@@ -235,8 +235,8 @@ class StrategyBase:
         for position in positions:
             symbol = position['ticker']['symbol']
             # still in tracking
-            if symbol in self.tracking_tickers:
-                continue
+            # if symbol in self.tracking_tickers:
+            #     continue
             # is day position
             if DayPosition.objects.filter(symbol=symbol).first():
                 continue
