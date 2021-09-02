@@ -257,13 +257,14 @@ class StrategyBase:
                     note="Failed to cancel buy order")
                 # recover day position
                 position_obj = utils.add_day_position(
-                    symbol,
-                    ticker_id,
-                    order_id,
-                    SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
-                    float(position['costPrice']),
-                    int(position['position']),
-                    datetime.now())
+                    symbol=symbol,
+                    ticker_id=ticker_id,
+                    order_id=order_id,
+                    setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
+                    cost=float(position['costPrice']),
+                    quant=int(position['position']),
+                    buy_time=datetime.now(),
+                )
                 ticker['position_obj'] = position_obj
                 # recover tracking
                 self.tracking_tickers[symbol] = ticker
