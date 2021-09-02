@@ -235,8 +235,8 @@ class StrategyBase:
         for position in positions:
             symbol = position['ticker']['symbol']
             # still in tracking
-            # if symbol in self.tracking_tickers:
-            #     continue
+            if symbol in self.tracking_tickers:
+                continue
             # is day position
             if DayPosition.objects.filter(symbol=symbol).first():
                 continue
@@ -262,7 +262,7 @@ class StrategyBase:
                 setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
                 cost=float(position['costPrice']),
                 quant=int(position['position']),
-                buy_time=datetime.now(),
+                buy_time=timezone.now(),
             )
             ticker['position_obj'] = position_obj
             # recover tracking
