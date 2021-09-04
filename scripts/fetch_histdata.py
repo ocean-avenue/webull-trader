@@ -96,39 +96,41 @@ def start(day=None):
         # rest for 5 sec
         time.sleep(5)
 
-    # save top gainers
-    top_gainers = webullsdk.get_top_gainers(count=30)
-    for gainer_data in top_gainers:
-        symbol = gainer_data['symbol']
-        ticker_id = gainer_data['ticker_id']
-        utils.save_hist_top_gainer(gainer_data, day)
-        key_statistics = utils.get_hist_key_stat(symbol, day)
-        if not key_statistics:
-            # fetch historical quote
-            quote_data = webullsdk.get_quote(ticker_id=ticker_id)
-            additional_quote_data = finvizsdk.get_quote(symbol)
-            quote_data['shortFloat'] = additional_quote_data['shortFloat']
-            # save historical quote
-            utils.save_hist_key_statistics(quote_data, day)
-
-    # save top losers
-    top_losers = webullsdk.get_top_losers(count=30)
-    for loser_data in top_losers:
-        symbol = loser_data['symbol']
-        ticker_id = loser_data['ticker_id']
-        utils.save_hist_top_loser(loser_data, day)
-        key_statistics = utils.get_hist_key_stat(symbol, day)
-        if not key_statistics:
-            # fetch historical quote
-            quote_data = webullsdk.get_quote(ticker_id=ticker_id)
-            additional_quote_data = finvizsdk.get_quote(symbol)
-            quote_data['shortFloat'] = additional_quote_data['shortFloat']
-            # save historical quote
-            utils.save_hist_key_statistics(quote_data, day)
-
-    # fetch watchlist symbol daily data
     algo_type = utils.get_algo_type()
+
+    if utils.check_require_top_list_algo(algo_type):
+        # save top gainers
+        top_gainers = webullsdk.get_top_gainers(count=30)
+        for gainer_data in top_gainers:
+            symbol = gainer_data['symbol']
+            ticker_id = gainer_data['ticker_id']
+            utils.save_hist_top_gainer(gainer_data, day)
+            key_statistics = utils.get_hist_key_stat(symbol, day)
+            if not key_statistics:
+                # fetch historical quote
+                quote_data = webullsdk.get_quote(ticker_id=ticker_id)
+                additional_quote_data = finvizsdk.get_quote(symbol)
+                quote_data['shortFloat'] = additional_quote_data['shortFloat']
+                # save historical quote
+                utils.save_hist_key_statistics(quote_data, day)
+
+        # save top losers
+        top_losers = webullsdk.get_top_losers(count=30)
+        for loser_data in top_losers:
+            symbol = loser_data['symbol']
+            ticker_id = loser_data['ticker_id']
+            utils.save_hist_top_loser(loser_data, day)
+            key_statistics = utils.get_hist_key_stat(symbol, day)
+            if not key_statistics:
+                # fetch historical quote
+                quote_data = webullsdk.get_quote(ticker_id=ticker_id)
+                additional_quote_data = finvizsdk.get_quote(symbol)
+                quote_data['shortFloat'] = additional_quote_data['shortFloat']
+                # save historical quote
+                utils.save_hist_key_statistics(quote_data, day)
+
     if utils.check_swing_trade_algo(algo_type):
+        # fetch watchlist symbol daily data
         swing_watchlist = SwingWatchlist.objects.all()
         for swing_watch in swing_watchlist:
             symbol = swing_watch.symbol

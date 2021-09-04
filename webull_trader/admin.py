@@ -159,34 +159,34 @@ admin.site.register(models.EarningCalendar,
                     EarningCalendarAdmin)
 
 
-class HistoricalTopGainerAdmin(admin.ModelAdmin):
+# class HistoricalTopGainerAdmin(admin.ModelAdmin):
 
-    list_display = [
-        'symbol',
-        'date',
-        'change',
-        'change_percentage',
-        'price',
-    ]
-
-
-admin.site.register(models.HistoricalTopGainer,
-                    HistoricalTopGainerAdmin)
+#     list_display = [
+#         'symbol',
+#         'date',
+#         'change',
+#         'change_percentage',
+#         'price',
+#     ]
 
 
-class HistoricalTopLoserAdmin(admin.ModelAdmin):
-
-    list_display = [
-        'symbol',
-        'date',
-        'change',
-        'change_percentage',
-        'price',
-    ]
+# admin.site.register(models.HistoricalTopGainer,
+#                     HistoricalTopGainerAdmin)
 
 
-admin.site.register(models.HistoricalTopLoser,
-                    HistoricalTopLoserAdmin)
+# class HistoricalTopLoserAdmin(admin.ModelAdmin):
+
+#     list_display = [
+#         'symbol',
+#         'date',
+#         'change',
+#         'change_percentage',
+#         'price',
+#     ]
+
+
+# admin.site.register(models.HistoricalTopLoser,
+#                     HistoricalTopLoserAdmin)
 
 
 class HistoricalKeyStatisticsAdmin(admin.ModelAdmin):

@@ -1356,6 +1356,12 @@ def check_swing_trade_algo(algo):
     return False
 
 
+def check_require_top_list_algo(algo):
+    if algo == enums.AlgorithmType.DAY_RED_TO_GREEN:
+        return True
+    return False
+
+
 def get_day_trade_orders(date=None, symbol=None):
     # only limit orders for day trades
     lmt_buy_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
