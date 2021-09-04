@@ -217,7 +217,7 @@ class DayTradingBreakout(StrategyBase):
     def update_exit_period(self, ticker, position):
         return
 
-    def submit_buy_order(self, ticker, bars):
+    def submit_buy_order(self, ticker, bars, scale_in=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         usable_cash = webullsdk.get_usable_cash()
@@ -244,7 +244,9 @@ class DayTradingBreakout(StrategyBase):
                 symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
             utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                 symbol, buy_quant, buy_price))
-            stop_loss = self.get_stop_loss_price(buy_price, bars)
+            stop_loss = None
+            if not scale_in:
+                stop_loss = self.get_stop_loss_price(buy_price, bars)
             # update pending buy
             self.update_pending_buy_order(
                 ticker, order_response, stop_loss=stop_loss)
@@ -323,7 +325,7 @@ class DayTradingBreakout(StrategyBase):
 
             # check entry: current price above vwap, entry period minutes new high
             if self.check_entry(ticker, bars):
-                self.submit_buy_order(ticker, bars)
+                self.submit_buy_order(ticker, bars, scale_in=False)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -382,7 +384,7 @@ class DayTradingBreakout(StrategyBase):
             # check scale in position
             elif self.check_scale_in(ticker, bars, ticker_position):
                 # check scale in position
-                self.submit_buy_order(ticker, bars)
+                self.submit_buy_order(ticker, bars, scale_in=True)
 
     def on_update(self):
         # trading tickers
