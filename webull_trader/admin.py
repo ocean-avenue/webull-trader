@@ -32,6 +32,16 @@ class TradingLogAdmin(admin.ModelAdmin):
 admin.site.register(models.TradingLog, TradingLogAdmin)
 
 
+class ExceptionLogAdmin(admin.ModelAdmin):
+    list_display = [
+        'exception',
+        'created_at',
+    ]
+
+
+admin.site.register(models.ExceptionLog, ExceptionLogAdmin)
+
+
 class TradingSymbolsAdmin(admin.ModelAdmin):
     list_display = [
         'symbols',

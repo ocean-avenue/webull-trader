@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import pytz
 import math
+import traceback
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -10,8 +11,8 @@ from scripts import config
 from sdk import fmpsdk, webullsdk, twiliosdk
 from webull_trader import enums
 from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
-    StockQuote, SwingHistoricalDailyBar, TradingLog, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, \
-    WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+    StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
+    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
 
 # sector values
 BASIC_MATERIALS = "Basic Materials"
@@ -51,6 +52,15 @@ def save_trading_log(tag, trading_hour, date):
         )
     log_text = "\n".join(TRADING_LOGS)
     log.log_text = log_text
+    log.save()
+
+
+def save_exception_log(exception, traceback, log_text):
+    log = ExceptionLog(
+        exception=exception,
+        traceback=traceback,
+        log_text=log_text,
+    )
     log.save()
 
 
@@ -1251,23 +1261,36 @@ def save_swing_hist_daily_bar(bar_data):
 
 
 def add_day_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time, units=1, target_units=4, add_unit_price=9999, stop_loss_price=0):
-    position = DayPosition(
-        symbol=symbol,
-        ticker_id=ticker_id,
-        order_ids=order_id,
-        total_cost=round(cost * quant, 2),
-        quantity=quant,
-        units=units,
-        target_units=target_units,
-        add_unit_price=add_unit_price,
-        stop_loss_price=stop_loss_price,
-        buy_date=buy_time.date(),
-        buy_time=buy_time,
-        setup=setup,
-        require_adjustment=True,
-    )
-    position.save()
-    return position
+    try:
+        position = DayPosition(
+            symbol=symbol,
+            ticker_id=ticker_id,
+            order_ids=order_id,
+            total_cost=round(cost * quant, 2),
+            quantity=quant,
+            units=units,
+            target_units=target_units,
+            add_unit_price=add_unit_price,
+            stop_loss_price=stop_loss_price,
+            buy_date=buy_time.date(),
+            buy_time=buy_time,
+            setup=setup,
+            require_adjustment=True,
+        )
+        position.save()
+        return position
+    except Exception as e:
+        log_text = "symbol: {}, ticker_id: {}, order_id: {}, setup: {}, cost: {}, quant: {}, total_cost: {}, buy_time: {}".format(
+            symbol,
+            ticker_id,
+            order_id,
+            setup,
+            cost,
+            quant,
+            round(cost * quant, 2),
+            buy_time)
+        save_exception_log(str(e), traceback.format_exc(), log_text)
+        return None
 
 
 def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):

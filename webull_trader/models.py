@@ -45,6 +45,17 @@ class TradingLog(models.Model):
         return "[{}] {}: {}".format(self.date, self.tag, self.log_text)
 
 
+class ExceptionLog(models.Model):
+    exception = models.CharField(max_length=1000, null=True)
+    traceback = models.TextField(null=True)
+    log_text = models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "[{}] {}".format(self.created_at, self.exception)
+
+
 class TradingSymbols(models.Model):
     symbols = models.TextField(blank=True)
     updated_at = models.DateTimeField(auto_now=True)
