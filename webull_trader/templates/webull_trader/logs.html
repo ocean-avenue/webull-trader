@@ -1,0 +1,71 @@
+{% extends 'webull_trader/base.html' %} 
+
+{% block title %} Logs {% endblock %} 
+
+{% load static %} 
+
+{% block content %}
+
+<div class="container-fluid p-0">
+    <div class="row mb-2 mb-xl-3">
+        <div class="col-auto d-none d-sm-block">
+            <span class="badge {{account_type.value_style|safe}} text-dark">
+            {{account_type.value|safe}}
+            </span>
+        </div>
+        <div class="col-auto d-none d-sm-block">
+            <h3>Logs</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-6 col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Trading Logs</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline mt-2 mb-0">
+                        {% for trading_log in trading_logs %}
+                        <li class="timeline-item">
+                            <a class="no-underline" href="/trading-logs/{{trading_log.date_hour_url}}">
+                                <strong>{{trading_log.tag}}</strong>
+                            </a>
+                            <span class="float-end {{trading_log.text_style}} text-sm">{{trading_log.days_ago}}</span>
+                            <p>{{trading_log.date_hour}}</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6 col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Exception Logs</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline mt-2 mb-0">
+                        {% for exception_log in exception_logs %}
+                        <li class="timeline-item">
+                            <strong>{{exception_log.exception}}</strong>
+                            <span class="float-end {{exception_log.text_style}} text-sm">{{exception_log.days_ago}}</span>
+                            <p>{{exception_log.date_time}}</p>
+                            {% for log_line in exception_log.log_lines %}
+                            {{log_line}}
+                            </br>
+                            {% endfor %}
+                            </br>
+                            {% for trace_line in exception_log.trace_lines %}
+                            {{trace_line}}
+                            </br>
+                            {% endfor %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

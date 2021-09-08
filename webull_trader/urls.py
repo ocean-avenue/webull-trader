@@ -3,7 +3,7 @@ from webull_trader import views
 
 urlpatterns = [
     path('', views.index, name='dashboard'),
-    path('trading-logs', views.trading_logs, name='trading_logs'),
+    path('logs', views.logs, name='logs'),
     path('trading-logs/<str:date>/<int:hour>', views.trading_logs_date_hour, name='trading_logs_date_hour'),
     path('day-analytics', views.day_analytics, name='day_analytics'),
     path('day-analytics/<str:date>', views.day_analytics_date, name='day_analytics_date'),

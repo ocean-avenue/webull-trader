@@ -9,7 +9,7 @@ from webull_trader.enums import SetupType, TradingHourType
 from webull_trader.config import CACHE_TIMEOUT
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, \
     HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, \
-    WebullAccountStatistics, WebullNews, WebullOrderNote, TradingLog
+    WebullAccountStatistics, WebullNews, WebullOrderNote, TradingLog, ExceptionLog
 
 # Create your views here.
 
@@ -103,36 +103,63 @@ def index(request):
 
 
 @login_required
-def trading_logs(request):
+def logs(request):
     # account type data
     account_type = utils.get_account_type_for_render()
 
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    log_records = []
-    logs = list(TradingLog.objects.order_by('-id')[:100])
-    for log in logs:
+    trading_logs = []
+    trading_log_list = list(TradingLog.objects.order_by('-id')[:100])
+    for log in trading_log_list:
         days = (date.today() - log.date).days
+        text_style = "text-muted"
         if days == 0:
             days_ago = "Today"
+            text_style = "text-success"
         elif days == 1:
             days_ago = "Yesterday"
         else:
             days_ago = "{}d ago".format(days)
-        log_records.append({
+        trading_logs.append({
             "date_hour": "{} ({})".format(
                 log.date.strftime("%b %d, %Y"),
                 TradingHourType.tostr(log.trading_hour)),
             "tag": log.tag,
             "days_ago": days_ago,
-            "date_hour_url": "{}/{}".format(log.date.strftime("%Y-%m-%d"), log.trading_hour)
+            "date_hour_url": "{}/{}".format(log.date.strftime("%Y-%m-%d"), log.trading_hour),
+            "text_style": text_style,
+        })
+    exception_logs = []
+    exception_log_list = list(ExceptionLog.objects.order_by('-id')[:20])
+    for log in exception_log_list:
+        days = (date.today() - log.created_at.date()).days
+        text_style = "text-muted"
+        if days == 0:
+            days_ago = "Today"
+            text_style = "text-danger"
+        elif days == 1:
+            days_ago = "Yesterday"
+        else:
+            days_ago = "{}d ago".format(days)
+        log_lines = log.log_text.splitlines()
+        trace_lines = log.traceback.splitlines()
+        exception_logs.append({
+            "exception": log.exception,
+            "traceback": log.traceback,
+            "log_lines": log_lines,
+            "trace_lines": trace_lines,
+            "date_time": log.created_at.strftime("%b %d, %Y %H:%M"),
+            "days_ago": days_ago,
+            "text_style": text_style,
         })
 
-    return render(request, 'webull_trader/trading_logs.html', {
+    return render(request, 'webull_trader/logs.html', {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "trading_logs": log_records,
+        "trading_logs": trading_logs,
+        "exception_logs": exception_logs,
     })
 
 
