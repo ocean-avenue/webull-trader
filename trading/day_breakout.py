@@ -207,12 +207,15 @@ class DayTradingBreakout(StrategyBase):
         return False
 
     def get_stop_loss_price(self, buy_price, bars):
-        prev_candle = bars.iloc[-2]
-        # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-        return max(
-            min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
-                round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
-            round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+        # prev_candle = bars.iloc[-2]
+        # # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+        # return max(
+        #     min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+        #         round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+        #     round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+        # use average true range
+        N = utils.get_day_avg_true_range(bars)
+        return round(buy_price - 2 * N, 2)
 
     def update_exit_period(self, ticker, position):
         return
@@ -244,9 +247,7 @@ class DayTradingBreakout(StrategyBase):
                 symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
             utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                 symbol, buy_quant, buy_price))
-            stop_loss = None
-            if not scale_in:
-                stop_loss = self.get_stop_loss_price(buy_price, bars)
+            stop_loss = self.get_stop_loss_price(buy_price, bars)
             # update pending buy
             self.update_pending_buy_order(
                 ticker, order_response, stop_loss=stop_loss)

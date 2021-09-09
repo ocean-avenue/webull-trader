@@ -43,7 +43,7 @@ def start():
     for swing_order_ids in SWING_POSITIONS_ORDER_IDS:
         swing_position = SwingPosition.objects.filter(
             symbol=swing_order_ids["symbol"]).first()
-        N = utils.get_avg_true_range(swing_order_ids["symbol"])
+        N = utils.get_swing_avg_true_range(swing_order_ids["symbol"])
         order_ids = swing_order_ids["order_ids"].split(",")
         total_cost = 0.0
         quantity = 0

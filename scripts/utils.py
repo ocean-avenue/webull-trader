@@ -769,15 +769,28 @@ def get_quote_sector(quote=None):
     return ""
 
 
-def get_avg_true_range(symbol, count=20):
+def get_swing_avg_true_range(symbol, period=20):
     daily_bars = SwingHistoricalDailyBar.objects.filter(
-        symbol=symbol).order_by('-id')[:(count + 1)][::-1]
+        symbol=symbol).order_by('-id')[:(period + 1)][::-1]
     true_range_list = []
     for i in range(1, len(daily_bars)):
         prev_bar = daily_bars[i - 1]
         current_bar = daily_bars[i]
         true_range = max(current_bar.high - current_bar.low, current_bar.high -
                          prev_bar.close, prev_bar.close - current_bar.low)
+        true_range_list.append(true_range)
+    N = sum(true_range_list)/len(true_range_list)
+    return N
+
+
+def get_day_avg_true_range(bars, period=10):
+    period_bars = bars.head(len(bars) - 1).tail(period + 1)
+    true_range_list = []
+    for i in range(0, len(period_bars) - 1):
+        current_bar = period_bars.iloc[len(period_bars) - i - 1]
+        prev_bar = period_bars.iloc[len(period_bars) - i - 2]
+        true_range = max(current_bar['high'] - current_bar['low'], current_bar['high'] -
+                         prev_bar['close'], prev_bar['close'] - current_bar['low'])
         true_range_list.append(true_range)
     N = sum(true_range_list)/len(true_range_list)
     return N
