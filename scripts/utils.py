@@ -395,10 +395,14 @@ def get_bars_price_rate_of_change(bars, period=10):
     """
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    period_price = period_bars.iloc[0]['close']
+    period_bars = period_bars.head(int(period / 2))
+    period_high_price = 0.1
+    for _, row in period_bars.iterrows():
+        price = row["close"]
+        if price > period_high_price:
+            period_high_price = price
     current_price = bars.iloc[-1]['close']
-    ROC = (current_price - period_price) / period_price * 100
+    ROC = (current_price - period_high_price) / period_high_price * 100
     return ROC
 
 
