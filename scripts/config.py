@@ -45,7 +45,7 @@ LONG_WICK_PREV_CANDLE_RATIO = 0.9
 # long wick up candle ratio
 LONG_WICK_UP_RATIO = 2.5
 # ROC for day trade entry
-DAY_PRICE_RATE_OF_CHANGE = 15
+DAY_PRICE_RATE_OF_CHANGE = 5
 # ROC for day trade scale in
 DAY_SCALE_PRICE_RATE_OF_CHANGE = 2
 # ROC for swing trade entry

@@ -401,6 +401,10 @@ def get_bars_price_rate_of_change(bars, period=10):
         price = row["close"]
         if price > period_high_price:
             period_high_price = price
+    prev_price = bars.iloc[-2]['close']
+    # if prev price is highest, no ROC required
+    if prev_price > period_high_price:
+        return config.DAY_PRICE_RATE_OF_CHANGE + 1
     current_price = bars.iloc[-1]['close']
     ROC = (current_price - period_high_price) / period_high_price * 100
     return ROC
