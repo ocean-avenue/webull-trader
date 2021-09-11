@@ -66,8 +66,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart has not enough amount and volume, no scale in!".format(symbol))
             return False
 
-        ROC = utils.get_bars_price_rate_of_change(
-            bars, period=self.entry_period)
+        ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_SCALE_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
             utils.print_trading_log(

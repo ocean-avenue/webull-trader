@@ -224,7 +224,9 @@ def start():
     from trading.day_breakout_scale import DayTradingBreakoutScale
     from trading.day_breakout_period import DayTradingBreakoutPeriod
     from trading.day_breakout_dynexit import DayTradingBreakoutDynExit
-    from trading.day_breakout_scale_maxstoploss import DayTradingBreakoutScaleMaxStopLoss
+    from trading.day_breakout_scale_stoplossmax import DayTradingBreakoutScaleStopLossMax
+    from trading.day_breakout_scale_stoplossatr import DayTradingBreakoutScaleStopLossATR
+    from trading.day_breakout_scale_periodroc import DayTradingBreakoutScalePeriodROC
     from trading.day_earnings_overnight import DayTradingEarningsOvernight
     from trading.day_vwap_largecap import DayTradingVWAPLargeCap
     from trading.day_grinding_largecap import DayTradingGrindingLargeCap
@@ -295,7 +297,15 @@ def start():
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS:
         # DAY_BREAKOUT: breakout trade 20 candles with scale in and max stop loss
-        strategies.append(DayTradingBreakoutScaleMaxStopLoss(
+        strategies.append(DayTradingBreakoutScaleStopLossMax(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS:
+        # DAY_BREAKOUT: breakout trade 20 candles with scale in and use ATR as stop loss
+        strategies.append(DayTradingBreakoutScaleStopLossATR(
+            paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
+    elif algo_type == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
+        # DAY_BREAKOUT: breakout trade 20 candles with scale in and use period high for ROC check
+        strategies.append(DayTradingBreakoutScalePeriodROC(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=9))
     elif algo_type == AlgorithmType.DAY_BREAKOUT_30:
         # DAY_BREAKOUT: breakout trade 30 candles

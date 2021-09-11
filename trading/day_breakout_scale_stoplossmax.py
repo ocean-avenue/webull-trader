@@ -6,10 +6,10 @@ from scripts import config
 from trading.day_breakout_scale import DayTradingBreakoutScale
 
 
-class DayTradingBreakoutScaleMaxStopLoss(DayTradingBreakoutScale):
+class DayTradingBreakoutScaleStopLossMax(DayTradingBreakoutScale):
 
     def get_tag(self):
-        return "DayTradingBreakoutScaleMaxStopLoss"
+        return "DayTradingBreakoutScaleStopLossMax"
 
     def get_stop_loss_price(self, buy_price, bars):
         # use max stop loss

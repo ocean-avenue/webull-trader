@@ -205,6 +205,10 @@ class AlgorithmType:
     DAY_BREAKOUT_DYNAMIC_EXIT = 25
     # breakout entry with 20 candles new high with scale in and max stop loss
     DAY_BREAKOUT_SCALE_MAX_STOP_LOSS = 26
+    # breakout entry with 20 candles new high with scale in and use atr as stop loss
+    DAY_BREAKOUT_SCALE_ATR_STOP_LOSS = 27
+    # breakout entry with 20 candles new high with scale in and check period high for ROC
+    DAY_BREAKOUT_SCALE_PERIOD_ROC = 28
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -272,6 +276,10 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 20 candles new high, dynamic adjust exit period based on profit loss rate.'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price and with max stop loss.'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS:
+            return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price and use ATR as stop loss.'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
+            return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add check period high for ROC.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -342,6 +350,10 @@ class AlgorithmType:
             return 'DAY (BREAKOUT DYN EXIT)'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS:
             return 'DAY (BREAKOUT SCALE MAX LOSS)'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS:
+            return 'DAY (BREAKOUT SCALE ATR LOSS)'
+        if val == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
+            return 'DAY (BREAKOUT SCALE PERIOD ROC)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -413,6 +425,10 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_DYNAMIC_EXIT)),
             (AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS, AlgorithmType.tostr(
                 AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS)),
+            (AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS)),
+            (AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC, AlgorithmType.tostr(
+                AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
