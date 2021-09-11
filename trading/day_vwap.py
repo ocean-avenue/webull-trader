@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# VWAP reclaim day trading strategy
-
 from datetime import date
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk, finvizsdk
 from scripts import utils
 
+
+# VWAP reclaim day trading strategy
 
 class DayTradingVWAPLargeCap(StrategyBase):
 

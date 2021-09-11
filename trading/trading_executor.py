@@ -211,26 +211,16 @@ def start():
     from scripts import utils
     from webull_trader.enums import AlgorithmType
     from trading.trading_executor import TradingExecutor
-    from trading.day_momo import DayTradingMomo
-    from trading.day_momo_reducesize import DayTradingMomoReduceSize
-    # from trading.day_momo_newhigh import DayTradingMomoNewHigh
-    from trading.day_momo_extendedhour import DayTradingMomoExtendedHour
+    # from trading.day_momo import DayTradingMomoNewHigh
+    from trading.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.day_redgreen import DayTradingRedGreen
-    from trading.day_breakout import DayTradingBreakout
-    from trading.day_breakout_newhigh import DayTradingBreakoutNewHigh
-    from trading.day_breakout_prelosers import DayTradingBreakoutPreLosers
-    from trading.day_breakout_earnings import DayTradingBreakoutEarnings
-    from trading.day_breakout_ask import DayTradingBreakoutAsk
-    from trading.day_breakout_scale import DayTradingBreakoutScale
-    from trading.day_breakout_period import DayTradingBreakoutPeriod
-    from trading.day_breakout_dynexit import DayTradingBreakoutDynExit
-    from trading.day_breakout_scale_stoplossmax import DayTradingBreakoutScaleStopLossMax
-    from trading.day_breakout_scale_stoplossatr import DayTradingBreakoutScaleStopLossATR
-    from trading.day_breakout_scale_periodroc import DayTradingBreakoutScalePeriodROC
-    from trading.day_earnings_overnight import DayTradingEarningsOvernight
-    from trading.day_vwap_largecap import DayTradingVWAPLargeCap
-    from trading.day_grinding_largecap import DayTradingGrindingLargeCap
-    from trading.day_grinding_symbols import DayTradingGrindingSymbols
+    from trading.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
+        DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers
+    from trading.day_breakout_scale import DayTradingBreakoutScale, DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, \
+        DayTradingBreakoutScalePeriodROC
+    from trading.day_earnings import DayTradingEarningsOvernight
+    from trading.day_vwap import DayTradingVWAPLargeCap
+    from trading.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
     from trading.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()

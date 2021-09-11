@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Breakout day trading class
-
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
+from webull_trader.models import EarningCalendar
 from sdk import webullsdk
 from scripts import utils, config
 
+
+# Breakout day trading class
 
 class DayTradingBreakout(StrategyBase):
 
@@ -461,3 +462,228 @@ class DayTradingBreakout(StrategyBase):
 
         # save trading logs
         utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
+
+
+# Breakout day trading class, using ask price for entry
+
+class DayTradingBreakoutAsk(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutAsk"
+
+    def get_buy_price(self, ticker):
+        ticker_id = ticker['ticker_id']
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        if quote == None:
+            return None
+        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        if ask_price == None:
+            return None
+        return ask_price
+
+
+# Breakout day trade, adjust exit period by profit & loss rate.
+
+class DayTradingBreakoutDynExit(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutDynExit"
+
+    def update_exit_period(self, ticker, position):
+        symbol = ticker['symbol']
+        profit_loss_rate = float(position['unrealizedProfitLossRate'])
+        current_exit_period = ticker['exit_period'] or 1
+        # if profit_loss_rate >= 0.9 and current_exit_period > 1:
+        #     self.tracking_tickers[symbol]['exit_period'] = 1
+        # elif profit_loss_rate >= 0.7 and current_exit_period > 3:
+        #     self.tracking_tickers[symbol]['exit_period'] = 3
+        if profit_loss_rate >= 0.5 and current_exit_period > 5:
+            self.tracking_tickers[symbol]['exit_period'] = 5
+        elif profit_loss_rate >= 0.3 and current_exit_period > 7:
+            self.tracking_tickers[symbol]['exit_period'] = 7
+
+
+# Breakout day trading class, will check earning stock during earning date
+
+class DayTradingBreakoutEarnings(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutEarnings"
+
+    def get_setup(self):
+        if len(self.earning_tickers) == 0:
+            if self.entry_period == 30:
+                return SetupType.DAY_30_CANDLES_NEW_HIGH
+            elif self.entry_period == 20:
+                return SetupType.DAY_20_CANDLES_NEW_HIGH
+            return SetupType.DAY_10_CANDLES_NEW_HIGH
+        else:
+            return SetupType.DAY_EARNINGS_GAP
+
+    def check_trade(self, symbol, ticker_id, change_percentage):
+        ticker = self.build_tracking_ticker(symbol, ticker_id)
+        # check if can trade with requirements
+        if not self.check_can_trade_ticker(ticker):
+            return
+        # check gap change
+        if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
+            if self.is_extended_market_hour():
+                m1_bars = webullsdk.get_1m_bars(
+                    ticker_id, count=(self.entry_period+5))
+                if m1_bars.empty:
+                    return
+                # use latest 2 candle
+                latest_candle = m1_bars.iloc[-1]
+                latest_candle2 = m1_bars.iloc[-2]
+                # check if trasaction amount and volume meets requirement
+                if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
+                    # found trading ticker
+                    self.tracking_tickers[symbol] = ticker
+                    utils.print_trading_log(
+                        "Found <{}> to trade!".format(symbol))
+                    # do trade
+                    self.trade(ticker, m1_bars=m1_bars)
+            elif self.is_regular_market_hour():
+                # found trading ticker
+                self.tracking_tickers[symbol] = ticker
+                utils.print_trading_log("Found <{}> to trade!".format(symbol))
+                # do trade
+                self.trade(ticker)
+
+    def on_begin(self):
+        self.earning_tickers = []
+        # check earning calendars
+        today = date.today()
+        if self.is_pre_market_hour() or self.is_regular_market_hour():
+            earnings = EarningCalendar.objects.filter(
+                earning_date=today).filter(earning_time="bmo")
+        elif self.is_after_market_hour():
+            earnings = EarningCalendar.objects.filter(
+                earning_date=today).filter(earning_time="amc")
+        # update earning_tickers
+        for earning in earnings:
+            symbol = earning.symbol
+            ticker_id = webullsdk.get_ticker(symbol=symbol)
+            self.earning_tickers.append({
+                "symbol": symbol,
+                "ticker_id": ticker_id,
+            })
+            utils.print_trading_log(
+                "Add ticker <{}> to check earning gap!".format(symbol))
+
+    def on_update(self):
+        # trading tickers
+        for symbol in list(self.tracking_tickers):
+            ticker = self.tracking_tickers[symbol]
+            # do trade
+            self.trade(ticker)
+
+        # no earning symbol found
+        if len(self.earning_tickers) == 0:
+            # find trading ticker in top gainers
+            top_gainers = []
+            if self.is_regular_market_hour():
+                top_gainers = webullsdk.get_top_gainers()
+            elif self.is_pre_market_hour():
+                top_gainers = webullsdk.get_pre_market_gainers()
+            elif self.is_after_market_hour():
+                top_gainers = webullsdk.get_after_market_gainers()
+
+            # utils.print_trading_log("Scanning top gainers <{}>...".format(
+            #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
+            for gainer in top_gainers:
+                symbol = gainer["symbol"]
+                # check if ticker already in monitor
+                if symbol in self.tracking_tickers:
+                    continue
+                ticker_id = gainer["ticker_id"]
+                # utils.print_trading_log("Scanning <{}>...".format(symbol))
+                change_percentage = gainer["change_percentage"]
+                self.check_trade(symbol, ticker_id, change_percentage)
+        else:
+            for earning_ticker in self.earning_tickers:
+                symbol = earning_ticker["symbol"]
+                ticker_id = earning_ticker["ticker_id"]
+                # check if ticker already in monitor
+                if symbol in self.tracking_tickers:
+                    continue
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                if quote == None:
+                    continue
+                change_percentage = 0.0
+                if self.is_extended_market_hour():
+                    if 'pChRatio' in quote:
+                        change_percentage = float(quote['pChRatio'])
+                elif self.is_regular_market_hour():
+                    if 'changeRatio' in quote:
+                        change_percentage = float(quote['changeRatio'])
+                self.check_trade(symbol, ticker_id, change_percentage)
+
+
+# Breakout day trade, no entry if the price not break max of last high price.
+
+class DayTradingBreakoutNewHigh(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutNewHigh"
+
+    def check_if_trade_price_new_high(self, ticker, price):
+        symbol = ticker['symbol']
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['last_high_price'] != None:
+            last_high_price = self.tracking_stats[symbol]['last_high_price']
+            return price > last_high_price
+        return True
+
+
+# Breakout day trade, exit if trading period timeout.
+
+class DayTradingBreakoutPeriod(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutPeriod"
+
+    def check_if_trade_period_timeout(self, ticker):
+        if (datetime.now() - ticker['last_buy_time']) >= timedelta(seconds=config.DAY_PERIOD_TIMEOUT_IN_SEC):
+            return True
+        return False
+
+
+# Breakout day trade, find pre-market losers and aim for reversal.
+
+class DayTradingBreakoutPreLosers(DayTradingBreakout):
+
+    def get_tag(self):
+        return "DayTradingBreakoutPreLosers"
+
+    def on_begin(self):
+        self.preloser_tickers = []
+        # check pre-market losers
+        if self.is_regular_market_hour():
+            self.preloser_tickers = webullsdk.get_pre_market_losers(count=10)
+            utils.print_trading_log("Add {} tickers to check loser reversal!".format(
+                len(self.preloser_tickers)))
+
+    def on_update(self):
+
+        if self.is_pre_market_hour() or self.is_after_market_hour():
+            # only trade in regular hour
+            return
+
+        # trading tickers
+        for symbol in list(self.tracking_tickers):
+            ticker = self.tracking_tickers[symbol]
+            # do trade
+            self.trade(ticker)
+
+        for preloser_ticker in self.preloser_tickers:
+            symbol = preloser_ticker["symbol"]
+            ticker_id = preloser_ticker["ticker_id"]
+            # check if ticker already in monitor
+            if symbol in self.tracking_tickers:
+                continue
+            # found trading ticker
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            self.tracking_tickers[symbol] = ticker
+            utils.print_trading_log("Found <{}> to trade!".format(symbol))
+            # do trade
+            self.trade(ticker)

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# Momo day trading class
-
-import time
 from datetime import datetime, date, timedelta
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk
 from scripts import utils, config
 
+
+# Momo day trading class
 
 class DayTradingMomo(StrategyBase):
 
@@ -304,3 +303,113 @@ class DayTradingMomo(StrategyBase):
 
         # save trading logs
         utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
+
+
+# Momo day trading based on win rate, reduce size if win rate is low
+
+class DayTradingMomoReduceSize(DayTradingMomo):
+
+    def get_tag(self):
+        return "DayTradingMomoReduceSize"
+
+    def get_buy_order_limit(self, ticker):
+        symbol = ticker['symbol']
+        buy_position_amount = self.extended_order_amount_limit
+        if self.is_regular_market_hour():
+            buy_position_amount = self.order_amount_limit
+        # check win rate
+        if symbol in self.tracking_stats:
+            win_rate = float(
+                self.tracking_stats[symbol]['win_trades']) / self.tracking_stats[symbol]['trades']
+            buy_position_amount = max(
+                self.order_amount_limit * win_rate, self.order_amount_limit * 0.3)
+        return buy_position_amount
+
+    def check_if_track_ticker(self, ticker):
+        symbol = ticker['symbol']
+        # # check if sell not long ago
+        # if symbol in self.tracking_stats and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=100):
+        #     return False
+        # check if 3 continues loss trades and still in blacklist time
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['continue_lose_trades'] >= 3 and (datetime.now() - self.tracking_stats[symbol]['last_trade_time']) <= timedelta(seconds=config.BLACKLIST_TIMEOUT_IN_SEC):
+            return False
+        return True
+
+
+# Momo day trade, no entry if the price not break max of last high price.
+
+class DayTradingMomoNewHigh(DayTradingMomo):
+
+    def get_tag(self):
+        return "DayTradingMomoNewHigh"
+
+    def check_if_trade_price_new_high(self, ticker, price):
+        symbol = ticker['symbol']
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['last_high_price'] != None:
+            last_high_price = self.tracking_stats[symbol]['last_high_price']
+            return price > last_high_price
+        return True
+
+
+# Momo day trading class, only trade in extended hour (include new high condition)
+
+class DayTradingMomoExtendedHour(DayTradingMomo):
+
+    def get_tag(self):
+        return "DayTradingMomoExtendedHour"
+
+    def check_if_trade_price_new_high(self, ticker, price):
+        symbol = ticker['symbol']
+        if symbol in self.tracking_stats and self.tracking_stats[symbol]['last_high_price'] != None:
+            last_high_price = self.tracking_stats[symbol]['last_high_price']
+            return price > last_high_price
+        return True
+
+    def on_update(self):
+
+        # only trading in extended hour
+        if self.is_regular_market_hour():
+            self.trading_end = True
+            return
+
+        # trading tickers
+        for symbol in list(self.tracking_tickers):
+            ticker = self.tracking_tickers[symbol]
+            # do trade
+            self.trade(ticker)
+
+        # find trading ticker in top gainers
+        top_gainers = []
+        if self.is_pre_market_hour():
+            top_gainers = webullsdk.get_pre_market_gainers()
+        elif self.is_after_market_hour():
+            top_gainers = webullsdk.get_after_market_gainers()
+
+        # utils.print_trading_log("Scanning top gainers <{}>...".format(
+        #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
+        for gainer in top_gainers:
+            symbol = gainer["symbol"]
+            # check if ticker already in monitor
+            if symbol in self.tracking_tickers:
+                continue
+            ticker_id = gainer["ticker_id"]
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            # utils.print_trading_log("Scanning <{}>...".format(symbol))
+            change_percentage = gainer["change_percentage"]
+            # check gap change
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_ticker(ticker):
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
+                m2_bars = utils.convert_2m_bars(m1_bars)
+                if m2_bars.empty:
+                    continue
+                # use latest 2 candle
+                latest_candle = m2_bars.iloc[-1]
+                latest_candle2 = m2_bars.iloc[-2]
+                # check if trasaction amount meets requirement
+                if self.check_track(latest_candle) or self.check_track(latest_candle2):
+                    # found trading ticker
+                    self.tracking_tickers[symbol] = ticker
+                    utils.print_trading_log(
+                        "Found <{}> to trade!".format(symbol))
+                    # do trade
+                    self.trade(ticker, m1_bars=m1_bars)

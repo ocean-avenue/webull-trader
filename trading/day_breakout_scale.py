@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# Breakout day trading class, scale if reach add unit price
-
 from datetime import datetime
 from scripts import utils, config
 from trading.day_breakout import DayTradingBreakout
 
+
+# Breakout day trading class, scale if reach add unit price
 
 class DayTradingBreakoutScale(DayTradingBreakout):
 
@@ -105,3 +105,52 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             self.tracking_tickers[symbol]['exit_period'] = 5
         elif profit_loss_rate >= 0.3 and current_exit_period > 7:
             self.tracking_tickers[symbol]['exit_period'] = 7
+
+
+# Breakout day trading class, scale if reach add unit price and max stop loss
+
+class DayTradingBreakoutScaleStopLossMax(DayTradingBreakoutScale):
+
+    def get_tag(self):
+        return "DayTradingBreakoutScaleStopLossMax"
+
+    def get_stop_loss_price(self, buy_price, bars):
+        # use max stop loss
+        return round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2)
+
+
+# Breakout day trading class, scale if reach add unit price and use average true range as stop loss
+
+class DayTradingBreakoutScaleStopLossATR(DayTradingBreakoutScale):
+
+    def get_tag(self):
+        return "DayTradingBreakoutScaleStopLossATR"
+
+    def get_stop_loss_price(self, buy_price, bars):
+        N = utils.get_day_avg_true_range(bars)
+        return round(buy_price - N, 2)
+
+
+# Breakout day trading class, scale if reach add unit price and use period high as ROC check
+
+class DayTradingBreakoutScalePeriodROC(DayTradingBreakoutScale):
+
+    def get_tag(self):
+        return "DayTradingBreakoutScalePeriodROC"
+
+    def get_price_rate_of_change(bars, period=10):
+        period = min(len(bars) - 1, period)
+        period_bars = bars.tail(period + 1)
+        period_bars = period_bars.head(int(period / 2))
+        period_high_price = 0.1
+        for _, row in period_bars.iterrows():
+            price = row["close"]
+            if price > period_high_price:
+                period_high_price = price
+        prev_price = bars.iloc[-2]['close']
+        # if prev price is highest, no ROC required
+        if prev_price > period_high_price:
+            return config.DAY_PRICE_RATE_OF_CHANGE + 1
+        current_price = bars.iloc[-1]['close']
+        ROC = (current_price - period_high_price) / period_high_price * 100
+        return ROC
