@@ -138,7 +138,7 @@ class DayTradingBreakoutScalePeriodROC(DayTradingBreakoutScale):
     def get_tag(self):
         return "DayTradingBreakoutScalePeriodROC"
 
-    def get_price_rate_of_change(bars, period=10):
+    def get_price_rate_of_change(self, bars, period=10):
         period = min(len(bars) - 1, period)
         period_bars = bars.tail(period + 1)
         period_bars = period_bars.head(int(period / 2))
