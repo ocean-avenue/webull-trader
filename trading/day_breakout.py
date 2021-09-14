@@ -151,8 +151,10 @@ class DayTradingBreakout(StrategyBase):
             close_price = row['close']
             if close_price < period_low_price:
                 period_low_price = close_price
+        # add 1% threshold
+        threshold = 0.01
         # check if new low
-        if last_price < period_low_price:
+        if last_price < period_low_price * (1-threshold):
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
