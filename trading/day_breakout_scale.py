@@ -57,13 +57,18 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
+        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=3):
+            # has no volume and amount
+            utils.print_trading_log(
+                "<{}> candle chart has not enough amount, no scale in!".format(symbol))
+            return False
+
         if self.is_regular_market_hour() and  \
-                not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
                 not utils.check_bars_rel_volume(bars) and not utils.check_bars_all_green(bars, period=5) and \
                 not utils.check_bars_amount_grinding(bars, period=5):
             # has no volume and no relative volume
             utils.print_trading_log(
-                "<{}> candle chart has not enough amount and volume, no scale in!".format(symbol))
+                "<{}> candle chart has no relative volume, no scale in!".format(symbol))
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
