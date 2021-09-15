@@ -73,6 +73,9 @@ class SwingTurtle(StrategyBase):
         return False
 
     def check_scale_in(self, daily_bars, swing_position):
+        # already full positions
+        if swing_position.units >= swing_position.target_units:
+            return False
         latest_close = daily_bars[-1].close
         # not meet add unit price
         if latest_close < swing_position.add_unit_price:
