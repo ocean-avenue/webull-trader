@@ -9,7 +9,8 @@ def start(day=None):
     if day == None:
         day = date.today()
     # trades
-    day_trades = DayTrade.objects.filter(sell_date=day, require_adjustment=False)
+    day_trades = DayTrade.objects.filter(
+        sell_date=day, require_adjustment=False)
     # trade count
     total_day_trades = len(day_trades)
     # top gain & loss
@@ -86,7 +87,8 @@ def start(day=None):
     hist_daytrade_perf.top_loss_symbol = top_loss_symbol
     hist_daytrade_perf.total_buy_amount = round(day_total_buy_amount, 2)
     hist_daytrade_perf.total_sell_amount = round(day_total_sell_amount, 2)
-    hist_daytrade_perf.save()
+    if hist_daytrade_perf.trades > 0:
+        hist_daytrade_perf.save()
 
     # swing trades
     swing_trades = SwingTrade.objects.filter(sell_date=day)
