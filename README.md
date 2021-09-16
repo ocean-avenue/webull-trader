@@ -36,6 +36,20 @@ python manage.py runserver
 python manage.py runscheduler
 ```
 
+### Commands:
+
+1. Run stats data:
+
+```
+python manage.py runstatsdata 2021-12-31
+```
+
+2. Run amend trades:
+
+```
+python manage.py runamendtrades
+```
+
 ### Deploy:
 
 1. Run server:
