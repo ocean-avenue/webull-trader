@@ -19,6 +19,6 @@ class Command(BaseCommand):
         print("[{}] Done adjust trades job!".format(utils.get_now()))
 
         for amend_date in amend_dates:
-            print("[{}] Start recalculate hist data job...".format(utils.get_now()))
+            print("[{}] Start recalculate hist data job for {}...".format(utils.get_now(), amend_date))
             calculate_histdata.start(day=amend_date)
             print("[{}] Done recalculate hist data job!".format(utils.get_now()))
