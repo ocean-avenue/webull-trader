@@ -237,6 +237,9 @@ class StrategyBase:
             # still in tracking
             if symbol in self.tracking_tickers:
                 continue
+            # handling in short positions
+            if symbol in self.error_short_tickers:
+                continue
             # is day position
             if DayPosition.objects.filter(symbol=symbol).first():
                 continue
