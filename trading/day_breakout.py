@@ -176,11 +176,11 @@ class DayTradingBreakout(StrategyBase):
             exit_trading = True
             exit_note = "Candle chart is not volatility."
         # check if bar chart is at peak
-        elif utils.check_bars_at_peak(bars):
-            utils.print_trading_log(
-                "<{}> candle chart is at peak, exit!".format(symbol))
-            exit_trading = True
-            exit_note = "Candle chart is at peak."
+        # elif utils.check_bars_at_peak(bars):
+        #     utils.print_trading_log(
+        #         "<{}> candle chart is at peak, exit!".format(symbol))
+        #     exit_trading = True
+        #     exit_note = "Candle chart is at peak."
         elif self.check_if_trade_period_timeout(ticker):
             utils.print_trading_log(
                 "<{}> trading period timeout, exit!".format(symbol))
