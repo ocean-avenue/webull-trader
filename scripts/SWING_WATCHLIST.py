@@ -26,7 +26,7 @@ WATCHLIST_SYMBOLS = [
     "SPG", "SPLK", "SNPS", "STXB", "SUMO", "STNE", "STPK", "SENS", "SQSP", "SKIN",
     "SAM", "SOFI",
     "T", "TSLA", "TSM", "TWTR", "TWLO", "TDOC", "TWOU", "TLRY", "TREE", "TMUS",
-    "TOL", "TAL", "TME", "TALO", "TSN", "TIGR", "TTCF", "TAN", "TCEHY",
+    "TOL", "TAL", "TME", "TALO", "TSN", "TIGR", "TTCF", "TAN", "TCEHY", "TASK",
     "U", "UBER", "UPWK", "UAL", "UMC", "UEC", "UPST",
     "V", "VIPS",
     "WMT", "WFC", "WTI", "WBA", "WISH",
