@@ -1692,6 +1692,7 @@ def swing_analytics_symbol(request, symbol=None):
         buy_date = trade.buy_date
         sell_date = trade.sell_date
         quantity = trade.quantity
+        units = trade.units
         total_cost = trade.total_cost
         total_sold = trade.total_sold
         realized_pl = total_sold - total_cost
@@ -1708,6 +1709,7 @@ def swing_analytics_symbol(request, symbol=None):
             "total_cost": "${}".format(round(total_cost, 2)),
             "total_sold": "${}".format(round(total_sold, 2)),
             "quantity": quantity,
+            "units": units,
             "buy_date": buy_date,
             "sell_date": sell_date,
             "holding_days": holding_days,
