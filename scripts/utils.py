@@ -1301,6 +1301,7 @@ def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):
         total_cost=position.total_cost,
         total_sold=round(sell_price * position.quantity, 2),
         quantity=position.quantity,
+        units=position.units,
         buy_date=position.buy_date,
         buy_time=position.buy_time,
         sell_date=sell_time.date(),

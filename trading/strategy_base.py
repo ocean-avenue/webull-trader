@@ -595,6 +595,7 @@ class StrategyBase:
                 total_cost=position.total_cost,
                 total_sold=price * position.quantity,
                 quantity=position.quantity,
+                units=position.units,
                 buy_time=position.buy_time,
                 buy_date=position.buy_date,
                 sell_time=sell_time,
