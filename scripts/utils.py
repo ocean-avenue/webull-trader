@@ -2605,8 +2605,8 @@ def get_swing_trade_stat_record_for_render(symbol, trade_stat):
         "avg_cost": avg_cost,
         "avg_sold": avg_sold,
         "profit_loss_style": profit_loss_style,
-        "total_cost": round(trade_stat["total_cost"], 2),
-        "total_sold": round(trade_stat["total_sold"], 2),
+        "total_cost": "${}".format(round(trade_stat["total_cost"], 2)),
+        "total_sold": "${}".format(round(trade_stat["total_sold"], 2)),
         "top_gain": "+${}".format(trade_stat["top_gain"]),
         "top_loss": "-${}".format(abs(trade_stat["top_loss"])),
     }
