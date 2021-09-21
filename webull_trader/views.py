@@ -441,6 +441,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         buy_price = round(day_trade.total_cost / day_trade.quantity, 3)
         sell_price = round(day_trade.total_sold / day_trade.quantity, 3)
         quantity = day_trade.quantity
+        units = day_trade.units
         gain = round(day_trade.total_sold - day_trade.total_cost, 3)
         profit_loss, profit_loss_style = utils.get_color_price_style_for_render(
             gain)
@@ -465,6 +466,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         trade_records.append({
             "symbol": symbol,
             "quantity": quantity,
+            "units": units,
             "total_cost": "${}".format(day_trade.total_cost),
             "buy_price": "${}".format(buy_price),
             "sell_price": "${}".format(sell_price),
