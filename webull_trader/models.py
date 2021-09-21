@@ -357,6 +357,7 @@ class DayTrade(models.Model):
     total_cost = models.FloatField(default=0)
     total_sold = models.FloatField(default=0)
     quantity = models.PositiveIntegerField(default=0)
+    units = models.PositiveIntegerField(default=1)
 
     # initial buy date
     buy_date = models.DateField()
@@ -471,6 +472,7 @@ class SwingTrade(models.Model):
     total_cost = models.FloatField(default=0)
     total_sold = models.FloatField(default=0)
     quantity = models.PositiveIntegerField(default=0)
+    units = models.PositiveIntegerField(default=1)
 
     # initial buy date
     buy_date = models.DateField()
