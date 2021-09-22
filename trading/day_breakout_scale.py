@@ -136,8 +136,9 @@ class DayTradingBreakoutScaleStopLossATR(DayTradingBreakoutScale):
         return round(buy_price - N, 2)
 
     def get_scale_stop_loss_price(self, buy_price, bars):
-        N = utils.get_day_avg_true_range(bars)
-        return round(buy_price - N, 2)
+        # N = utils.get_day_avg_true_range(bars)
+        # return round(buy_price - N, 2)
+        return None
 
 
 # Breakout day trading class, scale if reach add unit price and use period high as ROC check
