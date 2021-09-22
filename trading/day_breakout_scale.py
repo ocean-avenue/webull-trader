@@ -132,8 +132,18 @@ class DayTradingBreakoutScaleStopLossATR(DayTradingBreakoutScale):
         return "DayTradingBreakoutScaleStopLossATR"
 
     def get_stop_loss_price(self, buy_price, bars):
+
         N = utils.get_day_avg_true_range(bars)
-        return round(buy_price - N, 2)
+        atr_stop_loss_price = round(buy_price - N, 2)
+
+        prev_candle = bars.iloc[-2]
+        # use max( min( prev candle middle, buy price -2% ), buy price -5% )
+        stop_loss_price = max(
+            min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+                round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+            round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+
+        return max(atr_stop_loss_price, stop_loss_price)
 
     def get_scale_stop_loss_price(self, buy_price, bars):
         # N = utils.get_day_avg_true_range(bars)
