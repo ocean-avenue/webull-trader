@@ -86,7 +86,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=3):
+        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=10):
             # has no volume and amount
             utils.print_trading_log(
                 "<{}> candle chart has not enough amount, no entry!".format(symbol))
