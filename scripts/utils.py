@@ -1543,13 +1543,15 @@ def get_free_float_range_labels():
         "0-1M",  # 1
         "1M-5M",  # 2
         "5M-10M",  # 3
-        "10M-20M",  # 4
-        "20M-50M",  # 5
-        "50M-100M",  # 6
-        "100M-200M",  # 7
-        "200M-500M",  # 8
-        "500M-1B",  # 9
-        "1B+",  # 10
+        "10M-15M",  # 4
+        "15M-20M",  # 5
+        "20M-30M",  # 6
+        "30M-50M",  # 7
+        "50M-100M",  # 8
+        "100M-200M",  # 9
+        "200M-500M",  # 10
+        "500M-1B",  # 11
+        "1B+",  # 12
     ]
 
 
@@ -1563,20 +1565,24 @@ def get_free_float_range_index(free_float):
         index = 2
     elif free_float <= 10000000:
         index = 3
-    elif free_float <= 20000000:
+    elif free_float <= 15000000:
         index = 4
-    elif free_float <= 50000000:
+    elif free_float <= 20000000:
         index = 5
-    elif free_float <= 100000000:
+    elif free_float <= 30000000:
         index = 6
-    elif free_float <= 200000000:
+    elif free_float <= 50000000:
         index = 7
-    elif free_float <= 500000000:
+    elif free_float <= 100000000:
         index = 8
-    elif free_float <= 1000000000:
+    elif free_float <= 200000000:
         index = 9
-    else:
+    elif free_float <= 500000000:
         index = 10
+    elif free_float <= 1000000000:
+        index = 11
+    else:
+        index = 12
     return index
 
 
