@@ -89,6 +89,7 @@ class SwingTurtle(StrategyBase):
 
     def submit_buy_order(self, symbol, position, unit_weight, latest_close, reason):
         usable_cash = webullsdk.get_usable_cash()
+        utils.save_webull_min_usable_cash(usable_cash)
         # buy swing position amount
         buy_position_amount = self.get_buy_order_limit(unit_weight)
         if usable_cash <= buy_position_amount:

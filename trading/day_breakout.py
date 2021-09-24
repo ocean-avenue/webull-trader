@@ -244,6 +244,7 @@ class DayTradingBreakout(StrategyBase):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         usable_cash = webullsdk.get_usable_cash()
+        utils.save_webull_min_usable_cash(usable_cash)
         buy_position_amount = self.get_buy_order_limit(ticker)
         if usable_cash <= buy_position_amount:
             utils.print_trading_log(

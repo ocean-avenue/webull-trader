@@ -158,6 +158,7 @@ class WebullAccountStatistics(models.Model):
     total_profit_loss = models.FloatField()
     total_profit_loss_rate = models.FloatField()
     day_profit_loss = models.FloatField()
+    min_usable_cash = models.FloatField(default=30000.0)
 
     date = models.DateField(auto_now=False, auto_now_add=False)
 

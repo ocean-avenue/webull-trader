@@ -964,6 +964,22 @@ def save_webull_account(acc_data, paper=True, day=None):
             acc_stat.save()
 
 
+def save_webull_min_usable_cash(usable_cash):
+    day = date.today()
+    acc_stat = WebullAccountStatistics.objects.filter(date=day).first()
+    if not acc_stat:
+        acc_stat = WebullAccountStatistics(
+            date=day,
+            net_liquidation=0.0,
+            total_profit_loss=0.0,
+            total_profit_loss_rate=0.0,
+            day_profit_loss=0.0,
+        )
+    if usable_cash < acc_stat.min_usable_cash:
+        acc_stat.min_usable_cash = usable_cash
+        acc_stat.save()
+
+
 def save_webull_order(order_data, paper=True):
     avg_price = 0.0
     price = 0.0
