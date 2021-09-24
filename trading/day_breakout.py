@@ -86,7 +86,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=10):
+        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=4):
             # has no volume and amount
             utils.print_trading_log(
                 "<{}> candle chart has not enough amount, no entry!".format(symbol))
@@ -104,11 +104,11 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
-        if utils.check_bars_has_long_wick_up(bars, period=2):
-            # has long wick up
-            utils.print_trading_log(
-                "<{}> candle chart has long wick up, no entry!".format(symbol))
-            return False
+        # if utils.check_bars_has_long_wick_up(bars, period=2):
+        #     # has long wick up
+        #     utils.print_trading_log(
+        #         "<{}> candle chart has long wick up, no entry!".format(symbol))
+        #     return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
@@ -163,12 +163,12 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "{} candles new low.".format(exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, last_price, period_low_price))
-        # check if has long wick up
-        elif utils.check_bars_has_long_wick_up(bars, period=4):
-            utils.print_trading_log(
-                "<{}> candle chart has long wick up, exit!".format(symbol))
-            exit_trading = True
-            exit_note = "Candle chart has long wick up."
+        # # check if has long wick up
+        # elif utils.check_bars_has_long_wick_up(bars, period=4):
+        #     utils.print_trading_log(
+        #         "<{}> candle chart has long wick up, exit!".format(symbol))
+        #     exit_trading = True
+        #     exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif self.is_extended_market_hour() and not utils.check_bars_volatility(bars, period=2):
             utils.print_trading_log(
