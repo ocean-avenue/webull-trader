@@ -439,8 +439,8 @@ class DayTradingBreakout(StrategyBase):
             ticker = self.build_tracking_ticker(symbol, ticker_id)
             # check if can trade with requirements
             if not self.check_can_trade_ticker(ticker):
-                utils.print_trading_log(
-                    "Can not trade <{}>, skip...".format(symbol))
+                # utils.print_trading_log(
+                #     "Can not trade <{}>, skip...".format(symbol))
                 continue
             # utils.print_trading_log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
