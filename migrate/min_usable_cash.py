@@ -10,7 +10,7 @@ def start():
     acc_stats = WebullAccountStatistics.objects.all()
 
     for acc_stat in acc_stats:
-        acc_stat.min_usable_cash = round(acc_stat.net_liquidation / 2, 2)
+        acc_stat.min_usable_cash = 0.0
         acc_stat.save()
 
     print("[{}] Migrate {} webull account statistics min usable cash done".format(

@@ -976,7 +976,7 @@ def save_webull_min_usable_cash(usable_cash):
             total_profit_loss_rate=0.0,
             day_profit_loss=0.0,
         )
-    if usable_cash < acc_stat.min_usable_cash:
+    if usable_cash < acc_stat.min_usable_cash or acc_stat.min_usable_cash == 0.0:
         acc_stat.min_usable_cash = usable_cash
         acc_stat.save()
 
