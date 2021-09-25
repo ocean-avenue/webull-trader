@@ -60,23 +60,26 @@ def index(request):
     day_profit_loss = utils.get_net_profit_loss_for_render(today_acc_stat)
 
     acc_stat_list = WebullAccountStatistics.objects.all()
-    # net assets chart
-    net_assets_daily_values = []
-    net_assets_daily_dates = []
+    # net assets & min usable cash chart
+    net_daily_values = []
+    net_cash_daily_dates = []
+    cash_daily_values = []
     # profit loss chart
     profit_loss_daily_values = []
     profit_loss_daily_dates = []
 
     for acc_stat in acc_stat_list:
-        net_assets_daily_values.append(acc_stat.net_liquidation)
-        net_assets_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
+        net_daily_values.append(acc_stat.net_liquidation)
+        cash_daily_values.append(acc_stat.min_usable_cash)
+        net_cash_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
         profit_loss_daily_values.append(
             utils.get_color_bar_chart_item_for_render(acc_stat.day_profit_loss))
         profit_loss_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
 
-    net_assets = {
-        'daily_values': net_assets_daily_values,
-        'daily_dates': net_assets_daily_dates,
+    net_cash = {
+        'net_daily_values': net_daily_values,
+        'cash_daily_values': cash_daily_values,
+        'daily_dates': net_cash_daily_dates,
         'weekly_values': [],  # TODO
         'weekly_dates': [],  # TODO
         'monthly_values': [],  # TODO
@@ -97,7 +100,7 @@ def index(request):
         "algo_type_texts": algo_type_texts,
         "net_account_value": net_account_value,
         "day_profit_loss": day_profit_loss,
-        "net_assets": net_assets,
+        "net_cash": net_cash,
         "profit_loss": profit_loss,
     })
 
