@@ -233,10 +233,6 @@ class SwingTurtle(StrategyBase):
                 "unit_weight": swing_watch.unit_weight,
             })
 
-        # save min usable cash
-        usable_cash = webullsdk.get_usable_cash()
-        utils.save_webull_min_usable_cash(usable_cash)
-
     def on_update(self):
         # only trade regular market hour once
         if not self.is_regular_market_hour():
