@@ -928,6 +928,7 @@ def save_webull_account(acc_data, paper=True, day=None):
             if not acc_stat:
                 acc_stat = WebullAccountStatistics(date=day)
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
+            acc_stat.min_usable_cash = float(acc_data['netLiquidation']) - 1.0
             acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
             acc_stat.total_profit_loss_rate = float(
                 acc_data['totalProfitLossRate'])
