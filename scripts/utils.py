@@ -920,15 +920,20 @@ def save_webull_account(acc_data, paper=True, day=None):
         if "accountMembers" in acc_data:
             account_members = acc_data['accountMembers']
             day_profit_loss = 0
+            min_usable_cash = 0
             for account_member in account_members:
                 if account_member['key'] == 'dayProfitLoss':
                     day_profit_loss = float(account_member['value'])
+                if account_member['key'] == 'usableCash':
+                    min_usable_cash = float(account_member['value'])
             acc_stat = WebullAccountStatistics.objects.filter(
                 date=day).first()
             if not acc_stat:
-                acc_stat = WebullAccountStatistics(date=day)
+                acc_stat = WebullAccountStatistics(
+                    date=day,
+                    min_usable_cash=min_usable_cash,
+                )
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
-            acc_stat.min_usable_cash = float(acc_data['netLiquidation']) - 1.0
             acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
             acc_stat.total_profit_loss_rate = float(
                 acc_data['totalProfitLossRate'])
@@ -937,10 +942,17 @@ def save_webull_account(acc_data, paper=True, day=None):
     else:
         if "accountMembers" in acc_data:
             account_members = acc_data['accountMembers']
+            min_usable_cash = 0
+            for account_member in account_members:
+                if account_member['key'] == 'cashBalance':
+                    min_usable_cash = float(account_member['value'])
             acc_stat = WebullAccountStatistics.objects.filter(
                 date=day).first()
             if not acc_stat:
-                acc_stat = WebullAccountStatistics(date=day)
+                acc_stat = WebullAccountStatistics(
+                    date=day,
+                    min_usable_cash=min_usable_cash,
+                )
             acc_stat.net_liquidation = float(acc_data['netLiquidation'])
             # get day's P&L
             daily_pl = webullsdk.get_daily_profitloss()
