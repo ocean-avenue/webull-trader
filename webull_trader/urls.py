@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from webull_trader import views
 
 urlpatterns = [
