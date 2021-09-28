@@ -491,8 +491,6 @@ class DayTradingBreakoutAsk(DayTradingBreakout):
         if quote == None:
             return None
         ask_price = webullsdk.get_ask_price_from_quote(quote)
-        if ask_price == None:
-            return None
         return ask_price
 
 

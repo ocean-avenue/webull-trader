@@ -407,11 +407,13 @@ class StrategyBase:
         if positions == None:
             return False
         order_filled = True
+        holding_quantity = 0
         for position in positions:
             if position['ticker']['symbol'] != symbol:
                 continue
+            holding_quantity = int(position['position'])
             # make sure position is positive
-            if float(position['position']) > 0:
+            if holding_quantity > 0:
                 order_filled = False
                 break
         if order_filled:
@@ -469,7 +471,7 @@ class StrategyBase:
                         bid_price = webullsdk.get_bid_price_from_quote(quote)
                         if bid_price == None:
                             return False
-                        holding_quantity = ticker['positions']
+                        # holding_quantity = ticker['positions']
                         order_response = webullsdk.sell_limit_order(
                             ticker_id=ticker_id,
                             price=bid_price,
@@ -704,11 +706,13 @@ class StrategyBase:
         if quote == None:
             return None
         bid_price = webullsdk.get_bid_price_from_quote(quote)
+        # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
         if ask_price == None or bid_price == None:
             return None
-        # return min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
-        return min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
+        buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
+        # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+        return buy_price
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
@@ -716,6 +720,4 @@ class StrategyBase:
         if quote == None:
             return None
         bid_price = webullsdk.get_bid_price_from_quote(quote)
-        if bid_price == None:
-            return None
         return bid_price

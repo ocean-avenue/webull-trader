@@ -503,6 +503,15 @@ def get_bid_price_from_quote(quote):
     return None
 
 
+def get_bid_volume_from_quote(quote):
+    if quote:
+        if 'bidList' in quote and len(quote['bidList']) > 0:
+            return int(quote['bidList'][0]['volume'])
+        if 'depth' in quote and 'ntvAggBidList' in quote['depth'] and len(quote['depth']['ntvAggBidList']) > 0:
+            return float(quote['depth']['ntvAggBidList'][0]['volume'])
+    return 0
+
+
 def get_ticker(symbol=None):
     time.sleep(1)
     try:
