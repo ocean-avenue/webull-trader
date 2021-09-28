@@ -65,7 +65,7 @@ DAY_PERIOD_TIMEOUT_IN_SEC = 90
 # iterations for clear position
 CLEAR_POSITION_ITERATIONS = 80
 # target units for day trade
-DAY_TARGET_UNITS = 10
+DAY_TARGET_UNITS = 12
 # target units for day trade in extended hour
 DAY_EXTENDED_TARGET_UNITS = 4
 
