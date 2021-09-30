@@ -14,8 +14,8 @@ class DayTradingBreakoutScale(DayTradingBreakout):
 
     def check_scale_in(self, ticker, bars, position):
         symbol = ticker['symbol']
-        current_candle = bars.iloc[-1]
-        current_price = current_candle['close']
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
         last_buy_time = ticker['last_buy_time']
         target_units = 4
         units = 1
@@ -37,14 +37,14 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
         if profit_loss_rate < 0.05:
             return False
-        period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
+        period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
             close_price = row['close']  # use close price
             if close_price > period_high_price:
                 period_high_price = close_price
         # check if new high
-        if current_price < period_high_price:
+        if last_price < period_high_price:
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
