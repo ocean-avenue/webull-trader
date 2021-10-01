@@ -13,6 +13,7 @@ Swing Trading [[Turtle](https://github.com/quanturtleteam/webull-trader/blob/mai
 1. Install required packages:
 
 ```
+pip install git+https://github.com/tedchou12/webull
 pip install -r requirements.txt
 ```
 
