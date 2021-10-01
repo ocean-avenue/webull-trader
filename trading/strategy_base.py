@@ -720,4 +720,7 @@ class StrategyBase:
         if quote == None:
             return None
         bid_price = webullsdk.get_bid_price_from_quote(quote)
-        return bid_price
+        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        sell_price = max(
+            ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
+        return sell_price
