@@ -70,7 +70,7 @@ class DayTradingBreakout(StrategyBase):
         current_low = current_candle['low']
         prev_open = bars.iloc[-2]['open']
         prev_close = bars.iloc[-2]['close']
-        if current_low <= min(prev_close - 0.1, prev_close * 0.99, (prev_open + prev_close) / 2):
+        if current_low <= min(prev_close - 0.1, prev_close * 0.99, prev_open + (prev_close - prev_open) * 0.75):
             utils.print_trading_log(
                 "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
             return False
