@@ -66,6 +66,14 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> price is not above ema9, no entry!".format(symbol))
             return False
 
+        # check if current low is above prev close
+        current_low = current_candle['low']
+        prev_close = bars.iloc[-2]['close']
+        if current_low <= min(prev_close - 0.1, prev_close * 0.99):
+            utils.print_trading_log(
+                "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
+            return False
+
         # # check if gap already too large
         # if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
         #     utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
