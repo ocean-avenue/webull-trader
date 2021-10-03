@@ -451,21 +451,21 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
     """
     # make sure not use the last candle
     period = min(len(bars) - 1, period)
-    has_amount = True
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
+    total_amount = 0.0
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         if not check_trading_time_match(time):
             continue
-        confirm_amount = get_avg_confirm_amount(time) * time_scale
         volume = row["volume"]
         price = row["close"]
-        if volume * price < confirm_amount:
-            has_amount = False
-            break
+        total_amount += (volume * price)
 
-    return has_amount
+    avg_amount = total_amount / float(period)
+    confirm_amount = get_avg_confirm_amount(time) * time_scale
+
+    return avg_amount >= confirm_amount
 
 
 def check_bars_amount_grinding(bars, period=10):
