@@ -184,7 +184,8 @@ class AlgorithmType:
     DAY_BREAKOUT_PRE_LOSERS = 13
     # breakout entry with 55 candles new high
     DAY_BREAKOUT_55 = 14
-    DAY_VWAP_RECLAIM_LARGE_CAP = 15
+    # entry if price reclaim vwap
+    DAY_VWAP_RECLAIM = 15
     DAY_GRINDING_LARGE_CAP = 16
     DAY_GRINDING_SYMBOLS = 17
     # breakout entry with 20 candles new high, entry with ask price
@@ -209,6 +210,8 @@ class AlgorithmType:
     DAY_BREAKOUT_SCALE_ATR_STOP_LOSS = 27
     # breakout entry with 20 candles new high with scale in and check period high for ROC
     DAY_BREAKOUT_SCALE_PERIOD_ROC = 28
+    # entry if price reclaim vwap for large cap
+    DAY_VWAP_RECLAIM_LARGE_CAP = 29
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -252,6 +255,8 @@ class AlgorithmType:
             return 'Earning date day trade, entry if gap up and may hold position overnight.'
         if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
             return 'Earning date day trade, entry if gap up and do breakout trade if no earning event.'
+        if val == AlgorithmType.DAY_VWAP_RECLAIM:
+            return 'VWAP reclaim day trade, entry if price reclaim vwap for top gainer tickers.'
         if val == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
             return 'VWAP reclaim day trade, entry if price reclaim vwap for large cap tickers.'
         if val == AlgorithmType.DAY_GRINDING_LARGE_CAP:
@@ -326,6 +331,8 @@ class AlgorithmType:
             return 'DAY (EARNINGS OVERNIGHT)'
         if val == AlgorithmType.DAY_EARNINGS_BREAKOUT:
             return 'DAY (EARNINGS BREAKOUT)'
+        if val == AlgorithmType.DAY_VWAP_RECLAIM:
+            return 'DAY (VWAP RECLAIM)'
         if val == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
             return 'DAY (VWAP LARGE CAP)'
         if val == AlgorithmType.DAY_GRINDING_LARGE_CAP:
@@ -401,6 +408,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_EARNINGS_OVERNIGHT)),
             (AlgorithmType.DAY_EARNINGS_BREAKOUT, AlgorithmType.tostr(
                 AlgorithmType.DAY_EARNINGS_BREAKOUT)),
+            (AlgorithmType.DAY_VWAP_RECLAIM, AlgorithmType.tostr(
+                AlgorithmType.DAY_VWAP_RECLAIM)),
             (AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP, AlgorithmType.tostr(
                 AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP)),
             (AlgorithmType.DAY_GRINDING_LARGE_CAP, AlgorithmType.tostr(

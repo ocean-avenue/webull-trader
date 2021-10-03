@@ -219,7 +219,7 @@ def start():
     from trading.day_breakout_scale import DayTradingBreakoutScale, DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, \
         DayTradingBreakoutScalePeriodROC
     from trading.day_earnings import DayTradingEarningsOvernight
-    from trading.day_vwap import DayTradingVWAPLargeCap
+    from trading.day_vwap import DayTradingVWAPPaper, DayTradingVWAPLargeCap
     from trading.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
     from trading.swing_turtle import SwingTurtle
 
@@ -329,6 +329,15 @@ def start():
         # DAY_EARNINGS: earnings overnight trade
         strategies.append(DayTradingEarningsOvernight(
             paper=paper, trading_hour=trading_hour))
+    elif algo_type == AlgorithmType.DAY_VWAP_RECLAIM:
+        # DAY_VWAP_RECLAIM: vwap reclaim day trade
+        if paper:
+            strategies.append(DayTradingVWAPPaper(
+                paper=paper, trading_hour=trading_hour))
+        else:
+            # TODO, implement live vwap reclaim
+            strategies.append(DayTradingVWAPPaper(
+                paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP:
         # DAY_VWAP_RECLAIM_LARGE_CAP: vwap reclaim day trade with large cap
         strategies.append(DayTradingVWAPLargeCap(

@@ -112,6 +112,7 @@ class StrategyBase:
             "last_sell_time": None,
             "positions": 0,
             "start_time": datetime.now(),
+            "target_profit": None,
             "stop_loss": None,
             # paper trade do not have stop trailing order, this value keep track of max P&L
             "max_profit_loss_rate": 0,
@@ -521,7 +522,7 @@ class StrategyBase:
             self.tracking_stats[symbol]['lose_trades'] += 1
             self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
-    def update_pending_buy_order(self, ticker, order_response, stop_loss=None):
+    def update_pending_buy_order(self, ticker, order_response, target_profit=None, stop_loss=None):
         symbol = ticker['symbol']
         order_id = utils.get_order_id_from_response(
             order_response, paper=self.paper)
@@ -531,7 +532,10 @@ class StrategyBase:
             self.tracking_tickers[symbol]['pending_order_id'] = order_id
             self.tracking_tickers[symbol]['pending_order_time'] = datetime.now(
             )
-            # set stop loss at prev low
+            # set target profit
+            if target_profit:
+                self.tracking_tickers[symbol]['target_profit'] = target_profit
+            # set stop loss
             if stop_loss:
                 self.tracking_tickers[symbol]['stop_loss'] = stop_loss
         else:
