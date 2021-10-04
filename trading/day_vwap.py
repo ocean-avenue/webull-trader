@@ -29,7 +29,7 @@ class DayTradingVWAPPaper(StrategyBase):
         period_high = 0
         period_low = 9999
         for _, candle in bars.iterrows():
-            if candle['close'] < candle['vwap']:
+            if candle['low'] < candle['vwap']:
                 below_vwap_count += 1
             if candle['close'] > period_high:
                 period_high = candle['close']
@@ -93,7 +93,7 @@ class DayTradingVWAPPaper(StrategyBase):
 
         if holding_quantity == 0:
             # fetch 1m bar charts
-            m1_bars = webullsdk.get_1m_bars(ticker_id, count=40)
+            m1_bars = webullsdk.get_1m_bars(ticker_id, count=30)
             if m1_bars.empty:
                 return
             bars = m1_bars
