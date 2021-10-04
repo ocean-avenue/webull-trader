@@ -95,7 +95,7 @@ def start():
         if not hist_market_stat:
             hist_market_stat = HistoricalMarketStatistics(date=day)
         today = date.today()
-        if (today - day).days == 0 or ((day.weekday() == 5 or day.weekday() == 6) and (today - day).days <= 2):
+        if (today - day).days == 0 or ((day.weekday() == 5 or day.weekday() == 6) and (today - day).days <= 3):
             top_gainer_change = webullsdk.get_top_gainers(
                 count=1)[0]['change_percentage']
             pre_gainer_change = webullsdk.get_pre_market_gainers(count=1)[
