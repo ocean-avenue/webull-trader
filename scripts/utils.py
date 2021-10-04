@@ -893,6 +893,13 @@ def get_order_id_from_response(order_response, paper=True):
     return order_id
 
 
+def get_avg_change_from_movers(movers):
+    total_change = 0.0
+    for mover in movers:
+        total_change += mover['change_percentage']
+    return round(total_change / len(movers), 2)
+
+
 def load_webull_credentials(cred_data, paper=True):
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:
