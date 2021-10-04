@@ -209,13 +209,13 @@ class DayTradingVWAPPaper(StrategyBase):
             # check if ticker already in monitor
             if symbol in self.tracking_tickers:
                 continue
+            # init tracking ticker
+            ticker = self.build_tracking_ticker(symbol, ticker_id)
             # check if can trade with requirements
             if not self.check_can_trade_ticker(ticker):
                 # utils.print_trading_log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
-            # init tracking ticker
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
             # add to monitor
             self.tracking_tickers[symbol] = ticker
             # do trade
