@@ -709,14 +709,15 @@ class StrategyBase:
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         if quote == None:
             return None
-        bid_price = webullsdk.get_bid_price_from_quote(quote)
+        # bid_price = webullsdk.get_bid_price_from_quote(quote)
         # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
-        if ask_price == None or bid_price == None:
-            return None
-        buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
-        # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
-        return buy_price
+        return ask_price
+        # if ask_price == None or bid_price == None:
+        #     return None
+        # buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
+        # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+        # return buy_price
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
@@ -724,7 +725,10 @@ class StrategyBase:
         if quote == None:
             return None
         bid_price = webullsdk.get_bid_price_from_quote(quote)
-        ask_price = webullsdk.get_ask_price_from_quote(quote)
-        sell_price = max(
-            ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
-        return sell_price
+        return bid_price
+        # ask_price = webullsdk.get_ask_price_from_quote(quote)
+        # if ask_price == None or bid_price == None:
+        #     return None
+        # sell_price = max(
+        #     ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
+        # return sell_price
