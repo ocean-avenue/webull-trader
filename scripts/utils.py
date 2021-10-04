@@ -12,7 +12,7 @@ from sdk import fmpsdk, webullsdk, twiliosdk
 from webull_trader import enums
 from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
     StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
-    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar
+    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar, HistoricalMarketStatistics
 
 # sector values
 BASIC_MATERIALS = "Basic Materials"
@@ -789,6 +789,12 @@ def get_hist_key_stat(symbol, date):
     return key_statistics
 
 
+def get_hist_market_stat(date):
+    market_statistics = HistoricalMarketStatistics.objects.filter(
+        date=date).first()
+    return market_statistics
+
+
 def get_hist_top_gainer(symbol, date):
     top_gainer = HistoricalTopGainer.objects.filter(
         symbol=symbol).filter(date=date).first()
@@ -1179,6 +1185,19 @@ def save_hist_key_statistics(quote_data, date):
             date=date,
         )
         key_statistics.save()
+
+
+def save_hist_market_statistics(market_data, date):
+    market_statistics = get_hist_market_stat(date)
+    if not market_statistics:
+        market_statistics = HistoricalMarketStatistics(date=date)
+    market_statistics.pre_gainer_change = market_data['pre_gainer_change']
+    market_statistics.top_gainer_change = market_data['top_gainer_change']
+    market_statistics.after_gainer_change = market_data['after_gainer_change']
+    market_statistics.pre_loser_change = market_data['pre_loser_change']
+    market_statistics.top_loser_change = market_data['top_loser_change']
+    market_statistics.after_loser_change = market_data['after_loser_change']
+    market_statistics.save()
 
 
 def save_hist_top_gainer(gainer_data, date):

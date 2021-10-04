@@ -96,6 +96,28 @@ def start(day=None):
         # rest for 5 sec
         time.sleep(5)
 
+    # fetch market statistics
+    top_gainer_change = webullsdk.get_top_gainers(
+        count=1)[0]['change_percentage']
+    pre_gainer_change = webullsdk.get_pre_market_gainers(count=1)[
+        0]['change_percentage']
+    after_gainer_change = webullsdk.get_after_market_gainers(count=1)[
+        0]['change_percentage']
+    top_loser_change = webullsdk.get_top_losers(
+        count=1)[0]['change_percentage']
+    pre_loser_change = webullsdk.get_pre_market_losers(count=1)[
+        0]['change_percentage']
+    after_loser_change = webullsdk.get_after_market_losers(count=1)[
+        0]['change_percentage']
+    utils.save_hist_market_statistics({
+        'top_gainer_change': top_gainer_change,
+        'pre_gainer_change': pre_gainer_change,
+        'after_gainer_change': after_gainer_change,
+        'top_loser_change': top_loser_change,
+        'pre_loser_change': pre_loser_change,
+        'after_loser_change': after_loser_change,
+    }, day)
+
     algo_type = utils.get_algo_type()
 
     if utils.check_require_top_list_algo(algo_type):

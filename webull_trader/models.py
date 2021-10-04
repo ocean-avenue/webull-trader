@@ -285,6 +285,22 @@ class HistoricalKeyStatistics(models.Model):
         return "[{}] <{}> historical mktcap: {}".format(self.date, self.symbol, self.market_value)
 
 
+class HistoricalMarketStatistics(models.Model):
+    pre_gainer_change = models.FloatField(default=0.0)
+    top_gainer_change = models.FloatField(default=0.0)
+    after_gainer_change = models.FloatField(default=0.0)
+
+    pre_loser_change = models.FloatField(default=0.0)
+    top_loser_change = models.FloatField(default=0.0)
+    after_loser_change = models.FloatField(default=0.0)
+
+    date = models.DateField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return "[{}] market gainer change: +{}%, loser change: {}%".format(
+            self.date, round(self.top_gainer_change * 100, 2), round(self.top_loser_change * 100, 2))
+
+
 class HistoricalMinuteBar(models.Model):
     symbol = models.CharField(max_length=64)
     date = models.DateField(auto_now=False, auto_now_add=False)
