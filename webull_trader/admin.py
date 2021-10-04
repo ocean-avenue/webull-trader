@@ -238,6 +238,19 @@ admin.site.register(models.HistoricalKeyStatistics,
                     HistoricalKeyStatisticsAdmin)
 
 
+class HistoricalMarketStatisticsAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'date',
+        'top_gainer_change',
+        'top_loser_change',
+    ]
+
+
+admin.site.register(models.HistoricalMarketStatistics,
+                    HistoricalMarketStatisticsAdmin)
+
+
 class HistoricalMinuteBarAdmin(admin.ModelAdmin):
 
     list_display = [
