@@ -7,9 +7,9 @@ from sdk import fmpsdk
 from scripts import utils, config
 from webull_trader.enums import SetupType, TradingHourType
 from webull_trader.config import CACHE_TIMEOUT
-from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, \
-    HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, \
-    WebullAccountStatistics, WebullNews, WebullOrderNote, TradingLog, ExceptionLog
+from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
+    HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, \
+    WebullNews, WebullOrderNote, TradingLog, ExceptionLog
 
 # Create your views here.
 
@@ -76,6 +76,21 @@ def index(request):
             utils.get_color_bar_chart_item_for_render(acc_stat.day_profit_loss))
         profit_loss_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
 
+    market_stat_list = HistoricalMarketStatistics.objects.all()
+    # top gainer/loser change chart
+    top_gainer_daily_values = []
+    pre_gainer_daily_values = []
+    top_loser_daily_values = []
+    pre_loser_daily_values = []
+    market_stat_daily_dates = []
+
+    for stat in market_stat_list:
+        top_gainer_daily_values.append(round(stat.top_gainer_change * 100, 2))
+        pre_gainer_daily_values.append(round(stat.pre_gainer_change * 100, 2))
+        top_loser_daily_values.append(round(stat.top_loser_change * 100, 2))
+        pre_loser_daily_values.append(round(stat.pre_loser_change * 100, 2))
+        market_stat_daily_dates.append(stat.date.strftime("%Y/%m/%d"))
+
     net_cash = {
         'net_daily_values': net_daily_values,
         'cash_daily_values': cash_daily_values,
@@ -95,6 +110,18 @@ def index(request):
         'monthly_dates': [],  # TODO
     }
 
+    market_stat = {
+        'gainer_daily_values': top_gainer_daily_values,
+        'pre_gainer_daily_values': pre_gainer_daily_values,
+        'loser_daily_values': top_loser_daily_values,
+        'pre_loser_daily_values': pre_loser_daily_values,
+        'daily_dates': market_stat_daily_dates,
+        'weekly_values': [],  # TODO
+        'weekly_dates': [],  # TODO
+        'monthly_values': [],  # TODO
+        'monthly_dates': [],  # TODO
+    }
+
     return render(request, 'webull_trader/index.html', {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
@@ -102,6 +129,7 @@ def index(request):
         "day_profit_loss": day_profit_loss,
         "net_cash": net_cash,
         "profit_loss": profit_loss,
+        "market_stat": market_stat,
     })
 
 
