@@ -620,7 +620,7 @@ def check_bars_all_green(bars, period=5):
     return all_candle_green
 
 
-def check_bars_volatility(bars, period=2):
+def check_bars_volatility(bars, period=5):
     """
     check if has bar's ohlc has different price
     """
@@ -649,7 +649,7 @@ def check_bars_volatility(bars, period=2):
         price_set.add(row['low'])
         price_set.add(row['close'])
     # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
-    if flat_count >= 1:
+    if flat_count >= 3:
         return False
     # price set only in a few values
     if len(price_set) <= 2:

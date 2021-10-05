@@ -180,7 +180,7 @@ class DayTradingBreakout(StrategyBase):
         #     exit_trading = True
         #     exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
-        elif self.is_extended_market_hour() and not utils.check_bars_volatility(bars, period=2):
+        elif self.is_extended_market_hour() and not utils.check_bars_volatility(bars):
             utils.print_trading_log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
