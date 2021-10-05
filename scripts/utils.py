@@ -429,20 +429,20 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
     """
     check if bar chart has enough volume
     """
-    has_volume = True
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
+    total_volume = 0.0
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         if not check_trading_time_match(time):
             continue
-        confirm_volume = get_avg_confirm_volume(time) * time_scale
         volume = row["volume"]
-        if volume < confirm_volume:
-            has_volume = False
-            break
+        total_volume += volume
 
-    return has_volume
+    avg_volume = total_volume / float(period)
+    confirm_volume = get_avg_confirm_volume(time) * time_scale
+
+    return avg_volume >= confirm_volume
 
 
 def check_bars_has_amount(bars, time_scale=1, period=10):

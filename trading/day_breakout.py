@@ -95,10 +95,11 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=4):
+        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=4) and \
+                not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=4):
             # has no volume and amount
             utils.print_trading_log(
-                "<{}> candle chart has not enough amount, no entry!".format(symbol))
+                "<{}> candle chart has not enough amount or volume, no entry!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and \
