@@ -37,11 +37,13 @@ class DayTradingVWAPPaper(StrategyBase):
                 period_low = candle['low']
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
+        # min stop loss 2%
+        period_low = min(round(current_price * 0.98, 2), period_low)
         current_vwap = current_candle['vwap']
         below_vwap_percent = below_vwap_count / len(bars)
         # check if current price above vwap, prev price below vwap and below vwap percentage <= 40%
         if current_price > current_vwap and below_vwap_count > 0 and below_vwap_percent <= 0.4:
-            # check if profit/loss ratio is good
+            # check if profit/loss ratio is over 2
             if (period_high - current_price) / (current_price - period_low) >= 2.0:
                 return (True, period_high, period_low)
         return (False, 0.0, 0.0)
