@@ -76,21 +76,6 @@ def index(request):
             utils.get_color_bar_chart_item_for_render(acc_stat.day_profit_loss))
         profit_loss_daily_dates.append(acc_stat.date.strftime("%Y/%m/%d"))
 
-    market_stat_list = HistoricalMarketStatistics.objects.all()
-    # top gainer/loser change chart
-    top_gainer_daily_values = []
-    pre_gainer_daily_values = []
-    top_loser_daily_values = []
-    pre_loser_daily_values = []
-    market_stat_daily_dates = []
-
-    for stat in market_stat_list:
-        top_gainer_daily_values.append(round(stat.top_gainer_change * 100, 2))
-        pre_gainer_daily_values.append(round(stat.pre_gainer_change * 100, 2))
-        top_loser_daily_values.append(round(stat.top_loser_change * 100, 2))
-        pre_loser_daily_values.append(round(stat.pre_loser_change * 100, 2))
-        market_stat_daily_dates.append(stat.date.strftime("%Y/%m/%d"))
-
     net_cash = {
         'net_daily_values': net_daily_values,
         'cash_daily_values': cash_daily_values,
@@ -110,12 +95,45 @@ def index(request):
         'monthly_dates': [],  # TODO
     }
 
+    market_stat_list = HistoricalMarketStatistics.objects.all()
+    # top gainer/loser change chart
+    top_gainer_daily_values = []
+    pre_gainer_daily_values = []
+    top_loser_daily_values = []
+    pre_loser_daily_values = []
+    market_stat_daily_dates = []
+
+    for stat in market_stat_list:
+        top_gainer_daily_values.append(round(stat.top_gainer_change * 100, 2))
+        pre_gainer_daily_values.append(round(stat.pre_gainer_change * 100, 2))
+        top_loser_daily_values.append(round(stat.top_loser_change * 100, 2))
+        pre_loser_daily_values.append(round(stat.pre_loser_change * 100, 2))
+        market_stat_daily_dates.append(stat.date.strftime("%Y/%m/%d"))
+
     market_stat = {
         'gainer_daily_values': top_gainer_daily_values,
         'pre_gainer_daily_values': pre_gainer_daily_values,
         'loser_daily_values': top_loser_daily_values,
         'pre_loser_daily_values': pre_loser_daily_values,
         'daily_dates': market_stat_daily_dates,
+        'weekly_values': [],  # TODO
+        'weekly_dates': [],  # TODO
+        'monthly_values': [],  # TODO
+        'monthly_dates': [],  # TODO
+    }
+
+    plwin_daily_values = []
+    perf_stat_dates = []
+
+    daytrade_perfs = HistoricalDayTradePerformance.objects.all()
+    for daytrade_perf in daytrade_perfs:
+        perf_stat_dates.append(daytrade_perf.date.strftime("%Y/%m/%d"))
+        plwin_daily_values.append(
+            round(daytrade_perf.profit_loss_ratio * daytrade_perf.win_rate, 2))
+    
+    perf_stat = {
+        'plwin_daily_values': plwin_daily_values,
+        'daily_dates': perf_stat_dates,
         'weekly_values': [],  # TODO
         'weekly_dates': [],  # TODO
         'monthly_values': [],  # TODO
@@ -130,6 +148,7 @@ def index(request):
         "net_cash": net_cash,
         "profit_loss": profit_loss,
         "market_stat": market_stat,
+        "perf_stat": perf_stat,
     })
 
 
