@@ -70,6 +70,7 @@ class TradingExecutor:
             for strategy in self.strategies:
                 if not strategy.trading_end:
                     strategy.on_update()
+                    strategy.save_logs()
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):

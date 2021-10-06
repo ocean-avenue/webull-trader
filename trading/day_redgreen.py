@@ -223,6 +223,3 @@ class DayTradingRedGreen(StrategyBase):
     def on_end(self):
         # check if still holding any positions before exit
         self.clear_positions()
-
-        # save trading logs
-        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())

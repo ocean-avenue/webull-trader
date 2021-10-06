@@ -42,6 +42,8 @@ def print_trading_log(text):
 
 def save_trading_log(tag, trading_hour, date):
     global TRADING_LOGS
+    if len(TRADING_LOGS) == 0:
+        return
     log = TradingLog.objects.filter(date=date).filter(
         tag=tag).filter(trading_hour=trading_hour).first()
     if log == None:
@@ -51,8 +53,10 @@ def save_trading_log(tag, trading_hour, date):
             trading_hour=trading_hour,
         )
     log_text = "\n".join(TRADING_LOGS)
-    log.log_text = log_text
+    log.log_text = log.log_text + log_text
     log.save()
+    # reset TRADING_LOGS
+    TRADING_LOGS = []
 
 
 def save_exception_log(exception, traceback, log_text):

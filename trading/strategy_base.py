@@ -3,7 +3,7 @@
 # Base trading class
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils import timezone
 from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
 from webull_trader.enums import SetupType, TradingHourType
@@ -85,6 +85,10 @@ class StrategyBase:
             self.day_trade_usable_cash_threshold))
 
         return True
+
+    def save_logs(self):
+        # save trading logs
+        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
 
     def build_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
         # init tracking stats if not

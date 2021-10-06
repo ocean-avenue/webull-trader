@@ -168,6 +168,3 @@ class DayTradingEarningsOvernight(StrategyBase):
 
     def on_end(self):
         self.trading_end = True
-
-        # save trading logs
-        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())

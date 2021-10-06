@@ -229,9 +229,6 @@ class DayTradingVWAPPaper(StrategyBase):
         # check if still holding any positions before exit
         self.clear_positions()
 
-        # save trading logs
-        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
-
 
 class DayTradingVWAPLargeCap(StrategyBase):
 
@@ -454,6 +451,3 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
         # check if still holding any positions before exit
         self.clear_positions()
-
-        # save trading logs
-        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
