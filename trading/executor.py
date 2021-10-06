@@ -210,7 +210,7 @@ class TradingExecutor:
 def start():
     from scripts import utils
     from webull_trader.enums import AlgorithmType
-    from trading.trading_executor import TradingExecutor
+    from trading.executor import TradingExecutor
     # from trading.day_momo import DayTradingMomoNewHigh
     from trading.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.day_redgreen import DayTradingRedGreen
