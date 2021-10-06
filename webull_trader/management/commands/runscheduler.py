@@ -8,7 +8,7 @@ from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, \
     check_exception, adjust_trades, calculate_histdata, utils
-from trading import trading_executor
+from trading import executor as trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]
 ALL_HOURS = ["04", "05", "06", "07", "08", "09", "10", "11",
