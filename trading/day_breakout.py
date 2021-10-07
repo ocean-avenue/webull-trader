@@ -133,23 +133,24 @@ class DayTradingBreakout(StrategyBase):
     def check_exit(self, ticker, bars):
         symbol = ticker['symbol']
         exit_period = ticker['exit_period'] or self.exit_period
-        # last formed candle
-        last_candle = bars.iloc[-2]
-        last_candle_time = bars.index[-2].to_pydatetime()
+        # latest candle
+        current_candle = bars.iloc[-1]
+        current_candle_time = bars.index[-1].to_pydatetime()
         last_buy_time = ticker['last_buy_time']
         # align timezone info
-        last_buy_time = last_buy_time.replace(tzinfo=last_candle_time.tzinfo)
+        last_buy_time = last_buy_time.replace(
+            tzinfo=current_candle_time.tzinfo)
         # make sure last formed candle is not same as buy candle
-        if last_buy_time > last_candle_time:
-            if ((last_buy_time - last_candle_time).seconds//60) % 60 == 0:
+        if last_buy_time > current_candle_time:
+            if ((last_buy_time - current_candle_time).seconds//60) % 60 == 0:
                 return (False, None)
         else:
-            if ((last_candle_time - last_buy_time).seconds//60) % 60 == 0:
+            if ((current_candle_time - last_buy_time).seconds//60) % 60 == 0:
                 return (False, None)
         exit_trading = False
         exit_note = None
-        last_price = last_candle['close']
-        period_bars = bars.head(len(bars) - 2).tail(exit_period)
+        current_price = current_candle['close']
+        period_bars = bars.head(len(bars) - 1).tail(exit_period)
         period_low_price = 99999
         period_low_idx = -1
         for i in range(0, len(period_bars)):
@@ -162,11 +163,11 @@ class DayTradingBreakout(StrategyBase):
             threshold = 0.01
             period_low_price = period_low_price * (1-threshold)
         # check if new low
-        if last_price < period_low_price:
+        if current_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
-                symbol, last_price, period_low_price))
+                symbol, current_price, period_low_price))
         # # check if has long wick up
         # elif utils.check_bars_has_long_wick_up(bars, period=4):
         #     utils.print_trading_log(
