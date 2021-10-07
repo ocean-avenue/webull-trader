@@ -290,8 +290,10 @@ class DayTradingBreakout(StrategyBase):
         holding_quantity = ticker['positions']
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
         sell_price = self.get_sell_price(ticker)
+        last_price = float(position['lastPrice'])
+        cost_price = float(position['costPrice'])
         if sell_price == None:
-            return
+            sell_price = last_price
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
             price=sell_price,
@@ -304,8 +306,8 @@ class DayTradingBreakout(StrategyBase):
         self.update_pending_sell_order(
             ticker, order_response, exit_note=note)
         # update trading stats
-        self.update_trading_stats(ticker, float(position['lastPrice']), float(
-            position['costPrice']), profit_loss_rate)
+        self.update_trading_stats(
+            ticker, last_price, cost_price, profit_loss_rate)
 
     def trade(self, ticker, m1_bars=pd.DataFrame()):
 
