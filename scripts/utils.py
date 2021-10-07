@@ -53,7 +53,10 @@ def save_trading_log(tag, trading_hour, date):
             trading_hour=trading_hour,
         )
     log_text = "\n".join(TRADING_LOGS)
-    log.log_text = log.log_text + log_text
+    if log.log_text == None:
+        log.log_text = log_text
+    else:
+        log.log_text = log.log_text + log_text
     log.save()
     # reset TRADING_LOGS
     TRADING_LOGS = []
