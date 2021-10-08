@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# migrate to new swing position, trade model with order_ids
+# migrate day trade adjustment, trade model with order_ids
 
 
 def start():
