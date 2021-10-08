@@ -217,9 +217,8 @@ def start():
     from trading.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.day_redgreen import DayTradingRedGreen
     from trading.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
-        DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers
-    from trading.day_breakout_scale import DayTradingBreakoutScale, DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, \
-        DayTradingBreakoutScalePeriodROC
+        DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers, DayTradingBreakoutScale, \
+        DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, DayTradingBreakoutScalePeriodROC
     from trading.day_earnings import DayTradingEarningsOvernight
     from trading.day_vwap import DayTradingVWAPPaper, DayTradingVWAPLargeCap
     from trading.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
