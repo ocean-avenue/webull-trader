@@ -55,7 +55,7 @@ class DayTradingBreakout(StrategyBase):
             if close_price > period_high_price:
                 period_high_price = close_price
         # check if new high
-        if current_price < period_high_price:
+        if current_price <= period_high_price:
             return False
         if not self.check_if_trade_price_new_high(ticker, current_price):
             return False
