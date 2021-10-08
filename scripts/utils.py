@@ -57,6 +57,7 @@ def save_trading_log(tag, trading_hour, date):
         log.log_text = log_text
     else:
         log.log_text = log.log_text + log_text
+    log.log_text += "\n"
     log.save()
     # reset TRADING_LOGS
     TRADING_LOGS = []
