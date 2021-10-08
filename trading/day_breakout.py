@@ -436,8 +436,7 @@ class DayTradingBreakout(StrategyBase):
 
         # utils.print_trading_log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
-        for i in range(0, len(top_gainers)):
-            gainer = top_gainers[i]
+        for gainer in top_gainers:
             symbol = gainer["symbol"]
             ticker_id = gainer["ticker_id"]
             # check if ticker already in monitor
@@ -446,7 +445,7 @@ class DayTradingBreakout(StrategyBase):
             # init tracking ticker
             ticker = self.build_tracking_ticker(symbol, ticker_id)
             # check if can trade with requirements, skip check top 1 gainer
-            if i > 0 and not self.check_can_trade_ticker(ticker):
+            if not self.check_can_trade_ticker(ticker):
                 # utils.print_trading_log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
