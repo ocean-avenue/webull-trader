@@ -48,6 +48,7 @@ class StrategyBase:
                       target_profit_ratio,
                       stop_loss_ratio,
                       day_free_float_limit_in_million,
+                      day_turnover_rate_limit_percentage,
                       day_sectors_limit,
                       swing_position_amount_limit,
                       day_trade_usable_cash_threshold):
@@ -71,6 +72,10 @@ class StrategyBase:
         self.day_free_float_limit_in_million = day_free_float_limit_in_million
         utils.print_trading_log("Day trading max free float (million): {}".format(
             self.day_free_float_limit_in_million))
+
+        self.day_turnover_rate_limit_percentage = day_turnover_rate_limit_percentage
+        utils.print_trading_log("Day trading min turnover rate: {}%".format(
+            self.day_turnover_rate_limit_percentage))
 
         self.day_sectors_limit = day_sectors_limit
         utils.print_trading_log("Day trading sectors limit: {}".format(
@@ -99,6 +104,7 @@ class StrategyBase:
                 "lose_trades": 0,
                 "sector": None,
                 "free_float": None,
+                "turnover_rate": None,
                 "continue_lose_trades": 0,
                 "last_high_price": None,
                 "last_trade_time": None,
@@ -157,17 +163,27 @@ class StrategyBase:
         settings = TradingSettings.objects.first()
         if not settings:
             return True
-        can_trade = True
         day_free_float_limit_in_million = settings.day_free_float_limit_in_million
-        if day_free_float_limit_in_million > 0:
-            # fetch free float if not cached
-            if self.tracking_stats[symbol]["free_float"] == None:
+        day_turnover_rate_limit_percentage = settings.day_turnover_rate_limit_percentage
+        # fetch data if not cached
+        if day_free_float_limit_in_million > 0 or day_turnover_rate_limit_percentage > 0:
+            if self.tracking_stats[symbol]["free_float"] == None or self.tracking_stats[symbol]["turnover_rate"] == None:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote and "outstandingShares" in quote:
-                    self.tracking_stats[symbol]["free_float"] = float(
-                        quote["outstandingShares"])
-            if self.tracking_stats[symbol]["free_float"] == None or self.tracking_stats[symbol]["free_float"] > day_free_float_limit_in_million * 1000000:
-                can_trade = False
+                self.tracking_stats[symbol]["free_float"] = utils.get_attr_to_float_or_none(
+                    quote, "outstandingShares")
+                self.tracking_stats[symbol]["turnover_rate"] = utils.get_attr_to_float_or_none(
+                    quote, "turnoverRate")
+        free_float_check = True
+        if day_free_float_limit_in_million > 0:
+            if self.tracking_stats[symbol]["free_float"] == None or \
+                    self.tracking_stats[symbol]["free_float"] > day_free_float_limit_in_million * config.ONE_MILLION:
+                free_float_check = False
+        turnover_rate_check = True
+        if day_turnover_rate_limit_percentage > 0:
+            if self.tracking_stats[symbol]["turnover_rate"] == None or \
+                    self.tracking_stats[symbol]["turnover_rate"] * config.ONE_HUNDRED < day_turnover_rate_limit_percentage:
+                turnover_rate_check = False
+        sectors_check = True
         day_sectors_limit = settings.day_sectors_limit
         if len(day_sectors_limit) > 0:
             # fetch sector if not cached
@@ -177,8 +193,8 @@ class StrategyBase:
                     self.tracking_stats[symbol]["sector"] = profile["sector"]
             sectors_limit = day_sectors_limit.split(",")
             if self.tracking_stats[symbol]["sector"] == None or self.tracking_stats[symbol]["sector"] not in sectors_limit:
-                can_trade = False
-        return can_trade
+                sectors_check = False
+        return (free_float_check or turnover_rate_check) and sectors_check
 
     def check_error_short_order(self, positions):
         # check if short order covered

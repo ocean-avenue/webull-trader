@@ -11,6 +11,7 @@ class TradingSettingsAdmin(admin.ModelAdmin):
         'algo_type',
         'order_amount_limit',
         'day_free_float_limit_in_million',
+        'day_turnover_rate_limit_percentage',
         'day_sectors_limit',
         'day_trade_usable_cash_threshold',
         'swing_position_amount_limit',

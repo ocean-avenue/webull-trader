@@ -73,26 +73,35 @@ def save_exception_log(exception, traceback, log_text):
 
 
 def get_attr(obj, key):
-    if key in obj:
+    if obj and key in obj:
         return obj[key]
     return ''
 
 
 def get_attr_to_num(obj, key):
-    if key in obj:
-        return int(obj[key])
+    if obj and key in obj:
+        try:
+            return int(obj[key])
+        except:
+            pass
     return 0
 
 
 def get_attr_to_float(obj, key):
-    if key in obj:
-        return float(obj[key])
+    if obj and key in obj:
+        try:
+            return float(obj[key])
+        except:
+            pass
     return 0.0
 
 
 def get_attr_to_float_or_none(obj, key):
-    if key in obj:
-        return float(obj[key])
+    if obj and key in obj:
+        try:
+            return float(obj[key])
+        except:
+            pass
     return None
 
 

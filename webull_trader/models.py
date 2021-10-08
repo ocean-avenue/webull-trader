@@ -19,7 +19,8 @@ class TradingSettings(models.Model):
     # stop loss ratio
     stop_loss_ratio = models.FloatField()
     # day free float max size limit (million)
-    day_free_float_limit_in_million = models.FloatField()
+    day_free_float_limit_in_million = models.FloatField(default=-1.0)
+    day_turnover_rate_limit_percentage = models.FloatField(default=-1.0)
     # day trade sectors limit
     day_sectors_limit = models.CharField(max_length=1024, blank=True)
     # swing buy order limit

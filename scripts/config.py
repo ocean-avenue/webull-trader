@@ -69,6 +69,11 @@ DAY_TARGET_UNITS = 12
 # target units for day trade in extended hour
 DAY_EXTENDED_TARGET_UNITS = 4
 
+# number config
+
+ONE_HUNDRED = 100
+ONE_MILLION = 1000000
+
 # color config
 
 PROFIT_COLOR = "#4bbf73"

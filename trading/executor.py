@@ -128,6 +128,7 @@ class TradingExecutor:
                 target_profit_ratio=trading_settings.target_profit_ratio,
                 stop_loss_ratio=trading_settings.stop_loss_ratio,
                 day_free_float_limit_in_million=trading_settings.day_free_float_limit_in_million,
+                day_turnover_rate_limit_percentage=trading_settings.day_turnover_rate_limit_percentage,
                 day_sectors_limit=trading_settings.day_sectors_limit,
                 swing_position_amount_limit=trading_settings.swing_position_amount_limit,
                 day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
