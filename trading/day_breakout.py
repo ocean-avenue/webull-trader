@@ -167,7 +167,7 @@ class DayTradingBreakout(StrategyBase):
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
-                symbol, current_price, period_low_price))
+                symbol, current_price, round(period_low_price, 2)))
         # # check if has long wick up
         # elif utils.check_bars_has_long_wick_up(bars, period=4):
         #     utils.print_trading_log(
