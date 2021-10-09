@@ -752,3 +752,6 @@ class StrategyBase:
         # sell_price = max(
         #     ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
         # return sell_price
+
+    def get_sell_price2(self, position):
+        return float(position['lastPrice'])

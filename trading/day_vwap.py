@@ -171,7 +171,8 @@ class DayTradingVWAPPaper(StrategyBase):
 
                 # exit trading
                 if exit_trading:
-                    sell_price = self.get_sell_price(ticker)
+                    # sell_price = self.get_sell_price(ticker)
+                    sell_price = self.get_sell_price2(ticker_position)
                     if sell_price == None:
                         return
                     order_response = webullsdk.sell_limit_order(
