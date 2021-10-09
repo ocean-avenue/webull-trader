@@ -530,8 +530,6 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
         avg_candle_size = total_candle_size / len(period_bars)
     prev_row = pd.Series()
     prev_candle_size = 0.0
-    if not prev_row.empty:
-        prev_candle_size = prev_row["high"] - prev_row["low"]
     for _, row in period_bars.iterrows():
         mid = max(row["close"], row["open"])
         high = row["high"]
@@ -543,6 +541,8 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
         if (high - low) < avg_candle_size * config.LONG_WICK_AVG_CANDLE_RATIO:
             continue
         # marke sure no less than prev bar
+        if not prev_row.empty:
+            prev_candle_size = prev_row["high"] - prev_row["low"]
         if (high - low) < prev_candle_size * config.LONG_WICK_PREV_CANDLE_RATIO:
             continue
         # make sure wick tail is larger than body
@@ -554,6 +554,32 @@ def check_bars_has_long_wick_up(bars, period=5, count=1):
             long_wick_up_count += 1
         prev_row = row
     return long_wick_up_count >= count
+
+
+def check_bars_has_bearish_candle(bars, period=5, count=1):
+    """
+    check if bar chart has bearish candle
+    """
+    bearish_candle_count = 0
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    # calculate average candle size
+    total_candle_size = 0.0
+    for _, row in period_bars.iterrows():
+        candle_size = abs(row["close"] - row["open"])
+        total_candle_size += candle_size
+    avg_candle_size = 0.0
+    if len(period_bars) > 0:
+        avg_candle_size = total_candle_size / len(period_bars)
+    for _, row in period_bars.iterrows():
+        if row["open"] > row["close"]:
+            bearish_candle_size = row["open"] - row["close"]
+            # make sure bearish body is larger than average candle size
+            if bearish_candle_size < avg_candle_size * config.BEARISH_AVG_CANDLE_RATIO:
+                continue
+            bearish_candle_count += 1
+    return bearish_candle_count >= count
 
 
 def check_bars_at_peak(bars, long_period=10, short_period=3):

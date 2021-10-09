@@ -122,6 +122,12 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
             return False
 
+        if utils.check_bars_has_bearish_candle(bars, period=5):
+            # has bearish candle
+            utils.print_trading_log(
+                "<{}> candle chart has bearish candle, no entry!".format(symbol))
+            return False
+
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak

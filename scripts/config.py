@@ -71,6 +71,8 @@ DAY_EXTENDED_TARGET_UNITS = 4
 # threshold for check is chart most green candles
 CHART_MOST_GREEN_CANDLES_THRESHOLD = 0.8
 CHART_MORE_GREEN_CANDLES_THRESHOLD = 0.6
+# bearish avg candle body ratio
+BEARISH_AVG_CANDLE_RATIO = 1.4
 
 # number config
 
