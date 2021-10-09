@@ -576,8 +576,8 @@ def check_bars_at_peak(bars, long_period=10, short_period=3):
     if (prev_bar3['close'] - prev_bar3['open']) / prev_bar3['open'] < 0.05:
         return False
     # prev_bar3 vol should > prev_bar2 vol
-    if prev_bar3['volume'] < prev_bar2['volume']:
-        return False
+    # if prev_bar3['volume'] < prev_bar2['volume']:
+    #     return False
     # prev_bar3 vol should > avg long_period vol
     total_vol = 0
     for i in range(0, long_period):
