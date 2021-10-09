@@ -678,11 +678,10 @@ def check_bars_current_low_less_than_prev_low(bars):
     """
     check if current low price less than prev low price
     """
-    if not bars.empty:
-        current_low = bars.iloc[-1]['low']
-        prev_low = bars.iloc[-2]['low']
-        if current_low < prev_low:
-            return True
+    current_low = bars.iloc[-1]['low']
+    prev_low = bars.iloc[-2]['low']
+    if current_low < prev_low:
+        return True
     return False
 
 
@@ -690,19 +689,50 @@ def check_bars_price_fixed(bars):
     """
     check if prev chart candlestick price is fixed
     """
-    if not bars.empty:
-        prev_close2 = bars.iloc[-2]['close']
-        prev_close3 = bars.iloc[-3]['close']
-        prev_close4 = bars.iloc[-4]['close']
+    prev_close2 = bars.iloc[-2]['close']
+    prev_close3 = bars.iloc[-3]['close']
+    prev_close4 = bars.iloc[-4]['close']
 
-        prev_open2 = bars.iloc[-2]['open']
-        prev_open3 = bars.iloc[-3]['open']
-        prev_open4 = bars.iloc[-4]['open']
+    prev_open2 = bars.iloc[-2]['open']
+    prev_open3 = bars.iloc[-3]['open']
+    prev_open4 = bars.iloc[-4]['open']
 
-        if prev_close2 == prev_close3 and prev_close3 == prev_close4 and \
-                prev_open2 == prev_open3 and prev_open3 == prev_open4:
-            return True
+    if prev_close2 == prev_close3 and prev_close3 == prev_close4 and \
+            prev_open2 == prev_open3 and prev_open3 == prev_open4:
+        return True
     return False
+
+
+def check_bars_has_largest_green_candle(bars):
+    """
+    check if candle chart in period's largest candle is green
+    """
+    max_green_candle_size = 0.0
+    max_red_candle_size = 0.0
+    for _, row in bars.iterrows():
+        # red candle
+        if row['open'] > row['close']:
+            red_candle_size = row['open'] - row['close']
+            if red_candle_size > max_red_candle_size:
+                max_red_candle_size = red_candle_size
+        # green candle
+        if row['close'] > row['open']:
+            green_candle_size = row['close'] - row['open']
+            if green_candle_size > max_green_candle_size:
+                max_green_candle_size = green_candle_size
+    return max_green_candle_size > max_red_candle_size
+
+
+def check_bars_has_most_green_candle(bars):
+    """
+    check if candle chart in period are most green candles
+    """
+    green_candle_count = 0
+    for _, row in bars.iterrows():
+        # green candle
+        if row['close'] > row['open']:
+            green_candle_count += 1
+    return float(green_candle_count) / len(bars) >= 0.8
 
 
 def calculate_charts_ema9(charts):

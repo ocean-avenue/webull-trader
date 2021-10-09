@@ -104,6 +104,7 @@ class DayTradingBreakout(StrategyBase):
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_volatility(bars):
+            # no volatility
             utils.print_trading_log(
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
@@ -112,6 +113,12 @@ class DayTradingBreakout(StrategyBase):
             # has long wick up
             utils.print_trading_log(
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
+            return False
+
+        if not utils.check_bars_has_most_green_candle(bars) and not utils.check_bars_has_largest_green_candle(bars):
+            # not most green candles and no largest green candle
+            utils.print_trading_log(
+                "<{}> candle chart has no most green candles and largest candle is red, no entry!".format(symbol))
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
