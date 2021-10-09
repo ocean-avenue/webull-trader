@@ -223,12 +223,14 @@ class DayTradingBreakout(StrategyBase):
         return False
 
     def get_stop_loss_price(self, buy_price, bars):
+        current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
         # use max( min( prev candle middle, buy price -2% ), buy price -5% )
-        return max(
-            min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
-                round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
-            round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+        # return max(
+        #     min(round((prev_candle['high'] + prev_candle['low']) / 2, 2),
+        #         round(buy_price * (1 - config.MIN_DAY_STOP_LOSS), 2)),
+        #     round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
+        return min(current_candle['low'], prev_candle['low'])
 
     def get_scale_stop_loss_price(self, buy_price, bars):
         return None
