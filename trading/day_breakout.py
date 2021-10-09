@@ -115,10 +115,10 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
-        if not utils.check_bars_has_most_green_candle(bars) and not utils.check_bars_has_largest_green_candle(bars):
+        if not utils.check_bars_has_most_green_candle(bars) or not utils.check_bars_has_largest_green_candle(bars):
             # not most green candles and no largest green candle
             utils.print_trading_log(
-                "<{}> candle chart has no most green candles and largest candle is red, no entry!".format(symbol))
+                "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
