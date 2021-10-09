@@ -378,75 +378,75 @@ class AlgorithmType:
     @staticmethod
     def tochoices():
         return (
-            (AlgorithmType.DAY_MOMENTUM, AlgorithmType.tostr(
+            (AlgorithmType.DAY_MOMENTUM, AlgorithmType.totag(
                 AlgorithmType.DAY_MOMENTUM)),
-            (AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, AlgorithmType.tostr(
+            (AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, AlgorithmType.totag(
                 AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
-            (AlgorithmType.DAY_MOMENTUM_NEW_HIGH, AlgorithmType.tostr(
+            (AlgorithmType.DAY_MOMENTUM_NEW_HIGH, AlgorithmType.totag(
                 AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
-            (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.tostr(
+            (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.totag(
                 AlgorithmType.DAY_RED_TO_GREEN)),
-            (AlgorithmType.DAY_BREAKOUT_10, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_10, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_10)),
-            (AlgorithmType.DAY_BREAKOUT_20, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_20, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_20)),
-            (AlgorithmType.DAY_BREAKOUT_30, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_30, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_30)),
-            (AlgorithmType.DAY_BREAKOUT_EARNINGS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_EARNINGS, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_EARNINGS)),
-            (AlgorithmType.DAY_BREAKOUT_NEW_HIGH, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_NEW_HIGH, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_NEW_HIGH)),
-            (AlgorithmType.DAY_BREAKOUT_10_5, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_10_5, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_10_5)),
-            (AlgorithmType.DAY_BREAKOUT_PRE_LOSERS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_PRE_LOSERS, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_PRE_LOSERS)),
-            (AlgorithmType.DAY_BREAKOUT_55, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_55, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_55)),
-            (AlgorithmType.DAY_EARNINGS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_EARNINGS, AlgorithmType.totag(
                 AlgorithmType.DAY_EARNINGS)),
-            (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.tostr(
+            (AlgorithmType.DAY_EARNINGS_OVERNIGHT, AlgorithmType.totag(
                 AlgorithmType.DAY_EARNINGS_OVERNIGHT)),
-            (AlgorithmType.DAY_EARNINGS_BREAKOUT, AlgorithmType.tostr(
+            (AlgorithmType.DAY_EARNINGS_BREAKOUT, AlgorithmType.totag(
                 AlgorithmType.DAY_EARNINGS_BREAKOUT)),
-            (AlgorithmType.DAY_VWAP_RECLAIM, AlgorithmType.tostr(
+            (AlgorithmType.DAY_VWAP_RECLAIM, AlgorithmType.totag(
                 AlgorithmType.DAY_VWAP_RECLAIM)),
-            (AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP, AlgorithmType.tostr(
+            (AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP, AlgorithmType.totag(
                 AlgorithmType.DAY_VWAP_RECLAIM_LARGE_CAP)),
-            (AlgorithmType.DAY_GRINDING_LARGE_CAP, AlgorithmType.tostr(
+            (AlgorithmType.DAY_GRINDING_LARGE_CAP, AlgorithmType.totag(
                 AlgorithmType.DAY_GRINDING_LARGE_CAP)),
-            (AlgorithmType.DAY_GRINDING_SYMBOLS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_GRINDING_SYMBOLS, AlgorithmType.totag(
                 AlgorithmType.DAY_GRINDING_SYMBOLS)),
-            (AlgorithmType.DAY_BREAKOUT_ASK, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_ASK, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_ASK)),
-            (AlgorithmType.DAY_BREAKOUT_20_11, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_20_11, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_20_11)),
-            (AlgorithmType.DAY_BREAKOUT_20_9, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_20_9, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_20_9)),
-            (AlgorithmType.DAY_BREAKOUT_20_8, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_20_8, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_20_8)),
-            (AlgorithmType.DAY_BREAKOUT_20_1, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_20_1, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_20_1)),
-            (AlgorithmType.DAY_BREAKOUT_SCALE, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_SCALE, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_SCALE)),
-            (AlgorithmType.DAY_BREAKOUT_PERIOD, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_PERIOD, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_PERIOD)),
-            (AlgorithmType.DAY_BREAKOUT_DYNAMIC_EXIT, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_DYNAMIC_EXIT, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_DYNAMIC_EXIT)),
-            (AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_SCALE_MAX_STOP_LOSS)),
-            (AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS)),
-            (AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC, AlgorithmType.tostr(
+            (AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC)),
-            (AlgorithmType.SWING_TURTLE_20, AlgorithmType.tostr(
+            (AlgorithmType.SWING_TURTLE_20, AlgorithmType.totag(
                 AlgorithmType.SWING_TURTLE_20)),
-            (AlgorithmType.SWING_TURTLE_55, AlgorithmType.tostr(
+            (AlgorithmType.SWING_TURTLE_55, AlgorithmType.totag(
                 AlgorithmType.SWING_TURTLE_55)),
-            (AlgorithmType.DAY_SWING_RG_TURTLE, AlgorithmType.tostr(
+            (AlgorithmType.DAY_SWING_RG_TURTLE, AlgorithmType.totag(
                 AlgorithmType.DAY_SWING_RG_TURTLE)),
-            (AlgorithmType.DAY_SWING_BREAKOUT_TURTLE, AlgorithmType.tostr(
+            (AlgorithmType.DAY_SWING_BREAKOUT_TURTLE, AlgorithmType.totag(
                 AlgorithmType.DAY_SWING_BREAKOUT_TURTLE)),
-            (AlgorithmType.DAY_SWING_EARNINGS_TURTLE, AlgorithmType.tostr(
+            (AlgorithmType.DAY_SWING_EARNINGS_TURTLE, AlgorithmType.totag(
                 AlgorithmType.DAY_SWING_EARNINGS_TURTLE)),
         )
 
