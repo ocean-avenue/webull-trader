@@ -69,7 +69,7 @@ DAY_TARGET_UNITS = 12
 # target units for day trade in extended hour
 DAY_EXTENDED_TARGET_UNITS = 4
 # threshold for check is chart most green candles
-CHART_MOST_GREEN_CANDLES_THRESHOLD = 0.75
+CHART_MOST_GREEN_CANDLES_THRESHOLD = 0.8
 
 # number config
 
