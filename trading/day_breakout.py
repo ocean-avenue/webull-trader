@@ -255,7 +255,8 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log(
                 "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
             return
-        buy_price = self.get_buy_price(ticker)
+        # buy_price = self.get_buy_price(ticker)
+        buy_price = self.get_buy_price2(ticker)
         if buy_price == None:
             return
         # candle data

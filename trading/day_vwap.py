@@ -107,7 +107,8 @@ class DayTradingVWAPPaper(StrategyBase):
                 ticker, bars)
             # check entry: current above vwap
             if should_entry:
-                buy_price = self.get_buy_price(ticker)
+                # buy_price = self.get_buy_price(ticker)
+                buy_price = self.get_buy_price2(ticker)
                 usable_cash = webullsdk.get_usable_cash()
                 utils.save_webull_min_usable_cash(usable_cash)
                 buy_position_amount = self.get_buy_order_limit(ticker)
