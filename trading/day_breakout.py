@@ -108,11 +108,11 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
-        # if utils.check_bars_has_long_wick_up(bars, period=2):
-        #     # has long wick up
-        #     utils.print_trading_log(
-        #         "<{}> candle chart has long wick up, no entry!".format(symbol))
-        #     return False
+        if utils.check_bars_has_long_wick_up(bars, period=self.entry_period):
+            # has long wick up
+            utils.print_trading_log(
+                "<{}> candle chart has long wick up, no entry!".format(symbol))
+            return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
