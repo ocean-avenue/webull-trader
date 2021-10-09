@@ -779,6 +779,11 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         utils.print_trading_log("Scale in <{}> position".format(symbol))
         return True
 
+    def get_scale_stop_loss_price(self, buy_price, bars):
+        current_candle = bars.iloc[-1]
+        prev_candle = bars.iloc[-2]
+        return min(current_candle['low'], prev_candle['low'])
+
     def check_stop_profit(self, ticker, position):
         exit_trading = False
         exit_note = None
