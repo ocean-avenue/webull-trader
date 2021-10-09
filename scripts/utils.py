@@ -730,9 +730,9 @@ def check_bars_has_most_green_candle(bars):
     green_candle_count = 0
     for _, row in bars.iterrows():
         # green candle
-        if row['close'] > row['open']:
+        if row['close'] >= row['open']:
             green_candle_count += 1
-    return float(green_candle_count) / len(bars) >= 0.8
+    return float(green_candle_count) / len(bars) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
 
 
 def calculate_charts_ema9(charts):
