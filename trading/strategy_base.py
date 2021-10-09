@@ -742,9 +742,10 @@ class StrategyBase:
     def get_buy_price2(self, ticker):
         ticker_id = ticker['ticker_id']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
-        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        # ask_price = webullsdk.get_ask_price_from_quote(quote)
         last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
-        return min(ask_price, round(last_price * 1.01, 2))
+        # return min(ask_price, round(last_price * 1.01, 2))
+        return last_price
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
