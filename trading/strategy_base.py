@@ -216,7 +216,7 @@ class StrategyBase:
                 # check order timeout
                 if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                     # cancel timeout order
-                    if webullsdk.cancel_order(ticker['pending_order_id']):
+                    if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
                         # remove, let function re-submit again
                         del self.error_short_tickers[symbol]
                     else:
@@ -367,7 +367,7 @@ class StrategyBase:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC) or self.trading_end:
                 # cancel timeout order
-                if webullsdk.cancel_order(ticker['pending_order_id']):
+                if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Buy order timeout, canceled!")
                     utils.print_trading_log(
@@ -479,7 +479,7 @@ class StrategyBase:
             # check order timeout
             if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                 # cancel timeout order
-                if webullsdk.cancel_order(ticker['pending_order_id']):
+                if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
                     utils.save_webull_order_note(ticker['pending_order_id'], setup=self.get_setup(
                     ), note="Sell order timeout, canceled!")
                     utils.print_trading_log(
@@ -738,6 +738,11 @@ class StrategyBase:
         # buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
         # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
         # return buy_price
+
+    def get_buy_price2(self, ticker):
+        ticker_id = ticker['ticker_id']
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        return utils.get_attr_to_float_or_none(quote, 'pPrice')
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']

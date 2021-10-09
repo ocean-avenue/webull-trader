@@ -662,9 +662,8 @@ def sell_market_order(ticker_id=None, quant=0):
             "⚠️  Exception sell_market_order: {}".format(e))
         return {'msg': "Exception during submit sell market order!"}
 
+
 # True
-
-
 def cancel_order(order_id):
     global wb_paper
     global wb_trade_pwd
@@ -686,6 +685,22 @@ def cancel_all_orders():
         return
     instance = _get_instance()
     instance.cancel_all_orders()
+
+
+def check_order_canceled(order_id):
+    global wb_paper
+    order_canceled = False
+    canceled_orders = get_history_orders(status="Cancelled", count=100)
+    for canceled_order in canceled_orders:
+        if wb_paper:
+            if order_id == canceled_order["orderId"]:
+                order_canceled = True
+                break
+        else:
+            if order_id == canceled_order["orders"][0]["orderId"]:
+                order_canceled = True
+                break
+    return order_canceled
 
 
 # [

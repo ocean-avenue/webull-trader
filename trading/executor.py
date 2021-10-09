@@ -165,7 +165,7 @@ class TradingExecutor:
                     # check order timeout
                     if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
                         # cancel timeout order
-                        if webullsdk.cancel_order(ticker['pending_order_id']):
+                        if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
                             # reset
                             self.unsold_tickers[symbol]['pending_sell'] = False
                             self.unsold_tickers[symbol]['pending_order_id'] = None
