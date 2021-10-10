@@ -93,6 +93,7 @@ class TradingExecutor:
         # finish strategies
         for strategy in self.strategies:
             strategy.on_end()
+            strategy.save_logs()
 
         # update account status
         account_data = webullsdk.get_account()
