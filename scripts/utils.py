@@ -143,8 +143,6 @@ def notify_message(message):
 
 
 # hack to delay 1 minute
-
-
 def local_time_minute_delay(t):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
@@ -161,7 +159,6 @@ def local_time_minute_delay(t):
 
 
 # for multi minutes
-
 def local_time_minute_scale(t, time_scale):
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
@@ -831,6 +828,31 @@ def check_daily_bars_rel_volume(bars):
             # relative volume ok
             return True
     return False
+
+
+def print_level2_log(quote):
+    if not quote:
+        return
+    # level 1
+    ask_list = []
+    bid_list = []
+    if 'askList' in quote and 'bidList' in quote:
+        ask_list = quote['askList']
+        bid_list = quote['bidList']
+    # level 2
+    if 'depth' in quote and 'ntvAggAskList' in quote['depth'] and 'ntvAggBidList' in quote['depth']:
+        ask_list = quote['depth']['ntvAggAskList']
+        bid_list = quote['depth']['ntvAggBidList']
+    # print log
+    depth = max(len(ask_list), len(bid_list))
+    for i in range(0, depth):
+        bid_record = "{:<10} {:>10}".format("-", "-")
+        if i < len(bid_list):
+            bid_record = "{:<10} {:>10}".format(bid_list[i]['volume'], bid_list[i]['price'])
+        ask_record = "{:<10} {:>10}".format("-", "-")
+        if i < len(ask_list):
+            ask_record = "{:<10} {:>10}".format(ask_list[i]['price'], ask_list[i]['volume'])
+        print_trading_log("{} - {}".format(bid_record, ask_record))
 
 
 def get_quote_sector(quote=None):

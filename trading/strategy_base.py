@@ -727,8 +727,7 @@ class StrategyBase:
     def get_buy_price(self, ticker):
         ticker_id = ticker['ticker_id']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
-        if quote == None:
-            return None
+        utils.print_level2_log(quote)
         # bid_price = webullsdk.get_bid_price_from_quote(quote)
         # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
@@ -742,6 +741,7 @@ class StrategyBase:
     def get_buy_price2(self, ticker):
         ticker_id = ticker['ticker_id']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
+        utils.print_level2_log(quote)
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
         last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
         # return min(ask_price, round(last_price * 1.01, 2))
@@ -750,8 +750,7 @@ class StrategyBase:
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
-        if quote == None:
-            return None
+        utils.print_level2_log(quote)
         bid_price = webullsdk.get_bid_price_from_quote(quote)
         return bid_price
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
