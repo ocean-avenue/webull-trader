@@ -198,7 +198,7 @@ class DayTradingMomo(StrategyBase):
             #     exit_trading = True
 
             # check if holding too long without profit
-            if not exit_trading and (datetime.now() - ticker['order_filled_time']) >= timedelta(seconds=config.HOLDING_ORDER_TIMEOUT_IN_SEC) and profit_loss_rate < 0.01:
+            if not exit_trading and ticker['last_buy_time'] and (datetime.now() - ticker['last_buy_time']) >= timedelta(seconds=config.HOLDING_ORDER_TIMEOUT_IN_SEC) and profit_loss_rate < 0.01:
                 utils.print_trading_log(
                     "Holding <{}> too long!".format(symbol))
                 exit_note = "Holding too long!"
