@@ -282,7 +282,7 @@ class DayTradingMomo(StrategyBase):
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO and self.check_if_track_ticker(ticker):
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
                 m2_bars = utils.convert_2m_bars(m1_bars)
-                if m2_bars.empty:
+                if m2_bars.empty or len(m2_bars) <= 2:
                     continue
                 # use latest 2 candle
                 latest_candle = m2_bars.iloc[-1]
