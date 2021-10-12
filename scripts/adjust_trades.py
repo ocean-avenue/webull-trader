@@ -160,7 +160,7 @@ def start():
                 order_id=order_id).first()
             if not webull_order or webull_order.status != "Filled":
                 uncompleted_order = True
-                break
+                continue
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
                                webull_order.filled_quantity)
@@ -184,6 +184,10 @@ def start():
             webull_order.save()
         # skip if miss order
         if uncompleted_order:
+            # reset require_adjustment
+            day_trade.require_adjustment = False
+            # save
+            day_trade.save()
             continue
         # update total cost
         day_trade.total_cost = round(total_cost, 2)
