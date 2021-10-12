@@ -47,6 +47,8 @@ class DayTradingBreakout(StrategyBase):
         current_price = current_candle['close']
         # check if above vwap
         if current_price <= current_candle['vwap']:
+            utils.print_trading_log(
+                "<{}> price is not above vwap, no entry!".format(symbol))
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
@@ -56,6 +58,9 @@ class DayTradingBreakout(StrategyBase):
                 period_high_price = close_price
         # check if new high
         if current_price <= period_high_price:
+            utils.print_trading_log(
+                "<{}> price (${}) is not breakout high (${}), no entry!".format(symbol, current_price, period_high_price))
+            return False
             return False
         if not self.check_if_trade_price_new_high(ticker, current_price):
             return False
