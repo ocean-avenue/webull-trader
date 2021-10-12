@@ -150,7 +150,8 @@ def start():
         order_ids = day_trade.order_ids.split(',')
         total_cost = 0.0
         total_sold = 0.0
-        quantity = 0
+        buy_quantity = 0
+        sell_quantity = 0
         setup = day_trade.setup
         uncompleted_order = False
         for i in range(0, len(order_ids)):
@@ -163,10 +164,11 @@ def start():
             if webull_order.action == ActionType.BUY:
                 total_cost += (webull_order.avg_price *
                                webull_order.filled_quantity)
-                quantity += webull_order.filled_quantity
+                buy_quantity += webull_order.filled_quantity
             elif webull_order.action == ActionType.SELL:
                 total_sold += (webull_order.avg_price *
                                webull_order.filled_quantity)
+                sell_quantity += webull_order.filled_quantity
             # update buy date, buy time
             if i == 0:
                 day_trade.buy_date = webull_order.filled_time.date()
@@ -185,10 +187,12 @@ def start():
             continue
         # update total cost
         day_trade.total_cost = round(total_cost, 2)
+        if buy_quantity > sell_quantity:
+            total_sold = (total_sold / sell_quantity) * buy_quantity
         # update total sold
         day_trade.total_sold = round(total_sold, 2)
         # update quantity
-        day_trade.quantity = quantity
+        day_trade.quantity = buy_quantity
         # reset require_adjustment
         day_trade.require_adjustment = False
         # save
