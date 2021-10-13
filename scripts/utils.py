@@ -833,6 +833,7 @@ def check_daily_bars_rel_volume(bars):
 def print_level2_log(quote):
     if not quote:
         return
+    symbol = quote["symbol"]
     # level 1
     ask_list = []
     bid_list = []
@@ -844,6 +845,7 @@ def print_level2_log(quote):
         ask_list = quote['depth']['ntvAggAskList']
         bid_list = quote['depth']['ntvAggBidList']
     # print log
+    print_trading_log("Order book for <{}>:".format(symbol))
     depth = max(len(ask_list), len(bid_list))
     for i in range(0, depth):
         bid_record = "{:<10} {:>10}".format("-", "-")
