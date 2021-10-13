@@ -28,6 +28,7 @@ class DayTradingMomo(StrategyBase):
         return False
 
     def check_entry(self, ticker, bars):
+        symbol = ticker["symbol"]
         current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
         # current price data
