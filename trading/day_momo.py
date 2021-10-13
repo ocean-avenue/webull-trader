@@ -31,9 +31,18 @@ class DayTradingMomo(StrategyBase):
         symbol = ticker["symbol"]
         current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
-        # current price data
+        # price data
         current_price = current_candle['close']
         prev_close = prev_candle['close']
+
+        # check if current low is above prev close
+        current_low = current_candle['low']
+        prev_close = prev_candle['close']
+        if current_low <= min(prev_close - 0.1, prev_close * 0.99):
+            utils.print_trading_log(
+                "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
+            return False
+
         # check if current candle already surge too much
         if (current_price - prev_close) / prev_close >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
             surge_ratio = "{}%".format(
@@ -41,11 +50,20 @@ class DayTradingMomo(StrategyBase):
             utils.print_trading_log(
                 "<{}> current price (${}) already surge {} than prev close (${}), no entry!".format(symbol, current_price, surge_ratio, prev_close))
             return False
+
         # check current price above vwap, ema9 and first candle make new high
         if current_price > current_candle['vwap'] and current_price > current_candle['ema9'] \
                 and current_candle['high'] > prev_candle['high'] \
                 and self.check_if_trade_price_new_high(ticker, current_price):
             return True
+        
+        if symbol in self.tracking_stats:
+            last_trade_time = self.tracking_stats[symbol]['last_trade_time']
+            if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):
+                utils.print_trading_log(
+                    "<{}> try buy too soon after last sell, no entry!".format(symbol))
+                return False
+
         return False
 
     def check_stop_loss(self, ticker, position):
