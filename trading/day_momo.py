@@ -32,6 +32,13 @@ class DayTradingMomo(StrategyBase):
         prev_candle = bars.iloc[-2]
         # current price data
         current_price = current_candle['close']
+        prev_close = prev_candle['close']
+        # check if current candle already surge too much
+        if (current_price - prev_close) / prev_close >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
+            surge_ratio = "{}%".format(round((current_price - prev_close) / prev_close * 100, 2))
+            utils.print_trading_log(
+                "<{}> current price (${}) already surge {} than prev close (${}), no entry!".format(symbol, current_price, surge_ratio, prev_close))
+            return False
         # check current price above vwap, ema9 and first candle make new high
         if current_price > current_candle['vwap'] and current_price > current_candle['ema9'] \
                 and current_candle['high'] > prev_candle['high'] \
