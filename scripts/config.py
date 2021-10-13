@@ -7,11 +7,11 @@ MIN_SURGE_VOLUME = 6000.0
 # surge amount = surge volume x price
 MIN_SURGE_AMOUNT = 15000.0
 # average confirm volume in regular market
-AVG_CONFIRM_VOLUME = 300000.0
+AVG_CONFIRM_VOLUME = 30000.0
 # average confirm volume in extended market
 EXTENDED_AVG_CONFIRM_VOLUME = 3000.0
 # average confirm amount in regular market
-AVG_CONFIRM_AMOUNT = 500000.0
+AVG_CONFIRM_AMOUNT = 120000.0
 # average confirm amount in extended market
 EXTENDED_AVG_CONFIRM_AMOUNT = 12000.0
 # trading observe timeout in seconds
