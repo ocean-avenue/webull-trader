@@ -764,13 +764,16 @@ def check_bars_price_fixed(bars):
     return False
 
 
-def check_bars_has_largest_green_candle(bars):
+def check_bars_has_largest_green_candle(bars, period=10):
     """
     check if candle chart in period's largest candle is green
     """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
     max_green_candle_size = 0.0
     max_red_candle_size = 0.0
-    for _, row in bars.iterrows():
+    for _, row in period_bars.iterrows():
         # red candle
         if row['open'] > row['close']:
             red_candle_size = row['open'] - row['close']
@@ -784,28 +787,34 @@ def check_bars_has_largest_green_candle(bars):
     return max_green_candle_size > max_red_candle_size
 
 
-def check_bars_has_most_green_candle(bars):
+def check_bars_has_most_green_candle(bars, period=10):
     """
     check if candle chart in period are most green candles
     """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
     green_candle_count = 0
-    for _, row in bars.iterrows():
+    for _, row in period_bars.iterrows():
         # green candle
         if row['close'] >= row['open']:
             green_candle_count += 1
-    return float(green_candle_count) / len(bars) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
+    return float(green_candle_count) / len(period_bars) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
 
 
-def check_bars_has_more_green_candle(bars):
+def check_bars_has_more_green_candle(bars, period=10):
     """
     check if candle chart in period are more green candles
     """
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
     green_candle_count = 0
-    for _, row in bars.iterrows():
+    for _, row in period_bars.iterrows():
         # green candle
         if row['close'] >= row['open']:
             green_candle_count += 1
-    return float(green_candle_count) / len(bars) >= config.CHART_MORE_GREEN_CANDLES_THRESHOLD
+    return float(green_candle_count) / len(period_bars) >= config.CHART_MORE_GREEN_CANDLES_THRESHOLD
 
 
 def calculate_charts_ema9(charts):
