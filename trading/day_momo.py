@@ -35,7 +35,8 @@ class DayTradingMomo(StrategyBase):
         prev_close = prev_candle['close']
         # check if current candle already surge too much
         if (current_price - prev_close) / prev_close >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
-            surge_ratio = "{}%".format(round((current_price - prev_close) / prev_close * 100, 2))
+            surge_ratio = "{}%".format(
+                round((current_price - prev_close) / prev_close * 100, 2))
             utils.print_trading_log(
                 "<{}> current price (${}) already surge {} than prev close (${}), no entry!".format(symbol, current_price, surge_ratio, prev_close))
             return False
@@ -134,10 +135,8 @@ class DayTradingMomo(StrategyBase):
 
             # check entry: current price above vwap and ema 9, entry if first candle make new high
             if self.check_entry(ticker, m2_bars):
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                ask_price = webullsdk.get_ask_price_from_quote(quote)
-                # bid_price = webullsdk.get_bid_price_from_quote(quote)
-                if ask_price == None:
+                buy_price = self.get_buy_price2(ticker)
+                if buy_price == None:
                     return
                 # gap = (ask_price - bid_price) / bid_price
                 # if gap > config.MAX_BID_ASK_GAP_RATIO:
@@ -151,25 +150,25 @@ class DayTradingMomo(StrategyBase):
                 buy_position_amount = self.get_buy_order_limit(ticker)
                 if usable_cash <= buy_position_amount:
                     utils.print_trading_log(
-                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
+                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, buy_price))
                     return
-                buy_quant = (int)(buy_position_amount / ask_price)
+                buy_quant = (int)(buy_position_amount / buy_price)
                 if buy_quant > 0:
                     # submit limit order at ask price
                     order_response = webullsdk.buy_limit_order(
                         ticker_id=ticker_id,
-                        price=ask_price,
+                        price=buy_price,
                         quant=buy_quant)
                     utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, ema9: {}, volume: {}".format(
                         symbol, current_candle['close'], current_candle['vwap'], round(current_candle['ema9'], 3), int(current_candle['volume'])))
                     utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, ask_price))
+                        symbol, buy_quant, buy_price))
                     # update pending buy
                     self.update_pending_buy_order(
                         ticker, order_response, stop_loss=prev_candle['low'])
                 else:
                     utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
+                        "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -228,20 +227,17 @@ class DayTradingMomo(StrategyBase):
 
             # exit trading
             if exit_trading:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None:
-                    return
-                bid_price = webullsdk.get_bid_price_from_quote(quote)
-                if bid_price == None:
+                sell_price = self.get_sell_price(ticker)
+                if sell_price == None:
                     return
                 order_response = webullsdk.sell_limit_order(
                     ticker_id=ticker_id,
-                    price=bid_price,
+                    price=sell_price,
                     quant=holding_quantity)
                 utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
                 utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                    symbol, holding_quantity, bid_price))
+                    symbol, holding_quantity, sell_price))
                 # update pending sell
                 self.update_pending_sell_order(
                     ticker, order_response, exit_note=exit_note)

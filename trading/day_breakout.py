@@ -318,8 +318,8 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker['ticker_id']
         holding_quantity = ticker['positions']
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
-        # sell_price = self.get_sell_price(ticker)
-        sell_price = self.get_sell_price2(position)
+        sell_price = self.get_sell_price(ticker)
+        # sell_price = self.get_sell_price2(position)
         last_price = float(position['lastPrice'])
         cost_price = float(position['costPrice'])
         if sell_price == None:
