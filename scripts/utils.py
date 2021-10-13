@@ -207,6 +207,19 @@ def is_pre_market_hour():
     return True
 
 
+def is_pre_market_hour_first_15m():
+    """
+    NY pre market hour from 04:00 to 04:15
+    """
+    now = datetime.now()
+    if now.hour < 4 or now.hour > 4:
+        return False
+    # first 15 minutes
+    if now.hour == 4 and now.minute > 15:
+        return False
+    return True
+
+
 def is_pre_market_hour_exact():
     """
     NY pre market hour from 04:00 to 09:30
@@ -235,6 +248,19 @@ def is_after_market_hour():
     return True
 
 
+def is_after_market_hour_15m():
+    """
+    NY after market hour from 16:00 to 16:15
+    """
+    now = datetime.now()
+    if now.hour < 16 or now.hour > 16:
+        return False
+    # first 15 minutes
+    if now.hour == 16 and now.minute > 15:
+        return False
+    return True
+
+
 def is_after_market_hour_exact():
     """
     NY after market hour from 16:00 to 20:00
@@ -257,6 +283,18 @@ def is_regular_market_hour():
         return False
     # stop regular market earlier for 5 minutes
     if now.hour == 15 and now.minute >= 55:
+        return False
+    return True
+
+
+def is_regular_market_hour_15m():
+    """
+    NY regular market hour from 09:30 to 09:45
+    """
+    now = datetime.now()
+    if now.hour < 9 or now.hour > 9:
+        return False
+    if now.minute < 30 or now.minute > 45:
         return False
     return True
 
@@ -671,16 +709,16 @@ def check_bars_volatility(bars, period=5):
     price_set = set()
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
-        # check for pre market hour only
-        if is_pre_market_hour_exact() and is_pre_market_time(time):
+        # check for pre market hour except for first 15 minutes
+        if is_pre_market_hour_exact() and not is_pre_market_hour_first_15m() and is_pre_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # check for after market hour only
-        if is_after_market_hour_exact() and is_after_market_time(time):
+        if is_after_market_hour_exact() and not is_after_market_hour_15m() and is_after_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # check for regular market hour only
-        if is_regular_market_hour_exact() and is_regular_market_time(time):
+        if is_regular_market_hour_exact() and not is_regular_market_hour_15m() and is_regular_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # add price value set
@@ -850,10 +888,12 @@ def print_level2_log(quote):
     for i in range(0, depth):
         bid_record = "{:<10} {:>10}".format("*", "*")
         if i < len(bid_list):
-            bid_record = "{:<10} {:>10}".format(bid_list[i]['volume'], bid_list[i]['price'])
+            bid_record = "{:<10} {:>10}".format(
+                bid_list[i]['volume'], bid_list[i]['price'])
         ask_record = "{:<10} {:>10}".format("*", "*")
         if i < len(ask_list):
-            ask_record = "{:<10} {:>10}".format(ask_list[i]['price'], ask_list[i]['volume'])
+            ask_record = "{:<10} {:>10}".format(
+                ask_list[i]['price'], ask_list[i]['volume'])
         print_trading_log("{} - {}".format(bid_record, ask_record))
 
 
