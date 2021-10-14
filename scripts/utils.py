@@ -933,7 +933,7 @@ def print_level2_log(quote):
         bid_list = quote['depth']['ntvAggBidList']
     # print log
     print_trading_log("Order book for <{}>:".format(symbol))
-    depth = max(len(ask_list), len(bid_list))
+    depth = 2
     for i in range(0, depth):
         bid_record = "{:<10} {:>10}".format("*", "*")
         if i < len(bid_list):
