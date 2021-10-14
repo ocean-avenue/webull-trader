@@ -56,7 +56,7 @@ class DayTradingMomo(StrategyBase):
                 and current_candle['high'] > prev_candle['high'] \
                 and self.check_if_trade_price_new_high(ticker, current_price):
             return True
-        
+
         if symbol in self.tracking_stats:
             last_trade_time = self.tracking_stats[symbol]['last_trade_time']
             if last_trade_time and (datetime.now() - last_trade_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):

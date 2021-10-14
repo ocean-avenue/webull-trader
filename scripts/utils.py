@@ -706,9 +706,14 @@ def check_bars_volatility(bars, period=5):
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
     flat_count = 0
+    valid_candle_count = 0
     price_set = set()
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
+        # check valid candle
+        if (is_pre_market_hour_exact() and is_pre_market_time(time)) or (is_after_market_hour_exact() and is_after_market_time(time)) or \
+                (is_regular_market_hour_exact() and is_regular_market_time(time)):
+            valid_candle_count += 1
         # check for pre market hour except for first 15 minutes
         if is_pre_market_hour_exact() and not is_pre_market_hour_first_15m() and is_pre_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
@@ -726,12 +731,13 @@ def check_bars_volatility(bars, period=5):
         price_set.add(row['high'])
         price_set.add(row['low'])
         price_set.add(row['close'])
-    # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
-    if flat_count >= 3:
-        return False
-    # price set only in a few values
-    if len(price_set) <= 2:
-        return False
+    if valid_candle_count == len(bars):
+        # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
+        if flat_count >= 3:
+            return False
+        # price set only in a few values
+        if len(price_set) <= 2:
+            return False
     return True
 
 
