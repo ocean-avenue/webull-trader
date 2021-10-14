@@ -734,11 +734,15 @@ class StrategyBase:
 
     def get_buy_price(self, ticker):
         ticker_id = ticker['ticker_id']
+        symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
         # bid_price = webullsdk.get_bid_price_from_quote(quote)
         # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
+        if not ask_price:
+            utils.print_trading_log(f"<{symbol}> ask price not existed!")
+            utils.print_trading_log(json.dumps(quote))
         return ask_price
         # if ask_price == None or bid_price == None:
         #     return None
@@ -761,9 +765,13 @@ class StrategyBase:
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']
+        symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
         bid_price = webullsdk.get_bid_price_from_quote(quote)
+        if not bid_price:
+            utils.print_trading_log(f"<{symbol}> bid price not existed!")
+            utils.print_trading_log(json.dumps(quote))
         return bid_price
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
         # if ask_price == None or bid_price == None:
