@@ -827,6 +827,8 @@ def check_bars_has_most_green_candle(bars, period=10):
         if row['close'] >= row['open']:
             green_candle_count += 1
         total_candle_count += 1
+    # make sure total is not zero
+    total_candle_count = max(1, total_candle_count)
     return float(green_candle_count) / float(total_candle_count) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
 
 
@@ -854,6 +856,8 @@ def check_bars_has_more_green_candle(bars, period=10):
         if row['close'] >= row['open']:
             green_candle_count += 1
         total_candle_count += 1
+    # make sure total is not zero
+    total_candle_count = max(1, total_candle_count)
     return float(green_candle_count) / float(total_candle_count) >= config.CHART_MORE_GREEN_CANDLES_THRESHOLD
 
 
