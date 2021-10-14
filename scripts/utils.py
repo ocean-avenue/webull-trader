@@ -779,7 +779,17 @@ def check_bars_has_largest_green_candle(bars, period=10):
     period_bars = period_bars.head(period)
     max_green_candle_size = 0.0
     max_red_candle_size = 0.0
-    for _, row in period_bars.iterrows():
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        # check for pre market hour except
+        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+            continue
+        # check for after market hour only
+        if is_after_market_hour_exact() and not is_after_market_time(time):
+            continue
+        # check for regular market hour only
+        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+            continue
         # red candle
         if row['open'] > row['close']:
             red_candle_size = row['open'] - row['close']
@@ -801,11 +811,23 @@ def check_bars_has_most_green_candle(bars, period=10):
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
     green_candle_count = 0
-    for _, row in period_bars.iterrows():
+    total_candle_count = 0
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        # check for pre market hour except
+        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+            continue
+        # check for after market hour only
+        if is_after_market_hour_exact() and not is_after_market_time(time):
+            continue
+        # check for regular market hour only
+        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+            continue
         # green candle
         if row['close'] >= row['open']:
             green_candle_count += 1
-    return float(green_candle_count) / len(period_bars) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
+        total_candle_count += 1
+    return float(green_candle_count) / float(total_candle_count) >= config.CHART_MOST_GREEN_CANDLES_THRESHOLD
 
 
 def check_bars_has_more_green_candle(bars, period=10):
@@ -816,11 +838,23 @@ def check_bars_has_more_green_candle(bars, period=10):
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
     green_candle_count = 0
-    for _, row in period_bars.iterrows():
+    total_candle_count = 0
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        # check for pre market hour except
+        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+            continue
+        # check for after market hour only
+        if is_after_market_hour_exact() and not is_after_market_time(time):
+            continue
+        # check for regular market hour only
+        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+            continue
         # green candle
         if row['close'] >= row['open']:
             green_candle_count += 1
-    return float(green_candle_count) / len(period_bars) >= config.CHART_MORE_GREEN_CANDLES_THRESHOLD
+        total_candle_count += 1
+    return float(green_candle_count) / float(total_candle_count) >= config.CHART_MORE_GREEN_CANDLES_THRESHOLD
 
 
 def calculate_charts_ema9(charts):
