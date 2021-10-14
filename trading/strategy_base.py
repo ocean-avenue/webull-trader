@@ -195,7 +195,14 @@ class StrategyBase:
             sectors_limit = day_sectors_limit.split(",")
             if self.tracking_stats[symbol]["sector"] == None or self.tracking_stats[symbol]["sector"] not in sectors_limit:
                 sectors_check = False
-        return (free_float_check or turnover_rate_check) and sectors_check
+
+        check = (free_float_check or turnover_rate_check) and sectors_check
+
+        if not check:
+            utils.print_trading_log(
+                f"Cannot trade <{symbol}>, free float: {self.tracking_stats[symbol]['free_float']}, turnover rate: {self.tracking_stats[symbol]['turnover_rate']}.")
+
+        return check
 
     def check_error_short_order(self, positions):
         # check if short order covered
