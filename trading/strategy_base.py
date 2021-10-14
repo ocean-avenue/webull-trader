@@ -3,6 +3,7 @@
 # Base trading class
 
 import time
+import json
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
@@ -740,11 +741,15 @@ class StrategyBase:
 
     def get_buy_price2(self, ticker):
         ticker_id = ticker['ticker_id']
+        symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
         last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
         # return min(ask_price, round(last_price * 1.01, 2))
+        if not last_price:
+            utils.print_trading_log(f"<{symbol}> latest price not existed!")
+            utils.print_trading_log(json.dumps(quote))
         return last_price
 
     def get_sell_price(self, ticker):
