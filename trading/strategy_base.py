@@ -198,9 +198,9 @@ class StrategyBase:
 
         check = (free_float_check or turnover_rate_check) and sectors_check
 
-        if not check:
-            utils.print_trading_log(
-                f"Cannot trade <{symbol}>, free float: {self.tracking_stats[symbol]['free_float']}, turnover rate: {self.tracking_stats[symbol]['turnover_rate']}.")
+        # if not check:
+        #     utils.print_trading_log(
+        #         f"Cannot trade <{symbol}>, free float: {self.tracking_stats[symbol]['free_float']}, turnover rate: {self.tracking_stats[symbol]['turnover_rate']}.")
 
         return check
 
