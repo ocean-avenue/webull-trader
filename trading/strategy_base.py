@@ -430,57 +430,68 @@ class StrategyBase:
         ticker_id = ticker['ticker_id']
         order_id = ticker['pending_order_id']
         exit_note = ticker['exit_note']
+        total_quantity = ticker['positions']
         utils.print_trading_log(
             "Checking sell order <{}> filled...".format(symbol))
         positions = webullsdk.get_positions()
         if positions == None:
             return False
         order_filled = True
+        partial_filled = False
         holding_quantity = 0
         for position in positions:
             if position['ticker']['symbol'] != symbol:
                 continue
             holding_quantity = int(position['position'])
-            # TODO, check partial filled
             # make sure position is positive
             if holding_quantity > 0:
                 order_filled = False
-                break
-        if order_filled:
+            if holding_quantity < total_quantity:
+                partial_filled = True
+        if order_filled or partial_filled:
             # check if have any exit note
             if exit_note:
                 # save order note
                 utils.save_webull_order_note(
                     order_id, setup=self.get_setup(), note=exit_note)
-            # add trade object
             position_obj = ticker['position_obj']
-            profit_loss_rate = ticker['last_profit_loss_rate'] or 0.0
-            sell_price = round((position_obj.total_cost /
-                                position_obj.quantity) * (1+profit_loss_rate), 2)
-            utils.add_day_trade(
-                symbol=symbol,
-                ticker_id=ticker_id,
-                position=position_obj,
-                order_id=order_id,
-                sell_price=sell_price,
-                sell_time=timezone.now(),
-            )
-            # remove position object
-            position_obj.delete()
+            if order_filled:
+                profit_loss_rate = ticker['last_profit_loss_rate'] or 0.0
+                sell_price = round((position_obj.total_cost /
+                                    position_obj.quantity) * (1+profit_loss_rate), 2)
+                # add trade object
+                utils.add_day_trade(
+                    symbol=symbol,
+                    ticker_id=ticker_id,
+                    position=position_obj,
+                    order_id=order_id,
+                    sell_price=sell_price,
+                    sell_time=timezone.now(),
+                )
+                # remove position object
+                position_obj.delete()
+            else:
+                # update position
+                position_obj.order_ids = "{},{}".format(position_obj.order_ids, order_id)
+                position_obj.require_adjustment = True
+                position_obj.save()
             # update tracking_tickers
-            self.tracking_tickers[symbol]['positions'] = 0
+            self.tracking_tickers[symbol]['positions'] = holding_quantity
             self.tracking_tickers[symbol]['pending_sell'] = False
             self.tracking_tickers[symbol]['pending_order_id'] = None
             self.tracking_tickers[symbol]['pending_order_time'] = None
             self.tracking_tickers[symbol]['last_sell_time'] = datetime.now()
-            self.tracking_tickers[symbol]['exit_note'] = None
             self.tracking_tickers[symbol]['resubmit_count'] = 0
-            self.tracking_tickers[symbol]['position_obj'] = None
-            self.tracking_tickers[symbol]['initial_cost'] = None
-            # remove from monitor
-            if stop_tracking:
-                del self.tracking_tickers[symbol]
-            utils.print_trading_log("Sell order <{}> filled".format(symbol))
+            if order_filled:
+                self.tracking_tickers[symbol]['exit_note'] = None
+                self.tracking_tickers[symbol]['position_obj'] = None
+                self.tracking_tickers[symbol]['initial_cost'] = None
+                # remove from monitor
+                if stop_tracking:
+                    del self.tracking_tickers[symbol]
+                utils.print_trading_log("Sell order <{}> filled".format(symbol))
+            else:
+                utils.print_trading_log("Sell order <{}> partial filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
             utils.save_webull_account(account_data, paper=self.paper)
