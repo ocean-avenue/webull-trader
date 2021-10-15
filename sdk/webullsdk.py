@@ -1,8 +1,9 @@
 import requests
 import json
 import time
-from webull import webull, paper_webull
+import traceback
 import pandas as pd
+from webull import webull, paper_webull
 from scripts import utils
 from sdk import config
 from webull_trader.models import WebullCredentials
@@ -693,13 +694,21 @@ def check_order_canceled(order_id):
     canceled_orders = get_history_orders(status="Cancelled", count=100)
     for canceled_order in canceled_orders:
         if wb_paper:
-            if order_id == canceled_order["orderId"]:
-                order_canceled = True
-                break
+            try:
+                if order_id == canceled_order["orderId"]:
+                    order_canceled = True
+                    break
+            except Exception as e:
+                utils.save_exception_log(
+                    str(e), traceback.format_exc(), json.dumps(canceled_order))
         else:
-            if order_id == canceled_order["orders"][0]["orderId"]:
-                order_canceled = True
-                break
+            try:
+                if order_id == canceled_order["orders"][0]["orderId"]:
+                    order_canceled = True
+                    break
+            except Exception as e:
+                utils.save_exception_log(
+                    str(e), traceback.format_exc(), json.dumps(canceled_order))
     return order_canceled
 
 
