@@ -441,6 +441,7 @@ class StrategyBase:
             if position['ticker']['symbol'] != symbol:
                 continue
             holding_quantity = int(position['position'])
+            # TODO, check partial filled
             # make sure position is positive
             if holding_quantity > 0:
                 order_filled = False
@@ -705,18 +706,15 @@ class StrategyBase:
             del self.tracking_tickers[symbol]
             return
 
-        quote = webullsdk.get_quote(ticker_id=ticker_id)
-        if quote == None:
-            return
-        bid_price = webullsdk.get_bid_price_from_quote(quote)
-        if bid_price == None:
+        sell_price = self.get_sell_price(ticker)
+        if sell_price == None:
             return
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
-            price=bid_price,
+            price=sell_price,
             quant=holding_quantity)
         utils.print_trading_log("🔴 Submit clear position order <{}>, quant: {}, limit price: {}".format(
-            symbol, holding_quantity, bid_price))
+            symbol, holding_quantity, sell_price))
         if utils.get_order_id_from_response(order_response, paper=self.paper):
             self.update_pending_sell_order(
                 ticker, order_response, exit_note="Clear position.")

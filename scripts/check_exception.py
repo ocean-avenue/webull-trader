@@ -6,7 +6,7 @@ def start():
     from datetime import datetime
     from django_apscheduler.models import DjangoJobExecution
     from webull_trader.models import NotifiedErrorExecution
-    from scripts import utils
+    from scripts import clear_positions, utils
 
     today = datetime.today()
     # all today's executions
@@ -29,6 +29,10 @@ def start():
             notified_execution = NotifiedErrorExecution(
                 execution_id=execution_id)
             notified_execution.save()
+
+            # clear all position if trading job exception
+            if 'trading' in execution.job.id:
+                clear_positions.start()
 
 
 if __name__ == "django.core.management.commands.shell":
