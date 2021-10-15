@@ -65,7 +65,6 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log(
                 "<{}> price (${}) is not breakout high (${}), no entry!".format(symbol, current_price, period_high_price))
             return False
-            return False
         if not self.check_if_trade_price_new_high(ticker, current_price):
             return False
 
