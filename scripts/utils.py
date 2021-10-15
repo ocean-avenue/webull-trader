@@ -662,6 +662,30 @@ def check_bars_at_peak(bars, long_period=10, short_period=3):
     return True
 
 
+def check_bars_reversal(bars):
+    """
+    check if bar chart will reversal
+    http://live2.webull-trader.quanturtle.net/day-analytics/2021-10-14/LMFA
+    """
+    prev_bar2 = bars.iloc[-2]
+    # prev_bar2 should be red
+    if prev_bar2['close'] > prev_bar2['open']:
+        return False
+    prev_bar3 = bars.iloc[-3]
+    # prev_bar3 should be green
+    if prev_bar3['close'] < prev_bar3['open']:
+        return False
+    # prev_bar2 open should > prev_bar3 close
+    if prev_bar2['open'] < prev_bar3['close']:
+        return False
+    current_bar = bars.iloc[-1]
+    # current_bar low should < prev_bar3 low
+    if current_bar['low'] > prev_bar3['low']:
+        return False
+    # reversal
+    return True
+
+
 def check_bars_rel_volume(bars):
     """
     check if bar chart relative volume
