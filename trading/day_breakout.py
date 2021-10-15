@@ -52,10 +52,14 @@ class DayTradingBreakout(StrategyBase):
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
+        period_low_price = 9999
         for _, row in period_bars.iterrows():
-            close_price = row['close']  # use close price
-            if close_price > period_high_price:
-                period_high_price = close_price
+            # use close price for period high
+            if row['close'] > period_high_price:
+                period_high_price = row['close']
+            # use low price for period low
+            if row['low'] < period_low_price:
+                period_low_price = row['low']
         # check if new high
         if current_price <= period_high_price:
             utils.print_trading_log(
@@ -71,13 +75,11 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> price is not above ema9, no entry!".format(symbol))
             return False
 
-        # check if current low is above prev close
+        # check if current low is above period low price
         current_low = current_candle['low']
-        prev_candle = bars.iloc[-2]
-        prev_close = prev_candle['close']
-        if current_low <= min(prev_close - 0.1, prev_close * 0.99):
+        if current_low < period_low_price:
             utils.print_trading_log(
-                "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
+                "<{}> current low (${}) is lower than period low (${}), no entry!".format(symbol, current_low, period_low_price))
             return False
 
         # # check if gap already too large
