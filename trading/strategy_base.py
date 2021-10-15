@@ -752,16 +752,23 @@ class StrategyBase:
 
     def get_buy_price2(self, ticker):
         ticker_id = ticker['ticker_id']
-        symbol = ticker['symbol']
+        # symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
-        # ask_price = webullsdk.get_ask_price_from_quote(quote)
-        last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
+        if self.is_regular_market_hour():
+            last_price = utils.get_attr_to_float_or_none(quote, 'close')
+        else:
+            last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
+        bid_price = webullsdk.get_bid_price_from_quote(quote) or 0.0
+        buy_price = last_price
+        if bid_price > last_price:
+            ask_price = webullsdk.get_ask_price_from_quote(quote)
+            if ask_price:
+                buy_price = round((ask_price + bid_price) / 2, 2)
+            else:
+                buy_price = bid_price + 0.1
         # return min(ask_price, round(last_price * 1.01, 2))
-        if not last_price:
-            utils.print_trading_log(f"<{symbol}> latest price not existed!")
-            utils.print_trading_log(json.dumps(quote))
-        return last_price
+        return buy_price
 
     def get_sell_price(self, ticker):
         ticker_id = ticker['ticker_id']

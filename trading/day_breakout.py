@@ -522,8 +522,12 @@ class DayTradingBreakoutAsk(DayTradingBreakout):
     def get_buy_price(self, ticker):
         ticker_id = ticker['ticker_id']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
-        if quote == None:
-            return None
+        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        return ask_price
+
+    def get_buy_price2(self, ticker):
+        ticker_id = ticker['ticker_id']
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
         return ask_price
 

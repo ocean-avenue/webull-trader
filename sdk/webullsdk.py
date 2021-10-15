@@ -1002,7 +1002,7 @@ def get_pre_market_gainers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1012,7 +1012,7 @@ def get_pre_market_gainers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
@@ -1056,7 +1056,7 @@ def get_top_gainers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1066,7 +1066,7 @@ def get_top_gainers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
@@ -1097,7 +1097,7 @@ def get_after_market_gainers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1107,7 +1107,7 @@ def get_after_market_gainers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
@@ -1139,7 +1139,7 @@ def get_pre_market_losers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1149,7 +1149,7 @@ def get_pre_market_losers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
@@ -1193,7 +1193,7 @@ def get_top_losers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1203,7 +1203,7 @@ def get_top_losers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
@@ -1234,7 +1234,7 @@ def get_after_market_losers(count=10):
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    price = utils.get_attr_to_float(values_obj, "pprice")
+                    pprice = utils.get_attr_to_float(values_obj, "pprice")
                     close = utils.get_attr_to_float(values_obj, "close")
                     market_value = utils.get_attr_to_float(
                         values_obj, "marketValue")
@@ -1244,7 +1244,7 @@ def get_after_market_losers(count=10):
                             "ticker_id": ticker_id,
                             "change": change,
                             "change_percentage": change_percentage,
-                            "price": price,
+                            "pprice": pprice,
                             "close": close,
                             "market_value": market_value,
                         }
