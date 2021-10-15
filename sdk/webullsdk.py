@@ -8,6 +8,26 @@ from scripts import utils
 from sdk import config
 from webull_trader.models import WebullCredentials
 
+
+wb_session = None
+
+
+def _get_browser_headers():
+    return {
+        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
+        "referer": "quotes-gw.webullfintech.com/",
+        "Accept-Encoding": None,
+    }
+
+
+def _get_session():
+    global wb_session
+    if not wb_session:
+        wb_session = requests.Session()
+        wb_session.headers.update(_get_browser_headers())
+    return wb_session
+
+
 wb_instance = None
 wb_paper = True
 wb_trade_pwd = "123456"
@@ -950,22 +970,13 @@ def get_news(stock=None, items=5):
         return []
 
 
-def _get_browser_headers():
-    return {
-        "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
-        "referer": "quotes-gw.webullfintech.com/",
-        "Accept-Encoding": None,
-    }
-
-
 # [{'timestamp': 1617840000, 'open': 8.65, 'close': 8.65, 'high': 8.65, 'low': 8.65, 'volume': 100, 'vwap': 8.46}, ...]
 
 def get_1m_charts(ticker_id, count=20):
     time.sleep(1)
-    session = requests.Session()
     url = config.WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
-    res = session.get(url, headers=_get_browser_headers())
-    res_json = json.loads(res.text)
+    res = _get_session().get(url)
+    res_json = res.json()
     if len(res_json) == 0:
         return []
     record_list = res_json[0]["data"]
@@ -994,11 +1005,8 @@ def get_1m_charts(ticker_id, count=20):
 def get_pre_market_gainers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_PRE_MARKET_GAINERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_PRE_MARKET_GAINERS_URL.format(count))
+        res_json = res.json()
         gainers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1008,13 +1016,13 @@ def get_pre_market_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -1048,11 +1056,8 @@ def get_pre_market_gainers(count=10):
 def get_top_gainers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_TOP_GAINERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_TOP_GAINERS_URL.format(count))
+        res_json = res.json()
         gainers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1062,13 +1067,13 @@ def get_top_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -1089,11 +1094,8 @@ def get_top_gainers(count=10):
 def get_after_market_gainers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
+        res_json = res.json()
         gainers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1103,13 +1105,13 @@ def get_after_market_gainers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
@@ -1131,11 +1133,8 @@ def get_after_market_gainers(count=10):
 def get_pre_market_losers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_PRE_MARKET_LOSERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
+        res_json = res.json()
         losers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1145,13 +1144,13 @@ def get_pre_market_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     losers.append(
                         {
                             "symbol": symbol,
@@ -1185,11 +1184,8 @@ def get_pre_market_losers(count=10):
 def get_top_losers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_TOP_LOSERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_TOP_LOSERS_URL.format(count))
+        res_json = res.json()
         losers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1199,13 +1195,13 @@ def get_top_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     losers.append(
                         {
                             "symbol": symbol,
@@ -1226,11 +1222,8 @@ def get_top_losers(count=10):
 def get_after_market_losers(count=10):
     time.sleep(1)
     try:
-        session = requests.Session()
-        res = session.get(
-            config.WEBULL_AFTER_MARKET_LOSERS_URL.format(count),
-            headers=_get_browser_headers())
-        res_json = json.loads(res.text)
+        res = _get_session().get(config.WEBULL_AFTER_MARKET_LOSERS_URL.format(count))
+        res_json = res.json()
         gainers = []
         if "data" in res_json:
             obj_list = res_json["data"]
@@ -1240,13 +1233,13 @@ def get_after_market_losers(count=10):
                 if ticker_obj["template"] == "stock":
                     symbol = ticker_obj["symbol"]
                     ticker_id = ticker_obj["tickerId"]
+                    pprice = utils.get_attr_to_float(ticker_obj, "pprice")
+                    close = utils.get_attr_to_float(ticker_obj, "close")
+                    market_value = utils.get_attr_to_float(
+                        ticker_obj, "marketValue")
                     change = utils.get_attr_to_float(values_obj, "change")
                     change_percentage = utils.get_attr_to_float(
                         values_obj, "changeRatio")
-                    pprice = utils.get_attr_to_float(values_obj, "pprice")
-                    close = utils.get_attr_to_float(values_obj, "close")
-                    market_value = utils.get_attr_to_float(
-                        values_obj, "marketValue")
                     gainers.append(
                         {
                             "symbol": symbol,
