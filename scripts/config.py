@@ -32,6 +32,7 @@ BLACKLIST_TIMEOUT_IN_SEC = 1800
 MAX_PREV_DAY_CLOSE_GAP_RATIO = 0.02
 # relative volume required for day trade entry
 DAY_MIN_RELATIVE_VOLUME = 3.0
+EXTENDED_DAY_MIN_RELATIVE_VOLUME = 2.0
 # relative volume required for swint trade entry
 SWING_MIN_RELATIVE_VOLUME = 2.0
 # earning gap ratio for earning strategy

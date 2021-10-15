@@ -108,7 +108,7 @@ class DayTradingBreakout(StrategyBase):
             del self.tracking_tickers[symbol]
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
+        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
                 not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars) and \
                 not utils.check_bars_amount_grinding(bars, period=5):
             # has no relative volume

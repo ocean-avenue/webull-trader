@@ -492,7 +492,7 @@ def check_bars_has_volume(bars, time_scale=1, period=10):
         total_volume += volume
 
     avg_volume = total_volume / float(period)
-    confirm_volume = get_avg_confirm_volume(time) * time_scale
+    confirm_volume = get_avg_confirm_volume() * time_scale
 
     return avg_volume >= confirm_volume
 
@@ -515,7 +515,7 @@ def check_bars_has_amount(bars, time_scale=1, period=10):
         total_amount += (volume * price)
 
     avg_amount = total_amount / float(period)
-    confirm_amount = get_avg_confirm_amount(time) * time_scale
+    confirm_amount = get_avg_confirm_amount() * time_scale
 
     return avg_amount >= confirm_amount
 
@@ -698,11 +698,13 @@ def check_bars_rel_volume(bars):
     last_candle6 = bars.iloc[-6]
     last_candle7 = bars.iloc[-7]
 
-    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) > config.DAY_MIN_RELATIVE_VOLUME or \
-        (last_candle2["volume"] + last_candle3["volume"] + last_candle4["volume"]) / (last_candle5["volume"] + last_candle6["volume"] + last_candle7["volume"]) > config.DAY_MIN_RELATIVE_VOLUME or \
-        last_candle2["volume"] / last_candle3["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle3["volume"] / last_candle4["volume"] > config.DAY_MIN_RELATIVE_VOLUME or \
-        last_candle4["volume"] / last_candle5["volume"] > config.DAY_MIN_RELATIVE_VOLUME or last_candle5["volume"] / last_candle6["volume"] > config.DAY_MIN_RELATIVE_VOLUME or \
-            last_candle6["volume"] / last_candle7["volume"] > config.DAY_MIN_RELATIVE_VOLUME:
+    min_relvol = get_min_rel_volume_ratio()
+
+    if (last_candle2["volume"] + last_candle3["volume"]) / (last_candle4["volume"] + last_candle5["volume"]) > min_relvol or \
+        (last_candle2["volume"] + last_candle3["volume"] + last_candle4["volume"]) / (last_candle5["volume"] + last_candle6["volume"] + last_candle7["volume"]) > min_relvol or \
+        last_candle2["volume"] / last_candle3["volume"] > min_relvol or last_candle3["volume"] / last_candle4["volume"] > min_relvol or \
+        last_candle4["volume"] / last_candle5["volume"] > min_relvol or last_candle5["volume"] / last_candle6["volume"] > min_relvol or \
+            last_candle6["volume"] / last_candle7["volume"] > min_relvol:
         # relative volume ok
         return True
     return False
@@ -1089,16 +1091,22 @@ def get_trading_symbols():
     return []
 
 
-def get_avg_confirm_volume(time):
-    if is_pre_market_time(time) or is_after_market_time(time):
-        return config.EXTENDED_AVG_CONFIRM_VOLUME
-    return config.AVG_CONFIRM_VOLUME
+def get_avg_confirm_volume():
+    if is_regular_market_hour_exact():
+        return config.AVG_CONFIRM_VOLUME
+    return config.EXTENDED_AVG_CONFIRM_VOLUME
 
 
-def get_avg_confirm_amount(time):
-    if is_pre_market_time(time) or is_after_market_time(time):
-        return config.EXTENDED_AVG_CONFIRM_AMOUNT
-    return config.AVG_CONFIRM_AMOUNT
+def get_avg_confirm_amount():
+    if is_regular_market_hour_exact():
+        return config.AVG_CONFIRM_AMOUNT
+    return config.EXTENDED_AVG_CONFIRM_AMOUNT
+
+
+def get_min_rel_volume_ratio():
+    if is_regular_market_hour_exact():
+        return config.DAY_MIN_RELATIVE_VOLUME
+    return config.EXTENDED_DAY_MIN_RELATIVE_VOLUME
 
 
 def get_webull_order_time(order_time):
