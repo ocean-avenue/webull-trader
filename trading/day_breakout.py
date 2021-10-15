@@ -441,8 +441,8 @@ class DayTradingBreakout(StrategyBase):
                 exit_trading, exit_note = self.check_stop_loss(
                     ticker, ticker_position)
             if not exit_trading:
-                utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
-                    symbol, round(profit_loss_rate * 100, 2)))
+                utils.print_trading_log("Checking exit for <{}>, price: ${}, unrealized P&L: {}%".format(
+                    symbol, bars.iloc[-1]['close'], round(profit_loss_rate * 100, 2)))
                 # check exit trade
                 exit_trading, exit_note = self.check_exit(ticker, bars)
 
