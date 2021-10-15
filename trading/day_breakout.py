@@ -196,11 +196,11 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, round(period_low_price, 2)))
         # # check if has long wick up
-        # elif utils.check_bars_has_long_wick_up(bars, period=4):
-        #     utils.print_trading_log(
-        #         "<{}> candle chart has long wick up, exit!".format(symbol))
-        #     exit_trading = True
-        #     exit_note = "Candle chart has long wick up."
+        elif utils.check_bars_has_long_wick_up(bars, period=5, count=2):
+            utils.print_trading_log(
+                "<{}> candle chart has long wick up, exit!".format(symbol))
+            exit_trading = True
+            exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif self.is_extended_market_hour() and not utils.check_bars_volatility(bars):
             utils.print_trading_log(
