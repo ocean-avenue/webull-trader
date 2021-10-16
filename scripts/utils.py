@@ -666,10 +666,18 @@ def check_bars_reversal(bars):
     """
     check if bar chart will reversal
     http://live2.webull-trader.quanturtle.net/day-analytics/2021-10-14/LMFA
+    http://live2.webull-trader.quanturtle.net/day-analytics/2021-10-15/NXTD
     """
     prev_bar2 = bars.iloc[-2]
     # prev_bar2 should be red
     if prev_bar2['close'] > prev_bar2['open']:
+        return False
+    prev_bar2_mid = max(prev_bar2['open'], prev_bar2['close'])
+    prev_bar2_body = abs(prev_bar2['close'] - prev_bar2['open'])
+    prev_bar2_up_wick = (prev_bar2['high'] - prev_bar2_mid)
+    prev_bar2_down_wick = (prev_bar2['high'] - prev_bar2_mid)
+    # prev_bar2 should has long up tail, up wick > 2 * down wick and up wick > body
+    if prev_bar2_up_wick < 2 * prev_bar2_down_wick or prev_bar2_up_wick < prev_bar2_body:
         return False
     prev_bar3 = bars.iloc[-3]
     # prev_bar3 should be green
