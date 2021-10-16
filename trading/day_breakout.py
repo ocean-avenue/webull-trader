@@ -842,18 +842,19 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             return False
         symbol = ticker['symbol']
         last_candle = bars.iloc[-2]
-        last_price = last_candle['close']
-        last_high = last_candle['high']
+        last_low = min(last_candle['open'], last_candle['close'])
+        last_high = max(last_candle['open'], last_candle['close'])
         period_bars = bars.head(
             len(bars) - 2).tail(config.DAY_BUY_DIP_CANDLE_CHECK_COUNT)
         period_low_price = config.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
-            close_price = row['close']  # use close price
-            if close_price < period_low_price:
-                period_low_price = close_price
+            # use mid price, min(close, open)
+            low_price = min(row['close'], row['open'])
+            if low_price < period_low_price:
+                period_low_price = low_price
 
         # check if new low
-        if last_price > period_low_price:
+        if last_low > period_low_price:
             return False
 
         current_candle = bars.iloc[-1]
