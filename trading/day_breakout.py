@@ -871,7 +871,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
 
     def get_buy_dip_loss_price(self, buy_price, bars):
         prev_candle = bars.iloc[-2]
-        return prev_candle['low']
+        return min(prev_candle['open'], prev_candle['close'])
 
     def check_stop_profit(self, ticker, position):
         exit_trading = False
