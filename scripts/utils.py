@@ -672,13 +672,13 @@ def check_bars_reversal(bars):
     # prev_bar2 should be red
     if prev_bar2['close'] > prev_bar2['open']:
         return False
-    prev_bar2_mid = max(prev_bar2['open'], prev_bar2['close'])
-    prev_bar2_body = abs(prev_bar2['close'] - prev_bar2['open'])
-    prev_bar2_up_wick = (prev_bar2['high'] - prev_bar2_mid)
-    prev_bar2_down_wick = (prev_bar2['high'] - prev_bar2_mid)
-    # prev_bar2 should has long up tail, up wick > 2 * down wick and up wick > body
-    if prev_bar2_up_wick < 2 * prev_bar2_down_wick or prev_bar2_up_wick < prev_bar2_body:
-        return False
+    # prev_bar2_mid = max(prev_bar2['open'], prev_bar2['close'])
+    # prev_bar2_body = abs(prev_bar2['close'] - prev_bar2['open'])
+    # prev_bar2_up_wick = (prev_bar2['high'] - prev_bar2_mid)
+    # prev_bar2_down_wick = (prev_bar2['high'] - prev_bar2_mid)
+    # # prev_bar2 should has long up tail, up wick > 2 * down wick and up wick > body
+    # if prev_bar2_up_wick < 2 * prev_bar2_down_wick or prev_bar2_up_wick < prev_bar2_body:
+    #     return False
     prev_bar3 = bars.iloc[-3]
     # prev_bar3 should be green
     if prev_bar3['close'] < prev_bar3['open']:
