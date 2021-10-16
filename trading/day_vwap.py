@@ -3,6 +3,7 @@
 from datetime import date
 from trading.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
+from scripts import config
 from sdk import webullsdk, finvizsdk
 from scripts import utils
 
@@ -27,7 +28,7 @@ class DayTradingVWAPPaper(StrategyBase):
         # check if have prev candles below vwap
         below_vwap_count = 0
         period_high = 0
-        period_low = 9999
+        period_low = config.MAX_SECURITY_PRICE
         for _, candle in bars.iterrows():
             if candle['low'] < candle['vwap']:
                 below_vwap_count += 1
@@ -281,7 +282,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
         period_bars = bars.head(len(bars) - 1).tail(exit_period)
-        period_low_price = 99999
+        period_low_price = config.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
             close_price = row['close']
             if close_price < period_low_price:

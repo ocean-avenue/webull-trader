@@ -622,7 +622,7 @@ class StrategyBase:
                 position.quantity = position.quantity + quant
                 position.units = position.units + 1
                 # temp add unit, stop loss price
-                position.add_unit_price = 9999
+                position.add_unit_price = config.MAX_SECURITY_PRICE
                 position.stop_loss_price = 0
                 position.require_adjustment = True
             position.save()

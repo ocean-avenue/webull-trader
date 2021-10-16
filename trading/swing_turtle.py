@@ -62,7 +62,7 @@ class SwingTurtle(StrategyBase):
             return False
         latest_close = daily_bars[-1].close
         # get exit_period lowest
-        exit_period_lowest = 99999
+        exit_period_lowest = config.MAX_SECURITY_PRICE
         for i in range(len(daily_bars) - self.exit_period - 1, len(daily_bars) - 1):
             daily_bar = daily_bars[i]
             if daily_bar.close < exit_period_lowest:

@@ -1,5 +1,7 @@
 # trading config
 
+# max stock price
+MAX_SECURITY_PRICE = 9999.0
 # min gap ratio for momo, breakout strategy
 MIN_SURGE_CHANGE_RATIO = 0.04
 # min surge volume for momo, breakout strategy
@@ -76,6 +78,8 @@ CHART_MORE_GREEN_CANDLES_THRESHOLD = 0.6
 BEARISH_AVG_CANDLE_RATIO = 1.4
 # max current candle surge ratio for day trade entry
 MAX_DAY_ENTRY_CANDLE_SURGE_RATIO = 0.1
+# candle check count for day trade buy the dip scale in
+DAY_BUY_DIP_CANDLE_CHECK_COUNT = 4
 
 # number config
 

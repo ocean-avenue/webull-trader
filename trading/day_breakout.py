@@ -52,7 +52,7 @@ class DayTradingBreakout(StrategyBase):
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
-        period_low_price = 9999
+        period_low_price = config.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
             # use close price for period high
             if row['close'] > period_high_price:
@@ -178,7 +178,7 @@ class DayTradingBreakout(StrategyBase):
         exit_note = None
         current_price = current_candle['close']
         period_bars = bars.head(len(bars) - 1).tail(exit_period)
-        period_low_price = 99999
+        period_low_price = config.MAX_SECURITY_PRICE
         period_low_idx = -1
         for i in range(0, len(period_bars)):
             close_price = period_bars.iloc[i].close
@@ -229,6 +229,9 @@ class DayTradingBreakout(StrategyBase):
     def check_scale_in(self, ticker, bars, position):
         return False
 
+    def check_buy_dip(self, ticker, bars, position):
+        return False
+
     def check_stop_profit(self, ticker, position):
         exit_trading = False
         exit_note = None
@@ -267,6 +270,9 @@ class DayTradingBreakout(StrategyBase):
     def get_scale_stop_loss_price(self, buy_price, bars):
         return None
 
+    def get_buy_dip_loss_price(self, buy_price, bars):
+        return None
+
     def get_price_rate_of_change(self, bars, period=10):
         period = min(len(bars) - 1, period)
         period_bars = bars.tail(period + 1)
@@ -279,7 +285,7 @@ class DayTradingBreakout(StrategyBase):
     def update_exit_period(self, ticker, position):
         return
 
-    def submit_buy_order(self, ticker, bars, scale_in=False):
+    def submit_buy_order(self, ticker, bars, scale_in=False, buy_dip=False):
         symbol = ticker['symbol']
         ticker_id = ticker['ticker_id']
         usable_cash = webullsdk.get_usable_cash()
@@ -310,6 +316,8 @@ class DayTradingBreakout(StrategyBase):
                 symbol, buy_quant, buy_price))
             if scale_in:
                 stop_loss = self.get_scale_stop_loss_price(buy_price, bars)
+            elif buy_dip:
+                stop_loss = self.get_buy_dip_loss_price(buy_price, bars)
             else:
                 stop_loss = self.get_stop_loss_price(buy_price, bars)
             # update pending buy
@@ -451,8 +459,10 @@ class DayTradingBreakout(StrategyBase):
                 self.submit_sell_order(ticker, ticker_position, exit_note)
             # check scale in position
             elif self.check_scale_in(ticker, bars, ticker_position):
-                # check scale in position
                 self.submit_buy_order(ticker, bars, scale_in=True)
+            # check buy the dip
+            elif self.check_buy_dip(ticker, bars, ticker_position):
+                self.submit_buy_order(ticker, bars, buy_dip=True)
 
     def on_update(self):
         # trading tickers
@@ -752,10 +762,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
     def get_tag(self):
         return "DayTradingBreakoutScale"
 
-    def check_scale_in(self, ticker, bars, position):
-        symbol = ticker['symbol']
-        last_candle = bars.iloc[-2]
-        last_price = last_candle['close']
+    def scale_precheck(self, ticker, position):
         last_buy_time = ticker['last_buy_time']
         target_units = 4
         units = 1
@@ -777,6 +784,14 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
         if profit_loss_rate < 0.05:
             return False
+        return True
+
+    def check_scale_in(self, ticker, bars, position):
+        if not self.scale_precheck(ticker, position):
+            return False
+        symbol = ticker['symbol']
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
         period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
@@ -812,13 +827,51 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no scale in!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
-        utils.print_trading_log("Scale in <{}> position".format(symbol))
+        utils.print_trading_log(
+            "Scale in <{}> position, period breakout.".format(symbol))
         return True
 
     def get_scale_stop_loss_price(self, buy_price, bars):
+        # current_candle = bars.iloc[-1]
+        # prev_candle = bars.iloc[-2]
+        # return min(current_candle['low'], prev_candle['low'])
+        return None
+
+    def check_buy_dip(self, ticker, bars, position):
+        if not self.scale_precheck(ticker, position):
+            return False
+        symbol = ticker['symbol']
+        last_candle = bars.iloc[-2]
+        last_price = last_candle['close']
+        last_high = last_candle['high']
+        period_bars = bars.head(
+            len(bars) - 2).tail(config.DAY_BUY_DIP_CANDLE_CHECK_COUNT)
+        period_low_price = config.MAX_SECURITY_PRICE
+        for _, row in period_bars.iterrows():
+            close_price = row['close']  # use close price
+            if close_price < period_low_price:
+                period_low_price = close_price
+
+        # check if new low
+        if last_price > period_low_price:
+            return False
+
         current_candle = bars.iloc[-1]
+        current_price = current_candle['close']
+
+        if current_price <= last_high:
+            # no first candle new high
+            utils.print_trading_log(
+                "<{}> candle not formed first candle new high, no buy dip!".format(symbol))
+            return False
+
+        utils.print_trading_log(
+            "Buy dip <{}> position, first candle new high.".format(symbol))
+        return True
+
+    def get_buy_dip_loss_price(self, buy_price, bars):
         prev_candle = bars.iloc[-2]
-        return min(current_candle['low'], prev_candle['low'])
+        return prev_candle['low']
 
     def check_stop_profit(self, ticker, position):
         exit_trading = False
