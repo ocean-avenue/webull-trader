@@ -27,22 +27,23 @@ class OrderTracker:
             }
 
     def update_orders(self):
-        orders = webullsdk.get_history_orders(count=20)
+        if len(self.current_orders) > 0:
+            orders = webullsdk.get_history_orders(count=20)
 
-        for order_data in orders:
-            # save order to db
-            db.save_webull_order(order_data, self.paper)
+            for order_data in orders:
+                # save order to db
+                db.save_webull_order(order_data, self.paper)
 
-        for order_id in list(self.current_orders):
-            order = WebullOrder.objects.filter(order_id=order_id).first()
-            if order:
-                # order done
-                if self._order_done(order.status):
-                    open_order = self.current_orders[order_id]
-                    # update setup
-                    order.setup = open_order['setup']
-                    order.save()
-                    del self.current_orders[order_id]
+            for order_id in list(self.current_orders):
+                order = WebullOrder.objects.filter(order_id=order_id).first()
+                if order:
+                    # order done
+                    if self._order_done(order.status):
+                        open_order = self.current_orders[order_id]
+                        # update setup
+                        order.setup = open_order['setup']
+                        order.save()
+                        del self.current_orders[order_id]
 
 
 # Ticker tracker class
