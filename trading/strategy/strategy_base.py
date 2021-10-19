@@ -6,6 +6,7 @@ import time
 import json
 from datetime import datetime, timedelta, date
 from django.utils import timezone
+from trading.tracker import OrderTracker, TradingTracker, TrackingTicker
 from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
 from common.enums import SetupType, TradingHourType
 from common import utils, config
@@ -14,10 +15,12 @@ from sdk import webullsdk, fmpsdk
 
 class StrategyBase:
 
-    def __init__(self, paper=True, trading_hour=TradingHourType.REGULAR):
-        self.paper = paper
-        self.trading_hour = trading_hour
-        self.trading_end = False
+    def __init__(self, paper: bool = True, trading_hour: TradingHourType = TradingHourType.REGULAR):
+        self.paper: bool = paper
+        self.trading_hour: TradingHourType = trading_hour
+        self.trading_end: bool = False
+        self.ticker_tracker: TradingTracker = TradingTracker()
+        self.order_tracker: OrderTracker = OrderTracker()
         # init trading variables
         self.tracking_tickers = {}
         self.tracking_stats = {}
@@ -158,9 +161,8 @@ class StrategyBase:
     def is_extended_market_hour(self):
         return self.is_pre_market_hour() or self.is_after_market_hour()
 
-    def check_can_trade_ticker(self, ticker):
-        symbol = ticker['symbol']
-        ticker_id = ticker['ticker_id']
+    def check_can_trade_ticker(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
         settings = TradingSettings.objects.first()
         if not settings:
             return True
@@ -169,7 +171,7 @@ class StrategyBase:
         # fetch data if not cached
         if day_free_float_limit_in_million > 0 or day_turnover_rate_limit_percentage > 0:
             if self.tracking_stats[symbol]["free_float"] == None or self.tracking_stats[symbol]["turnover_rate"] == None:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                quote = webullsdk.get_quote(ticker_id=ticker.get_id())
                 self.tracking_stats[symbol]["free_float"] = utils.get_attr_to_float_or_none(
                     quote, "outstandingShares")
                 self.tracking_stats[symbol]["turnover_rate"] = utils.get_attr_to_float_or_none(
@@ -754,9 +756,9 @@ class StrategyBase:
             return self.order_amount_limit
         return self.extended_order_amount_limit
 
-    def get_buy_price(self, ticker):
-        ticker_id = ticker['ticker_id']
-        symbol = ticker['symbol']
+    def get_buy_price(self, ticker: TrackingTicker) -> float:
+        ticker_id = ticker.get_id()
+        symbol = ticker.get_symbol()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
         # bid_price = webullsdk.get_bid_price_from_quote(quote)
@@ -772,8 +774,8 @@ class StrategyBase:
         # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
         # return buy_price
 
-    def get_buy_price2(self, ticker):
-        ticker_id = ticker['ticker_id']
+    def get_buy_price2(self, ticker: TrackingTicker) -> float:
+        ticker_id = ticker.get_id()
         # symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
@@ -792,9 +794,9 @@ class StrategyBase:
         # return min(ask_price, round(last_price * 1.01, 2))
         return buy_price
 
-    def get_sell_price(self, ticker):
-        ticker_id = ticker['ticker_id']
-        symbol = ticker['symbol']
+    def get_sell_price(self, ticker: TrackingTicker) -> float:
+        ticker_id = ticker.get_id()
+        symbol = ticker.get_symbol()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
         if self.is_regular_market_hour():
@@ -813,5 +815,5 @@ class StrategyBase:
         #     ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
         # return sell_price
 
-    def get_sell_price2(self, position):
+    def get_sell_price2(self, position: dict) -> float:
         return float(position['lastPrice'])

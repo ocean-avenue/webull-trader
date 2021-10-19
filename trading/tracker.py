@@ -1,7 +1,7 @@
-from datetime import datetime
-from common import utils, db
+from datetime import datetime, timedelta
+from common import utils, db, config
 from sdk import webullsdk
-from webull_trader.models import WebullOrder
+from webull_trader.models import DayPosition, WebullOrder
 
 
 # Order tracker class
@@ -46,41 +46,90 @@ class OrderTracker:
                         del self.current_orders[order_id]
 
 
-# Ticker tracker class
-class TickerTracker:
+# Tracking ticker class
+class TrackingTicker:
 
-    def __init__(self, paper=True):
-        self.paper = paper
-        self.tickers = {}
-        self.status = {}
+    def __init__(self, symbol: str, ticker_id: str, prev_close: float = None, prev_high: float = None):
+        self.symbol: str = symbol
+        self.ticker_id: str = ticker_id
+        self.pending_order_id: str = None
+        self.pending_order_time: datetime = None
+        self.last_buy_time: datetime = None
+        self.last_sell_time: datetime = None
+        self.last_profit_loss_rate: float = None
+        self.positions: int = 0
+        self.start_time: datetime = datetime.now()
+        self.target_profit: float = None
+        self.stop_loss: float = None
+        # paper trade do not have stop trailing order, this value keep track of max P&L
+        self.max_profit_loss_rate: float = 0
+        self.exit_note: str = None
+        self.prev_close: float = prev_close
+        self.prev_high: float = prev_high
+        self.resubmit_order_count: int = 0
+        self.initial_cost: float = None
+        self.exit_period: int = None
+        self.position_obj: DayPosition = None
 
-    def start_tracking(self, symbol, ticker_id, prev_close=None, prev_high=None):
+    def get_id(self) -> str:
+        return self.ticker_id
+
+    def get_symbol(self) -> str:
+        return self.symbol
+
+    def has_pending_order(self) -> bool:
+        return self.pending_order_id != None
+
+    def get_positions(self) -> int:
+        return self.positions
+
+    def get_last_buy_time(self) -> datetime:
+        return self.last_buy_time
+
+    def set_initial_cost(self, initial_cost: float):
+        self.initial_cost = initial_cost
+
+    def get_initial_cost(self) -> float:
+        return self.initial_cost
+
+    def set_exit_period(self, exit_period: int):
+        self.exit_period = exit_period
+
+    def get_exit_period(self) -> int:
+        return self.exit_period
+
+    def set_position_obj(self, position_obj: DayPosition):
+        self.position_obj = position_obj
+
+    def get_position_obj(self) -> DayPosition:
+        return self.position_obj
+
+    def is_timeout(self) -> bool:
+        if self.last_buy_time and (datetime.now() - self.last_buy_time) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+            return True
+        elif (datetime.now() - self.start_time) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+            return True
+        return False
+
+    def is_just_sold(self) -> bool:
+        if self.last_sell_time and (datetime.now() - self.last_sell_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):
+            return True
+        return False
+
+
+# Trading tracker class
+class TradingTracker:
+
+    def __init__(self, paper: bool = True):
+        self.paper: bool = paper
+        self.tickers: dict = {}
+        self.status: dict = {}
+
+    def start_tracking(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
         if symbol not in self.tickers:
-            # init tracking ticker
-            self.tickers[symbol] = {
-                "symbol": symbol,
-                "ticker_id": ticker_id,
-                "pending_buy": False,
-                "pending_sell": False,
-                "pending_order_id": None,
-                "pending_order_time": None,
-                "last_profit_loss_rate": None,
-                "last_buy_time": None,
-                "last_sell_time": None,
-                "positions": 0,
-                "start_time": datetime.now(),
-                "target_profit": None,
-                "stop_loss": None,
-                # paper trade do not have stop trailing order, this value keep track of max P&L
-                "max_profit_loss_rate": 0,
-                "exit_note": None,
-                "prev_close": prev_close,
-                "prev_high": prev_high,
-                "resubmit_count": 0,
-                "initial_cost": None,
-                "exit_period": None,
-                "position_obj": None,
-            }
+            # add tracking ticker
+            self.tickers[symbol] = ticker
         # init tracking stats if not
         if symbol not in self.status:
             self.status[symbol] = {
@@ -100,7 +149,14 @@ class TickerTracker:
             return True
         return False
 
-    def stop_tracking(self, symbol):
+    def get_tracking_tickers(self):
+        return list(self.tracking_tickers)
+
+    def get_tracking_ticker(self, symbol):
+        return self.tracking_tickers[symbol]
+
+    def stop_tracking(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
         if symbol in self.tickers:
             del self.tickers[symbol]
 

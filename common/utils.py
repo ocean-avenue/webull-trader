@@ -331,7 +331,7 @@ def is_regular_market_time(t):
     return True
 
 
-def get_trading_hour():
+def get_trading_hour() -> enums.TradingHourType:
     if is_pre_market_hour_exact():
         return enums.TradingHourType.BEFORE_MARKET_OPEN
     elif is_after_market_hour_exact():
@@ -1102,112 +1102,6 @@ def get_avg_change_from_movers(movers):
     for mover in movers:
         total_change += mover['change_percentage']
     return round(total_change / len(movers), 2)
-
-
-def load_webull_credentials(cred_data, paper=True):
-    credentials = WebullCredentials.objects.filter(paper=paper).first()
-    if not credentials:
-        credentials = WebullCredentials(
-            cred=cred_data,
-            paper=paper,
-        )
-    else:
-        credentials.cred = cred_data
-    credentials.save()
-
-
-def save_webull_credentials(cred_data, paper=True):
-    credentials = WebullCredentials.objects.filter(paper=paper).first()
-    if not credentials:
-        credentials = WebullCredentials(
-            cred=cred_data,
-            paper=paper,
-        )
-    else:
-        credentials.cred = cred_data
-    credentials.save()
-
-
-def save_webull_account(acc_data, paper=True, day=None):
-    if day == None:
-        day = date.today()
-    print("[{}] Importing daily account status ({})...".format(
-        get_now(), day.strftime("%Y-%m-%d")))
-    if paper:
-        if "accountMembers" in acc_data:
-            account_members = acc_data['accountMembers']
-            day_profit_loss = 0
-            min_usable_cash = 0
-            for account_member in account_members:
-                if account_member['key'] == 'dayProfitLoss':
-                    day_profit_loss = float(account_member['value'])
-                if account_member['key'] == 'usableCash':
-                    min_usable_cash = float(account_member['value'])
-            acc_stat = WebullAccountStatistics.objects.filter(
-                date=day).first()
-            if not acc_stat:
-                acc_stat = WebullAccountStatistics(
-                    date=day,
-                    min_usable_cash=min_usable_cash,
-                )
-            acc_stat.net_liquidation = float(acc_data['netLiquidation'])
-            acc_stat.total_profit_loss = float(acc_data['totalProfitLoss'])
-            acc_stat.total_profit_loss_rate = float(
-                acc_data['totalProfitLossRate'])
-            acc_stat.day_profit_loss = day_profit_loss
-            acc_stat.save()
-    else:
-        if "accountMembers" in acc_data:
-            account_members = acc_data['accountMembers']
-            min_usable_cash = 0
-            for account_member in account_members:
-                if account_member['key'] == 'cashBalance':
-                    min_usable_cash = float(account_member['value'])
-            acc_stat = WebullAccountStatistics.objects.filter(
-                date=day).first()
-            if not acc_stat:
-                acc_stat = WebullAccountStatistics(
-                    date=day,
-                    min_usable_cash=min_usable_cash,
-                )
-            acc_stat.net_liquidation = float(acc_data['netLiquidation'])
-            # get day's P&L
-            daily_pl = webullsdk.get_daily_profitloss()
-            day_profit_loss = 0
-            if len(daily_pl) > 0:
-                day_pl = daily_pl[-1]
-                if day_pl['periodName'] == day.strftime("%Y-%m-%d"):
-                    day_profit_loss = float(day_pl['profitLoss'])
-            acc_stat.total_profit_loss = acc_stat.total_profit_loss or 0
-            acc_stat.total_profit_loss_rate = acc_stat.total_profit_loss_rate or 0
-            acc_stat.day_profit_loss = day_profit_loss
-            acc_stat.save()
-            # update total profit loss
-            all_acc_stats = WebullAccountStatistics.objects.all()
-            total_profit_loss = 0
-            for acc in all_acc_stats:
-                total_profit_loss += acc.day_profit_loss
-            acc_stat.total_profit_loss = total_profit_loss
-            if (acc_stat.net_liquidation - acc_stat.total_profit_loss) != 0:
-                acc_stat.total_profit_loss_rate = acc_stat.total_profit_loss / \
-                    (acc_stat.net_liquidation - acc_stat.total_profit_loss)
-            acc_stat.save()
-
-
-def save_webull_min_usable_cash(usable_cash):
-    day = date.today()
-    acc_stat = WebullAccountStatistics.objects.filter(date=day).first()
-    if not acc_stat:
-        acc_stat = WebullAccountStatistics(
-            date=day,
-            net_liquidation=0.0,
-            total_profit_loss=0.0,
-            total_profit_loss_rate=0.0,
-            day_profit_loss=0.0,
-        )
-    if usable_cash < acc_stat.min_usable_cash or acc_stat.min_usable_cash == 0.0:
-        acc_stat.min_usable_cash = usable_cash
-        acc_stat.save()
 
 
 def save_webull_order_note(order_id, setup=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH, note=""):
