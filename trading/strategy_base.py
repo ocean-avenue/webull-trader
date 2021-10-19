@@ -450,10 +450,8 @@ class StrategyBase:
                 partial_filled = True
         if order_filled or partial_filled:
             # check if have any exit note
-            if exit_note:
-                # save order note
-                utils.save_webull_order_note(
-                    order_id, setup=self.get_setup(), note=exit_note)
+            utils.save_webull_order_note(
+                order_id, setup=self.get_setup(), note=exit_note)
             position_obj = ticker['position_obj']
             if order_filled:
                 profit_loss_rate = ticker['last_profit_loss_rate'] or 0.0
@@ -477,20 +475,33 @@ class StrategyBase:
                 position_obj.save()
             # update tracking_tickers
             self.tracking_tickers[symbol]['positions'] = holding_quantity
-            self.tracking_tickers[symbol]['pending_sell'] = False
             self.tracking_tickers[symbol]['pending_order_id'] = None
-            self.tracking_tickers[symbol]['pending_order_time'] = None
             self.tracking_tickers[symbol]['last_sell_time'] = datetime.now()
             self.tracking_tickers[symbol]['resubmit_count'] = 0
             if order_filled:
+                self.tracking_tickers[symbol]['pending_sell'] = False
                 self.tracking_tickers[symbol]['exit_note'] = None
                 self.tracking_tickers[symbol]['position_obj'] = None
                 self.tracking_tickers[symbol]['initial_cost'] = None
+                self.tracking_tickers[symbol]['pending_order_time'] = None
                 # remove from monitor
                 if stop_tracking:
                     del self.tracking_tickers[symbol]
                 utils.print_trading_log("Sell order <{}> filled".format(symbol))
-            else:
+            elif partial_filled:
+                # resubmit sell order until clean
+                sell_price = self.get_sell_price(ticker)
+                if sell_price == None:
+                    return False
+                # holding_quantity = ticker['positions']
+                order_response = webullsdk.sell_limit_order(
+                    ticker_id=ticker_id,
+                    price=sell_price,
+                    quant=holding_quantity)
+                utils.print_trading_log("Submit sell rest order <{}>, quant: {}, limit price: {}".format(
+                    symbol, holding_quantity, sell_price))
+                self.update_pending_sell_order(
+                    ticker, order_response, "Sell rest order.")
                 utils.print_trading_log("Sell order <{}> partial filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
@@ -506,19 +517,16 @@ class StrategyBase:
                         "Sell order <{}> timeout, canceled!".format(symbol))
                     # resubmit sell order
                     if resubmit and self.tracking_tickers[symbol]['resubmit_count'] <= resubmit_count:
-                        quote = webullsdk.get_quote(ticker_id=ticker_id)
-                        if quote == None:
-                            return False
-                        bid_price = webullsdk.get_bid_price_from_quote(quote)
-                        if bid_price == None:
+                        sell_price = self.get_sell_price(ticker)
+                        if sell_price == None:
                             return False
                         # holding_quantity = ticker['positions']
                         order_response = webullsdk.sell_limit_order(
                             ticker_id=ticker_id,
-                            price=bid_price,
+                            price=sell_price,
                             quant=holding_quantity)
                         utils.print_trading_log("Resubmit sell order <{}>, quant: {}, limit price: {}".format(
-                            symbol, holding_quantity, bid_price))
+                            symbol, holding_quantity, sell_price))
                         self.tracking_tickers[symbol]['resubmit_count'] += 1
                         self.update_pending_sell_order(
                             ticker, order_response, "{} Resubmit sell order ({}).".format(
@@ -785,11 +793,15 @@ class StrategyBase:
         symbol = ticker['symbol']
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         utils.print_level2_log(quote)
+        if self.is_regular_market_hour():
+            last_price = utils.get_attr_to_float_or_none(quote, 'close')
+        else:
+            last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
         bid_price = webullsdk.get_bid_price_from_quote(quote)
         if not bid_price:
             utils.print_trading_log(f"<{symbol}> bid price not existed!")
             utils.print_trading_log(json.dumps(quote))
-        return bid_price
+        return bid_price or last_price
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
         # if ask_price == None or bid_price == None:
         #     return None
