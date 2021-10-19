@@ -9,7 +9,7 @@ FETCH_ORDER_COUNT = 100
 def start():
     from datetime import date
     from sdk import webullsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import WebullOrder, WebullOrderNote
 
     global FETCH_ORDER_COUNT

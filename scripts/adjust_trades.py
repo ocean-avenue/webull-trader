@@ -4,9 +4,9 @@
 
 
 def start():
-    from scripts import utils
+    from common import utils
+    from common.enums import ActionType
     from webull_trader.models import WebullOrder, SwingPosition, SwingTrade, DayPosition, DayTrade
-    from webull_trader.enums import ActionType
 
     # adjust swing position data by filled order
     swing_positions = SwingPosition.objects.filter(require_adjustment=True)

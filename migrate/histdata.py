@@ -5,7 +5,7 @@
 def start():
     from datetime import date
     from sdk import webullsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import WebullAccountStatistics, DayTrade, HistoricalMarketStatistics, HistoricalDayTradePerformance
 
     acc_stat_list = WebullAccountStatistics.objects.all()

@@ -7,9 +7,9 @@ import json
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
-from webull_trader.enums import SetupType, TradingHourType
+from common.enums import SetupType, TradingHourType
+from common import utils, config
 from sdk import webullsdk, fmpsdk
-from scripts import utils, config
 
 
 class StrategyBase:
@@ -470,7 +470,8 @@ class StrategyBase:
                 position_obj.delete()
             else:
                 # update position
-                position_obj.order_ids = "{},{}".format(position_obj.order_ids, order_id)
+                position_obj.order_ids = "{},{}".format(
+                    position_obj.order_ids, order_id)
                 position_obj.require_adjustment = True
                 position_obj.save()
             # update tracking_tickers
@@ -487,7 +488,8 @@ class StrategyBase:
                 # remove from monitor
                 if stop_tracking:
                     del self.tracking_tickers[symbol]
-                utils.print_trading_log("Sell order <{}> filled".format(symbol))
+                utils.print_trading_log(
+                    "Sell order <{}> filled".format(symbol))
             elif partial_filled:
                 # resubmit sell order until clean
                 sell_price = self.get_sell_price(ticker)
@@ -502,7 +504,8 @@ class StrategyBase:
                     symbol, holding_quantity, sell_price))
                 self.update_pending_sell_order(
                     ticker, order_response, "Sell rest order.")
-                utils.print_trading_log("Sell order <{}> partial filled".format(symbol))
+                utils.print_trading_log(
+                    "Sell order <{}> partial filled".format(symbol))
             # update account status
             account_data = webullsdk.get_account()
             utils.save_webull_account(account_data, paper=self.paper)
@@ -695,7 +698,8 @@ class StrategyBase:
         # may still have left tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            position_obj = ticker['position_obj'] or DayPosition.objects.filter(symbol=symbol).first()
+            position_obj = ticker['position_obj'] or DayPosition.objects.filter(
+                symbol=symbol).first()
             if position_obj:
                 # update setup
                 position_obj.setup = SetupType.ERROR_FAILED_TO_SELL

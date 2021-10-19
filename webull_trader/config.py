@@ -1,1 +1,0 @@
-CACHE_TIMEOUT = 60 * 10

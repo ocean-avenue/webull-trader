@@ -3,10 +3,21 @@ import json
 import time
 import traceback
 import pandas as pd
+from common import utils
 from webull import webull, paper_webull
-from scripts import utils
-from sdk import config
 from webull_trader.models import WebullCredentials
+
+
+# https://app.webull.com/market/region/6
+WEBULL_DAILY_PL_URL = "https://ustrade.webullbroker.com/api/trading/v1/profitloss/account/period?dateRangeType=all&periodType=Day&secAccountId={}"
+WEBULL_TICKER_QUOTE_URL = "https://quotes-gw.webullbroker.com/api/quotes/ticker/getTickerRealTime?tickerId={}&includeSecu=1&includeQuote=1"
+WEBULL_TOP_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=1d&pageIndex=1&pageSize={}"
+WEBULL_PRE_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=preMarket&pageIndex=1&pageSize={}"
+WEBULL_AFTER_MARKET_GAINERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/topGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize={}"
+WEBULL_TOP_LOSERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/dropGainers?regionId=6&rankType=1d&pageIndex=1&pageSize={}"
+WEBULL_AFTER_MARKET_LOSERS_URL = "https://quotes-gw.webullbroker.com/api/wlas/ranking/dropGainers?regionId=6&rankType=afterMarket&pageIndex=1&pageSize={}"
+WEBULL_PRE_MARKET_LOSERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ranking/dropGainers?regionId=6&rankType=preMarket&pageIndex=1&pageSize={}"
+WEBULL_QUOTE_1M_CHARTS_URL = "https://quotes-gw.webullbroker.com/api/quote/charts/query?tickerIds={}&type=m1&count={}&extendTrading=1"
 
 
 wb_session = None
@@ -330,7 +341,7 @@ def get_trade_token(password=''):
 def get_daily_profitloss():
     instance = _get_instance()
     headers = instance.build_req_headers()
-    response = requests.get(config.WEBULL_DAILY_PL_URL.format(
+    response = requests.get(WEBULL_DAILY_PL_URL.format(
         get_account_id()), headers=headers)
     result = response.json()
     return result
@@ -1017,7 +1028,7 @@ def get_news(stock=None, items=5):
 
 def get_1m_charts(ticker_id, count=20):
     time.sleep(1)
-    url = config.WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
+    url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
     res = _get_session().get(url)
     res_json = res.json()
     if len(res_json) == 0:
@@ -1048,7 +1059,7 @@ def get_1m_charts(ticker_id, count=20):
 def get_pre_market_gainers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_PRE_MARKET_GAINERS_URL.format(count))
+        res = _get_session().get(WEBULL_PRE_MARKET_GAINERS_URL.format(count))
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1099,7 +1110,7 @@ def get_pre_market_gainers(count=10):
 def get_top_gainers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_TOP_GAINERS_URL.format(count))
+        res = _get_session().get(WEBULL_TOP_GAINERS_URL.format(count))
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1137,7 +1148,7 @@ def get_top_gainers(count=10):
 def get_after_market_gainers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
+        res = _get_session().get(WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1176,7 +1187,7 @@ def get_after_market_gainers(count=10):
 def get_pre_market_losers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
+        res = _get_session().get(WEBULL_PRE_MARKET_LOSERS_URL.format(count))
         res_json = res.json()
         losers = []
         if "data" in res_json:
@@ -1227,7 +1238,7 @@ def get_pre_market_losers(count=10):
 def get_top_losers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_TOP_LOSERS_URL.format(count))
+        res = _get_session().get(WEBULL_TOP_LOSERS_URL.format(count))
         res_json = res.json()
         losers = []
         if "data" in res_json:
@@ -1265,7 +1276,7 @@ def get_top_losers(count=10):
 def get_after_market_losers(count=10):
     time.sleep(1)
     try:
-        res = _get_session().get(config.WEBULL_AFTER_MARKET_LOSERS_URL.format(count))
+        res = _get_session().get(WEBULL_AFTER_MARKET_LOSERS_URL.format(count))
         res_json = res.json()
         gainers = []
         if "data" in res_json:

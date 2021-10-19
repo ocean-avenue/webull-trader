@@ -4,9 +4,9 @@ from django.utils import timezone
 from datetime import date, datetime
 from webull_trader.models import EarningCalendar, DayPosition
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
+from common.enums import SetupType
+from common import utils, config
 from sdk import webullsdk
-from scripts import utils, config
 
 
 # Earning day trading class, may holding positions overnight

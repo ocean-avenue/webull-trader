@@ -1,3 +1,5 @@
+# watchlist for swing trading
+
 WATCHLIST_SYMBOLS = [
     "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
     "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API", "ALF",

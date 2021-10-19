@@ -5,8 +5,8 @@
 
 def start():
     from webull_trader.models import WebullOrderNote
-    from webull_trader.enums import SetupType, AlgorithmType
-    from scripts import utils
+    from common.enums import SetupType, AlgorithmType
+    from common import utils
 
     setup_type = SetupType.DAY_FIRST_CANDLE_NEW_HIGH
     algo_type = utils.get_algo_type()

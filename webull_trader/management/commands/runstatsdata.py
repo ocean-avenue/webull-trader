@@ -1,6 +1,7 @@
 from datetime import datetime
 from django.core.management.base import BaseCommand
-from scripts import utils, fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, adjust_trades
+from common import utils
+from scripts import fetch_account, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, calculate_histdata, adjust_trades
 
 
 class Command(BaseCommand):

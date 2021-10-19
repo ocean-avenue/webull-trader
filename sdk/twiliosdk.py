@@ -1,19 +1,22 @@
 from twilio.rest import Client
-from sdk.config import TWLO_ACCOUNT_SID, TWLO_AUTH_TOKEN, TWLO_SENDER_NUMBER, TWLO_MESSAGE_MAX_LENGTH
+from credentials.twilio import TWLO_ACCOUNT_SID, TWLO_AUTH_TOKEN
+from common.config import TWLO_SENDER_NUMBER, TWLO_MESSAGE_MAX_LENGTH
 
-client = None
+_client = None
+
 
 def _send_message(message_body, receiver):
 
-    global client
+    global _client
 
-    if client == None:
-        client = Client(TWLO_ACCOUNT_SID, TWLO_AUTH_TOKEN)
+    if _client == None:
+        _client = Client(TWLO_ACCOUNT_SID, TWLO_AUTH_TOKEN)
 
-    client.messages.create(
+    _client.messages.create(
         body=message_body, from_=TWLO_SENDER_NUMBER, to=receiver)
 
 
+# https://www.twilio.com/docs/sms
 def send_message(messages, receiver="+14159395985"):
 
     message_body = ""

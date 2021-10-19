@@ -2,10 +2,9 @@
 
 from datetime import date
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
-from scripts import config
+from common.enums import SetupType
+from common import config, utils
 from sdk import webullsdk, finvizsdk
-from scripts import utils
 
 
 # VWAP reclaim day trading strategy

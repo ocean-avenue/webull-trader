@@ -4,7 +4,7 @@
 
 def start():
     from sdk import webullsdk
-    from scripts import utils
+    from common import utils
 
     paper = utils.check_paper()
 

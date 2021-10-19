@@ -1,5 +1,5 @@
 from django.db import models
-from webull_trader import enums
+from common import enums
 
 # Create your models here.
 

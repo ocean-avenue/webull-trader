@@ -5,7 +5,7 @@
 
 def start():
     from webull_trader.models import DayTrade
-    from scripts import utils
+    from common import utils
 
     buy_orders, sell_orders = utils.get_day_trade_orders()
     day_trades = utils.get_trades_from_orders(buy_orders, sell_orders)

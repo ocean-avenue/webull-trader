@@ -7,9 +7,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from datetime import datetime, date
-from scripts import config
+from common import config, enums
 from sdk import fmpsdk, webullsdk, twiliosdk
-from webull_trader import enums
 from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
     StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
     WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar, HistoricalMarketStatistics

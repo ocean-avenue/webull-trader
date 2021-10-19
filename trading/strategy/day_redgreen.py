@@ -2,10 +2,10 @@
 
 from datetime import datetime, date
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
-from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
+from common.enums import SetupType
+from common import utils, config
 from sdk import webullsdk
-from scripts import utils, config
+from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 
 
 # Red to green day trading class

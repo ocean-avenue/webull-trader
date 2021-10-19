@@ -5,7 +5,7 @@
 
 def start():
     from sdk import fmpsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import EarningCalendar
 
     symbol_list = []

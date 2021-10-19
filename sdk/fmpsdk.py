@@ -1,7 +1,9 @@
 import json
 from urllib.request import urlopen
-from sdk.config import FMP_API_BASE_URL
-from credentials.fmpcred import FMP_API_KEY
+from credentials.fmp import FMP_API_KEY
+
+# https://financialmodelingprep.com/developer/docs
+FMP_API_BASE_URL = "https://financialmodelingprep.com/api/v3"
 
 
 def _get_jsonparsed_data(url):

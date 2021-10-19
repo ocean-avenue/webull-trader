@@ -7,7 +7,7 @@ def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import WebullOrder, SwingWatchlist
 
     if day == None:

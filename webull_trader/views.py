@@ -4,9 +4,8 @@ from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from sdk import fmpsdk
-from scripts import utils, config
-from webull_trader.enums import SetupType, TradingHourType
-from webull_trader.config import CACHE_TIMEOUT
+from common import utils, config
+from common.enums import SetupType, TradingHourType
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
     HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, \
     WebullNews, WebullOrderNote, TradingLog, ExceptionLog
@@ -243,7 +242,7 @@ def day_analytics(request):
             "start": event_date,
             "url": event_url,
         })
-    
+
     market_stat_list = HistoricalMarketStatistics.objects.all()
     # top gainer/loser change chart
     top_gainer_daily_values = []
@@ -279,7 +278,7 @@ def day_analytics(request):
         perf_stat_dates.append(daytrade_perf.date.strftime("%Y/%m/%d"))
         plwin_daily_values.append(
             round(daytrade_perf.profit_loss_ratio * daytrade_perf.win_rate, 2))
-    
+
     perf_stat = {
         'plwin_daily_values': plwin_daily_values,
         'daily_dates': perf_stat_dates,
@@ -646,7 +645,7 @@ def day_reports_price(request):
         "trades": price_trades,
     }
 
-    cache.set('day_reports_price_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_price_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -685,7 +684,7 @@ def day_reports_mktcap(request):
         "trades": stat_render['trades'],
     }
 
-    cache.set('day_reports_mktcap_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_mktcap_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -724,7 +723,7 @@ def day_reports_float(request):
         "trades": stat_render['trades'],
     }
 
-    cache.set('day_reports_float_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_float_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -763,7 +762,7 @@ def day_reports_turnover(request):
         "trades": stat_render['trades'],
     }
 
-    cache.set('day_reports_turnover_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_turnover_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -802,7 +801,7 @@ def day_reports_short(request):
         "trades": stat_render['trades'],
     }
 
-    cache.set('day_reports_short_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_short_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -883,7 +882,7 @@ def day_reports_gap(request):
         "trades": gap_trades,
     }
 
-    cache.set('day_reports_gap_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_gap_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -968,7 +967,7 @@ def day_reports_relvol(request):
         "trades": relvol_trades,
     }
 
-    cache.set('day_reports_relvol_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_relvol_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -1051,7 +1050,7 @@ def day_reports_sector(request):
         "trades": sector_trades,
     }
 
-    cache.set('day_reports_sector_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_sector_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -1131,7 +1130,7 @@ def day_reports_holding(request):
         "trades": holding_trades,
     }
 
-    cache.set('day_reports_holding_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_holding_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -1212,7 +1211,7 @@ def day_reports_plpct(request):
         "trades": plpct_trades,
     }
 
-    cache.set('day_reports_plpct_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_plpct_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 
@@ -1245,7 +1244,7 @@ def day_reports_hourly(request):
         "hourly_trades": hourly_stat['trades'],
     }
 
-    cache.set('day_reports_hourly_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_hourly_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_hourly.html', context)
 
@@ -1288,7 +1287,7 @@ def day_reports_daily(request):
         "daily_trades": daily_trades,
     }
 
-    cache.set('day_reports_daily_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_daily_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_daily.html', context)
 
@@ -1370,7 +1369,7 @@ def day_reports_weekly(request):
         "weekly_trades": weekly_trades,
     }
 
-    cache.set('day_reports_weekly_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_weekly_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_weekly.html', context)
 
@@ -1452,7 +1451,7 @@ def day_reports_monthly(request):
         "monthly_trades": monthly_trades,
     }
 
-    cache.set('day_reports_monthly_cache', context, CACHE_TIMEOUT)
+    cache.set('day_reports_monthly_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_monthly.html', context)
 
@@ -1534,7 +1533,7 @@ def swing_positions(request):
         "swing_positions": swing_positions,
     }
 
-    cache.set('swing_positions_cache', context, CACHE_TIMEOUT)
+    cache.set('swing_positions_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_positions.html', context)
 
@@ -1644,7 +1643,7 @@ def swing_positions_symbol(request, symbol=None):
     }
 
     cache.set('swing_positions_symbol_{}_cache'.format(
-        symbol), context, CACHE_TIMEOUT)
+        symbol), context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_positions_symbol.html', context)
 
@@ -1709,7 +1708,7 @@ def swing_analytics(request):
         "swing_top_loss": swing_top_loss,
     }
 
-    cache.set('swing_analytics_cache', context, CACHE_TIMEOUT)
+    cache.set('swing_analytics_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_analytics.html', context)
 
@@ -1791,6 +1790,6 @@ def swing_analytics_symbol(request, symbol=None):
     }
 
     cache.set('swing_analytics_{}_cache'.format(
-        symbol), context, CACHE_TIMEOUT)
+        symbol), context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/swing_analytics_symbol.html', context)

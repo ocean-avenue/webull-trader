@@ -39,7 +39,7 @@
 
 def start():
     from webull_trader.models import WebullOrder
-    from scripts import utils
+    from common import utils
 
     orders = WebullOrder.objects.all()
 

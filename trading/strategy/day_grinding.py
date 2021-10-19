@@ -4,9 +4,9 @@
 
 from datetime import datetime, date
 from trading.strategy.day_breakout import DayTradingBreakout
-from webull_trader.enums import SetupType
+from common.enums import SetupType
+from common import utils, config
 from sdk import webullsdk, finvizsdk
-from scripts import utils, config
 
 
 class DayTradingGrindingLargeCap(DayTradingBreakout):

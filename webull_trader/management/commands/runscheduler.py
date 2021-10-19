@@ -6,8 +6,9 @@ from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
+from common import utils
 from scripts import fetch_account, fetch_quotes, fetch_orders, fetch_news, fetch_earnings, fetch_histdata, \
-    check_exception, adjust_trades, calculate_histdata, utils
+    check_exception, adjust_trades, calculate_histdata
 from trading import executor as trading_executor
 
 WEEKDAYS = ["mon", "tue", "wed", "thu", "fri"]

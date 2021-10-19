@@ -6,7 +6,8 @@
 def start():
     from datetime import date, timedelta
     from scripts import fetch_account, fetch_orders, fetch_news, fetch_earnings, \
-        fetch_histdata, calculate_histdata, utils
+        fetch_histdata, calculate_histdata
+    from common import utils
 
     # print("[{}] Start fetch account job...".format(utils.get_now()))
     # fetch_account.start()

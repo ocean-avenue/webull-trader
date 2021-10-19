@@ -6,7 +6,8 @@ def start():
     from datetime import datetime
     from django_apscheduler.models import DjangoJobExecution
     from webull_trader.models import NotifiedErrorExecution
-    from scripts import clear_positions, utils
+    from common import utils
+    from scripts import clear_positions
 
     today = datetime.today()
     # all today's executions

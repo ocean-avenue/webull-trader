@@ -4,10 +4,10 @@
 
 from django.utils import timezone
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.enums import ActionType, SetupType
-from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
+from common.enums import ActionType, SetupType
+from common import utils, config
 from sdk import webullsdk
-from scripts import utils, config
+from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 
 
 class SwingTurtle(StrategyBase):

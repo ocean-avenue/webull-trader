@@ -4,10 +4,10 @@
 
 import time
 from datetime import datetime, timedelta
-from webull_trader.enums import AlgorithmType, SetupType
-from webull_trader.models import DayPosition, TradingSettings
+from common.enums import AlgorithmType, SetupType
+from common import utils, config
 from sdk import webullsdk
-from scripts import utils, config
+from webull_trader.models import DayPosition, TradingSettings
 
 
 class TradingExecutor:
@@ -211,8 +211,8 @@ class TradingExecutor:
 
 
 def start():
-    from scripts import utils
-    from webull_trader.enums import AlgorithmType
+    from common import utils
+    from common.enums import AlgorithmType
     from trading.executor import TradingExecutor
     # from trading.day_momo import DayTradingMomoNewHigh
     from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour

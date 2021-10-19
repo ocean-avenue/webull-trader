@@ -6,7 +6,7 @@
 def start():
     from django.utils import timezone
     from sdk import webullsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import DayPosition
 
     paper = utils.check_paper()

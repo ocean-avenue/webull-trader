@@ -6,8 +6,8 @@
 def start():
 
     from webull_trader.models import SwingPosition, SwingTrade, WebullOrder
-    from webull_trader.enums import ActionType
-    from scripts import utils
+    from common.enums import ActionType
+    from common import utils
 
     SWING_POSITIONS_ORDER_IDS = [
         {

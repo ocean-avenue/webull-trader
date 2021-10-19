@@ -2,9 +2,9 @@
 
 from datetime import datetime, date, timedelta
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.enums import SetupType
+from common.enums import SetupType
+from common import utils, config
 from sdk import webullsdk
-from scripts import utils, config
 
 
 # Momo day trading class

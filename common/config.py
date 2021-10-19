@@ -81,10 +81,20 @@ MAX_DAY_ENTRY_CANDLE_SURGE_RATIO = 0.1
 # candle check count for day trade buy the dip scale in
 DAY_BUY_DIP_CANDLE_CHECK_COUNT = 4
 
+# memcache config
+
+CACHE_TIMEOUT = 60 * 10
+
 # number config
 
 ONE_HUNDRED = 100
 ONE_MILLION = 1000000
+
+
+# twilio config
+TWLO_SENDER_NUMBER = "+19789484010"
+TWLO_MESSAGE_MAX_LENGTH = 1000
+
 
 # color config
 

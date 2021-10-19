@@ -5,7 +5,7 @@
 
 def start():
     from webull_trader.models import WebullOrder, WebullOrderNote, SwingPosition, SwingTrade
-    from scripts import utils
+    from common import utils
 
     all_orders = WebullOrder.objects.all()
 

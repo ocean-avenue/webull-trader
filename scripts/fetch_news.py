@@ -6,7 +6,7 @@ def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk
-    from scripts import utils
+    from common import utils
     from webull_trader.models import WebullOrder
 
     # paper = utils.check_paper()

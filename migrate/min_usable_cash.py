@@ -5,7 +5,7 @@
 
 def start():
     from webull_trader.models import WebullAccountStatistics
-    from scripts import utils
+    from common import utils
 
     acc_stats = WebullAccountStatistics.objects.all()
 
