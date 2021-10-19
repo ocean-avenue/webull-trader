@@ -3,6 +3,7 @@
 import pandas as pd
 from datetime import datetime, date, timedelta
 from common.enums import SetupType, TradingHourType
+from typing import Optional
 from common import utils, config, db
 from sdk import webullsdk
 from trading.strategy.strategy_base import StrategyBase
@@ -86,15 +87,17 @@ class DayTradingBreakout(StrategyBase):
         # # check if gap already too large
         # if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
         #     utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
-        #         ticker['symbol'], current_price, period_high_price))
+        #         symbol, current_price, period_high_price))
         #     return False
 
-        # # check if current candle already surge too much
-        # if (current_price - prev_close) / prev_close >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
-        #     surge_ratio = "{}%".format(round((current_price - prev_close) / prev_close * 100, 2))
-        #     utils.print_trading_log(
-        #         "<{}> current price (${}) already surge {} than prev close (${}), no entry!".format(symbol, current_price, surge_ratio, prev_close))
-        #     return False
+        # check if current candle already surge too much
+        prev_candle = bars.iloc[-2]
+        prev_close = prev_candle['close']
+        surge_ratio = (current_price - prev_close) / prev_close
+        if surge_ratio >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
+            surge_ratio = "{}%".format(round((current_price - prev_close) / prev_close * 100, 2))
+            utils.print_trading_log(f"<{symbol}> current price (${current_price}) already surge {'{}%'.format(round(surge_ratio * 100, 2))} than prev close (${prev_close}), no entry!")
+            return False
 
         if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
             utils.print_trading_log(
@@ -257,7 +260,7 @@ class DayTradingBreakout(StrategyBase):
     def check_if_trade_period_timeout(self, ticker) -> bool:
         return False
 
-    def get_stop_loss_price(self, buy_price: float, bars: pd.DataFrame) -> float:
+    def get_stop_loss_price(self, buy_price: float, bars: pd.DataFrame) -> Optional[float]:
         current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
         # use max( min( prev candle middle, buy price -2% ), buy price -5% )
@@ -267,10 +270,10 @@ class DayTradingBreakout(StrategyBase):
         #     round(buy_price * (1 - config.MAX_DAY_STOP_LOSS), 2))
         return min(current_candle['low'], prev_candle['low'])
 
-    def get_scale_stop_loss_price(self, buy_price: float, bars: pd.DataFrame):
+    def get_scale_stop_loss_price(self, buy_price: float, bars: pd.DataFrame) -> Optional[float]:
         return None
 
-    def get_buy_dip_loss_price(self, buy_price: float, bars: pd.DataFrame):
+    def get_buy_dip_loss_price(self, buy_price: float, bars: pd.DataFrame) -> Optional[float]:
         return None
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:
