@@ -182,13 +182,6 @@ def start():
             # fill webull order setup
             webull_order.setup = setup
             webull_order.save()
-        # skip if miss order
-        if uncompleted_order:
-            # reset require_adjustment
-            day_trade.require_adjustment = False
-            # save
-            day_trade.save()
-            continue
         # update total cost
         day_trade.total_cost = round(total_cost, 2)
         if buy_quantity > sell_quantity:
@@ -197,8 +190,10 @@ def start():
         day_trade.total_sold = round(total_sold, 2)
         # update quantity
         day_trade.quantity = buy_quantity
-        # reset require_adjustment
-        day_trade.require_adjustment = False
+        # may need adjust again later
+        if not uncompleted_order:
+            # reset require_adjustment
+            day_trade.require_adjustment = False
         # save
         day_trade.save()
 
