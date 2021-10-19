@@ -89,16 +89,16 @@ class WebullOrderAdmin(admin.ModelAdmin):
 admin.site.register(models.WebullOrder, WebullOrderAdmin)
 
 
-class WebullOrderNoteAdmin(admin.ModelAdmin):
+# class WebullOrderNoteAdmin(admin.ModelAdmin):
 
-    list_display = [
-        'order_id',
-        'setup',
-        'note',
-    ]
+#     list_display = [
+#         'order_id',
+#         'setup',
+#         'note',
+#     ]
 
 
-admin.site.register(models.WebullOrderNote, WebullOrderNoteAdmin)
+# admin.site.register(models.WebullOrderNote, WebullOrderNoteAdmin)
 
 
 class WebullNewsAdmin(admin.ModelAdmin):

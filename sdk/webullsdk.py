@@ -20,7 +20,16 @@ WEBULL_PRE_MARKET_LOSERS_URL = "https://quotes-gw.webullfintech.com/api/wlas/ran
 WEBULL_QUOTE_1M_CHARTS_URL = "https://quotes-gw.webullbroker.com/api/quote/charts/query?tickerIds={}&type=m1&count={}&extendTrading=1"
 
 
-wb_session = None
+ORDER_STATUS_CANCELED = "Cancelled"
+ORDER_STATUS_FILLED = "Filled"
+ORDER_STATUS_WORKING = "Working"
+ORDER_STATUS_PARTIALLY_FILLED = "Partially Filled"
+ORDER_STATUS_PENDING = "Pending"
+ORDER_STATUS_FAILED = "Failed"
+ORDER_STATUS_ALL = "All"
+
+
+_wb_session = None
 
 
 def _get_browser_headers():
@@ -32,38 +41,38 @@ def _get_browser_headers():
 
 
 def _get_session():
-    global wb_session
-    if not wb_session:
-        wb_session = requests.Session()
-        wb_session.headers.update(_get_browser_headers())
-    return wb_session
+    global _wb_session
+    if not _wb_session:
+        _wb_session = requests.Session()
+        _wb_session.headers.update(_get_browser_headers())
+    return _wb_session
 
 
-wb_instance = None
-wb_paper = True
-wb_trade_pwd = "123456"
+_wb_instance = None
+_wb_paper = True
+_wb_trade_pwd = "123456"
 
 
 def _get_instance():
-    global wb_instance
-    global wb_paper
-    if wb_instance:
-        return wb_instance
-    if wb_paper:
+    global _wb_instance
+    global _wb_paper
+    if _wb_instance:
+        return _wb_instance
+    if _wb_paper:
         return paper_webull()
     else:
         return webull()
 
 
 def login(paper=True):
-    global wb_instance
-    global wb_paper
-    global wb_trade_pwd
+    global _wb_instance
+    global _wb_paper
+    global _wb_trade_pwd
     if paper:
-        wb_instance = paper_webull()
+        _wb_instance = paper_webull()
     else:
-        wb_instance = webull()
-    wb_paper = paper
+        _wb_instance = webull()
+    _wb_paper = paper
 
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:
@@ -72,16 +81,16 @@ def login(paper=True):
         return False
 
     credentials_data = json.loads(credentials.cred)
-    wb_trade_pwd = credentials.trade_pwd
+    _wb_trade_pwd = credentials.trade_pwd
 
-    wb_instance._refresh_token = credentials_data['refreshToken']
-    wb_instance._access_token = credentials_data['accessToken']
-    wb_instance._token_expire = credentials_data['tokenExpireTime']
-    wb_instance._uuid = credentials_data['uuid']
+    _wb_instance._refresh_token = credentials_data['refreshToken']
+    _wb_instance._access_token = credentials_data['accessToken']
+    _wb_instance._token_expire = credentials_data['tokenExpireTime']
+    _wb_instance._uuid = credentials_data['uuid']
 
     try:
         # refresh login
-        n_data = wb_instance.refresh_login()
+        n_data = _wb_instance.refresh_login()
 
         credentials_data['refreshToken'] = n_data['refreshToken']
         credentials_data['accessToken'] = n_data['accessToken']
@@ -92,7 +101,7 @@ def login(paper=True):
         utils.print_trading_log("⚠️  Exception refresh_login: {}".format(e))
         return False
 
-    wb_instance.get_account_id()
+    _wb_instance.get_account_id()
     return True
 
 
@@ -287,10 +296,10 @@ def get_portfolio():
 
 
 def get_usable_cash():
-    global wb_paper
+    global _wb_paper
     portfolio = get_portfolio()
     usable_cash = 0.0
-    if wb_paper:
+    if _wb_paper:
         usable_cash = float(portfolio['usableCash'])
     else:
         usable_cash = float(portfolio['cashBalance'])
@@ -298,9 +307,9 @@ def get_usable_cash():
 
 
 def get_day_profit_loss():
-    global wb_paper
+    global _wb_paper
     day_profit_loss = "-"
-    if wb_paper:
+    if _wb_paper:
         portfolio = get_portfolio()
         if "dayProfitLoss" in portfolio:
             day_profit_loss = portfolio['dayProfitLoss']
@@ -602,9 +611,9 @@ def get_sample_ticker():
 
 
 def buy_limit_order(ticker_id=None, price=0, quant=0):
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     try:
@@ -627,9 +636,9 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
 
 
 def buy_market_order(ticker_id=None, quant=0):
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     try:
@@ -651,9 +660,9 @@ def buy_market_order(ticker_id=None, quant=0):
 
 
 def sell_limit_order(ticker_id=None, price=0, quant=0):
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     try:
@@ -676,9 +685,9 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
 # {'success': True, 'data': {'orderId': 466847988010979328}}
 
 def sell_market_order(ticker_id=None, quant=0):
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return {'msg': "Get trading token failed!"}
     instance = _get_instance()
     try:
@@ -697,9 +706,9 @@ def sell_market_order(ticker_id=None, quant=0):
 
 # True
 def cancel_order(order_id):
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return False
     instance = _get_instance()
     try:
@@ -711,20 +720,20 @@ def cancel_order(order_id):
 
 
 def cancel_all_orders():
-    global wb_paper
-    global wb_trade_pwd
-    if not wb_paper and not get_trade_token(wb_trade_pwd):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
         return
     instance = _get_instance()
     instance.cancel_all_orders()
 
 
 def check_order_canceled(order_id):
-    global wb_paper
+    global _wb_paper
     order_canceled = False
     canceled_orders = get_history_orders(status="Cancelled", count=100)
     for canceled_order in canceled_orders:
-        if wb_paper:
+        if _wb_paper:
             try:
                 if order_id == canceled_order["orderId"]:
                     order_canceled = True
@@ -983,15 +992,15 @@ def get_current_orders():
 # ]
 
 
-def get_history_orders(status='All', count=1000):
-    time.sleep(1)
+def get_history_orders(status=ORDER_STATUS_ALL, count=20):
+    time.sleep(0.5)
     try:
         instance = _get_instance()
         return instance.get_history_orders(status=status, count=count)
     except Exception as e:
         utils.print_trading_log(
             "⚠️  Exception get_history_orders: {}".format(e))
-        return None
+        return []
 
 # [
 #    {
