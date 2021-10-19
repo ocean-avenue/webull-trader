@@ -3,7 +3,7 @@
 # Grinding day trading strategy with large cap and major news
 
 from datetime import datetime, date
-from trading.day_breakout import DayTradingBreakout
+from trading.strategy.day_breakout import DayTradingBreakout
 from webull_trader.enums import SetupType
 from sdk import webullsdk, finvizsdk
 from scripts import utils, config

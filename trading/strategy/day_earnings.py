@@ -3,7 +3,7 @@
 from django.utils import timezone
 from datetime import date, datetime
 from webull_trader.models import EarningCalendar, DayPosition
-from trading.strategy_base import StrategyBase
+from trading.strategy.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from sdk import webullsdk
 from scripts import utils, config

@@ -215,15 +215,15 @@ def start():
     from webull_trader.enums import AlgorithmType
     from trading.executor import TradingExecutor
     # from trading.day_momo import DayTradingMomoNewHigh
-    from trading.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
-    from trading.day_redgreen import DayTradingRedGreen
-    from trading.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
+    from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
+    from trading.strategy.day_redgreen import DayTradingRedGreen
+    from trading.strategy.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
         DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers, DayTradingBreakoutScale, \
         DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, DayTradingBreakoutScalePeriodROC
-    from trading.day_earnings import DayTradingEarningsOvernight
-    from trading.day_vwap import DayTradingVWAPPaper, DayTradingVWAPLargeCap
-    from trading.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
-    from trading.swing_turtle import SwingTurtle
+    from trading.strategy.day_earnings import DayTradingEarningsOvernight
+    from trading.strategy.day_vwap import DayTradingVWAPPaper, DayTradingVWAPLargeCap
+    from trading.strategy.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
+    from trading.strategy.swing_turtle import SwingTurtle
 
     paper = utils.check_paper()
     trading_hour = utils.get_trading_hour()

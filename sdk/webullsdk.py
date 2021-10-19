@@ -732,6 +732,7 @@ def check_order_canceled(order_id):
     return order_canceled
 
 
+# Paper
 # [
 #    {
 #       "id":10395509,
@@ -770,7 +771,49 @@ def check_order_canceled(order_id):
 #    }
 # ]
 
-
+# Live
+# [
+#    {
+#       "id":502361989079638016,
+#       "brokerPosId":"2GHG3ALA6CO10U8B031G1V9JT9",
+#       "brokerId":8,
+#       "tickerId":950136998,
+#       "ticker":{
+#          "tickerId":950136998,
+#          "symbol":"DDOG",
+#          "name":"Datadog Inc",
+#          "tinyName":"Datadog Inc",
+#          "listStatus":1,
+#          "exchangeCode":"NSQ",
+#          "exchangeId":96,
+#          "type":2,
+#          "regionId":6,
+#          "currencyId":247,
+#          "currencyCode":"USD",
+#          "secType":[
+#             61
+#          ],
+#          "disExchangeCode":"NASDAQ",
+#          "disSymbol":"DDOG"
+#       },
+#       "exchange":"NSQ",
+#       "position":"1",
+#       "assetType":"stock",
+#       "cost":"157.08",
+#       "costPrice":"157.080",
+#       "currency":"USD",
+#       "lastPrice":"157.42",
+#       "marketValue":"157.42",
+#       "unrealizedProfitLoss":"0.34",
+#       "unrealizedProfitLossRate":"0.0022",
+#       "positionProportion":"0.1430",
+#       "exchangeRate":"1",
+#       "lastOpenTime":"10/14/2021 13:32:41 GMT",
+#       "updatePositionTimeStamp":1634218361892,
+#       "lock":false
+#    },
+#    ...
+# ]
 def get_positions():
     try:
         instance = _get_instance()

@@ -2,9 +2,8 @@
 
 # Turtle trading
 
-from datetime import date
 from django.utils import timezone
-from trading.strategy_base import StrategyBase
+from trading.strategy.strategy_base import StrategyBase
 from webull_trader.enums import ActionType, SetupType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 from sdk import webullsdk

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import date
-from trading.strategy_base import StrategyBase
+from trading.strategy.strategy_base import StrategyBase
 from webull_trader.enums import SetupType
 from scripts import config
 from sdk import webullsdk, finvizsdk
