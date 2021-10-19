@@ -687,17 +687,18 @@ class StrategyBase:
         # may still have left tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
-            position_obj = ticker['position_obj']
-            # update setup
-            position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
-            position_obj.save()
-            # remove from monitor
-            del self.tracking_tickers[symbol]
-            utils.print_trading_log(
-                "Failed to clear position <{}>!".format(symbol))
-            # send message
-            utils.notify_message(
-                "Failed to clear position <{}>, add day position object.".format(symbol))
+            position_obj = ticker['position_obj'] or DayPosition.objects.filter(symbol=symbol).first()
+            if position_obj:
+                # update setup
+                position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
+                position_obj.save()
+                # remove from monitor
+                del self.tracking_tickers[symbol]
+                utils.print_trading_log(
+                    "Failed to clear position <{}>!".format(symbol))
+                # send message
+                utils.notify_message(
+                    "Failed to clear position <{}>, add day position object.".format(symbol))
 
     def clear_position(self, ticker):
         symbol = ticker['symbol']
