@@ -4,25 +4,25 @@
 
 import time
 from datetime import datetime, timedelta
+from typing import List
 from common.enums import AlgorithmType, SetupType
-from common import utils, config
+from common import utils, db, config
 from sdk import webullsdk
-from webull_trader.models import DayPosition, TradingSettings
+from trading.strategy.strategy_base import StrategyBase
+from webull_trader.models import DayPosition
 
 
 class TradingExecutor:
 
-    def __init__(self, strategies=[], paper=True):
-        self.paper = paper
-        self.strategies = strategies
+    def __init__(self, strategies:List[StrategyBase]=[], paper:bool=True):
+        self.paper:bool = paper
+        self.strategies:List[StrategyBase] = strategies
 
         self.unsold_tickers = {}
 
     def start(self):
 
-        if not self.load_settings():
-            utils.print_trading_log("Cannot find trading settings, quit!")
-            return
+        self.load_settings()
 
         if len(self.strategies) == 0:
             utils.print_trading_log("Cannot find trading strategy, quit!")
@@ -69,6 +69,7 @@ class TradingExecutor:
             # go through strategies trades
             for strategy in self.strategies:
                 if not strategy.trading_end:
+                    straregy.update_orders()
                     strategy.on_update()
                     strategy.save_logs()
 
@@ -113,14 +114,9 @@ class TradingExecutor:
 
     # load settings
     def load_settings(self):
-
-        trading_settings = TradingSettings.objects.first()
-        if not trading_settings:
-            return False
-
+        trading_settings = db.get_or_create_trading_settings()
         # algorithm type
         self.algo_type = trading_settings.algo_type
-
         # init setting for strategies
         for strategy in self.strategies:
             strategy.load_settings(
@@ -134,7 +130,6 @@ class TradingExecutor:
                 swing_position_amount_limit=trading_settings.swing_position_amount_limit,
                 day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
             )
-        return True
 
     # notify me if has short positions
     def notify_if_has_short_positions(self):

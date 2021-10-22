@@ -1046,7 +1046,7 @@ def check_paper():
     if not settings:
         print(
             "[{}] Cannot find trading settings, default paper trading!".format(get_now()))
-        return False
+        return True
     return settings.paper
 
 

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional, Tuple
 from django.utils import timezone
 from datetime import date, datetime
-from webull_trader.models import EarningCalendar, DayPosition
+from trading.tracker.trading_tracker import TrackingTicker
 from trading.strategy.strategy_base import StrategyBase
+from webull_trader.models import EarningCalendar, DayPosition
 from common.enums import SetupType
 from common import utils, config
 from sdk import webullsdk
@@ -17,30 +19,32 @@ class DayTradingEarningsOvernight(StrategyBase):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.trading_price = {}
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingEarningsOvernight"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_EARNINGS_GAP
 
-    def check_entry(self, ticker, quote):
+    def check_entry(self, ticker: TrackingTicker, quote: dict) -> bool:
         if 'pChRatio' in quote and float(quote['pChRatio']) >= config.MIN_EARNING_GAP_RATIO:
             return True
         return False
 
-    def check_stop_loss(self, ticker):
+    def check_stop_loss(self, ticker: TrackingTicker) -> Tuple[bool, Optional[str]]:
         return (False, None)
 
-    def check_exit(self, ticker):
+    def check_exit(self, ticker: TrackingTicker) -> Tuple[bool, Optional[str]]:
         if datetime.now().hour > 12:
             return (True, "Sell at 12:00 PM!")
         return (False, None)
 
-    def trade(self, ticker):
+    def trade(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
 
-        symbol = ticker['symbol']
-        ticker_id = ticker['ticker_id']
-
+        # if ticker.has_pending_order():
+        #     return
+        # TODO
         if ticker['pending_buy']:
             order_id = ticker['pending_order_id']
             if self.check_buy_order_filled(ticker, resubmit=True, stop_tracking=True):
@@ -161,8 +165,8 @@ class DayTradingEarningsOvernight(StrategyBase):
 
     def on_update(self):
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 

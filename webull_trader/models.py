@@ -113,6 +113,7 @@ class WebullOrder(models.Model):
         choices=enums.SetupType.tochoices(),
         default=enums.SetupType.UNKNOWN
     )
+    note = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return "[{}] <{}> {} total: {}, filled: {}, price: ${}, avg: ${}".format(
@@ -123,19 +124,6 @@ class WebullOrder(models.Model):
             self.filled_quantity,
             self.price,
             self.avg_price)
-
-
-class WebullOrderNote(models.Model):
-    order_id = models.CharField(max_length=128)
-    setup = models.PositiveSmallIntegerField(
-        choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH
-    )
-    note = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        setup_str = enums.SetupType.tostr(self.setup)
-        return "{}: {}, {}".format(self.order_id, setup_str, self.note)
 
 
 class WebullNews(models.Model):

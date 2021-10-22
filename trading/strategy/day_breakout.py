@@ -3,11 +3,11 @@
 import pandas as pd
 from datetime import datetime, date, timedelta
 from common.enums import SetupType, TradingHourType
-from typing import Optional
+from typing import List, Optional
 from common import utils, config, db
 from sdk import webullsdk
 from trading.strategy.strategy_base import StrategyBase
-from trading.tracker import TrackingTicker
+from trading.tracker.trading_tracker import TrackingTicker
 from webull_trader.models import EarningCalendar
 
 
@@ -103,14 +103,14 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # stop tracking
-            self.ticker_tracker.start_tracking(ticker)
+            self.trading_tracker.stop_tracking(ticker)
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
             utils.print_trading_log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # stop tracking
-            self.ticker_tracker.start_tracking(ticker)
+            self.trading_tracker.stop_tracking(ticker)
             return False
 
         if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
@@ -285,8 +285,8 @@ class DayTradingBreakout(StrategyBase):
         ROC = (current_price - period_price) / period_price * 100
         return ROC
 
-    def update_exit_period(self, ticker, position):
-        return
+    def update_exit_period(self, ticker: TrackingTicker, position: dict):
+        pass
 
     def submit_buy_order(self, ticker: TrackingTicker, bars: pd.DataFrame, scale_in: bool = False, buy_dip: bool = False):
         symbol = ticker.get_symbol()
@@ -383,7 +383,7 @@ class DayTradingBreakout(StrategyBase):
                 utils.print_trading_log(
                     "Trading <{}> session timeout!".format(symbol))
                 # stop ticker tracking
-                self.ticker_tracker.stop_tracking(ticker)
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             # fetch 1m bar charts
@@ -407,25 +407,24 @@ class DayTradingBreakout(StrategyBase):
             if not ticker_position:
                 utils.print_trading_log(
                     "Finding <{}> position error!".format(symbol))
-                del self.tracking_tickers[symbol]
+                self.trading_tracker.stop_tracking(ticker)
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
                 utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
-                del self.tracking_tickers[symbol]
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
-            self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
+            ticker.set_last_profit_loss_rate(profit_loss_rate)
             # update exit period by profit loss rate
             self.update_exit_period(ticker, ticker_position)
 
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
-            max_profit_loss_rate = self.tracking_tickers[symbol]['max_profit_loss_rate']
-            if profit_loss_rate > max_profit_loss_rate:
-                self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
+            if profit_loss_rate > ticker.get_max_profit_loss_rate():
+                ticker.set_max_profit_loss_rate(profit_loss_rate)
 
             # check stop profit, home run
             exit_trading, exit_note = self.check_stop_profit(
@@ -466,12 +465,9 @@ class DayTradingBreakout(StrategyBase):
                 self.submit_buy_order(ticker, bars, buy_dip=True)
 
     def on_update(self):
-        # update trackers
-        self.order_tracker.update_orders()
-
         # trading tickers
-        for symbol in self.ticker_tracker.get_tracking_tickers():
-            ticker = self.ticker_tracker.get_tracking_ticker(symbol)
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
@@ -490,7 +486,7 @@ class DayTradingBreakout(StrategyBase):
             symbol = gainer["symbol"]
             ticker_id = str(gainer["ticker_id"])
             # check if ticker already in tracking
-            if self.ticker_tracker.is_tracking(symbol):
+            if self.trading_tracker.is_tracking(symbol):
                 continue
             # init tracking ticker
             ticker = TrackingTicker(symbol, ticker_id)
@@ -514,14 +510,14 @@ class DayTradingBreakout(StrategyBase):
                     # check if trasaction amount and volume meets requirement
                     if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
                         # start tracking ticker
-                        self.ticker_tracker.start_tracking(ticker)
+                        self.trading_tracker.start_tracking(ticker)
                         utils.print_trading_log(
                             "Start trading <{}>...".format(symbol))
                         # do trade
                         self.trade(ticker, m1_bars=m1_bars)
                 elif self.is_regular_market_hour():
                     # start tracking ticker
-                    self.ticker_tracker.start_tracking(ticker)
+                    self.trading_tracker.start_tracking(ticker)
                     utils.print_trading_log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
@@ -561,28 +557,27 @@ class DayTradingBreakoutDynExit(DayTradingBreakout):
     def get_tag(self):
         return "DayTradingBreakoutDynExit"
 
-    def update_exit_period(self, ticker, position):
-        symbol = ticker['symbol']
+    def update_exit_period(self, ticker: TrackingTicker, position):
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
-        current_exit_period = ticker['exit_period'] or 1
+        current_exit_period = ticker.get_exit_period() or 1
         # if profit_loss_rate >= 0.9 and current_exit_period > 1:
-        #     self.tracking_tickers[symbol]['exit_period'] = 1
+        #     ticker.set_exit_period(1)
         # elif profit_loss_rate >= 0.7 and current_exit_period > 3:
-        #     self.tracking_tickers[symbol]['exit_period'] = 3
+        #     ticker.set_exit_period(3)
         if profit_loss_rate >= 0.5 and current_exit_period > 5:
-            self.tracking_tickers[symbol]['exit_period'] = 5
+            ticker.set_exit_period(5)
         elif profit_loss_rate >= 0.3 and current_exit_period > 7:
-            self.tracking_tickers[symbol]['exit_period'] = 7
+            ticker.set_exit_period(7)
 
 
 # Breakout day trading class, will check earning stock during earning date
 
 class DayTradingBreakoutEarnings(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutEarnings"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         if len(self.earning_tickers) == 0:
             if self.entry_period == 30:
                 return SetupType.DAY_30_CANDLES_NEW_HIGH
@@ -592,8 +587,9 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
         else:
             return SetupType.DAY_EARNINGS_GAP
 
-    def check_trade(self, symbol, ticker_id, change_percentage):
-        ticker = self.build_tracking_ticker(symbol, ticker_id)
+    def check_trade(self, ticker: TrackingTicker, change_percentage: float):
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
         # check if can trade with requirements
         if not self.check_can_trade_ticker(ticker):
             return
@@ -609,21 +605,22 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 latest_candle2 = m1_bars.iloc[-2]
                 # check if trasaction amount and volume meets requirement
                 if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
-                    # found trading ticker
-                    self.tracking_tickers[symbol] = ticker
+                    # start tracking ticker
+                    self.trading_tracker.start_tracking(ticker)
                     utils.print_trading_log(
-                        "Found <{}> to trade!".format(symbol))
+                        "Start trading <{}>...".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)
             elif self.is_regular_market_hour():
-                # found trading ticker
-                self.tracking_tickers[symbol] = ticker
-                utils.print_trading_log("Found <{}> to trade!".format(symbol))
+                # start tracking ticker
+                self.trading_tracker.start_tracking(ticker)
+                utils.print_trading_log(
+                    "Start trading <{}>...".format(symbol))
                 # do trade
                 self.trade(ticker)
 
     def on_begin(self):
-        self.earning_tickers = []
+        self.earning_tickers: List[dict] = []
         # check earning calendars
         today = date.today()
         if self.is_pre_market_hour() or self.is_regular_market_hour():
@@ -645,8 +642,8 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
 
     def on_update(self):
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
@@ -665,19 +662,20 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
             for gainer in top_gainers:
                 symbol = gainer["symbol"]
-                # check if ticker already in monitor
-                if symbol in self.tracking_tickers:
+                # check if ticker already in tracking
+                if self.trading_tracker.is_tracking(symbol):
                     continue
-                ticker_id = gainer["ticker_id"]
+                ticker_id = str(gainer["ticker_id"])
+                ticker = TrackingTicker(symbol, ticker_id)
                 # utils.print_trading_log("Scanning <{}>...".format(symbol))
                 change_percentage = gainer["change_percentage"]
-                self.check_trade(symbol, ticker_id, change_percentage)
+                self.check_trade(ticker, change_percentage)
         else:
             for earning_ticker in self.earning_tickers:
                 symbol = earning_ticker["symbol"]
                 ticker_id = earning_ticker["ticker_id"]
-                # check if ticker already in monitor
-                if symbol in self.tracking_tickers:
+                # check if ticker already tracking
+                if self.trading_tracker.is_tracking(symbol):
                     continue
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
                 if quote == None:
@@ -689,7 +687,8 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 elif self.is_regular_market_hour():
                     if 'changeRatio' in quote:
                         change_percentage = float(quote['changeRatio'])
-                self.check_trade(symbol, ticker_id, change_percentage)
+                ticker = TrackingTicker(symbol, ticker_id)
+                self.check_trade(ticker, change_percentage)
 
 
 # Breakout day trade, no entry if the price not break max of last high price.
@@ -724,7 +723,7 @@ class DayTradingBreakoutPeriod(DayTradingBreakout):
 
 class DayTradingBreakoutPreLosers(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutPreLosers"
 
     def on_begin(self):
@@ -740,23 +739,23 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
         if self.is_pre_market_hour() or self.is_after_market_hour():
             # only trade in regular hour
             return
-
+        
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
         for preloser_ticker in self.preloser_tickers:
             symbol = preloser_ticker["symbol"]
             ticker_id = preloser_ticker["ticker_id"]
-            # check if ticker already in monitor
-            if symbol in self.tracking_tickers:
+            # check if ticker already tracking
+            if self.trading_tracker.is_tracking(symbol):
                 continue
             # found trading ticker
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
-            self.tracking_tickers[symbol] = ticker
-            utils.print_trading_log("Found <{}> to trade!".format(symbol))
+            ticker = TrackingTicker(symbol, ticker_id)
+            self.trading_tracker.start_tracking(ticker)
+            utils.print_trading_log("Start trading <{}>...".format(symbol))
             # do trade
             self.trade(ticker)
 

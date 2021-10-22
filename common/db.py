@@ -3,7 +3,27 @@ from django.conf import settings
 from datetime import datetime, date
 from common import enums, utils
 from sdk import webullsdk
-from webull_trader.models import WebullAccountStatistics, WebullCredentials, WebullOrder
+from webull_trader.models import TradingSettings, WebullAccountStatistics, WebullCredentials, WebullOrder
+
+
+def get_or_create_trading_settings():
+    settings = TradingSettings.objects.first()
+    if not settings:
+        settings = TradingSettings(
+            paper=True,
+            algo_type=enums.AlgorithmType.DAY_BREAKOUT_20,
+            order_amount_limit=1000.0,
+            extended_order_amount_limit=1000.0,
+            target_profit_ratio=0.02,
+            stop_loss_ratio=-0.01,
+            day_free_float_limit_in_million=-1.0,  # all free float
+            day_turnover_rate_limit_percentage=-1.0,  # all turnover rate
+            day_sectors_limit='',  # all sectors
+            swing_position_amount_limit=1000.0,
+            day_trade_usable_cash_threshold=10000.0,
+        )
+        settings.save()
+    return settings
 
 
 def save_webull_credentials(cred_data: dict, paper: bool = True):

@@ -4,30 +4,12 @@
 
 def start():
     from sdk import fmpsdk
-    from common import enums, utils
+    from common import db, utils
     from common.watchlist import WATCHLIST_SYMBOLS
-    from webull_trader.models import TradingSettings, SwingWatchlist
+    from webull_trader.models import SwingWatchlist
 
-    trading_settings = TradingSettings.objects.first()
-    if not trading_settings:
-        trading_settings = TradingSettings(
-            paper=True,
-            algo_type=enums.AlgorithmType.DAY_BREAKOUT_20,
-            order_amount_limit=1000.0,
-            extended_order_amount_limit=1000.0,
-            target_profit_ratio=0.02,
-            stop_loss_ratio=-0.01,
-            day_free_float_limit_in_million=-1.0,  # all free float
-            day_turnover_rate_limit_percentage=-1.0,  # all turnover rate
-            day_sectors_limit='',  # all sectors
-            swing_position_amount_limit=1000.0,
-            day_trade_usable_cash_threshold=10000.0,
-        )
-        trading_settings.save()
-
-        print("[{}] Trading settings initialized successful.".format(utils.get_now()))
-    else:
-        print("[{}] Trading settings already initialized!".format(utils.get_now()))
+    db.get_or_create_trading_settings()
+    print("[{}] Trading settings initialized successful.".format(utils.get_now()))
 
     for symbol in WATCHLIST_SYMBOLS:
         watchlist = SwingWatchlist.objects.filter(symbol=symbol).first()

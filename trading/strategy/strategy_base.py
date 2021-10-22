@@ -6,12 +6,16 @@ import time
 import json
 from datetime import datetime, timedelta, date
 from django.utils import timezone
-from trading.tracker import OrderTracker, TradingTracker, TrackingTicker
-from webull_trader.models import DayPosition, SwingPosition, SwingTrade, TradingSettings
+from trading.tracker.order_tracker import OrderTracker
+from trading.tracker.trading_tracker import TradingTracker, TrackingTicker
+from webull_trader.models import DayPosition, SwingPosition, SwingTrade
 from common.enums import SetupType, TradingHourType
-from common import utils, config
+from common import utils, db, config
 from sdk import webullsdk, fmpsdk
 
+
+ONE_HUNDRED = 100
+ONE_MILLION = 1000000
 
 class StrategyBase:
 
@@ -19,11 +23,10 @@ class StrategyBase:
         self.paper: bool = paper
         self.trading_hour: TradingHourType = trading_hour
         self.trading_end: bool = False
-        self.ticker_tracker: TradingTracker = TradingTracker()
+        self.trading_tracker: TradingTracker = TradingTracker()
         self.order_tracker: OrderTracker = OrderTracker()
         # init trading variables
-        self.tracking_tickers = {}
-        self.tracking_stats = {}
+        # TODO, remove
         # may have error short sell due to latency
         self.error_short_tickers = {}
         # sometime system may not cancel order correctly
@@ -94,50 +97,14 @@ class StrategyBase:
             self.day_trade_usable_cash_threshold))
 
         return True
+    
+    def update_orders(self):
+        # update order tracker
+        self.order_tracker.update_orders()
 
     def save_logs(self):
         # save trading logs
         utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
-
-    def build_tracking_ticker(self, symbol, ticker_id, prev_close=None, prev_high=None):
-        # init tracking stats if not
-        if symbol not in self.tracking_stats:
-            self.tracking_stats[symbol] = {
-                "trades": 0,
-                "win_trades": 0,
-                "lose_trades": 0,
-                "sector": None,
-                "free_float": None,
-                "turnover_rate": None,
-                "continue_lose_trades": 0,
-                "last_high_price": None,
-                "last_trade_time": None,
-            }
-        # init tracking tocker
-        return {
-            "symbol": symbol,
-            "ticker_id": ticker_id,
-            "pending_buy": False,
-            "pending_sell": False,
-            "pending_order_id": None,
-            "pending_order_time": None,
-            "last_profit_loss_rate": None,
-            "last_buy_time": None,
-            "last_sell_time": None,
-            "positions": 0,
-            "start_time": datetime.now(),
-            "target_profit": None,
-            "stop_loss": None,
-            # paper trade do not have stop trailing order, this value keep track of max P&L
-            "max_profit_loss_rate": 0,
-            "exit_note": None,
-            "prev_close": prev_close,
-            "prev_high": prev_high,
-            "resubmit_count": 0,
-            "initial_cost": None,
-            "exit_period": None,
-            "position_obj": None,
-        }
 
     def build_error_short_ticker(self, symbol, ticker_id):
         return {
@@ -163,39 +130,39 @@ class StrategyBase:
 
     def check_can_trade_ticker(self, ticker: TrackingTicker):
         symbol = ticker.get_symbol()
-        settings = TradingSettings.objects.first()
-        if not settings:
-            return True
+        ticker_id = ticker.get_id()
+        settings = db.get_or_create_trading_settings()
         day_free_float_limit_in_million = settings.day_free_float_limit_in_million
         day_turnover_rate_limit_percentage = settings.day_turnover_rate_limit_percentage
+        tracking_status = self.trading_tracker.get_status(symbol)
         # fetch data if not cached
         if day_free_float_limit_in_million > 0 or day_turnover_rate_limit_percentage > 0:
-            if self.tracking_stats[symbol]["free_float"] == None or self.tracking_stats[symbol]["turnover_rate"] == None:
-                quote = webullsdk.get_quote(ticker_id=ticker.get_id())
-                self.tracking_stats[symbol]["free_float"] = utils.get_attr_to_float_or_none(
-                    quote, "outstandingShares")
-                self.tracking_stats[symbol]["turnover_rate"] = utils.get_attr_to_float_or_none(
-                    quote, "turnoverRate")
+            if tracking_status.get_free_float() == None or tracking_status.get_turnover_rate() == None:
+                quote = webullsdk.get_quote(ticker_id=ticker_id)
+                tracking_status.set_free_float(
+                    utils.get_attr_to_float_or_none(quote, "outstandingShares"))
+                tracking_status.set_turnover_rate(
+                    utils.get_attr_to_float_or_none(quote, "turnoverRate"))
         free_float_check = True
         if day_free_float_limit_in_million > 0:
-            if self.tracking_stats[symbol]["free_float"] == None or \
-                    self.tracking_stats[symbol]["free_float"] > day_free_float_limit_in_million * config.ONE_MILLION:
+            if tracking_status.get_free_float() == None or \
+                    tracking_status.get_free_float() > day_free_float_limit_in_million * ONE_MILLION:
                 free_float_check = False
         turnover_rate_check = True
         if day_turnover_rate_limit_percentage > 0:
-            if self.tracking_stats[symbol]["turnover_rate"] == None or \
-                    self.tracking_stats[symbol]["turnover_rate"] * config.ONE_HUNDRED < day_turnover_rate_limit_percentage:
+            if tracking_status.get_turnover_rate() == None or \
+                    tracking_status.get_turnover_rate() * ONE_HUNDRED < day_turnover_rate_limit_percentage:
                 turnover_rate_check = False
         sectors_check = True
         day_sectors_limit = settings.day_sectors_limit
         if len(day_sectors_limit) > 0:
             # fetch sector if not cached
-            if self.tracking_stats[symbol]["sector"] == None:
+            if tracking_status.get_sector() == None:
                 profile = fmpsdk.get_profile(symbol)
                 if profile and "sector" in profile:
-                    self.tracking_stats[symbol]["sector"] = profile["sector"]
+                    tracking_status.set_sector(profile["sector"])
             sectors_limit = day_sectors_limit.split(",")
-            if self.tracking_stats[symbol]["sector"] == None or self.tracking_stats[symbol]["sector"] not in sectors_limit:
+            if tracking_status.get_sector() == None or tracking_status.get_sector() not in sectors_limit:
                 sectors_check = False
 
         check = (free_float_check or turnover_rate_check) and sectors_check
@@ -266,7 +233,7 @@ class StrategyBase:
         for position in positions:
             symbol = position['ticker']['symbol']
             # still in tracking
-            if symbol in self.tracking_tickers:
+            if self.trading_tracker.is_tracking(symbol):
                 continue
             # handling in short positions
             if symbol in self.error_short_tickers:
@@ -278,10 +245,10 @@ class StrategyBase:
             if SwingPosition.objects.filter(symbol=symbol).first():
                 continue
             ticker_id = position['ticker']['tickerId']
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
-            ticker['positions'] = int(position['position'])
-            ticker['last_buy_time'] = datetime.now()
-            ticker['initial_cost'] = float(position['costPrice'])
+            ticker = TrackingTicker(symbol, ticker_id)
+            ticker.set_positions(int(position['position']))
+            ticker.set_last_buy_time(datetime.now())
+            ticker.set_initial_cost(float(position['costPrice']))
             order_id = utils.get_attr_to_num(self.canceled_orders, symbol)
             # save order note
             utils.save_webull_order_note(
@@ -298,9 +265,9 @@ class StrategyBase:
                 quant=int(position['position']),
                 buy_time=timezone.now(),
             )
-            ticker['position_obj'] = position_obj
+            ticker.set_position_obj(position_obj)
             # recover tracking
-            self.tracking_tickers[symbol] = ticker
+            self.trading_tracker.start_tracking(ticker)
 
     def check_buy_order_filled(self, ticker, resubmit=False, resubmit_count=10, stop_tracking=False, target_units=4):
         symbol = ticker['symbol']
