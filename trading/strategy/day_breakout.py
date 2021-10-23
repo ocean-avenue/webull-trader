@@ -119,9 +119,9 @@ class DayTradingBreakout(StrategyBase):
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
+        if not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
                 not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars) and \
-                not utils.check_bars_amount_grinding(bars, period=5):
+                not pattern.check_bars_amount_grinding(bars, period=5):
             # has no relative volume
             utils.print_trading_log(
                 "<{}> candle chart volume not meet requirements, no entry!".format(symbol))
@@ -791,9 +791,9 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
+        if self.is_regular_market_hour() and not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
                 not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars) and \
-                not utils.check_bars_amount_grinding(bars, period=5) and not utils.check_bars_all_green(bars, period=5):
+                not pattern.check_bars_amount_grinding(bars, period=5) and not utils.check_bars_all_green(bars, period=5):
             # has no volume and amount
             utils.print_trading_log(
                 "<{}> candle chart volume not meet requirements, no scale in!".format(symbol))

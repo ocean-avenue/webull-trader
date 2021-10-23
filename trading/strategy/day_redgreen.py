@@ -44,7 +44,7 @@ class DayTradingRedGreen(StrategyBase):
 
         # fetch 1m bar charts
         m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-        m2_bars = pattern.convert_2m_bars(m1_bars)
+        m2_bars = utils.convert_2m_bars(m1_bars)
         if m2_bars.empty:
             return
 

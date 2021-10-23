@@ -1,7 +1,8 @@
-from typing import List
-import pandas as pd
 import pytz
 import math
+import pandas as pd
+import numpy as np
+from typing import List
 from django.utils import timezone
 from django.contrib.auth.models import User
 from datetime import datetime
@@ -168,6 +169,94 @@ def get_now():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _open_resampler(series):
+    if series.size > 0:
+        return series[0]
+    return 0
+
+
+def _close_resampler(series):
+    if series.size > 0:
+        return series[-1]
+    return 0
+
+
+def _high_resampler(series):
+    if series.size > 0:
+        return np.max(series)
+    return 0
+
+
+def _low_resampler(series):
+    if series.size > 0:
+        return np.min(series)
+    return 0
+
+
+def _volume_resampler(series):
+    if series.size > 0:
+        return np.sum(series)
+    return 0
+
+
+def _vwap_resampler(series):
+    if series.size > 0:
+        return series[-1]
+    return 0
+
+
+def convert_2m_bars(bars):
+    if not bars.empty:
+        bars_2m = pd.DataFrame()
+        bars_2m_open = bars['open'].resample(
+            '2T', label="right", closed="right").apply(_open_resampler)
+        bars_2m_close = bars['close'].resample(
+            '2T', label="right", closed="right").apply(_close_resampler)
+        bars_2m_high = bars['high'].resample(
+            '2T', label="right", closed="right").apply(_high_resampler)
+        bars_2m_low = bars['low'].resample(
+            '2T', label="right", closed="right").apply(_low_resampler)
+        bars_2m_volume = bars['volume'].resample(
+            '2T', label="right", closed="right").apply(_volume_resampler)
+        bars_2m_vwap = bars['vwap'].resample(
+            '2T', label="right", closed="right").apply(_vwap_resampler)
+        bars_2m['open'] = bars_2m_open
+        bars_2m['close'] = bars_2m_close
+        bars_2m['high'] = bars_2m_high
+        bars_2m['low'] = bars_2m_low
+        bars_2m['volume'] = bars_2m_volume
+        bars_2m['vwap'] = bars_2m_vwap
+        # filter zero row
+        return bars_2m.loc[(bars_2m != 0).all(axis=1), :]
+    return pd.DataFrame()
+
+
+def convert_5m_bars(bars):
+    if not bars.empty:
+        bars_5m = pd.DataFrame()
+        bars_5m_open = bars['open'].resample(
+            '5T', label="right", closed="right").apply(_open_resampler)
+        bars_5m_close = bars['close'].resample(
+            '5T', label="right", closed="right").apply(_close_resampler)
+        bars_5m_high = bars['high'].resample(
+            '5T', label="right", closed="right").apply(_high_resampler)
+        bars_5m_low = bars['low'].resample(
+            '5T', label="right", closed="right").apply(_low_resampler)
+        bars_5m_volume = bars['volume'].resample(
+            '5T', label="right", closed="right").apply(_volume_resampler)
+        bars_5m_vwap = bars['vwap'].resample(
+            '5T', label="right", closed="right").apply(_vwap_resampler)
+        bars_5m['open'] = bars_5m_open
+        bars_5m['close'] = bars_5m_close
+        bars_5m['high'] = bars_5m_high
+        bars_5m['low'] = bars_5m_low
+        bars_5m['volume'] = bars_5m_volume
+        bars_5m['vwap'] = bars_5m_vwap
+        # filter zero row
+        return bars_5m.loc[(bars_5m != 0).all(axis=1), :]
+    return pd.DataFrame()
+
+
 def is_market_hour():
     return is_regular_market_hour() or is_extended_market_hour()
 
@@ -205,7 +294,7 @@ def is_pre_market_hour_first_15m():
     return True
 
 
-def is_pre_market_hour_exact():
+def is_pre_market_hour_now():
     """
     NY pre market hour from 04:00 to 09:30
     """
@@ -246,7 +335,7 @@ def is_after_market_hour_15m():
     return True
 
 
-def is_after_market_hour_exact():
+def is_after_market_hour_now():
     """
     NY after market hour from 16:00 to 20:00
     """
@@ -284,7 +373,7 @@ def is_regular_market_hour_15m():
     return True
 
 
-def is_regular_market_hour_exact():
+def is_regular_market_hour_now():
     """
     NY regular market hour from 09:30 to 16:00
     """
@@ -336,162 +425,16 @@ def is_trading_hour_end(trading_hour: enums.TradingHourType) -> bool:
 
 
 def get_trading_hour() -> enums.TradingHourType:
-    if is_pre_market_hour_exact():
+    if is_pre_market_hour_now():
         return enums.TradingHourType.BEFORE_MARKET_OPEN
-    elif is_after_market_hour_exact():
+    elif is_after_market_hour_now():
         return enums.TradingHourType.AFTER_MARKET_CLOSE
-    elif is_regular_market_hour_exact():
+    elif is_regular_market_hour_now():
         return enums.TradingHourType.REGULAR
     return None
 
 
-def check_trading_time_match(time):
-    if is_regular_market_hour_exact() and not is_regular_market_time(time):
-        return False
-    if is_pre_market_hour_exact() and not is_pre_market_time(time):
-        return False
-    if is_after_market_hour_exact() and not is_after_market_time(time):
-        return False
-    return True
 
-
-
-def check_bars_continue(bars, time_scale=1, period=10):
-    """
-    check if candle bar is continue of time scale minutes
-    """
-    last_minute = -1
-    is_continue = True
-    period_bars = bars.tail(period)
-    for index, _ in period_bars.iterrows():
-        time = index.to_pydatetime()
-        if not check_trading_time_match(time):
-            continue
-        if last_minute == -1:
-            last_minute = time.minute
-            continue
-        current_minute = time.minute
-        if time.minute == 0:
-            current_minute = 60
-        if current_minute - last_minute != time_scale:
-            is_continue = False
-            break
-        last_minute = time.minute
-    return is_continue
-
-
-def check_bars_has_volume(bars, time_scale=1, period=10):
-    """
-    check if bar chart has enough volume
-    """
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    total_volume = 0.0
-    for index, row in period_bars.iterrows():
-        time = index.to_pydatetime()
-        if not check_trading_time_match(time):
-            continue
-        volume = row["volume"]
-        total_volume += volume
-
-    avg_volume = total_volume / float(period)
-    confirm_volume = get_avg_confirm_volume() * time_scale
-
-    return avg_volume >= confirm_volume
-
-
-def check_bars_has_amount(bars, time_scale=1, period=10):
-    """
-    check if bar chart has enough amount
-    """
-    # make sure not use the last candle
-    period = min(len(bars) - 1, period)
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    total_amount = 0.0
-    for index, row in period_bars.iterrows():
-        time = index.to_pydatetime()
-        if not check_trading_time_match(time):
-            continue
-        volume = row["volume"]
-        price = row["close"]
-        total_amount += (volume * price)
-
-    avg_amount = total_amount / float(period)
-    confirm_amount = get_avg_confirm_amount() * time_scale
-
-    return avg_amount >= confirm_amount
-
-
-def check_bars_amount_grinding(bars, period=10):
-    """
-    check if bar chart amount is grinding
-    """
-    # make sure not use the last candle
-    period = min(len(bars) - 1, period)
-    amount_grinding = True
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    prev_amount = 0
-    for index, row in period_bars.iterrows():
-        time = index.to_pydatetime()
-        if not check_trading_time_match(time):
-            continue
-        volume = row["volume"]
-        price = row["close"]
-        current_amount = volume * price
-        if current_amount < prev_amount:
-            amount_grinding = False
-            break
-        prev_amount = current_amount
-
-    return amount_grinding
-
-
-def check_bars_has_long_wick_up(bars, period=5, count=1):
-    """
-    check if bar chart has long wick up
-    """
-    long_wick_up_count = 0
-    period = min(len(bars) - 1, period)
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    # calculate average candle size
-    total_candle_size = 0.0
-    for _, row in period_bars.iterrows():
-        high = row["high"]
-        low = row["low"]
-        candle_size = high - low
-        total_candle_size += candle_size
-    avg_candle_size = 0.0
-    if len(period_bars) > 0:
-        avg_candle_size = total_candle_size / len(period_bars)
-    prev_row = pd.Series()
-    prev_candle_size = 0.0
-    for _, row in period_bars.iterrows():
-        mid = max(row["close"], row["open"])
-        high = row["high"]
-        low = row["low"]
-        # # make sure the candle is red
-        # if row["close"] > row["open"]:
-        #     continue
-        # make sure long wick body is larger than average candle size
-        if (high - low) < avg_candle_size * config.LONG_WICK_AVG_CANDLE_RATIO:
-            continue
-        # marke sure no less than prev bar
-        if not prev_row.empty:
-            prev_candle_size = prev_row["high"] - prev_row["low"]
-        if (high - low) < prev_candle_size * config.LONG_WICK_PREV_CANDLE_RATIO:
-            continue
-        # make sure wick tail is larger than body
-        if (high - mid) <= abs(row["close"] - row["open"]):
-            continue
-        if (mid - low) > 0 and (high - mid) / (mid - low) >= config.LONG_WICK_UP_RATIO:
-            long_wick_up_count += 1
-        elif (mid - low) == 0 and (high - mid) > 0:
-            long_wick_up_count += 1
-        prev_row = row
-    return long_wick_up_count >= count
 
 
 def check_bars_has_bearish_candle(bars, period=5, count=1):
@@ -648,19 +591,19 @@ def check_bars_volatility(bars, period=5):
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check valid candle
-        if (is_pre_market_hour_exact() and is_pre_market_time(time)) or (is_after_market_hour_exact() and is_after_market_time(time)) or \
-                (is_regular_market_hour_exact() and is_regular_market_time(time)):
+        if (is_pre_market_hour_now() and is_pre_market_time(time)) or (is_after_market_hour_now() and is_after_market_time(time)) or \
+                (is_regular_market_hour_now() and is_regular_market_time(time)):
             valid_candle_count += 1
         # check for pre market hour except for first 15 minutes
-        if is_pre_market_hour_exact() and not is_pre_market_hour_first_15m() and is_pre_market_time(time):
+        if is_pre_market_hour_now() and not is_pre_market_hour_first_15m() and is_pre_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # check for after market hour only
-        if is_after_market_hour_exact() and not is_after_market_hour_15m() and is_after_market_time(time):
+        if is_after_market_hour_now() and not is_after_market_hour_15m() and is_after_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # check for regular market hour only
-        if is_regular_market_hour_exact() and not is_regular_market_hour_15m() and is_regular_market_time(time):
+        if is_regular_market_hour_now() and not is_regular_market_hour_15m() and is_regular_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # add price value set
@@ -690,13 +633,13 @@ def check_bars_has_largest_green_candle(bars, period=10):
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check for pre market hour except
-        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+        if is_pre_market_hour_now() and not is_pre_market_time(time):
             continue
         # check for after market hour only
-        if is_after_market_hour_exact() and not is_after_market_time(time):
+        if is_after_market_hour_now() and not is_after_market_time(time):
             continue
         # check for regular market hour only
-        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+        if is_regular_market_hour_now() and not is_regular_market_time(time):
             continue
         # red candle
         if row['open'] > row['close']:
@@ -723,13 +666,13 @@ def check_bars_has_most_green_candle(bars, period=10):
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check for pre market hour except
-        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+        if is_pre_market_hour_now() and not is_pre_market_time(time):
             continue
         # check for after market hour only
-        if is_after_market_hour_exact() and not is_after_market_time(time):
+        if is_after_market_hour_now() and not is_after_market_time(time):
             continue
         # check for regular market hour only
-        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+        if is_regular_market_hour_now() and not is_regular_market_time(time):
             continue
         # green candle
         if row['close'] >= row['open']:
@@ -752,13 +695,13 @@ def check_bars_has_more_green_candle(bars, period=10):
     for index, row in period_bars.iterrows():
         time = index.to_pydatetime()
         # check for pre market hour except
-        if is_pre_market_hour_exact() and not is_pre_market_time(time):
+        if is_pre_market_hour_now() and not is_pre_market_time(time):
             continue
         # check for after market hour only
-        if is_after_market_hour_exact() and not is_after_market_time(time):
+        if is_after_market_hour_now() and not is_after_market_time(time):
             continue
         # check for regular market hour only
-        if is_regular_market_hour_exact() and not is_regular_market_time(time):
+        if is_regular_market_hour_now() and not is_regular_market_time(time):
             continue
         # green candle
         if row['close'] >= row['open']:
@@ -932,24 +875,6 @@ def get_algo_type():
         print("[{}] Cannot find trading settings, default algo type!".format(get_now()))
         return enums.AlgorithmType.DAY_MOMENTUM
     return settings.algo_type
-
-
-def get_avg_confirm_volume():
-    if is_regular_market_hour_exact():
-        return config.AVG_CONFIRM_VOLUME
-    return config.EXTENDED_AVG_CONFIRM_VOLUME
-
-
-def get_avg_confirm_amount():
-    if is_regular_market_hour_exact():
-        return config.AVG_CONFIRM_AMOUNT
-    return config.EXTENDED_AVG_CONFIRM_AMOUNT
-
-
-def get_min_rel_volume_ratio():
-    if is_regular_market_hour_exact():
-        return config.DAY_MIN_RELATIVE_VOLUME
-    return config.EXTENDED_DAY_MIN_RELATIVE_VOLUME
 
 
 def get_order_id_from_response(order_response, paper=True):

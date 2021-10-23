@@ -124,7 +124,7 @@ class DayTradingMomo(StrategyBase):
             # fetch 1m bar charts
             if m1_bars.empty:
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-            m2_bars = pattern.convert_2m_bars(m1_bars)
+            m2_bars = utils.convert_2m_bars(m1_bars)
             if m2_bars.empty:
                 return
 
@@ -199,7 +199,7 @@ class DayTradingMomo(StrategyBase):
 
             if not exit_trading:
                 # get 2m bar charts
-                m2_bars = pattern.convert_2m_bars(
+                m2_bars = utils.convert_2m_bars(
                     webullsdk.get_1m_bars(ticker_id, count=20))
 
                 # get bars error
@@ -250,7 +250,7 @@ class DayTradingMomo(StrategyBase):
             # check gap change
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-                m2_bars = pattern.convert_2m_bars(m1_bars)
+                m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty or len(m2_bars) <= 2:
                     continue
                 # use latest 2 candle
@@ -382,7 +382,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
             # check gap change
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
                 m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-                m2_bars = pattern.convert_2m_bars(m1_bars)
+                m2_bars = utils.convert_2m_bars(m1_bars)
                 if m2_bars.empty:
                     continue
                 # use latest 2 candle

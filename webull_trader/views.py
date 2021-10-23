@@ -437,14 +437,14 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     # load 1m data for render
     m1_candle_data = utils.get_minute_candle_data_for_render(m1_bars)
     # calculate 2m bars
-    m2_bars = pattern.convert_2m_bars(m1_bars)
+    m2_bars = utils.convert_2m_bars(m1_bars)
     # calculate and fill ema 9 data
     if not m2_bars.empty:
         m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
     # load 2m data for render
     m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
     # calculate 5m bars
-    m5_bars = pattern.convert_5m_bars(m1_bars)
+    m5_bars = utils.convert_5m_bars(m1_bars)
     # calculate and fill ema 9 data
     if not m5_bars.empty:
         m5_bars['ema9'] = m5_bars['close'].ewm(span=9, adjust=False).mean()
