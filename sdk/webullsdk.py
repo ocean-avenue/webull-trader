@@ -4,7 +4,7 @@ import time
 import traceback
 import pandas as pd
 from typing import List, Optional
-from common import utils
+from common import utils, db
 from logger import trading_logger, exception_logger
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
@@ -98,7 +98,7 @@ def login(paper=True):
         credentials_data['accessToken'] = n_data['accessToken']
         credentials_data['tokenExpireTime'] = n_data['tokenExpireTime']
 
-        utils.save_webull_credentials(json.dumps(credentials_data), paper)
+        db.save_webull_credentials(json.dumps(credentials_data), paper)
     except Exception as e:
         trading_logger.log("⚠️  Exception refresh_login: {}".format(e))
         return False

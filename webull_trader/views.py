@@ -4,7 +4,7 @@ from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from sdk import fmpsdk
-from common import utils, config
+from common import utils, config, db
 from common.enums import SetupType, TradingHourType
 from trading import pattern
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
@@ -908,7 +908,7 @@ def day_reports_relvol(request):
     for day_trade in day_trades:
         symbol = day_trade.symbol
         buy_date = day_trade.buy_date
-        key_statistics = utils.get_hist_key_stat(symbol, buy_date)
+        key_statistics = db.get_hist_key_stat(symbol, buy_date)
         if key_statistics:
             relative_volume = round(
                 key_statistics.volume / key_statistics.avg_vol_3m, 2)

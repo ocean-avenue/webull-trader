@@ -2,24 +2,22 @@ import pytz
 import math
 import pandas as pd
 import numpy as np
-from typing import List
+from typing import List, Optional
 from django.utils import timezone
 from django.contrib.auth.models import User
 from datetime import datetime
-from common import config, enums, constants
-from sdk import fmpsdk, twiliosdk
-from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
-    StockQuote, SwingHistoricalDailyBar, TradingSettings, WebullNews, WebullOrder, HistoricalMinuteBar, \
-    HistoricalDailyBar, HistoricalMarketStatistics
+from common import db, config, enums, constants
+from sdk import fmpsdk
+from webull_trader.models import StockQuote, SwingHistoricalDailyBar, TradingSettings, WebullNews, WebullOrder, HistoricalDailyBar
 
 
-def get_attr(obj, key):
+def get_attr(obj: dict, key: str) -> str:
     if obj and key in obj:
         return obj[key]
     return ''
 
 
-def get_attr_to_num(obj, key):
+def get_attr_to_num(obj: dict, key: str) -> int:
     if obj and key in obj:
         try:
             return int(obj[key])
@@ -28,7 +26,7 @@ def get_attr_to_num(obj, key):
     return 0
 
 
-def get_attr_to_float(obj, key):
+def get_attr_to_float(obj: dict, key: str) -> float:
     if obj and key in obj:
         try:
             return float(obj[key])
@@ -37,7 +35,7 @@ def get_attr_to_float(obj, key):
     return 0.0
 
 
-def get_attr_to_float_or_none(obj, key):
+def get_attr_to_float_or_none(obj: dict, key: str) -> Optional[float]:
     if obj and key in obj:
         try:
             return float(obj[key])
@@ -49,45 +47,36 @@ def get_attr_to_float_or_none(obj, key):
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
 
-def millify(n):
+def millify(n: float) -> str:
     if not n:
         return n
-    n = float(n)
     millidx = max(0, min(len(MILLNAMES)-1,
                          int(math.floor(0 if n == 0 else math.log10(abs(n))/3))))
     return '{:.2f}{}'.format(n / 10**(3 * millidx), MILLNAMES[millidx])
 
 
-def local_datetime(t):
+def local_datetime(t: datetime) -> datetime:
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     return localtz
 
 
-def local_time_minute(t):
+def local_time_minute(t: datetime) -> str:
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     format = '%H:%M'
     return localtz.strftime(format)
 
 
-def local_time_minute_second(t):
+def local_time_minute_second(t: datetime) -> str:
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     format = '%H:%M:%S'
     return localtz.strftime(format)
 
 
-def notify_message(message):
-    twiliosdk.send_message([
-        get_account_user_desc(),
-        ", ".join(get_algo_type_tags()),
-        message
-    ])
-
-
 # hack to delay 1 minute
-def local_time_minute_delay(t):
+def local_time_minute_delay(t: datetime) -> str:
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
@@ -103,7 +92,7 @@ def local_time_minute_delay(t):
 
 
 # for multi minutes
-def local_time_minute_scale(t, time_scale):
+def local_time_minute_scale(t: datetime, time_scale: int) -> str:
     utc = t.replace(tzinfo=pytz.UTC)
     localtz = utc.astimezone(timezone.get_current_timezone())
     hour = str(localtz.hour)
@@ -123,47 +112,47 @@ def local_time_minute_scale(t, time_scale):
     return "{}:{}".format(hour, minute)
 
 
-def get_now():
+def get_now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _open_resampler(series):
+def _open_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return series[0]
     return 0
 
 
-def _close_resampler(series):
+def _close_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return series[-1]
     return 0
 
 
-def _high_resampler(series):
+def _high_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return np.max(series)
     return 0
 
 
-def _low_resampler(series):
+def _low_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return np.min(series)
     return 0
 
 
-def _volume_resampler(series):
+def _volume_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return np.sum(series)
     return 0
 
 
-def _vwap_resampler(series):
+def _vwap_resampler(series: pd.Series) -> float:
     if series.size > 0:
         return series[-1]
     return 0
 
 
-def convert_2m_bars(bars):
+def convert_2m_bars(bars: pd.DataFrame) -> pd.DataFrame:
     if not bars.empty:
         bars_2m = pd.DataFrame()
         bars_2m_open = bars['open'].resample(
@@ -189,7 +178,7 @@ def convert_2m_bars(bars):
     return pd.DataFrame()
 
 
-def convert_5m_bars(bars):
+def convert_5m_bars(bars: pd.DataFrame) -> pd.DataFrame:
     if not bars.empty:
         bars_5m = pd.DataFrame()
         bars_5m_open = bars['open'].resample(
@@ -215,15 +204,15 @@ def convert_5m_bars(bars):
     return pd.DataFrame()
 
 
-def is_market_hour():
+def is_market_hour() -> bool:
     return is_regular_market_hour() or is_extended_market_hour()
 
 
-def is_extended_market_hour():
+def is_extended_market_hour() -> bool:
     return is_pre_market_hour() or is_after_market_hour()
 
 
-def is_pre_market_hour():
+def is_pre_market_hour() -> bool:
     """
     NY pre market hour from 04:00 to 09:30
     """
@@ -239,7 +228,7 @@ def is_pre_market_hour():
     return True
 
 
-def is_pre_market_hour_first_15m():
+def is_pre_market_hour_first_15m() -> bool:
     """
     NY pre market hour from 04:00 to 04:15
     """
@@ -252,7 +241,7 @@ def is_pre_market_hour_first_15m():
     return True
 
 
-def is_pre_market_hour_now():
+def is_pre_market_hour_now() -> bool:
     """
     NY pre market hour from 04:00 to 09:30
     """
@@ -264,7 +253,7 @@ def is_pre_market_hour_now():
     return True
 
 
-def is_after_market_hour():
+def is_after_market_hour() -> bool:
     """
     NY after market hour from 16:00 to 20:00
     """
@@ -280,7 +269,7 @@ def is_after_market_hour():
     return True
 
 
-def is_after_market_hour_15m():
+def is_after_market_hour_15m() -> bool:
     """
     NY after market hour from 16:00 to 16:15
     """
@@ -293,7 +282,7 @@ def is_after_market_hour_15m():
     return True
 
 
-def is_after_market_hour_now():
+def is_after_market_hour_now() -> bool:
     """
     NY after market hour from 16:00 to 20:00
     """
@@ -303,7 +292,7 @@ def is_after_market_hour_now():
     return True
 
 
-def is_regular_market_hour():
+def is_regular_market_hour() -> bool:
     """
     NY regular market hour from 09:30 to 16:00
     """
@@ -319,7 +308,7 @@ def is_regular_market_hour():
     return True
 
 
-def is_regular_market_hour_15m():
+def is_regular_market_hour_15m() -> bool:
     """
     NY regular market hour from 09:30 to 09:45
     """
@@ -331,7 +320,7 @@ def is_regular_market_hour_15m():
     return True
 
 
-def is_regular_market_hour_now():
+def is_regular_market_hour_now() -> bool:
     """
     NY regular market hour from 09:30 to 16:00
     """
@@ -343,7 +332,7 @@ def is_regular_market_hour_now():
     return True
 
 
-def is_pre_market_time(t):
+def is_pre_market_time(t: datetime) -> bool:
     if t.hour < 4 or t.hour > 9:
         return False
     if t.hour == 9 and t.minute >= 30:
@@ -351,13 +340,13 @@ def is_pre_market_time(t):
     return True
 
 
-def is_after_market_time(t):
+def is_after_market_time(t: datetime) -> bool:
     if t.hour < 16 or t.hour >= 20:
         return False
     return True
 
 
-def is_regular_market_time(t):
+def is_regular_market_time(t: datetime) -> bool:
     if t.hour < 9 or t.hour >= 16:
         return False
     if t.hour == 9 and t.minute < 30:
@@ -415,7 +404,8 @@ def calculate_charts_ema9(charts: List[dict]) -> List[dict]:
                 (candle['close'] - prev_candle['ema9']) * multiplier + prev_candle['ema9'], 2)
     return charts
 
-def get_quote_sector(quote=None):
+
+def get_quote_sector(quote: Optional[StockQuote] = None) -> str:
     if quote:
         if quote.is_etf:
             return "ETF"
@@ -423,7 +413,7 @@ def get_quote_sector(quote=None):
     return ""
 
 
-def get_swing_avg_true_range(symbol, period=20):
+def get_swing_avg_true_range(symbol: str, period: int = 20) -> float:
     daily_bars = SwingHistoricalDailyBar.objects.filter(
         symbol=symbol).order_by('-id')[:(period + 1)][::-1]
     true_range_list = []
@@ -437,7 +427,7 @@ def get_swing_avg_true_range(symbol, period=20):
     return N
 
 
-def get_day_avg_true_range(bars, period=10):
+def get_day_avg_true_range(bars: pd.DataFrame, period: int = 10) -> float:
     period_bars = bars.head(len(bars) - 1).tail(period + 1)
     true_range_list = []
     for i in range(0, len(period_bars) - 1):
@@ -448,30 +438,6 @@ def get_day_avg_true_range(bars, period=10):
         true_range_list.append(true_range)
     N = sum(true_range_list)/len(true_range_list)
     return N
-
-
-def get_hist_key_stat(symbol, date):
-    key_statistics = HistoricalKeyStatistics.objects.filter(
-        symbol=symbol).filter(date=date).first()
-    return key_statistics
-
-
-def get_hist_market_stat(date):
-    market_statistics = HistoricalMarketStatistics.objects.filter(
-        date=date).first()
-    return market_statistics
-
-
-def get_hist_top_gainer(symbol, date):
-    top_gainer = HistoricalTopGainer.objects.filter(
-        symbol=symbol).filter(date=date).first()
-    return top_gainer
-
-
-def get_hist_top_loser(symbol, date):
-    top_loser = HistoricalTopLoser.objects.filter(
-        symbol=symbol).filter(date=date).first()
-    return top_loser
 
 
 def check_paper():
@@ -507,209 +473,6 @@ def get_avg_change_from_movers(movers):
     for mover in movers:
         total_change += mover['change_percentage']
     return round(total_change / len(movers), 2)
-
-
-def save_webull_news_list(news_list, symbol, date):
-    print("[{}] Importing news for {}...".format(get_now(), symbol))
-    for news_data in news_list:
-        save_webull_news(news_data, symbol, date)
-
-
-def save_webull_news(news_data, symbol, date):
-    news = WebullNews.objects.filter(
-        news_id=news_data['id'], symbol=symbol, date=date).first()
-    if not news:
-        news = WebullNews(
-            news_id=get_attr(news_data, 'id'),
-            symbol=symbol,
-            title=get_attr(news_data, 'title'),
-            source_name=get_attr(news_data, 'sourceName'),
-            collect_source=get_attr(news_data, 'collectSource'),
-            news_time=get_attr(news_data, 'newsTime'),
-            summary=get_attr(news_data, 'summary'),
-            news_url=get_attr(news_data, 'newsUrl'),
-            date=date,
-        )
-        news.save()
-
-
-def save_hist_key_statistics(quote_data, date):
-    if 'symbol' not in quote_data:
-        return
-    symbol = quote_data['symbol']
-    print("[{}] Importing key statistics for {}...".format(
-        get_now(), symbol))
-    key_statistics = get_hist_key_stat(symbol, date)
-    if not key_statistics:
-        turnover_rate = None
-        if 'turnoverRate' in quote_data and quote_data['turnoverRate'] != "-" and quote_data['turnoverRate'] != None:
-            turnover_rate = float(quote_data['turnoverRate'])
-        vibrate_ratio = None
-        if 'vibrateRatio' in quote_data and quote_data['vibrateRatio'] != "-" and quote_data['vibrateRatio'] != None:
-            vibrate_ratio = float(quote_data['vibrateRatio'])
-        total_shares = None
-        if 'totalShares' in quote_data and quote_data['totalShares'] != "-" and quote_data['totalShares'] != None:
-            total_shares = float(quote_data['totalShares'])
-        outstanding_shares = None
-        if 'outstandingShares' in quote_data and quote_data['outstandingShares'] != "-" and quote_data['outstandingShares'] != None:
-            outstanding_shares = float(quote_data['outstandingShares'])
-        short_float = None
-        if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-" and quote_data['shortFloat'] != None:
-            short_float = float(quote_data['shortFloat'])
-        key_statistics = HistoricalKeyStatistics(
-            symbol=symbol,
-            open=get_attr_to_float(quote_data, 'open'),
-            high=get_attr_to_float(quote_data, 'high'),
-            low=get_attr_to_float(quote_data, 'low'),
-            close=get_attr_to_float(quote_data, 'close'),
-            change=get_attr_to_float(quote_data, 'change'),
-            change_ratio=get_attr_to_float(quote_data, 'changeRatio'),
-            market_value=get_attr_to_float(quote_data, 'marketValue'),
-            volume=get_attr_to_float(quote_data, 'volume'),
-            turnover_rate=turnover_rate,
-            vibrate_ratio=vibrate_ratio,
-            avg_vol_10d=get_attr_to_float(quote_data, 'avgVol10D'),
-            avg_vol_3m=get_attr_to_float(quote_data, 'avgVol3M'),
-            pe=get_attr_to_float_or_none(quote_data, 'pe'),
-            forward_pe=get_attr_to_float_or_none(quote_data, 'forwardPe'),
-            pe_ttm=get_attr_to_float_or_none(quote_data, 'peTtm'),
-            eps=get_attr_to_float_or_none(quote_data, 'eps'),
-            eps_ttm=get_attr_to_float_or_none(quote_data, 'epsTtm'),
-            pb=get_attr_to_float_or_none(quote_data, 'pb'),
-            ps=get_attr_to_float_or_none(quote_data, 'ps'),
-            bps=get_attr_to_float_or_none(quote_data, 'bps'),
-            short_float=short_float,
-            total_shares=total_shares,
-            outstanding_shares=outstanding_shares,
-            fifty_two_wk_high=get_attr_to_float(quote_data, 'fiftyTwoWkHigh'),
-            fifty_two_wk_low=get_attr_to_float(quote_data, 'fiftyTwoWkLow'),
-            latest_earnings_date=get_attr(quote_data, 'latestEarningsDate'),
-            estimate_earnings_date=get_attr(
-                quote_data, 'estimateEarningsDate'),
-            date=date,
-        )
-        key_statistics.save()
-
-
-def save_hist_market_statistics(market_data, date):
-    market_statistics = get_hist_market_stat(date)
-    if not market_statistics:
-        market_statistics = HistoricalMarketStatistics(date=date)
-    market_statistics.pre_gainer_change = market_data['pre_gainer_change']
-    market_statistics.top_gainer_change = market_data['top_gainer_change']
-    market_statistics.after_gainer_change = market_data['after_gainer_change']
-    market_statistics.pre_loser_change = market_data['pre_loser_change']
-    market_statistics.top_loser_change = market_data['top_loser_change']
-    market_statistics.after_loser_change = market_data['after_loser_change']
-    market_statistics.save()
-
-
-def save_hist_top_gainer(gainer_data, date):
-    symbol = gainer_data['symbol']
-    print("[{}] Importing top gainer for {}...".format(
-        get_now(), symbol))
-    top_gainer = get_hist_top_gainer(symbol, date)
-    if not top_gainer:
-        top_gainer = HistoricalTopGainer(
-            symbol=symbol,
-            date=date,
-        )
-    top_gainer.ticker_id = gainer_data['ticker_id']
-    top_gainer.change = gainer_data['change']
-    top_gainer.change_percentage = gainer_data['change_percentage']
-    top_gainer.price = gainer_data['close']
-    top_gainer.save()
-
-
-def save_hist_top_loser(loser_data, date):
-    symbol = loser_data['symbol']
-    print("[{}] Importing top loser for {}...".format(
-        get_now(), symbol))
-    top_loser = get_hist_top_loser(symbol, date)
-    if not top_loser:
-        top_loser = HistoricalTopLoser(
-            symbol=symbol,
-            date=date,
-        )
-    top_loser.ticker_id = loser_data['ticker_id']
-    top_loser.change = loser_data['change']
-    top_loser.change_percentage = loser_data['change_percentage']
-    top_loser.price = loser_data['close']
-    top_loser.save()
-
-
-def save_hist_minute_bar_list(bar_list):
-    print("[{}] Importing minute bar for {}...".format(
-        get_now(), bar_list[0]['symbol']))
-    for bar_data in bar_list:
-        save_hist_minute_bar(bar_data)
-
-
-def save_hist_minute_bar(bar_data):
-    bar = HistoricalMinuteBar.objects.filter(
-        symbol=bar_data['symbol'], time=bar_data['time']).first()
-    if not bar:
-        bar = HistoricalMinuteBar(
-            symbol=bar_data['symbol'],
-            date=bar_data['date'],
-            time=bar_data['time'],
-            open=bar_data['open'],
-            high=bar_data['high'],
-            low=bar_data['low'],
-            close=bar_data['close'],
-            volume=bar_data['volume'],
-            vwap=bar_data['vwap'],
-        )
-        bar.save()
-
-
-def save_hist_daily_bar_list(bar_list):
-    print("[{}] Importing daily bar for {}...".format(
-        get_now(), bar_list[0]['symbol']))
-    for bar_data in bar_list:
-        save_hist_daily_bar(bar_data)
-
-
-def save_hist_daily_bar(bar_data):
-    bar = HistoricalDailyBar.objects.filter(
-        symbol=bar_data['symbol'], date=bar_data['date']).first()
-    if not bar:
-        bar = HistoricalDailyBar(
-            symbol=bar_data['symbol'],
-            date=bar_data['date'],
-            open=bar_data['open'],
-            high=bar_data['high'],
-            low=bar_data['low'],
-            close=bar_data['close'],
-            volume=bar_data['volume'],
-        )
-        bar.save()
-
-
-def save_swing_hist_daily_bar_list(bar_list):
-    print("[{}] Importing swing daily bar for {}...".format(
-        get_now(), bar_list[0]['symbol']))
-    for bar_data in bar_list:
-        save_swing_hist_daily_bar(bar_data)
-
-
-def save_swing_hist_daily_bar(bar_data):
-    bar = SwingHistoricalDailyBar.objects.filter(
-        symbol=bar_data['symbol'], date=bar_data['date']).first()
-    if not bar:
-        bar = SwingHistoricalDailyBar(
-            symbol=bar_data['symbol'],
-            date=bar_data['date'],
-            open=bar_data['open'],
-            high=bar_data['high'],
-            low=bar_data['low'],
-            close=bar_data['close'],
-            volume=bar_data['volume'],
-            rsi_10=bar_data['rsi_10'],
-            sma_55=bar_data['sma_55'],
-            sma_120=bar_data['sma_120'],
-        )
-        bar.save()
 
 
 def fetch_stock_quotes(symbol_list):
@@ -784,6 +547,7 @@ def check_require_top_list_algo(algo):
 
 def get_day_trade_orders(date=None, symbol=None):
     # only limit orders for day trades
+    # TODO, also include partial filled
     lmt_buy_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
         status="Filled").filter(action=enums.ActionType.BUY)
     lmt_sell_orders = WebullOrder.objects.filter(order_type=enums.OrderType.LMT).filter(
@@ -1329,7 +1093,7 @@ def get_market_hourly_interval_labels():
     ]
 
 
-def get_market_hourly_interval_index(t):
+def get_market_hourly_interval_index(t: datetime) -> int:
     index = -1
     if t.hour == 4:
         if t.minute < 30:
@@ -1892,7 +1656,7 @@ def get_swing_daily_candle_data_for_render(symbol):
 
 
 def get_day_trade_stat_record_for_render(symbol, trade_stat, date):
-    key_statistics = get_hist_key_stat(symbol, date)
+    key_statistics = db.get_hist_key_stat(symbol, date)
     mktcap = 0
     short_float = None
     float_shares = 0
@@ -2021,7 +1785,7 @@ def get_value_stat_from_trades_for_render(day_trades, field_name, value_idx_func
     for day_trade in day_trades:
         symbol = day_trade.symbol
         buy_date = day_trade.buy_date
-        key_statistics = get_hist_key_stat(symbol, buy_date)
+        key_statistics = db.get_hist_key_stat(symbol, buy_date)
         if key_statistics:
             value = getattr(key_statistics, field_name)
             value_idx = value_idx_func(value)

@@ -6,7 +6,7 @@
 def start():
     from django.utils import timezone
     from sdk import webullsdk
-    from common import utils
+    from common import utils, db
     from webull_trader.models import DayPosition
     from logger import exception_logger
 
@@ -51,18 +51,14 @@ def start():
             position_obj = DayPosition.objects.filter(symbol=symbol).first()
             if not position_obj:
                 continue
-            # save order note
-            utils.save_webull_order_note(
-                order_id, setup=position_obj.setup, note="Clear trading exception position!")
             # add trade object
-            utils.add_day_trade(
+            db.add_day_trade(
                 symbol=symbol,
                 ticker_id=ticker_id,
                 position=position_obj,
                 order_id=order_id,
                 sell_price=sell_price,
-                sell_time=timezone.now(),
-            )
+                sell_time=timezone.now())
             # remove position object
             position_obj.delete()
 

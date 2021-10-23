@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta, date
 from typing import List
 from common.enums import AlgorithmType, TradingHourType
-from common import utils, db, config
+from common import utils, db, config, sms
 from sdk import webullsdk
 from logger import trading_logger
 from trading.strategy.strategy_base import StrategyBase
@@ -39,7 +39,7 @@ class TradingExecutor:
         if not webullsdk.login(paper=self.paper):
             message = "Webull login failed, quit trading!"
             # send message
-            utils.notify_message(message)
+            sms.notify_message(message)
             trading_logger.log(message)
             return
         trading_logger.log("Webull logged in")
@@ -69,7 +69,7 @@ class TradingExecutor:
                 else:
                     message = "Webull refresh login failed, quit trading!"
                     # send message
-                    utils.notify_message(message)
+                    sms.notify_message(message)
                     trading_logger.log(message)
                     break
 
@@ -89,7 +89,7 @@ class TradingExecutor:
 
         # update account status
         account_data = webullsdk.get_account()
-        utils.save_webull_account(account_data, paper=self.paper)
+        db.save_webull_account(account_data, paper=self.paper)
 
         trading_logger.log("Trading ended!")
 

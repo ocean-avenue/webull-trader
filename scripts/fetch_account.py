@@ -5,7 +5,7 @@
 def start(day=None):
     from datetime import date
     from sdk import webullsdk
-    from common import utils
+    from common import utils, db
 
     paper = utils.check_paper()
 
@@ -16,7 +16,7 @@ def start(day=None):
 
         account_data = webullsdk.get_account()
 
-        utils.save_webull_account(account_data, paper=paper, day=day)
+        db.save_webull_account(account_data, paper=paper, day=day)
 
 
 if __name__ == "django.core.management.commands.shell":

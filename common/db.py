@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 import pytz
 import traceback
 from django.conf import settings
@@ -6,8 +6,8 @@ from datetime import datetime, date
 from common import enums, utils, constants
 from sdk import webullsdk
 from logger import exception_logger
-from webull_trader.models import DayPosition, DayTrade, TradingSettings, TradingSymbols, \
-    WebullAccountStatistics, WebullCredentials, WebullOrder
+from webull_trader.models import DayPosition, DayTrade, HistoricalDailyBar, HistoricalKeyStatistics, HistoricalMarketStatistics, HistoricalMinuteBar, HistoricalTopGainer, \
+    HistoricalTopLoser, SwingHistoricalDailyBar, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder
 
 
 def get_or_create_trading_settings() -> TradingSettings:
@@ -38,6 +38,30 @@ def get_trading_symbols():
             return []
         return symbol_text.upper().split("\r\n")
     return []
+
+
+def get_hist_key_stat(symbol: str, date: date) -> HistoricalKeyStatistics:
+    key_statistics = HistoricalKeyStatistics.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return key_statistics
+
+
+def get_hist_market_stat(date: date) -> HistoricalMarketStatistics:
+    market_statistics = HistoricalMarketStatistics.objects.filter(
+        date=date).first()
+    return market_statistics
+
+
+def get_hist_top_gainer(symbol: str, date: date) -> HistoricalTopGainer:
+    top_gainer = HistoricalTopGainer.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return top_gainer
+
+
+def get_hist_top_loser(symbol: str, date: date) -> HistoricalTopLoser:
+    top_loser = HistoricalTopLoser.objects.filter(
+        symbol=symbol).filter(date=date).first()
+    return top_loser
 
 
 def save_webull_credentials(cred_data: dict, paper: bool = True):
@@ -313,3 +337,206 @@ def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: 
     )
     trade.save()
     return trade
+
+
+def save_webull_news_list(news_list: List[dict], symbol: str, date: date):
+    print("[{}] Importing news for {}...".format(utils.get_now(), symbol))
+    for news_data in news_list:
+        save_webull_news(news_data, symbol, date)
+
+
+def save_webull_news(news_data: dict, symbol: str, date: date):
+    news: Optional[WebullNews] = WebullNews.objects.filter(
+        news_id=news_data['id'], symbol=symbol, date=date).first()
+    if not news:
+        news = WebullNews(
+            news_id=utils.get_attr(news_data, 'id'),
+            symbol=symbol,
+            title=utils.get_attr(news_data, 'title'),
+            source_name=utils.get_attr(news_data, 'sourceName'),
+            collect_source=utils.get_attr(news_data, 'collectSource'),
+            news_time=utils.get_attr(news_data, 'newsTime'),
+            summary=utils.get_attr(news_data, 'summary'),
+            news_url=utils.get_attr(news_data, 'newsUrl'),
+            date=date,
+        )
+        news.save()
+
+
+def save_hist_key_statistics(quote_data: dict, date: date):
+    if 'symbol' not in quote_data:
+        return
+    symbol = quote_data['symbol']
+    print("[{}] Importing key statistics for {}...".format(
+        utils.get_now(), symbol))
+    key_statistics = get_hist_key_stat(symbol, date)
+    if not key_statistics:
+        turnover_rate = None
+        if 'turnoverRate' in quote_data and quote_data['turnoverRate'] != "-" and quote_data['turnoverRate'] != None:
+            turnover_rate = float(quote_data['turnoverRate'])
+        vibrate_ratio = None
+        if 'vibrateRatio' in quote_data and quote_data['vibrateRatio'] != "-" and quote_data['vibrateRatio'] != None:
+            vibrate_ratio = float(quote_data['vibrateRatio'])
+        total_shares = None
+        if 'totalShares' in quote_data and quote_data['totalShares'] != "-" and quote_data['totalShares'] != None:
+            total_shares = float(quote_data['totalShares'])
+        outstanding_shares = None
+        if 'outstandingShares' in quote_data and quote_data['outstandingShares'] != "-" and quote_data['outstandingShares'] != None:
+            outstanding_shares = float(quote_data['outstandingShares'])
+        short_float = None
+        if 'shortFloat' in quote_data and quote_data['shortFloat'] != "-" and quote_data['shortFloat'] != None:
+            short_float = float(quote_data['shortFloat'])
+        key_statistics = HistoricalKeyStatistics(
+            symbol=symbol,
+            open=utils.get_attr_to_float(quote_data, 'open'),
+            high=utils.get_attr_to_float(quote_data, 'high'),
+            low=utils.get_attr_to_float(quote_data, 'low'),
+            close=utils.get_attr_to_float(quote_data, 'close'),
+            change=utils.get_attr_to_float(quote_data, 'change'),
+            change_ratio=utils.get_attr_to_float(quote_data, 'changeRatio'),
+            market_value=utils.get_attr_to_float(quote_data, 'marketValue'),
+            volume=utils.get_attr_to_float(quote_data, 'volume'),
+            turnover_rate=turnover_rate,
+            vibrate_ratio=vibrate_ratio,
+            avg_vol_10d=utils.get_attr_to_float(quote_data, 'avgVol10D'),
+            avg_vol_3m=utils.get_attr_to_float(quote_data, 'avgVol3M'),
+            pe=utils.get_attr_to_float_or_none(quote_data, 'pe'),
+            forward_pe=utils.get_attr_to_float_or_none(quote_data, 'forwardPe'),
+            pe_ttm=utils.get_attr_to_float_or_none(quote_data, 'peTtm'),
+            eps=utils.get_attr_to_float_or_none(quote_data, 'eps'),
+            eps_ttm=utils.get_attr_to_float_or_none(quote_data, 'epsTtm'),
+            pb=utils.get_attr_to_float_or_none(quote_data, 'pb'),
+            ps=utils.get_attr_to_float_or_none(quote_data, 'ps'),
+            bps=utils.get_attr_to_float_or_none(quote_data, 'bps'),
+            short_float=short_float,
+            total_shares=total_shares,
+            outstanding_shares=outstanding_shares,
+            fifty_two_wk_high=utils.get_attr_to_float(quote_data, 'fiftyTwoWkHigh'),
+            fifty_two_wk_low=utils.get_attr_to_float(quote_data, 'fiftyTwoWkLow'),
+            latest_earnings_date=utils.get_attr(quote_data, 'latestEarningsDate'),
+            estimate_earnings_date=utils.get_attr(
+                quote_data, 'estimateEarningsDate'),
+            date=date,
+        )
+        key_statistics.save()
+
+
+def save_hist_market_statistics(market_data: dict, date: date):
+    market_statistics = get_hist_market_stat(date)
+    if not market_statistics:
+        market_statistics = HistoricalMarketStatistics(date=date)
+    market_statistics.pre_gainer_change = market_data['pre_gainer_change']
+    market_statistics.top_gainer_change = market_data['top_gainer_change']
+    market_statistics.after_gainer_change = market_data['after_gainer_change']
+    market_statistics.pre_loser_change = market_data['pre_loser_change']
+    market_statistics.top_loser_change = market_data['top_loser_change']
+    market_statistics.after_loser_change = market_data['after_loser_change']
+    market_statistics.save()
+
+
+def save_hist_top_gainer(gainer_data: dict, date: date):
+    symbol = gainer_data['symbol']
+    print("[{}] Importing top gainer for {}...".format(
+        utils.get_now(), symbol))
+    top_gainer = get_hist_top_gainer(symbol, date)
+    if not top_gainer:
+        top_gainer = HistoricalTopGainer(
+            symbol=symbol,
+            date=date,
+        )
+    top_gainer.ticker_id = gainer_data['ticker_id']
+    top_gainer.change = gainer_data['change']
+    top_gainer.change_percentage = gainer_data['change_percentage']
+    top_gainer.price = gainer_data['close']
+    top_gainer.save()
+
+
+def save_hist_top_loser(loser_data: dict, date: date):
+    symbol = loser_data['symbol']
+    print("[{}] Importing top loser for {}...".format(
+        utils.get_now(), symbol))
+    top_loser = get_hist_top_loser(symbol, date)
+    if not top_loser:
+        top_loser = HistoricalTopLoser(
+            symbol=symbol,
+            date=date,
+        )
+    top_loser.ticker_id = loser_data['ticker_id']
+    top_loser.change = loser_data['change']
+    top_loser.change_percentage = loser_data['change_percentage']
+    top_loser.price = loser_data['close']
+    top_loser.save()
+
+
+def save_hist_minute_bar_list(bar_list: List[dict]):
+    print("[{}] Importing minute bar for {}...".format(
+        utils.get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_hist_minute_bar(bar_data)
+
+
+def save_hist_minute_bar(bar_data: dict):
+    bar = HistoricalMinuteBar.objects.filter(
+        symbol=bar_data['symbol'], time=bar_data['time']).first()
+    if not bar:
+        bar = HistoricalMinuteBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            time=bar_data['time'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+            vwap=bar_data['vwap'],
+        )
+        bar.save()
+
+
+def save_hist_daily_bar_list(bar_list: List[dict]):
+    print("[{}] Importing daily bar for {}...".format(
+        utils.get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_hist_daily_bar(bar_data)
+
+
+def save_hist_daily_bar(bar_data: dict):
+    bar = HistoricalDailyBar.objects.filter(
+        symbol=bar_data['symbol'], date=bar_data['date']).first()
+    if not bar:
+        bar = HistoricalDailyBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+        )
+        bar.save()
+
+
+def save_swing_hist_daily_bar_list(bar_list: List[dict]):
+    print("[{}] Importing swing daily bar for {}...".format(
+        utils.get_now(), bar_list[0]['symbol']))
+    for bar_data in bar_list:
+        save_swing_hist_daily_bar(bar_data)
+
+
+def save_swing_hist_daily_bar(bar_data: dict):
+    bar = SwingHistoricalDailyBar.objects.filter(
+        symbol=bar_data['symbol'], date=bar_data['date']).first()
+    if not bar:
+        bar = SwingHistoricalDailyBar(
+            symbol=bar_data['symbol'],
+            date=bar_data['date'],
+            open=bar_data['open'],
+            high=bar_data['high'],
+            low=bar_data['low'],
+            close=bar_data['close'],
+            volume=bar_data['volume'],
+            rsi_10=bar_data['rsi_10'],
+            sma_55=bar_data['sma_55'],
+            sma_120=bar_data['sma_120'],
+        )
+        bar.save()

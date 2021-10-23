@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from datetime import datetime
 from sdk import webullsdk, fmpsdk
-from common import utils, db, constants, exceptions
+from common import utils, db, sms, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
 from logger import trading_logger
 from trading.tracker.trading_tracker import TradingTracker, TrackingTicker
@@ -374,7 +374,7 @@ class StrategyBase:
                 trading_logger.log(
                     "Failed to sell position <{}>!".format(symbol))
                 # send message
-                utils.notify_message(
+                sms.notify_message(
                     "Failed to sell <{}> position, please check now!".format(symbol))
                 # stop tracking ticker
                 if stop_tracking_ticker_after_order_filled:
@@ -434,7 +434,7 @@ class StrategyBase:
                     trading_logger.log(
                         "Failed to sell position <{}>!".format(symbol))
                     # send message
-                    utils.notify_message(
+                    sms.notify_message(
                         "Failed to sell <{}> position, please check now!".format(symbol))
                     if stop_tracking_ticker_after_order_canceled:
                         self.trading_tracker.stop_tracking(ticker)
@@ -614,7 +614,7 @@ class StrategyBase:
                 position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
                 position_obj.save()
                 # send message
-                utils.notify_message(
+                sms.notify_message(
                     "Failed to clear <{}> position, please check now!".format(symbol))
             # remove from tracking
             self.trading_tracker.stop_tracking(ticker)

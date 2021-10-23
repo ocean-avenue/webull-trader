@@ -6,7 +6,7 @@ def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk
-    from common import utils
+    from common import db
     from webull_trader.models import WebullOrder
 
     # paper = utils.check_paper()
@@ -34,7 +34,7 @@ def start(day=None):
         news_list = webullsdk.get_news(stock=symbol)
 
         # save webull news
-        utils.save_webull_news_list(news_list, symbol, day)
+        db.save_webull_news_list(news_list, symbol, day)
 
         # rest for 5 sec
         time.sleep(5)

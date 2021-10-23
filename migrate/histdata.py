@@ -5,7 +5,7 @@
 def start():
     from datetime import date
     from sdk import webullsdk
-    from common import utils
+    from common import utils, db
     from webull_trader.models import WebullAccountStatistics, DayTrade, HistoricalMarketStatistics, HistoricalDayTradePerformance
 
     acc_stat_list = WebullAccountStatistics.objects.all()
@@ -109,7 +109,7 @@ def start():
                 webullsdk.get_pre_market_losers(count=10))
             after_loser_change = utils.get_avg_change_from_movers(
                 webullsdk.get_after_market_losers(count=10))
-            utils.save_hist_market_statistics({
+            db.save_hist_market_statistics({
                 'top_gainer_change': top_gainer_change,
                 'pre_gainer_change': pre_gainer_change,
                 'after_gainer_change': after_gainer_change,
@@ -118,7 +118,7 @@ def start():
                 'after_loser_change': after_loser_change,
             }, day)
         else:
-            utils.save_hist_market_statistics({
+            db.save_hist_market_statistics({
                 'top_gainer_change': 0.0,
                 'pre_gainer_change': 0.0,
                 'after_gainer_change': 0.0,

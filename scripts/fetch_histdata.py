@@ -7,7 +7,7 @@ def start(day=None):
     import time
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
-    from common import utils
+    from common import utils, db
     from webull_trader.models import WebullOrder, SwingWatchlist
 
     if day == None:
@@ -64,7 +64,7 @@ def start(day=None):
                 timestamp = int(bars.index[0].timestamp()) - 1
 
         # save historical minute bar
-        utils.save_hist_minute_bar_list(minute_bar_list)
+        db.save_hist_minute_bar_list(minute_bar_list)
 
         # fetch historical daily bar
         daily_bar_list = []
@@ -81,7 +81,7 @@ def start(day=None):
             })
 
         # save historical daily bar
-        utils.save_hist_daily_bar_list(daily_bar_list)
+        db.save_hist_daily_bar_list(daily_bar_list)
 
         # fetch historical quote
         quote_data = webullsdk.get_quote(ticker_id=ticker_id)
@@ -91,7 +91,7 @@ def start(day=None):
         quote_data['shortFloat'] = additional_quote_data['shortFloat']
 
         # save historical quote
-        utils.save_hist_key_statistics(quote_data, day)
+        db.save_hist_key_statistics(quote_data, day)
 
         # rest for 5 sec
         time.sleep(5)
@@ -109,7 +109,7 @@ def start(day=None):
         webullsdk.get_pre_market_losers(count=10))
     after_loser_change = utils.get_avg_change_from_movers(
         webullsdk.get_after_market_losers(count=10))
-    utils.save_hist_market_statistics({
+    db.save_hist_market_statistics({
         'top_gainer_change': top_gainer_change,
         'pre_gainer_change': pre_gainer_change,
         'after_gainer_change': after_gainer_change,
@@ -126,30 +126,30 @@ def start(day=None):
         for gainer_data in top_gainers:
             symbol = gainer_data['symbol']
             ticker_id = gainer_data['ticker_id']
-            utils.save_hist_top_gainer(gainer_data, day)
-            key_statistics = utils.get_hist_key_stat(symbol, day)
+            db.save_hist_top_gainer(gainer_data, day)
+            key_statistics = db.get_hist_key_stat(symbol, day)
             if not key_statistics:
                 # fetch historical quote
                 quote_data = webullsdk.get_quote(ticker_id=ticker_id)
                 additional_quote_data = finvizsdk.get_quote(symbol)
                 quote_data['shortFloat'] = additional_quote_data['shortFloat']
                 # save historical quote
-                utils.save_hist_key_statistics(quote_data, day)
+                db.save_hist_key_statistics(quote_data, day)
 
         # save top losers
         top_losers = webullsdk.get_top_losers(count=30)
         for loser_data in top_losers:
             symbol = loser_data['symbol']
             ticker_id = loser_data['ticker_id']
-            utils.save_hist_top_loser(loser_data, day)
-            key_statistics = utils.get_hist_key_stat(symbol, day)
+            db.save_hist_top_loser(loser_data, day)
+            key_statistics = db.get_hist_key_stat(symbol, day)
             if not key_statistics:
                 # fetch historical quote
                 quote_data = webullsdk.get_quote(ticker_id=ticker_id)
                 additional_quote_data = finvizsdk.get_quote(symbol)
                 quote_data['shortFloat'] = additional_quote_data['shortFloat']
                 # save historical quote
-                utils.save_hist_key_statistics(quote_data, day)
+                db.save_hist_key_statistics(quote_data, day)
 
     if utils.check_swing_trade_algo(algo_type):
         # fetch watchlist symbol daily data
@@ -189,7 +189,7 @@ def start(day=None):
                     'sma_55': sma55_data['sma'],
                     'rsi_10': rsi10_data['rsi'],
                 }
-                utils.save_swing_hist_daily_bar(bar_data)
+                db.save_swing_hist_daily_bar(bar_data)
 
 
 if __name__ == "django.core.management.commands.shell":

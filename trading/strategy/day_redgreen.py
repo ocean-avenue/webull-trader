@@ -3,7 +3,7 @@
 from datetime import datetime
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
-from common import utils, config
+from common import utils, config, db
 from sdk import webullsdk
 from logger import trading_logger
 from trading import pattern
@@ -149,7 +149,7 @@ class DayTradingRedGreen(StrategyBase):
             if 'open' in quote:
                 # weak open
                 if float(quote['open']) <= gainer.price:
-                    key_stat = utils.get_hist_key_stat(symbol, last_market_day)
+                    key_stat = db.get_hist_key_stat(symbol, last_market_day)
                     ticker = TrackingTicker(symbol, ticker_id)
                     ticker.set_prev_close(gainer.price)
                     ticker.set_prev_high(key_stat.high)
@@ -171,7 +171,7 @@ class DayTradingRedGreen(StrategyBase):
             if 'open' in quote:
                 # weak open
                 if float(quote['open']) <= loser.price:
-                    key_stat = utils.get_hist_key_stat(symbol, last_market_day)
+                    key_stat = db.get_hist_key_stat(symbol, last_market_day)
                     ticker = TrackingTicker(symbol, ticker_id)
                     ticker.set_prev_close(loser.price)
                     ticker.set_prev_high(key_stat.high)
