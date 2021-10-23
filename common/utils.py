@@ -319,6 +319,23 @@ def is_regular_market_time(t):
     return True
 
 
+def is_trading_hour_end(trading_hour: enums.TradingHourType) -> bool:
+    """
+    check if trading end based on TradingHourType (2 minutes early)
+    """
+    now = datetime.now()
+    if trading_hour == enums.TradingHourType.BEFORE_MARKET_OPEN:
+        if now.hour > 9 or (now.hour == 9 and now.minute >= 28):
+            return True
+    elif trading_hour == enums.TradingHourType.REGULAR:
+        if now.hour >= 16 or (now.hour == 15 and now.minute >= 58):
+            return True
+    elif trading_hour == enums.TradingHourType.AFTER_MARKET_CLOSE:
+        if now.hour >= 20 or (now.hour == 19 and now.minute >= 58):
+            return True
+    return False
+
+
 def get_trading_hour() -> enums.TradingHourType:
     if is_pre_market_hour_exact():
         return enums.TradingHourType.BEFORE_MARKET_OPEN

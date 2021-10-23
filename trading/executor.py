@@ -5,7 +5,7 @@
 import time
 from datetime import datetime, timedelta
 from typing import List
-from common.enums import AlgorithmType
+from common.enums import AlgorithmType, TradingHourType
 from common import utils, db, config
 from sdk import webullsdk
 from trading.strategy.strategy_base import StrategyBase
@@ -13,8 +13,9 @@ from trading.strategy.strategy_base import StrategyBase
 
 class TradingExecutor:
 
-    def __init__(self, strategies: List[StrategyBase] = [], paper: bool = True):
+    def __init__(self, strategies: List[StrategyBase] = [], trading_hour: TradingHourType = TradingHourType.REGULAR, paper: bool = True):
         self.paper: bool = paper
+        self.trading_hour: TradingHourType = trading_hour
         self.strategies: List[StrategyBase] = strategies
 
     def start(self):
@@ -51,7 +52,7 @@ class TradingExecutor:
         while utils.is_market_hour():
             # go through strategies trades
             for strategy in self.strategies:
-                if strategy.trading_complete:
+                if strategy.trading_end:
                     continue
                 strategy.update_orders()
                 strategy.update()
@@ -73,8 +74,15 @@ class TradingExecutor:
             time.sleep(1)
 
         # finish strategies
+        while not utils.is_trading_hour_end(self.trading_hour):
+            for strategy in self.strategies:
+                strategy.end()
+                # TODO, remove here, add to end
+                strategy.write_logs()
+
+        # final round
         for strategy in self.strategies:
-            strategy.end()
+            strategy.final()
             # TODO, remove here, add to end
             strategy.write_logs()
 
@@ -232,13 +240,17 @@ def start():
         strategies.append(DayTradingBreakoutEarnings(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
     elif algo_type == AlgorithmType.DAY_EARNINGS:
-        # DAY_EARNINGS: earnings trade
-        strategies.append(DayTradingEarningsOvernight(
-            paper=paper, trading_hour=trading_hour))
+        # DAY_EARNINGS: earnings trade, dont include clean strategy
+        strategies = [
+            DayTradingEarningsOvernight(
+                paper=paper, trading_hour=trading_hour)
+        ]
     elif algo_type == AlgorithmType.DAY_EARNINGS_OVERNIGHT:
         # DAY_EARNINGS: earnings overnight trade
-        strategies.append(DayTradingEarningsOvernight(
-            paper=paper, trading_hour=trading_hour))
+        strategies = [
+            DayTradingEarningsOvernight(
+                paper=paper, trading_hour=trading_hour)
+        ]
     elif algo_type == AlgorithmType.DAY_VWAP_RECLAIM:
         # DAY_VWAP_RECLAIM: vwap reclaim day trade
         if paper:
@@ -291,8 +303,10 @@ def start():
     elif algo_type == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
         # DAY_SWING_EARNINGS_TURTLE
         # earnings trade
-        strategies.append(DayTradingEarningsOvernight(
-            paper=paper, trading_hour=trading_hour))
+        strategies = [
+            DayTradingEarningsOvernight(
+                paper=paper, trading_hour=trading_hour)
+        ]
         # turtle trade 55 days
         strategies.append(SwingTurtle(
             paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))

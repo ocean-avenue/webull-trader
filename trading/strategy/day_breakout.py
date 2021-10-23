@@ -32,13 +32,13 @@ class DayTradingBreakout(StrategyBase):
         return SetupType.DAY_10_CANDLES_NEW_HIGH
 
     # check if track in extended hour
-    def check_surge(self, ticker: TrackingTicker, bar: pd.DataFrame) -> bool:
+    def check_surge(self, ticker: TrackingTicker, bar: pd.Series) -> bool:
         close = bar["close"]
         vwap = bar["vwap"]
         volume = int(bar["volume"])
         if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close > vwap:
             utils.print_trading_log(
-                "Found <{}> to trade!".format(ticker.get_symbol()))
+                f"Found <{ticker.get_symbol()}> surge, price: {close}, volume: {volume}")
             return True
         return False
 
@@ -363,6 +363,7 @@ class DayTradingBreakout(StrategyBase):
             # check stop profit, home run
             exit_trading, exit_note = self.check_stop_profit(
                 ticker, ticker_position)
+
             if not exit_trading:
                 # get 1m bar charts
                 # check_bars_at_peak require 30 bars
@@ -374,6 +375,7 @@ class DayTradingBreakout(StrategyBase):
                         "<{}> bars data error!".format(symbol))
                     exit_trading = True
                     exit_note = "Bars data error!"
+
             if not exit_trading:
                 # convert bars
                 bars = m1_bars
@@ -382,6 +384,7 @@ class DayTradingBreakout(StrategyBase):
                 # check stop loss
                 exit_trading, exit_note = self.check_stop_loss(
                     ticker, ticker_position)
+
             if not exit_trading:
                 utils.print_trading_log("Checking exit for <{}>, price: ${}, unrealized P&L: {}%".format(
                     symbol, bars.iloc[-1]['close'], round(profit_loss_rate * 100, 2)))
@@ -395,14 +398,24 @@ class DayTradingBreakout(StrategyBase):
                 utils.print_trading_log(
                     f"📈 Exit trading <{symbol}> P&L: {profit_loss_rate}%")
 
-                self.submit_sell_order(ticker, ticker_position, exit_note)
+                self.submit_sell_limit_order(
+                    ticker, note=exit_note, retry=True, retry_limit=50)
+
             # check scale in position
             elif self.check_scale_in(ticker, bars, ticker_position):
-                # TODO
-                self.submit_buy_order(ticker, bars, scale_in=True)
+
+                # update stop loss
+                ticker.set_stop_loss(self.get_scale_stop_loss_price(bars))
+                # submit buy limit order
+                self.submit_buy_limit_order(ticker, note="Scale in.")
+
             # check buy the dip
             elif self.check_buy_dip(ticker, bars, ticker_position):
-                self.submit_buy_order(ticker, bars, buy_dip=True)
+
+                # update stop loss
+                ticker.set_stop_loss(self.get_dip_stop_loss_price(bars))
+                # submit buy limit order
+                self.submit_buy_limit_order(ticker, note="Buy dip.")
 
     def update(self):
         # trading tickers
@@ -469,40 +482,44 @@ class DayTradingBreakout(StrategyBase):
                     self.trade(ticker)
 
     def end(self):
-        self.trading_complete = True
+        self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()
+
+    def final(self):
+
+        # track failed to sell positions
+        self.track_rest_positions()
 
 
 # Breakout day trading class, using ask price for entry
 
 class DayTradingBreakoutAsk(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutAsk"
 
-    def get_buy_price(self, ticker):
-        ticker_id = ticker['ticker_id']
+    def get_buy_price(self, ticker: TrackingTicker) -> float:
+        ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
+        utils.print_level2_log(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
-        return ask_price
-
-    def get_buy_price2(self, ticker):
-        ticker_id = ticker['ticker_id']
-        quote = webullsdk.get_quote(ticker_id=ticker_id)
-        ask_price = webullsdk.get_ask_price_from_quote(quote)
-        return ask_price
+        if self.is_regular_market_hour():
+            last_price = utils.get_attr_to_float_or_none(quote, 'close')
+        else:
+            last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
+        return ask_price or last_price
 
 
 # Breakout day trade, adjust exit period by profit & loss rate.
 
 class DayTradingBreakoutDynExit(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutDynExit"
 
-    def update_exit_period(self, ticker: TrackingTicker, position):
+    def update_exit_period(self, ticker: TrackingTicker, position: dict):
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
         current_exit_period = ticker.get_exit_period() or 1
         # if profit_loss_rate >= 0.9 and current_exit_period > 1:
@@ -518,6 +535,10 @@ class DayTradingBreakoutDynExit(DayTradingBreakout):
 # Breakout day trading class, will check earning stock during earning date
 
 class DayTradingBreakoutEarnings(DayTradingBreakout):
+
+    def __init__(self, paper: bool, trading_hour: TradingHourType):
+        super().__init__(paper, trading_hour)
+        self.earning_tickers: List[dict] = []
 
     def get_tag(self) -> str:
         return "DayTradingBreakoutEarnings"
@@ -565,7 +586,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 self.trade(ticker)
 
     def begin(self):
-        self.earning_tickers: List[dict] = []
+
         # check earning calendars
         today = date.today()
         if self.is_pre_market_hour() or self.is_regular_market_hour():
@@ -640,14 +661,14 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
 
 class DayTradingBreakoutNewHigh(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutNewHigh"
 
-    def check_entry_extra(self, ticker: TrackingTicker, bars: pd.DataFrame):
+    def check_entry_extra(self, ticker: TrackingTicker, bars: pd.DataFrame) -> bool:
         current_price = bars.iloc[-1]['close']
         return self.check_if_trade_price_reach_new_high(ticker, current_price)
 
-    def check_if_trade_price_reach_new_high(self, ticker: TrackingTicker, price: float):
+    def check_if_trade_price_reach_new_high(self, ticker: TrackingTicker, price: float) -> bool:
         symbol = ticker.get_symbol()
         tracking_stat = self.trading_tracker.get_stat(symbol)
         last_high_price = tracking_stat.get_last_high_price()
@@ -660,7 +681,7 @@ class DayTradingBreakoutNewHigh(DayTradingBreakout):
 
 class DayTradingBreakoutPeriod(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutPeriod"
 
     def check_exit_extra(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
@@ -675,7 +696,7 @@ class DayTradingBreakoutPeriod(DayTradingBreakout):
             exit_note = "Trading period timeout."
         return (exit_trading, exit_note)
 
-    def check_if_trade_period_timeout(self, ticker: TrackingTicker):
+    def check_if_trade_period_timeout(self, ticker: TrackingTicker) -> bool:
         if (datetime.now() - ticker.get_last_buy_time()) >= timedelta(seconds=config.DAY_PERIOD_TIMEOUT_IN_SEC):
             return True
         return False
@@ -726,7 +747,7 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
 
 class DayTradingBreakoutScale(DayTradingBreakout):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutScale"
 
     def precheck_scale_in(self, ticker: TrackingTicker, position: dict) -> bool:
@@ -837,7 +858,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             "Buy dip <{}> position, first candle new high.".format(symbol))
         return True
 
-    def get_buy_dip_loss_price(self, bars: pd.DataFrame) -> float:
+    def get_dip_stop_loss_price(self, bars: pd.DataFrame) -> float:
         prev_candle = bars.iloc[-2]
         return min(prev_candle['open'], prev_candle['close'])
 
@@ -876,7 +897,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
 
 class DayTradingBreakoutScaleStopLossMax(DayTradingBreakoutScale):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutScaleStopLossMax"
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
@@ -889,7 +910,7 @@ class DayTradingBreakoutScaleStopLossMax(DayTradingBreakoutScale):
 
 class DayTradingBreakoutScaleStopLossATR(DayTradingBreakoutScale):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutScaleStopLossATR"
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
@@ -919,7 +940,7 @@ class DayTradingBreakoutScaleStopLossATR(DayTradingBreakoutScale):
 
 class DayTradingBreakoutScalePeriodROC(DayTradingBreakoutScale):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingBreakoutScalePeriodROC"
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:

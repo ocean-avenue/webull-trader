@@ -34,7 +34,7 @@ class DayTradingClean(StrategyBase):
             ticker.set_position_obj(position)
             # start tracking ticker
             self.trading_tracker.start_tracking(ticker)
-    
+
     def clean(self, ticker: TrackingTicker):
         symbol = ticker.get_symbol()
 
@@ -45,14 +45,14 @@ class DayTradingClean(StrategyBase):
         if ticker.is_pending_cancel():
             self.check_cancel_order_done(ticker)
             return
-        
-        utils.print_trading_log(f"❌ Clean failed to sell position <{symbol}>!")
-        self.submit_sell_limit_order(ticker, note="Clean failed to sell position.", retry=True, retry_limit=50)
 
+        utils.print_trading_log(f"❌ Clean failed to sell position <{symbol}>!")
+        self.submit_sell_limit_order(
+            ticker, note="Clear failed to sell position.", retry=True, retry_limit=50)
 
     def update(self):
         if len(self.trading_tracker.get_tickers()) == 0:
-            self.trading_complete = True
+            self.trading_end = True
             return
 
         for symbol in self.trading_tracker.get_tickers():

@@ -19,7 +19,7 @@ class StrategyBase:
     def __init__(self, paper: bool = True, trading_hour: TradingHourType = TradingHourType.REGULAR):
         # init strategy variables
         self.paper: bool = paper
-        self.trading_complete: bool = False
+        self.trading_end: bool = False
         self.trading_hour: TradingHourType = trading_hour
         self.trading_tracker: TradingTracker = TradingTracker()
         self.order_tracker: OrderTracker = OrderTracker()
@@ -34,6 +34,9 @@ class StrategyBase:
         pass
 
     def end(self):
+        pass
+
+    def final(self):
         pass
 
     def get_tag(self) -> str:
@@ -256,7 +259,7 @@ class StrategyBase:
                 self.trading_tracker.stop_tracking(ticker)
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
-            if ticker.is_order_timeout() or self.trading_complete:
+            if ticker.is_order_timeout() or self.trading_end:
                 # timeout, cancel order
                 if webullsdk.cancel_order(order_id):
                     # start tracking cancel order
@@ -298,7 +301,7 @@ class StrategyBase:
             )
             # remove position object
             position_obj.delete()
-            ticker.clear_positions()
+            ticker.reset_positions()
             ticker.reset_resubmit_order_count()
             # stop tracking sell order
             self.stop_tracking_pending_sell_order(ticker, order_id)
@@ -347,7 +350,7 @@ class StrategyBase:
             resubmit_count = ticker.get_resubmit_order_count()
             retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
                 order_id)
-            if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
+            if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                 # retry sell order
                 utils.print_trading_log(
                     f"Resubmitting sell order <{symbol}>...")
@@ -394,7 +397,7 @@ class StrategyBase:
                 order_id)
             # buy order
             if order.action == ActionType.BUY:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
+                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                     # retry buy order
                     utils.print_trading_log(
                         f"Resubmitting buy order <{symbol}>...")
@@ -407,7 +410,7 @@ class StrategyBase:
                         self.trading_tracker.stop_tracking(ticker)
             # sell order
             if order.action == ActionType.SELL:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
+                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                     # retry sell order
                     utils.print_trading_log(
                         f"Resubmitting sell order <{symbol}>...")
@@ -565,19 +568,36 @@ class StrategyBase:
                 break
         return ticker_position
 
-    # clear unsold positions
+    # clear all positions
     def clear_positions(self):
-        iteration = 0
-        while len(self.trading_tracker.get_tickers()) > 0:
-            for symbol in self.trading_tracker.get_tickers():
-                ticker = self.trading_tracker.get_ticker(symbol)
-                self.clear_position(ticker)
-            # update order
-            self.order_tracker.update_orders()
-            iteration += 1
-            if iteration >= config.CLEAR_POSITION_ITERATIONS:
-                break
-        # may still have left tickers
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
+            self.clear_position(ticker)
+
+    def clear_position(self, ticker: TrackingTicker):
+
+        if ticker.is_pending_buy():
+            self.check_buy_order_done(ticker)
+            return
+
+        if ticker.is_pending_sell():
+            self.check_sell_order_done(ticker)
+            return
+
+        if ticker.is_pending_cancel():
+            self.check_cancel_order_done(ticker)
+            return
+
+        holding_quantity = ticker.get_positions()
+        if holding_quantity == 0:
+            # remove from tracking
+            self.trading_tracker.stop_tracking(ticker)
+            return
+
+        self.submit_sell_limit_order(
+            ticker, note="Clear position.", retry=True, retry_limit=50)
+
+    def track_rest_positions(self):
         for symbol in self.trading_tracker.get_tickers():
             ticker = self.trading_tracker.get_ticker(symbol)
             position_obj = ticker.get_position_obj()
@@ -585,41 +605,11 @@ class StrategyBase:
                 # update setup
                 position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
                 position_obj.save()
-                # remove from monitor
-                self.trading_tracker.stop_tracking(ticker)
-                utils.print_trading_log(
-                    "Failed to clear position <{}>!".format(symbol))
                 # send message
                 utils.notify_message(
-                    "Failed to clear position <{}>, add day position object.".format(symbol))
-
-    def clear_position(self, ticker: TrackingTicker):
-        symbol = ticker.get_symbol()
-        ticker_id = ticker.get_id()
-
-        if ticker.is_pending_buy():
-            self.check_buy_order_filled(ticker)
-            return
-
-        if ticker.is_pending_sell():
-            self.check_sell_order_filled(ticker, retry_limit=10)
-            return
-
-        holding_quantity = ticker.get_positions()
-        if holding_quantity == 0:
-            # remove from monitor
+                    "Failed to clear <{}> position, please check now!".format(symbol))
+            # remove from tracking
             self.trading_tracker.stop_tracking(ticker)
-            return
-
-        sell_price = self.get_sell_price(ticker)
-        order_response = webullsdk.sell_limit_order(
-            ticker_id=ticker_id,
-            price=sell_price,
-            quant=holding_quantity)
-        utils.print_trading_log("🔴 Submit clear position order <{}>, quant: {}, limit price: {}".format(
-            symbol, holding_quantity, sell_price))
-        self.start_tracking_pending_sell_order(
-            ticker, order_response, "Clear position.")
 
     def get_buy_order_limit(self, ticker: TrackingTicker) -> float:
         if self.is_regular_market_hour():
@@ -666,32 +656,11 @@ class StrategyBase:
             utils.print_trading_log(json.dumps(quote))
         return bid_price or last_price
 
-    def get_buy_price2(self, ticker: TrackingTicker) -> float:
-        ticker_id = ticker.get_id()
-        symbol = ticker.get_symbol()
-        quote = webullsdk.get_quote(ticker_id=ticker_id)
-        utils.print_level2_log(quote)
-        # bid_price = webullsdk.get_bid_price_from_quote(quote)
-        # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
-        # if ask_price == None or bid_price == None:
-        #     return None
-        # buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
-        # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
-        # return buy_price
-        ask_price = webullsdk.get_ask_price_from_quote(quote)
-        if not ask_price:
-            utils.print_trading_log(f"<{symbol}> ask price not existed!")
-            utils.print_trading_log(json.dumps(quote))
-        return ask_price
-
-    def get_sell_price2(self, position: dict) -> float:
-        return float(position['lastPrice'])
-
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
 
     def get_scale_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
 
-    def get_buy_dip_loss_price(self, bars: pd.DataFrame) -> float:
+    def get_dip_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0

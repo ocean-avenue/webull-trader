@@ -255,4 +255,4 @@ class SwingTurtle(StrategyBase):
             del self.watchlist[0]
 
     def end(self):
-        self.trading_complete = True
+        self.trading_end = True

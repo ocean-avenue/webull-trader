@@ -154,7 +154,7 @@ class DayTradingMomo(StrategyBase):
 
             # check entry: current price above vwap and ema 9, entry if first candle make new high
             if self.check_entry(ticker, m2_bars):
-                buy_price = self.get_buy_price2(ticker)
+                buy_price = self.get_buy_price(ticker)
                 if buy_price == None:
                     return
                 # gap = (ask_price - bid_price) / bid_price
@@ -319,7 +319,7 @@ class DayTradingMomo(StrategyBase):
                     self.trade(ticker, m1_bars=m1_bars)
 
     def end(self):
-        self.trading_complete = True
+        self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()
@@ -389,7 +389,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
 
         # only trading in extended hour
         if self.is_regular_market_hour():
-            self.trading_complete = True
+            self.trading_end = True
             return
 
         # trading tickers

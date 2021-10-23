@@ -3,7 +3,7 @@ import json
 import time
 import traceback
 import pandas as pd
-from typing import List
+from typing import List, Optional
 from common import utils
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
@@ -517,7 +517,7 @@ def get_daily_profitloss():
 # }
 
 
-def get_quote(ticker_id=None):
+def get_quote(ticker_id=None) -> Optional[dict]:
     time.sleep(1)
     try:
         instance = _get_instance()
@@ -527,7 +527,7 @@ def get_quote(ticker_id=None):
         return None
 
 
-def get_ask_price_from_quote(quote):
+def get_ask_price_from_quote(quote: dict) -> Optional[float]:
     if quote:
         if 'askList' in quote and len(quote['askList']) > 0:
             return float(quote['askList'][0]['price'])
@@ -536,7 +536,7 @@ def get_ask_price_from_quote(quote):
     return None
 
 
-def get_bid_price_from_quote(quote):
+def get_bid_price_from_quote(quote: dict) -> Optional[float]:
     if quote:
         if 'bidList' in quote and len(quote['bidList']) > 0:
             return float(quote['bidList'][0]['price'])
@@ -545,7 +545,7 @@ def get_bid_price_from_quote(quote):
     return None
 
 
-def get_bid_volume_from_quote(quote):
+def get_bid_volume_from_quote(quote: dict) -> float:
     if quote:
         if 'bidList' in quote and len(quote['bidList']) > 0:
             return int(quote['bidList'][0]['volume'])
@@ -554,7 +554,7 @@ def get_bid_volume_from_quote(quote):
     return 0
 
 
-def get_ticker(symbol=None):
+def get_ticker(symbol:Optional[str]=None) -> Optional[dict]:
     time.sleep(1)
     try:
         instance = _get_instance()

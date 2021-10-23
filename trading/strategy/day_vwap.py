@@ -107,7 +107,7 @@ class DayTradingVWAPPaper(StrategyBase):
             # check entry: current above vwap
             if should_entry:
                 # buy_price = self.get_buy_price(ticker)
-                buy_price = self.get_buy_price2(ticker)
+                buy_price = self.get_buy_price(ticker)
                 if buy_price == None:
                     return
                 usable_cash = webullsdk.get_usable_cash()
@@ -173,8 +173,7 @@ class DayTradingVWAPPaper(StrategyBase):
 
                 # exit trading
                 if exit_trading:
-                    # sell_price = self.get_sell_price(ticker)
-                    sell_price = self.get_sell_price2(ticker_position)
+                    sell_price = float(ticker_position['lastPrice'])
                     if sell_price == None:
                         return
                     order_response = webullsdk.sell_limit_order(
@@ -227,7 +226,7 @@ class DayTradingVWAPPaper(StrategyBase):
             self.trade(ticker)
 
     def end(self):
-        self.trading_complete = True
+        self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()
@@ -450,7 +449,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             self.trade(ticker)
 
     def end(self):
-        self.trading_complete = True
+        self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()

@@ -86,7 +86,7 @@ class TrackingTicker:
     def get_units(self) -> int:
         return self.units
 
-    def clear_positions(self):
+    def reset_positions(self):
         self.units = 0
         self.positions = 0
         self.position_obj = None
