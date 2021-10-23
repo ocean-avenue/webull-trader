@@ -554,7 +554,7 @@ def get_bid_volume_from_quote(quote: dict) -> float:
     return 0
 
 
-def get_ticker(symbol:Optional[str]=None) -> Optional[dict]:
+def get_ticker(symbol: Optional[str] = None) -> Optional[str]:
     time.sleep(1)
     try:
         instance = _get_instance()
@@ -577,7 +577,7 @@ def get_ticker(symbol:Optional[str]=None) -> Optional[dict]:
 # 2021-04-07 19:56:00-04:00  8.60  8.60  8.60   8.60    25.0  8.46
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
-def get_1m_bars(ticker_id=None, count=20, timestamp=None):
+def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
     time.sleep(0.5)
     try:
         instance = _get_instance()
@@ -587,7 +587,7 @@ def get_1m_bars(ticker_id=None, count=20, timestamp=None):
         return pd.DataFrame()
 
 
-def get_1d_bars(ticker_id=None, count=20):
+def get_1d_bars(ticker_id=None, count=20) -> pd.DataFrame:
     time.sleep(1)
     try:
         instance = _get_instance()
@@ -602,8 +602,8 @@ def get_1d_bars(ticker_id=None, count=20):
 # ticker_id = 913256135
 
 
-def get_sample_ticker():
-    return 913256135
+def get_sample_ticker() -> str:
+    return '913256135'
 
 # Paper
 # {'orderId': 41947352}
@@ -1066,7 +1066,7 @@ def get_1m_charts(ticker_id, count=20):
     return ret_list
 
 
-def get_pre_market_gainers(count=10):
+def get_pre_market_gainers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_PRE_MARKET_GAINERS_URL.format(count))
@@ -1117,7 +1117,7 @@ def get_pre_market_gainers(count=10):
 # ]
 
 
-def get_top_gainers(count=10):
+def get_top_gainers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_TOP_GAINERS_URL.format(count))
@@ -1155,7 +1155,7 @@ def get_top_gainers(count=10):
         return []
 
 
-def get_after_market_gainers(count=10):
+def get_after_market_gainers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
@@ -1194,7 +1194,7 @@ def get_after_market_gainers(count=10):
         return []
 
 
-def get_pre_market_losers(count=10):
+def get_pre_market_losers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_PRE_MARKET_LOSERS_URL.format(count))
@@ -1245,7 +1245,7 @@ def get_pre_market_losers(count=10):
 # ]
 
 
-def get_top_losers(count=10):
+def get_top_losers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_TOP_LOSERS_URL.format(count))
@@ -1283,7 +1283,7 @@ def get_top_losers(count=10):
         return []
 
 
-def get_after_market_losers(count=10):
+def get_after_market_losers(count=10) -> List[dict]:
     time.sleep(0.5)
     try:
         res = _get_session().get(WEBULL_AFTER_MARKET_LOSERS_URL.format(count))

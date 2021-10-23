@@ -211,6 +211,20 @@ class StrategyBase:
         self.start_tracking_pending_sell_order(
             ticker, order_response, exit_note=note, retry=retry, retry_limit=retry_limit)
 
+    def check_pending_order_done(self, ticker: TrackingTicker):
+
+        if ticker.is_pending_buy():
+            self.check_buy_order_done(ticker)
+            return
+
+        if ticker.is_pending_sell():
+            self.check_sell_order_done(ticker)
+            return
+
+        if ticker.is_pending_cancel():
+            self.check_cancel_order_done(ticker)
+            return
+
     def check_buy_order_done(self, ticker: TrackingTicker,
                              stop_tracking_ticker_after_order_filled: bool = False):
         symbol = ticker.get_symbol()

@@ -6,9 +6,10 @@ from django.core.cache import cache
 from sdk import fmpsdk
 from common import utils, config
 from common.enums import SetupType, TradingHourType
+from trading import pattern
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
     HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, \
-    WebullNews, TradingLog, ExceptionLog
+    WebullNews, TradingLog, ExceptionLog, WebullOrder
 
 # Create your views here.
 
@@ -436,14 +437,14 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
     # load 1m data for render
     m1_candle_data = utils.get_minute_candle_data_for_render(m1_bars)
     # calculate 2m bars
-    m2_bars = utils.convert_2m_bars(m1_bars)
+    m2_bars = pattern.convert_2m_bars(m1_bars)
     # calculate and fill ema 9 data
     if not m2_bars.empty:
         m2_bars['ema9'] = m2_bars['close'].ewm(span=9, adjust=False).mean()
     # load 2m data for render
     m2_candle_data = utils.get_minute_candle_data_for_render(m2_bars)
     # calculate 5m bars
-    m5_bars = utils.convert_5m_bars(m1_bars)
+    m5_bars = pattern.convert_5m_bars(m1_bars)
     # calculate and fill ema 9 data
     if not m5_bars.empty:
         m5_bars['ema9'] = m5_bars['close'].ewm(span=9, adjust=False).mean()
@@ -504,14 +505,13 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         sell_order_id = order_ids[-1]
 
         setup = None
-        buy_order_notes = WebullOrderNote.objects.filter(order_id=buy_order_id)
-        if len(buy_order_notes) > 0:
-            setup = SetupType.tostr(buy_order_notes[0].setup)
+        buy_order = WebullOrder.objects.filter(order_id=buy_order_id).first()
+        if buy_order:
+            setup = SetupType.tostr(buy_order.setup)
         notes = []
-        sell_order_notes = WebullOrderNote.objects.filter(
-            order_id=sell_order_id)
-        for sell_order_note in sell_order_notes:
-            notes.append(sell_order_note.note)
+        sell_order = WebullOrder.objects.filter(order_id=sell_order_id).first()
+        if sell_order:
+            notes.append(sell_order.note)
         trade_records.append({
             "symbol": symbol,
             "quantity": quantity,

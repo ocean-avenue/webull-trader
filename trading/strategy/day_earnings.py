@@ -35,19 +35,10 @@ class DayTradingEarningsOvernight(StrategyBase):
         return (False, None)
 
     def trade(self, ticker: TrackingTicker):
-        symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
 
-        if ticker.is_pending_buy():
-            self.check_buy_order_done()
-            return
-
-        if ticker.is_pending_cancel():
-            self.check_cancel_order_done()
-            return
-
-        if ticker.is_pending_sell():
-            self.check_sell_order_done()
+        if ticker.has_pending_order():
+            self.check_pending_order_done(ticker)
             return
 
         # buy in pre/after market hour
@@ -79,7 +70,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 earning_time = "amc"
             earnings = EarningCalendar.objects.filter(
                 earning_date=today).filter(earning_time=earning_time)
-            # update tracking_tickers
+            # update tracking tickers
             for earning in earnings:
                 symbol = earning.symbol
                 ticker_id = str(webullsdk.get_ticker(symbol=symbol))

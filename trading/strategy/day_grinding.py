@@ -2,23 +2,25 @@
 
 # Grinding day trading strategy with large cap and major news
 
+from typing import List
 from datetime import datetime, date
 from trading.strategy.day_breakout import DayTradingBreakout
-from common.enums import SetupType
-from common import utils, config
+from common.enums import SetupType, TradingHourType
+from common import utils, constants, db
 from sdk import webullsdk, finvizsdk
+from trading.tracker.trading_tracker import TrackingTicker
 
 
 class DayTradingGrindingLargeCap(DayTradingBreakout):
 
-    def __init__(self, paper, trading_hour):
+    def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)
-        self.large_cap_with_major_news = []
+        self.large_cap_with_major_news: List[dict] = []
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingGrindingLargeCap"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_GRINDING_UP
 
     def update(self):
@@ -27,8 +29,8 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
             return
 
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
@@ -36,13 +38,13 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
         top_gainers = webullsdk.get_top_gainers(count=50)
         for gainer in top_gainers:
             symbol = gainer["symbol"]
-            ticker_id = gainer["ticker_id"]
+            ticker_id = str(gainer["ticker_id"])
             market_value = gainer["market_value"]
-            # check if ticker already in monitor
-            if symbol in self.tracking_tickers:
+            # check if ticker already in tracking
+            if self.trading_tracker.is_tracking(ticker_id):
                 continue
             # skip ticker is not large cap
-            if market_value < config.LARGE_CAP_MARKET_CAP:
+            if market_value < constants.LARGE_CAP_MARKET_CAP:
                 continue
             # check if has news
             if symbol not in self.large_cap_with_major_news:
@@ -60,7 +62,7 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
                         source = news["source"]
                         news_link = news["news_link"]
                         utils.print_trading_log(
-                            "Found <{}> news!".format(symbol))
+                            "Found <{}> news...".format(symbol))
                         utils.print_trading_log("Title: {}".format(title))
                         utils.print_trading_log("Source: {}".format(source))
                         utils.print_trading_log("Time: {}".format(news_time))
@@ -71,10 +73,10 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
                 self.large_cap_with_major_news.append(symbol)
             # trade if is large cap with news
             if symbol in self.large_cap_with_major_news:
-                ticker = self.build_tracking_ticker(symbol, ticker_id)
+                ticker = TrackingTicker(symbol, ticker_id)
                 # found trading ticker
-                self.tracking_tickers[symbol] = ticker
-                utils.print_trading_log("Found <{}> to trade!".format(symbol))
+                self.trading_tracker.start_tracking(ticker)
+                utils.print_trading_log("Start trading <{}>...".format(symbol))
                 # do trade
                 self.trade(ticker)
 
@@ -83,14 +85,14 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
 
 class DayTradingGrindingSymbols(DayTradingBreakout):
 
-    def __init__(self, paper, trading_hour):
+    def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)
-        self.trading_tickers = []
+        self.trading_tickers: List[dict] = []
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingGrindingSymbols"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_GRINDING_UP
 
     def begin(self):
@@ -99,9 +101,9 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
             return
 
         # trading specific symbols
-        trading_symbols = utils.get_trading_symbols()
+        trading_symbols = db.get_trading_symbols()
         for symbol in trading_symbols:
-            ticker_id = webullsdk.get_ticker(symbol=symbol)
+            ticker_id = str(webullsdk.get_ticker(symbol=symbol))
             self.trading_tickers.append({
                 "symbol": symbol,
                 "ticker_id": ticker_id,
@@ -115,20 +117,20 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
             return
 
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
         for trading_ticker in self.trading_tickers:
             symbol = trading_ticker["symbol"]
             ticker_id = trading_ticker["ticker_id"]
-            # check if ticker already in monitor
-            if symbol in self.tracking_tickers:
+            # check if ticker already in tracking
+            if self.trading_tracker.is_tracking(ticker_id):
                 continue
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            ticker = TrackingTicker(symbol, ticker_id)
             # found trading ticker
-            self.tracking_tickers[symbol] = ticker
-            utils.print_trading_log("Found <{}> to trade!".format(symbol))
+            self.trading_tracker.start_tracking(ticker)
+            utils.print_trading_log("Start trading <{}>...".format(symbol))
             # do trade
             self.trade(ticker)

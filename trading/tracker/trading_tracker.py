@@ -1,7 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
 from common import config, constants
-from trading.strategy.strategy_base import StrategyBase
 from webull_trader.models import DayPosition, DayTrade
 
 
@@ -46,6 +45,9 @@ class TrackingTicker:
         self.set_pending_cancel(False)
         self.set_pending_order_id(None)
         self.set_pending_order_time(None)
+
+    def has_pending_order(self):
+        return self.pending_order_id != None
 
     def set_pending_buy(self, pending_buy: bool):
         self.pending_buy = pending_buy
@@ -201,6 +203,11 @@ class TrackingTicker:
             return True
         return False
 
+    def is_holing_too_long(self) -> bool:
+        if self.last_buy_time and (datetime.now() - self.last_buy_time) >= timedelta(seconds=config.HOLDING_ORDER_TIMEOUT_IN_SEC):
+            return True
+        return False
+
 
 # Tracking statistic class, data will persistent during whole trading session
 class TrackingStat:
@@ -240,7 +247,7 @@ class TrackingStat:
 
     def get_continue_lose_trades(self) -> int:
         return self.continue_lose_trades
-    
+
     def reset_continue_lose_trades(self):
         self.continue_lose_trades = 0
 
@@ -281,7 +288,8 @@ class TrackingStat:
         # last high price
         buy_price = round(trade.total_sold / trade.quantity, 2)
         sell_price = round(trade.total_cost / trade.quantity, 2)
-        self.set_last_high_price(max(self.get_last_high_price(), buy_price, sell_price))
+        self.set_last_high_price(
+            max(self.get_last_high_price(), buy_price, sell_price))
         # last trade time
         self.set_last_trade_time(datetime.now())
         # profit loss
@@ -292,6 +300,7 @@ class TrackingStat:
         else:
             self.inc_win_trades()
             self.reset_continue_lose_trades()
+
 
 # Trading tracker class
 class TradingTracker:

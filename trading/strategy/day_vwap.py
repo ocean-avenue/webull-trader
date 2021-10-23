@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
+from typing import Tuple
 from trading.strategy.strategy_base import StrategyBase
-from common.enums import SetupType
+from common.enums import SetupType, TradingHourType
 from common import utils, constants
 from sdk import webullsdk, finvizsdk
+from trading.tracker.trading_tracker import TrackingTicker
 
 
 # VWAP reclaim day trading strategy
@@ -12,17 +15,17 @@ from sdk import webullsdk, finvizsdk
 # OTOCO order is not available in paper account
 class DayTradingVWAPPaper(StrategyBase):
 
-    def __init__(self, paper, trading_hour):
+    def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingVWAP"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_VWAP_RECLAIM
 
     # return (SHOULD_ENTRY, TARGET_PROFIT, STOP_LOSS)
-    def check_entry(self, ticker, bars):
+    def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, float, float]:
         # check if have prev candles below vwap
         below_vwap_count = 0
         period_high = 0
@@ -47,10 +50,10 @@ class DayTradingVWAPPaper(StrategyBase):
                 return (True, period_high, period_low)
         return (False, 0.0, 0.0)
 
-    def check_stop_loss(self, ticker, bars):
+    def check_stop_loss(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
         exit_trading = False
         exit_note = None
-        stop_loss = ticker['stop_loss']
+        stop_loss = ticker.get_stop_loss()
         for _, candle in bars.iterrows():
             # check if latest low is lower than stop loss
             if candle['low'] < stop_loss:
@@ -60,11 +63,11 @@ class DayTradingVWAPPaper(StrategyBase):
                 break
         return (exit_trading, exit_note)
 
-    def check_exit(self, ticker, bars):
-        symbol = ticker['symbol']
+    def check_exit(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
+        symbol = ticker.get_symbol()
         exit_trading = False
         exit_note = None
-        target_profit = ticker['target_profit']
+        target_profit = ticker.get_target_profit()
         for _, candle in bars.iterrows():
             # check if price already reach target profit
             if candle['high'] >= target_profit:
@@ -77,20 +80,16 @@ class DayTradingVWAPPaper(StrategyBase):
 
         return (exit_trading, exit_note)
 
-    def trade(self, ticker):
+    def trade(self, ticker: TrackingTicker):
 
-        symbol = ticker['symbol']
-        ticker_id = ticker['ticker_id']
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
 
-        if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker)
+        if ticker.has_pending_order():
+            self.check_pending_order_done(ticker)
             return
 
-        if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, retry_limit=50)
-            return
-
-        holding_quantity = ticker['positions']
+        holding_quantity = ticker.get_positions()
 
         if holding_quantity == 0:
             # fetch 1m bar charts
@@ -106,35 +105,14 @@ class DayTradingVWAPPaper(StrategyBase):
                 ticker, bars)
             # check entry: current above vwap
             if should_entry:
-                # buy_price = self.get_buy_price(ticker)
-                buy_price = self.get_buy_price(ticker)
-                if buy_price == None:
-                    return
-                usable_cash = webullsdk.get_usable_cash()
-                utils.save_webull_min_usable_cash(usable_cash)
-                buy_position_amount = self.get_buy_order_limit(ticker)
-                if usable_cash <= buy_position_amount:
-                    utils.print_trading_log(
-                        "Not enough cash to buy <{}>, buy price: {}!".format(symbol, buy_price))
-                    return
-                buy_quant = (int)(buy_position_amount / buy_price)
-                if buy_quant > 0:
-                    # submit limit order at ask price
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=buy_price,
-                        quant=buy_quant)
-                    utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
-                        symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
-                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, buy_price))
-                    # update pending buy
-                    self.update_pending_buy_order(
-                        ticker, order_response, target_profit=target_profit, stop_loss=stop_loss)
-                else:
-                    utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
-
+                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                    symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
+                # set target profit
+                ticker.set_target_profit(target_profit)
+                # set stop loss
+                ticker.set_stop_loss(stop_loss)
+                # submit buy limit order
+                self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -145,7 +123,7 @@ class DayTradingVWAPPaper(StrategyBase):
                 # position is negitive, some unknown error happen
                 utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
-                del self.tracking_tickers[symbol]
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             # get 1m bar charts
@@ -157,10 +135,9 @@ class DayTradingVWAPPaper(StrategyBase):
                 exit_trading = True
                 exit_note = "Bars data error!"
             else:
-
                 profit_loss_rate = float(
                     ticker_position['unrealizedProfitLossRate'])
-                self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
+                ticker.set_last_profit_loss_rate(profit_loss_rate)
 
                 bars = m1_bars
                 # check stop loss
@@ -173,28 +150,13 @@ class DayTradingVWAPPaper(StrategyBase):
 
                 # exit trading
                 if exit_trading:
-                    sell_price = float(ticker_position['lastPrice'])
-                    if sell_price == None:
-                        return
-                    order_response = webullsdk.sell_limit_order(
-                        ticker_id=ticker_id,
-                        price=sell_price,
-                        quant=holding_quantity)
-                    utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
-                        symbol, round(profit_loss_rate * 100, 2)))
-                    utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                        symbol, holding_quantity, sell_price))
-                    # update pending sell
-                    self.update_pending_sell_order(
-                        ticker, order_response, exit_note=exit_note)
-                    # update trading stats
-                    self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
-                        ticker_position['costPrice']), profit_loss_rate)
+                    self.submit_sell_limit_order(
+                        ticker, note=exit_note, retry=True, retry_limit=50)
 
     def update(self):
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
@@ -209,19 +171,19 @@ class DayTradingVWAPPaper(StrategyBase):
 
         for gainer in top_gainers:
             symbol = gainer["symbol"]
-            ticker_id = gainer["ticker_id"]
-            # check if ticker already in monitor
-            if symbol in self.tracking_tickers:
+            ticker_id = str(gainer["ticker_id"])
+            # check if ticker already in tracking
+            if self.trading_tracker.is_tracking(ticker_id):
                 continue
             # init tracking ticker
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
+            ticker = TrackingTicker(symbol, ticker_id)
             # check if can trade with requirements
             if not self.check_can_trade_ticker(ticker):
                 # utils.print_trading_log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
-            # add to monitor
-            self.tracking_tickers[symbol] = ticker
+            # start tracking
+            self.trading_tracker.start_tracking(ticker)
             # do trade
             self.trade(ticker)
 
@@ -231,20 +193,25 @@ class DayTradingVWAPPaper(StrategyBase):
         # check if still holding any positions before exit
         self.clear_positions()
 
+    def final(self):
+
+        # track failed to sell positions
+        self.track_rest_positions()
+
 
 class DayTradingVWAPLargeCap(StrategyBase):
 
-    def __init__(self, paper, trading_hour):
+    def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.large_cap_with_major_news = {}
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingVWAPLargeCap"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_VWAP_RECLAIM
 
-    def check_entry(self, ticker, bars):
+    def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame):
         # check if have prev candles below vwap
         has_candle_below_vwap = False
         for _, candle in bars.iterrows():
@@ -258,7 +225,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             return True
         return False
 
-    def check_stop_loss(self, ticker, bars):
+    def check_stop_loss(self, ticker: TrackingTicker, bars: pd.DataFrame):
         exit_trading = False
         exit_note = None
         current_candle = bars.iloc[-1]
@@ -271,8 +238,8 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 current_price, current_vwap)
         return (exit_trading, exit_note)
 
-    def check_exit(self, ticker, bars):
-        symbol = ticker['symbol']
+    def check_exit(self, ticker: TrackingTicker, bars: pd.DataFrame):
+        symbol = ticker.get_symbol()
         exit_trading = False
         exit_note = None
         exit_period = 10
@@ -293,20 +260,15 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
         return (exit_trading, exit_note)
 
-    def trade(self, ticker):
+    def trade(self, ticker: TrackingTicker):
 
-        symbol = ticker['symbol']
-        ticker_id = ticker['ticker_id']
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
 
-        if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker)
-            return
+        if ticker.has_pending_order():
+            self.check_pending_order_done(ticker)
 
-        if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, retry_limit=50)
-            return
-
-        holding_quantity = ticker['positions']
+        holding_quantity = ticker.get_positions()
 
         if holding_quantity == 0:
             # fetch 1m bar charts
@@ -320,35 +282,10 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
             # check entry: current above vwap
             if self.check_entry(ticker, bars):
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                # bid_price = webullsdk.get_bid_price_from_quote(quote)
-                ask_price = webullsdk.get_ask_price_from_quote(quote)
-                if ask_price == None:
-                    return
-                usable_cash = webullsdk.get_usable_cash()
-                utils.save_webull_min_usable_cash(usable_cash)
-                buy_position_amount = self.get_buy_order_limit(ticker)
-                if usable_cash <= buy_position_amount:
-                    utils.print_trading_log(
-                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
-                    return
-                buy_quant = (int)(buy_position_amount / ask_price)
-                if buy_quant > 0:
-                    # submit limit order at ask price
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=ask_price,
-                        quant=buy_quant)
-                    utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
-                        symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
-                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, ask_price))
-                    # update pending buy
-                    self.update_pending_buy_order(ticker, order_response)
-                else:
-                    utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
-
+                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                    symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
+                # submit buy limit order
+                self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -359,17 +296,16 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 # position is negitive, some unknown error happen
                 utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
-                del self.tracking_tickers[symbol]
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
-            self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
+            ticker.set_last_profit_loss_rate(profit_loss_rate)
 
             # due to no stop trailing order in paper account, keep tracking of max P&L rate
-            max_profit_loss_rate = self.tracking_tickers[symbol]['max_profit_loss_rate']
-            if profit_loss_rate > max_profit_loss_rate:
-                self.tracking_tickers[symbol]['max_profit_loss_rate'] = profit_loss_rate
+            if profit_loss_rate > ticker.get_max_profit_loss_rate():
+                ticker.set_max_profit_loss_rate(profit_loss_rate)
 
             # get 1m bar charts
             m1_bars = webullsdk.get_1m_bars(ticker_id, count=15)
@@ -391,31 +327,14 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
             # exit trading
             if exit_trading:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None:
-                    return
-                bid_price = webullsdk.get_bid_price_from_quote(quote)
-                if bid_price == None:
-                    return
-                order_response = webullsdk.sell_limit_order(
-                    ticker_id=ticker_id,
-                    price=bid_price,
-                    quant=holding_quantity)
-                utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
-                    symbol, round(profit_loss_rate * 100, 2)))
-                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                    symbol, holding_quantity, bid_price))
-                # update pending sell
-                self.update_pending_sell_order(
-                    ticker, order_response, exit_note=exit_note)
-                # update trading stats
-                self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
-                    ticker_position['costPrice']), profit_loss_rate)
+                # submit sell limit order
+                self.submit_sell_limit_order(
+                    ticker, note=exit_note, retry=True, retry_limit=50)
 
     def update(self):
         # trading tickers
-        for symbol in list(self.tracking_tickers):
-            ticker = self.tracking_tickers[symbol]
+        for symbol in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
@@ -428,7 +347,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             # already exist in watchlist
             if symbol in self.large_cap_with_major_news:
                 continue
-            ticker_id = webullsdk.get_ticker(symbol=symbol)
+            ticker_id = str(webullsdk.get_ticker(symbol=symbol))
             self.large_cap_with_major_news[symbol] = {
                 "symbol": symbol,
                 "ticker_id": ticker_id,
@@ -438,13 +357,13 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
         for symbol in list(self.large_cap_with_major_news):
             ticker_id = self.large_cap_with_major_news[symbol]["ticker_id"]
-            # check if ticker already in monitor
-            if symbol in self.tracking_tickers:
+            # check if ticker already in tracking
+            if self.trading_tracker.is_tracking(ticker_id):
                 continue
             # init tracking ticker
-            ticker = self.build_tracking_ticker(symbol, ticker_id)
-            # add to monitor
-            self.tracking_tickers[symbol] = ticker
+            ticker = TrackingTicker(symbol, ticker_id)
+            # add to tracking
+            self.trading_tracker.start_tracking(ticker)
             # do trade
             self.trade(ticker)
 
@@ -453,3 +372,8 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
         # check if still holding any positions before exit
         self.clear_positions()
+
+    def final(self):
+
+        # track failed to sell positions
+        self.track_rest_positions()

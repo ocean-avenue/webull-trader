@@ -6,6 +6,7 @@ from common.enums import SetupType, TradingHourType
 from typing import List, Tuple
 from common import utils, config, constants
 from sdk import webullsdk
+from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
 from trading.tracker.trading_tracker import TrackingTicker
 from webull_trader.models import EarningCalendar
@@ -104,7 +105,7 @@ class DayTradingBreakout(StrategyBase):
                 f"<{symbol}> current price (${current_price}) already surge {'{}%'.format(round(surge_ratio * 100, 2))} than prev close (${prev_close}), no entry!")
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
             utils.print_trading_log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # stop tracking
@@ -256,7 +257,7 @@ class DayTradingBreakout(StrategyBase):
         exit_note = None
         last_price = float(position['lastPrice'])
         # check stop loss
-        if ticker['stop_loss'] and last_price < ticker['stop_loss']:
+        if last_price < ticker.get_stop_loss():
             exit_trading = True
             exit_note = "Stop loss at {}!".format(last_price)
         return (exit_trading, exit_note)
@@ -289,16 +290,8 @@ class DayTradingBreakout(StrategyBase):
         ticker_id = ticker.get_id()
         symbol = ticker.get_symbol()
 
-        if ticker.is_pending_buy():
-            self.check_buy_order_done(ticker)
-            return
-
-        if ticker.is_pending_sell():
-            self.check_sell_order_done(ticker)
-            return
-
-        if ticker.is_pending_cancel():
-            self.check_cancel_order_done(ticker)
+        if ticker.has_pending_order():
+            self.check_pending_order_done(ticker)
             return
 
         holding_quantity = ticker.get_positions()
@@ -319,7 +312,7 @@ class DayTradingBreakout(StrategyBase):
                 return
             bars = m1_bars
             if self.time_scale == 5:
-                bars = utils.convert_5m_bars(m1_bars)
+                bars = pattern.convert_5m_bars(m1_bars)
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
@@ -380,7 +373,7 @@ class DayTradingBreakout(StrategyBase):
                 # convert bars
                 bars = m1_bars
                 if self.time_scale == 5:
-                    bars = utils.convert_5m_bars(m1_bars)
+                    bars = pattern.convert_5m_bars(m1_bars)
                 # check stop loss
                 exit_trading, exit_note = self.check_stop_loss(
                     ticker, ticker_position)
@@ -393,10 +386,8 @@ class DayTradingBreakout(StrategyBase):
 
             # exit trading
             if exit_trading:
-                profit_loss_rate = round(
-                    float(ticker_position['unrealizedProfitLossRate']) * 100, 2)
                 utils.print_trading_log(
-                    f"📈 Exit trading <{symbol}> P&L: {profit_loss_rate}%")
+                    f"📈 Exit trading <{symbol}> P&L: {profit_loss_rate * 100}%")
 
                 self.submit_sell_limit_order(
                     ticker, note=exit_note, retry=True, retry_limit=50)
@@ -790,7 +781,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         if last_price < period_high_price:
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_updated(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
             utils.print_trading_log(
                 "<{}> candle chart is not updated, stop scale in!".format(symbol))
             return False

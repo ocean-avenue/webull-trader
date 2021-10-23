@@ -4,7 +4,8 @@ from django.conf import settings
 from datetime import datetime, date
 from common import enums, utils, constants
 from sdk import webullsdk
-from webull_trader.models import DayPosition, DayTrade, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullOrder
+from webull_trader.models import DayPosition, DayTrade, TradingSettings, TradingSymbols, \
+    WebullAccountStatistics, WebullCredentials, WebullOrder
 
 
 def get_or_create_trading_settings() -> TradingSettings:
@@ -25,6 +26,16 @@ def get_or_create_trading_settings() -> TradingSettings:
         )
         trading_settings.save()
     return trading_settings
+
+
+def get_trading_symbols():
+    trading_symbols = TradingSymbols.objects.first()
+    if trading_symbols:
+        symbol_text = trading_symbols.symbols
+        if len(symbol_text) == 0:
+            return []
+        return symbol_text.upper().split("\r\n")
+    return []
 
 
 def save_webull_credentials(cred_data: dict, paper: bool = True):

@@ -53,8 +53,6 @@ DAY_SCALE_PRICE_RATE_OF_CHANGE = 2
 SWING_PRICE_RATE_OF_CHANGE = 30
 # ROC for swing trade scale in
 SWING_SCALE_PRICE_RATE_OF_CHANGE = 12
-# large cap requirements
-LARGE_CAP_MARKET_CAP = 2000000000
 # incrase ratio of bid price for buy
 BUY_BID_PRICE_RATIO = 1.01
 # day trading min stop loss 2%

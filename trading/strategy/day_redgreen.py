@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, date
+from datetime import datetime
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
 from common import utils, config
 from sdk import webullsdk
+from trading import pattern
+from trading.tracker.trading_tracker import TrackingTicker
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 
 
@@ -12,33 +14,37 @@ from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 
 class DayTradingRedGreen(StrategyBase):
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "DayTradingRedGreen"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         return SetupType.DAY_RED_TO_GREEN
 
-    def trade(self, ticker):
+    def trade(self, ticker: TrackingTicker):
 
-        symbol = ticker['symbol']
-        ticker_id = ticker['ticker_id']
-        prev_day_close = ticker['prev_close']
-        prev_day_high = ticker['prev_high']
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
 
-        if ticker['pending_buy']:
-            self.check_buy_order_filled(ticker)
+        if ticker.is_pending_buy():
+            self.check_buy_order_done(ticker)
             return
 
-        if ticker['pending_sell']:
-            self.check_sell_order_filled(
-                ticker, stop_tracking=False, retry_limit=50)
+        if ticker.is_pending_sell():
+            self.check_sell_order_done(
+                ticker, stop_tracking_ticker_after_order_filled=False)
             return
 
-        holding_quantity = ticker['positions']
+        if ticker.is_pending_cancel():
+            self.check_cancel_order_done(ticker)
+            return
+
+        prev_day_close = ticker.get_prev_close()
+        prev_day_high = ticker.get_prev_high()
+        holding_quantity = ticker.get_positions()
 
         # fetch 1m bar charts
         m1_bars = webullsdk.get_1m_bars(ticker_id, count=60)
-        m2_bars = utils.convert_2m_bars(m1_bars)
+        m2_bars = pattern.convert_2m_bars(m1_bars)
         if m2_bars.empty:
             return
 
@@ -46,33 +52,31 @@ class DayTradingRedGreen(StrategyBase):
         prev_candle = m2_bars.iloc[-2]
 
         # current price data
-        current_close = current_candle['close']
         current_high = current_candle['high']
         current_low = current_candle['low']
         prev_low = prev_candle['low']
-        current_volume = int(current_candle['volume'])
 
         if holding_quantity == 0:
 
-            if not utils.check_bars_updated(m2_bars):
+            if not pattern.check_bars_updated(m2_bars):
                 utils.print_trading_log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
+                # remove from tracking
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             if not utils.check_bars_has_volume(m2_bars, time_scale=2):
                 utils.print_trading_log(
                     "<{}> candle chart has not enough volume, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
+                # remove from tracking
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             if not utils.check_bars_rel_volume(m2_bars):
                 utils.print_trading_log(
                     "<{}> candle chart has no relative volume, stop trading!".format(symbol))
-                # remove from monitor
-                del self.tracking_tickers[symbol]
+                # remove from tracking
+                self.trading_tracker.stop_tracking(ticker)
                 return
 
             now = datetime.now()
@@ -88,30 +92,12 @@ class DayTradingRedGreen(StrategyBase):
                     utils.print_trading_log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         symbol, ask_price, prev_day_close))
                     return
-                usable_cash = webullsdk.get_usable_cash()
-                utils.save_webull_min_usable_cash(usable_cash)
-                buy_position_amount = self.get_buy_order_limit(ticker)
-                if usable_cash <= buy_position_amount:
-                    utils.print_trading_log(
-                        "Not enough cash to buy <{}>, ask price: {}!".format(symbol, ask_price))
-                    return
-                buy_quant = (int)(buy_position_amount / ask_price)
-                if buy_quant > 0:
-                    # submit limit order at ask price
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=ask_price,
-                        quant=buy_quant)
-                    utils.print_trading_log("Trading <{}>, price: {}, volume: {}".format(
-                        symbol, current_close, current_volume))
-                    utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
-                        symbol, buy_quant, ask_price))
-                    # update pending buy
-                    self.update_pending_buy_order(
-                        ticker, order_response, stop_loss=prev_day_close)
-                else:
-                    utils.print_trading_log(
-                        "Order amount limit not enough for <{}>, price: {}".format(symbol, ask_price))
+                # use prev day close as stop loss
+                ticker.set_stop_loss(prev_day_close)
+                # use prev day high as target profit
+                ticker.set_target_profit(prev_day_high)
+                # submit buy limit order
+                self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
@@ -121,35 +107,24 @@ class DayTradingRedGreen(StrategyBase):
             # profit loss rate
             profit_loss_rate = float(
                 ticker_position['unrealizedProfitLossRate'])
-            self.tracking_tickers[symbol]['last_profit_loss_rate'] = profit_loss_rate
+            ticker.set_last_profit_loss_rate(profit_loss_rate)
             # check if exit trading
             exit_trading = False
             last_price = float(ticker_position['lastPrice'])
             # check stop loss, prev day close
-            if current_high < ticker['stop_loss']:
+            if current_high < ticker.get_stop_loss():
                 exit_note = "Stop loss at {}!".format(last_price)
                 exit_trading = True
             # check taking profit, current price above prev day high
-            if last_price >= prev_day_high:
+            if last_price >= ticker.get_target_profit():
                 exit_note = "Take profit at {}!".format(last_price)
                 exit_trading = True
+            # exit trading
             if exit_trading:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                if quote == None:
-                    return
-                bid_price = float(
-                    quote['depth']['ntvAggBidList'][0]['price'])
-                order_response = webullsdk.sell_limit_order(
-                    ticker_id=ticker_id,
-                    price=bid_price,
-                    quant=holding_quantity)
                 utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
-                utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
-                    symbol, holding_quantity, bid_price))
-                # update pending sell
-                self.update_pending_sell_order(
-                    ticker, order_response, exit_note=exit_note)
+                self.submit_sell_limit_order(
+                    ticker, note=exit_note, retry=True, retry_limit=50)
 
     def begin(self):
 
@@ -164,42 +139,50 @@ class DayTradingRedGreen(StrategyBase):
 
         # hist top gainers
         top_gainers = HistoricalTopGainer.objects.filter(date=last_market_day)
-        # update tracking_tickers
+        # update tracking tickers
         for gainer in top_gainers:
-            quote = webullsdk.get_quote(ticker_id=gainer.ticker_id)
+            gainer: HistoricalTopGainer = gainer
+            symbol = gainer.symbol
+            ticker_id = gainer.ticker_id
+            quote = webullsdk.get_quote(ticker_id=ticker_id)
             if 'open' in quote:
                 # weak open
                 if float(quote['open']) <= gainer.price:
-                    key_stat = utils.get_hist_key_stat(
-                        gainer.symbol, last_market_day)
-                    ticker = self.build_tracking_ticker(
-                        gainer.symbol, gainer.ticker_id, prev_close=gainer.price, prev_high=key_stat.high)
-                    self.tracking_tickers[gainer.symbol] = ticker
+                    key_stat = utils.get_hist_key_stat(symbol, last_market_day)
+                    ticker = TrackingTicker(symbol, ticker_id)
+                    ticker.set_prev_close(gainer.price)
+                    ticker.set_prev_high(key_stat.high)
+                    # start tracking
+                    self.trading_tracker.start_tracking(ticker)
                     utils.print_trading_log(
-                        "Add gainer <{}> to trade!".format(gainer.symbol))
+                        "Add gainer <{}> to trade!".format(symbol))
             else:
                 utils.print_trading_log(
-                    "Cannot find <{}> open price!".format(gainer.symbol))
+                    "Cannot find <{}> open price!".format(symbol))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
-        # update tracking_tickers
+        # update tracking tickers
         for loser in top_losers:
-            quote = webullsdk.get_quote(ticker_id=loser.ticker_id)
+            loser: HistoricalTopLoser = loser
+            symbol = loser.symbol
+            ticker_id = loser.ticker_id
+            quote = webullsdk.get_quote(ticker_id=ticker_id)
             if 'open' in quote:
                 # weak open
                 if float(quote['open']) <= loser.price:
-                    key_stat = utils.get_hist_key_stat(
-                        loser.symbol, last_market_day)
-                    ticker = self.build_tracking_ticker(
-                        loser.symbol, loser.ticker_id, prev_close=loser.price, prev_high=key_stat.high)
-                    self.tracking_tickers[loser.symbol] = ticker
+                    key_stat = utils.get_hist_key_stat(symbol, last_market_day)
+                    ticker = TrackingTicker(symbol, ticker_id)
+                    ticker.set_prev_close(loser.price)
+                    ticker.set_prev_high(key_stat.high)
+                    # start tracking
+                    self.trading_tracker.start_tracking(ticker)
                     utils.print_trading_log(
-                        "Add loser <{}> to trade!".format(loser.symbol))
+                        "Add loser <{}> to trade!".format(symbol))
             else:
                 utils.print_trading_log(
-                    "Cannot find <{}> open price!".format(loser.symbol))
+                    "Cannot find <{}> open price!".format(symbol))
 
-    def is_power_hour(self):
+    def is_power_hour(self) -> bool:
         now = datetime.now()
         if now.hour <= 12:
             return True
@@ -213,13 +196,19 @@ class DayTradingRedGreen(StrategyBase):
         # only trade regular market hour before 13:00
         if self.is_power_hour():
             # trading tickers
-            for symbol in list(self.tracking_tickers):
-                ticker = self.tracking_tickers[symbol]
+            for symbol in self.trading_tracker.get_tickers():
+                ticker = self.trading_tracker.get_ticker(symbol)
                 # do trade
                 self.trade(ticker)
         else:
             self.trading_end = True
 
     def end(self):
+        self.trading_end = True
         # check if still holding any positions before exit
         self.clear_positions()
+
+    def final(self):
+
+        # track failed to sell positions
+        self.track_rest_positions()
