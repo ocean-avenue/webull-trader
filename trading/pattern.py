@@ -309,7 +309,7 @@ def check_bars_at_peak(bars: pd.DataFrame, long_period: int = 10, short_period: 
     return True
 
 
-def check_bars_reversal(bars: pd.DataFrame) -> bool:
+def check_bars_reversal(bars: pd.DataFrame, period: int = 5) -> bool:
     """
     check if bar chart will reversal
     http://live2.webull-trader.quanturtle.net/day-analytics/2021-10-14/LMFA
@@ -334,8 +334,18 @@ def check_bars_reversal(bars: pd.DataFrame) -> bool:
     if prev_bar2['open'] < prev_bar3['close']:
         return False
     current_bar = bars.iloc[-1]
-    # current_bar low should < prev_bar3 low
-    if current_bar['low'] > prev_bar3['low']:
+    # current_bar price should < prev_bar3 low
+    if current_bar['close'] > prev_bar3['low']:
+        return False
+    # reversal bar should period high
+    period = min(len(bars) - 2, period)
+    period_bars = bars.tail(period + 2)
+    period_bars = period_bars.head(period)
+    period_high_price = 0.0
+    for _, row in period_bars.iterrows():
+        if row['high'] > period_high_price:
+            period_high_price = row['high']
+    if prev_bar2['high'] < period_high_price:
         return False
     # reversal
     return True
