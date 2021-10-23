@@ -171,4 +171,4 @@ class DayTradingEarningsOvernight(StrategyBase):
             self.trade(ticker)
 
     def end(self):
-        self.trading_end = True
+        self.trading_complete = True

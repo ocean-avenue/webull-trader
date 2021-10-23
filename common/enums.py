@@ -72,7 +72,8 @@ class TimeInForceType:
                 TimeInForceType.IOC)),
         )
 
-
+# Day trade: [0, 100)
+# Swing trade: [100, 200)
 class SetupType:
     DAY_FIRST_CANDLE_NEW_HIGH = 0
     DAY_GAP_AND_GO = 1
@@ -162,7 +163,9 @@ class SetupType:
                 SetupType.UNKNOWN)),
         )
 
-
+# Day trade: [0, 100)
+# Swing trade: [100, 200)
+# Hybrid: [200, 300)
 class AlgorithmType:
     DAY_MOMENTUM = 0
     DAY_MOMENTUM_REDUCE_SIZE = 1

@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import datetime, timedelta
 from common import config, constants
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.models import DayPosition
+from webull_trader.models import DayPosition, DayTrade
 
 
 # Tracking ticker class, data only available during ticker session
@@ -17,6 +17,7 @@ class TrackingTicker:
         self.pending_order_id: Optional[str] = None
         self.pending_order_time: Optional[datetime] = None
         self.resubmit_order_count: int = 0
+        self.units: int = 0
         self.target_units: int = config.DAY_EXTENDED_TARGET_UNITS
         self.last_buy_time: Optional[datetime] = None
         self.last_sell_time: Optional[datetime] = None
@@ -79,6 +80,17 @@ class TrackingTicker:
     def get_start_time(self) -> datetime:
         return self.start_time
 
+    def inc_units(self):
+        self.units += 1
+
+    def get_units(self) -> int:
+        return self.units
+
+    def clear_positions(self):
+        self.units = 0
+        self.positions = 0
+        self.position_obj = None
+
     def get_target_units(self) -> int:
         return self.target_units
 
@@ -123,6 +135,12 @@ class TrackingTicker:
 
     def set_positions(self, positions: int):
         self.positions = positions
+
+    def inc_positions(self, positions: int):
+        self.positions += positions
+
+    def dec_positions(self, positions: int):
+        self.positions -= positions
 
     def get_positions(self) -> int:
         return self.positions
@@ -184,8 +202,8 @@ class TrackingTicker:
         return False
 
 
-# Tracking status class, data will persistent during whole trading session
-class TrackingStatus:
+# Tracking statistic class, data will persistent during whole trading session
+class TrackingStat:
 
     def __init__(self, symbol: str):
         self.symbol: str = symbol
@@ -222,6 +240,9 @@ class TrackingStatus:
 
     def get_continue_lose_trades(self) -> int:
         return self.continue_lose_trades
+    
+    def reset_continue_lose_trades(self):
+        self.continue_lose_trades = 0
 
     def set_last_high_price(self, high_price: float):
         self.last_high_price = high_price
@@ -253,6 +274,24 @@ class TrackingStatus:
     def get_last_trade_time(self) -> Optional[datetime]:
         return self.last_trade_time
 
+    def update_by_trade(self, trade: DayTrade):
+        symbol = trade.symbol
+        # inc trade count
+        self.inc_trades()
+        # last high price
+        buy_price = round(trade.total_sold / trade.quantity, 2)
+        sell_price = round(trade.total_cost / trade.quantity, 2)
+        self.set_last_high_price(max(self.get_last_high_price(), buy_price, sell_price))
+        # last trade time
+        self.set_last_trade_time(datetime.now())
+        # profit loss
+        profit_loss = (sell_price - buy_price) * trade.quantity
+        if profit_loss < 0:
+            self.inc_lose_trades()
+            self.inc_continue_lose_trades()
+        else:
+            self.inc_win_trades()
+            self.reset_continue_lose_trades()
 
 # Trading tracker class
 class TradingTracker:
@@ -260,7 +299,7 @@ class TradingTracker:
     def __init__(self, paper: bool = True):
         self.paper: bool = paper
         self.tickers: dict = {}
-        self.status: dict = {}
+        self.stats: dict = {}
 
     def start_tracking(self, ticker: TrackingTicker):
         symbol = ticker.get_symbol()
@@ -269,10 +308,10 @@ class TradingTracker:
             # add tracking ticker
             self.tickers[ticker_id] = ticker
         # init tracking stats if not
-        if symbol not in self.status:
-            # add tracking status
-            tracking_status = TrackingStatus(symbol)
-            self.status[symbol] = tracking_status
+        if symbol not in self.stats:
+            # add tracking stat
+            tracking_stat = TrackingStat(symbol)
+            self.stats[symbol] = tracking_stat
 
     def stop_tracking(self, ticker: TrackingTicker):
         ticker_id = ticker.get_id()
@@ -292,7 +331,7 @@ class TradingTracker:
             return self.tickers[symbol]
         return None
 
-    def get_status(self, symbol) -> TrackingStatus:
-        if symbol not in self.status:
-            self.status[symbol] = TrackingStatus(symbol)
-        return self.status[symbol]
+    def get_stat(self, symbol) -> TrackingStat:
+        if symbol not in self.stats:
+            self.stats[symbol] = TrackingStat(symbol)
+        return self.stats[symbol]

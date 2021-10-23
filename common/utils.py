@@ -1352,15 +1352,12 @@ def fetch_stock_quotes(symbol_list):
         stock_quote.save()
 
 
-def check_day_trade_order(setup):
-    if setup == enums.SetupType.DAY_10_CANDLES_NEW_HIGH or setup == enums.SetupType.DAY_20_CANDLES_NEW_HIGH or \
-            setup == enums.SetupType.DAY_30_CANDLES_NEW_HIGH or setup == enums.SetupType.DAY_BULL_FLAG or \
-            setup == enums.SetupType.DAY_FIRST_CANDLE_NEW_HIGH or setup == enums.SetupType.DAY_GAP_AND_GO or \
-            setup == enums.SetupType.DAY_RED_TO_GREEN or setup == enums.SetupType.DAY_REVERSAL or \
-            setup == enums.SetupType.DAY_EARNINGS_GAP or setup == enums.SetupType.DAY_VWAP_RECLAIM or \
-            setup == enums.SetupType.DAY_GRINDING_UP:
-        return True
-    return False
+def is_day_trade_setup(setup: enums.SetupType) -> bool:
+    return setup < 100
+
+
+def is_day_trade_algo(algo: enums.AlgorithmType) -> bool:
+    return algo < 100 or (algo >= 200 and algo < 300)
 
 
 def check_swing_trade_algo(algo):
@@ -1393,11 +1390,11 @@ def get_day_trade_orders(date=None, symbol=None):
         lmt_sell_orders = lmt_sell_orders.filter(symbol=symbol)
     buy_orders = []
     for order in lmt_buy_orders:
-        if check_day_trade_order(order.setup):
+        if is_day_trade_setup(order.setup):
             buy_orders.append(order)
     sell_orders = []
     for order in lmt_sell_orders:
-        if check_day_trade_order(order.setup):
+        if is_day_trade_setup(order.setup):
             sell_orders.append(order)
     return (buy_orders, sell_orders)
 

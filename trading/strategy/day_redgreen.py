@@ -207,7 +207,7 @@ class DayTradingRedGreen(StrategyBase):
 
     def update(self):
         if not self.is_regular_market_hour():
-            self.trading_end = False
+            self.trading_complete = False
             return
 
         # only trade regular market hour before 13:00
@@ -218,7 +218,7 @@ class DayTradingRedGreen(StrategyBase):
                 # do trade
                 self.trade(ticker)
         else:
-            self.trading_end = True
+            self.trading_complete = True
 
     def end(self):
         # check if still holding any positions before exit

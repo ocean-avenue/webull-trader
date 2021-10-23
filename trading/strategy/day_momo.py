@@ -319,7 +319,7 @@ class DayTradingMomo(StrategyBase):
                     self.trade(ticker, m1_bars=m1_bars)
 
     def end(self):
-        self.trading_end = True
+        self.trading_complete = True
 
         # check if still holding any positions before exit
         self.clear_positions()
@@ -389,7 +389,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
 
         # only trading in extended hour
         if self.is_regular_market_hour():
-            self.trading_end = True
+            self.trading_complete = True
             return
 
         # trading tickers

@@ -227,7 +227,7 @@ class DayTradingVWAPPaper(StrategyBase):
             self.trade(ticker)
 
     def end(self):
-        self.trading_end = True
+        self.trading_complete = True
 
         # check if still holding any positions before exit
         self.clear_positions()
@@ -450,7 +450,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             self.trade(ticker)
 
     def end(self):
-        self.trading_end = True
+        self.trading_complete = True
 
         # check if still holding any positions before exit
         self.clear_positions()

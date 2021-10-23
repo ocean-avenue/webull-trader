@@ -5,20 +5,17 @@
 import time
 from datetime import datetime, timedelta
 from typing import List
-from common.enums import AlgorithmType, SetupType
+from common.enums import AlgorithmType
 from common import utils, db, config
 from sdk import webullsdk
 from trading.strategy.strategy_base import StrategyBase
-from webull_trader.models import DayPosition
 
 
 class TradingExecutor:
 
-    def __init__(self, strategies:List[StrategyBase]=[], paper:bool=True):
-        self.paper:bool = paper
-        self.strategies:List[StrategyBase] = strategies
-
-        self.unsold_tickers = {}
+    def __init__(self, strategies: List[StrategyBase] = [], paper: bool = True):
+        self.paper: bool = paper
+        self.strategies: List[StrategyBase] = strategies
 
     def start(self):
 
@@ -46,20 +43,6 @@ class TradingExecutor:
         utils.print_trading_log("Webull logged in")
         last_login_refresh_time = datetime.now()
 
-        # check unsold tickers
-        unsold_positions = DayPosition.objects.filter(
-            setup=SetupType.ERROR_FAILED_TO_SELL)
-        for position in unsold_positions:
-            self.unsold_tickers[position.symbol] = {
-                "symbol": position.symbol,
-                "ticker_id": position.ticker_id,
-                "pending_sell": False,
-                "pending_order_id": None,
-                "pending_order_time": None,
-                "positions": position.quantity,
-                "position_obj": position,
-            }
-
         # prepare strategies
         for strategy in self.strategies:
             strategy.begin()
@@ -68,11 +51,11 @@ class TradingExecutor:
         while utils.is_market_hour():
             # go through strategies trades
             for strategy in self.strategies:
-                if not strategy.trading_end:
-                    strategy.update_orders()
-                    strategy.update_positions()
-                    strategy.update()
-                    strategy.write_logs()
+                if strategy.trading_complete:
+                    continue
+                strategy.update_orders()
+                strategy.update()
+                strategy.write_logs()
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
@@ -86,9 +69,6 @@ class TradingExecutor:
                     utils.print_trading_log(message)
                     break
 
-            # clear unsold positions
-            self.clear_unsold_positions_update()
-
             # at least slepp 1 sec
             time.sleep(1)
 
@@ -101,9 +81,6 @@ class TradingExecutor:
         # update account status
         account_data = webullsdk.get_account()
         utils.save_webull_account(account_data, paper=self.paper)
-
-        # notify if has short position
-        self.notify_if_has_short_positions()
 
         utils.print_trading_log("Trading ended!")
 
@@ -133,84 +110,14 @@ class TradingExecutor:
                 day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
             )
 
-    # notify me if has short positions
-    def notify_if_has_short_positions(self):
-        # TODO, send messages
-        pass
-
-    def clear_unsold_positions_update(self):
-        if len(self.unsold_tickers) == 0:
-            return
-        positions = webullsdk.get_positions()
-        if positions == None:
-            return
-        for symbol in list(self.unsold_tickers):
-            ticker = self.unsold_tickers[symbol]
-            # check if already sold
-            if ticker['pending_sell']:
-                order_filled = True
-                for position in positions:
-                    # make sure position is positive
-                    if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
-                        order_filled = False
-                        break
-                if order_filled:
-                    # delete position object
-                    self.unsold_tickers[symbol]['position_obj'].delete()
-                    # order filled
-                    del self.unsold_tickers[symbol]
-                else:
-                    # check order timeout
-                    if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
-                        # cancel timeout order
-                        if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
-                            # reset
-                            self.unsold_tickers[symbol]['pending_sell'] = False
-                            self.unsold_tickers[symbol]['pending_order_id'] = None
-                            self.unsold_tickers[symbol]['pending_order_time'] = None
-
-            else:
-                # check the position is existed
-                existed = False
-                for position in positions:
-                    # make sure position is positive
-                    if position['ticker']['symbol'] == symbol and float(position['position']) > 0:
-                        existed = True
-                        break
-                if existed:
-                    quote = webullsdk.get_quote(ticker_id=ticker['ticker_id'])
-                    if quote == None:
-                        return
-                    bid_price = webullsdk.get_bid_price_from_quote(quote)
-                    if bid_price == None:
-                        return
-                    order_response = webullsdk.sell_limit_order(
-                        ticker_id=ticker['ticker_id'],
-                        price=bid_price,
-                        quant=ticker['positions'])
-
-                    order_id = utils.get_order_id_from_response(
-                        order_response, paper=self.paper)
-                    if order_id:
-                        # mark pending sell
-                        self.unsold_tickers[symbol]['pending_sell'] = True
-                        self.unsold_tickers[symbol]['pending_order_id'] = order_id
-                        self.unsold_tickers[symbol]['pending_order_time'] = datetime.now(
-                        )
-                    else:
-                        utils.print_trading_log(
-                            "⚠️  Invalid sell order response: {}".format(order_response))
-                else:
-                    # delete position object
-                    self.unsold_tickers[symbol]['position_obj'].delete()
-                    # not existed
-                    del self.unsold_tickers[symbol]
-
 
 def start():
+    from typing import List
     from common import utils
     from common.enums import AlgorithmType
     from trading.executor import TradingExecutor
+    from trading.strategy.strategy_base import StrategyBase
+    from trading.strategy.day_clean import DayTradingClean
     # from trading.day_momo import DayTradingMomoNewHigh
     from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.strategy.day_redgreen import DayTradingRedGreen
@@ -227,9 +134,13 @@ def start():
     if trading_hour == None:
         utils.print_trading_log("Not in trading hour, skip...")
         return
-    strategies = []
+    strategies: List[StrategyBase] = []
     # load algo type
     algo_type = utils.get_algo_type()
+    if utils.is_day_trade_algo(algo_type):
+        strategies.append(DayTradingClean(
+            paper=paper, trading_hour=trading_hour))
+
     # load strategies
     if algo_type == AlgorithmType.DAY_MOMENTUM:
         # DAY_MOMENTUM: momo trade

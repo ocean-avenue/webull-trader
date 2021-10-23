@@ -3,33 +3,27 @@
 # Base trading class
 
 import json
+from typing import Tuple
 import pandas as pd
-from datetime import datetime, timedelta, date
-from django.utils import timezone
+from datetime import datetime, date
 from sdk import webullsdk, fmpsdk
 from common import utils, db, config, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
 from trading.tracker.trading_tracker import TradingTracker, TrackingTicker
 from trading.tracker.order_tracker import OrderTracker
-from trading.tracker.position_tracker import PositionTracker
-from webull_trader.models import DayPosition, SwingPosition, SwingTrade
+from webull_trader.models import SwingPosition, SwingTrade
 
 
 class StrategyBase:
 
     def __init__(self, paper: bool = True, trading_hour: TradingHourType = TradingHourType.REGULAR):
+        # init strategy variables
         self.paper: bool = paper
+        self.trading_complete: bool = False
         self.trading_hour: TradingHourType = trading_hour
-        self.trading_end: bool = False
         self.trading_tracker: TradingTracker = TradingTracker()
         self.order_tracker: OrderTracker = OrderTracker()
-        self.position_tracker: PositionTracker = PositionTracker()
-        # init trading variables
-        # TODO, remove
-        # may have error short sell due to latency
-        self.error_short_tickers = {}
-        # sometime system may not cancel order correctly
-        self.canceled_orders = {}
+        # TODO, migrate to trading logger
         # init trading logs
         utils.TRADING_LOGS = []
 
@@ -100,9 +94,9 @@ class StrategyBase:
         # update order tracker
         self.order_tracker.update_orders()
 
-    def update_positions(self):
-        # update positions
-        self.position_tracker.update_positions()
+    def update_account(self):
+        account_data = webullsdk.get_account()
+        db.save_webull_account(account_data, paper=self.paper)
 
     def write_logs(self):
         # save trading logs
@@ -137,135 +131,38 @@ class StrategyBase:
         settings = db.get_or_create_trading_settings()
         day_free_float_limit_in_million = settings.day_free_float_limit_in_million
         day_turnover_rate_limit_percentage = settings.day_turnover_rate_limit_percentage
-        tracking_status = self.trading_tracker.get_status(symbol)
+        tracking_stat = self.trading_tracker.get_stat(symbol)
         # fetch data if not cached
         if day_free_float_limit_in_million > 0 or day_turnover_rate_limit_percentage > 0:
-            if tracking_status.get_free_float() == None or tracking_status.get_turnover_rate() == None:
+            if tracking_stat.get_free_float() == None or tracking_stat.get_turnover_rate() == None:
                 quote = webullsdk.get_quote(ticker_id=ticker_id)
-                tracking_status.set_free_float(
+                tracking_stat.set_free_float(
                     utils.get_attr_to_float_or_none(quote, "outstandingShares"))
-                tracking_status.set_turnover_rate(
+                tracking_stat.set_turnover_rate(
                     utils.get_attr_to_float_or_none(quote, "turnoverRate"))
         free_float_check = True
         if day_free_float_limit_in_million > 0:
-            if tracking_status.get_free_float() == None or \
-                    tracking_status.get_free_float() > day_free_float_limit_in_million * constants.ONE_MILLION:
+            if tracking_stat.get_free_float() == None or \
+                    tracking_stat.get_free_float() > day_free_float_limit_in_million * constants.ONE_MILLION:
                 free_float_check = False
         turnover_rate_check = True
         if day_turnover_rate_limit_percentage > 0:
-            if tracking_status.get_turnover_rate() == None or \
-                    tracking_status.get_turnover_rate() * constants.ONE_HUNDRED < day_turnover_rate_limit_percentage:
+            if tracking_stat.get_turnover_rate() == None or \
+                    tracking_stat.get_turnover_rate() * constants.ONE_HUNDRED < day_turnover_rate_limit_percentage:
                 turnover_rate_check = False
         sectors_check = True
         day_sectors_limit = settings.day_sectors_limit
         if len(day_sectors_limit) > 0:
             # fetch sector if not cached
-            if tracking_status.get_sector() == None:
+            if tracking_stat.get_sector() == None:
                 profile = fmpsdk.get_profile(symbol)
                 if profile and "sector" in profile:
-                    tracking_status.set_sector(profile["sector"])
+                    tracking_stat.set_sector(profile["sector"])
             sectors_limit = day_sectors_limit.split(",")
-            if tracking_status.get_sector() == None or tracking_status.get_sector() not in sectors_limit:
+            if tracking_stat.get_sector() == None or tracking_stat.get_sector() not in sectors_limit:
                 sectors_check = False
 
         return (free_float_check or turnover_rate_check) and sectors_check
-
-    def check_error_short_order(self, positions):
-        # check if short order covered
-        for symbol in list(self.error_short_tickers):
-            ticker = self.error_short_tickers[symbol]
-            ticker_id = ticker['ticker_id']
-            order_filled = True
-            for position in positions:
-                # make sure is short position
-                if position['ticker']['symbol'] == symbol and float(position['position']) < 0:
-                    order_filled = False
-                    break
-            if order_filled:
-                # remove
-                del self.error_short_tickers[symbol]
-                utils.print_trading_log(
-                    "Short cover order <{}> filled".format(symbol))
-            else:
-                # check order timeout
-                if (datetime.now() - ticker['pending_order_time']) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
-                    # cancel timeout order
-                    if webullsdk.cancel_order(ticker['pending_order_id']) or webullsdk.check_order_canceled(ticker['pending_order_id']):
-                        # remove, let function re-submit again
-                        del self.error_short_tickers[symbol]
-                    else:
-                        utils.print_trading_log(
-                            "Failed to cancel timeout short cover order <{}>!".format(symbol))
-        for position in positions:
-            # if short position
-            position_size = int(position['position'])
-            if position_size < 0:
-                symbol = position['ticker']['symbol']
-                ticker_id = position['ticker']['tickerId']
-                if symbol not in self.error_short_tickers:
-                    self.error_short_tickers[symbol] = self.build_error_short_ticker(
-                        symbol, ticker_id)
-                    last_price = float(position['lastPrice'])
-                    # in order to buy, increase 1% to buy
-                    buy_price = round(last_price*1.01, 2)
-                    # submit buy back order
-                    order_response = webullsdk.buy_limit_order(
-                        ticker_id=ticker_id,
-                        price=buy_price,
-                        quant=abs(position_size))
-                    utils.print_trading_log("🟢 Submit short cover order <{}>, quant: {}, limit price: {}".format(
-                        symbol, abs(position_size), buy_price))
-                    order_id = utils.get_order_id_from_response(
-                        order_response, paper=self.paper)
-                    if order_id:
-                        self.error_short_tickers[symbol]['pending_order_id'] = order_id
-                        self.error_short_tickers[symbol]['pending_order_time'] = datetime.now(
-                        )
-                    else:
-                        utils.print_trading_log(
-                            "⚠️  Invalid short cover order response: {}".format(order_response))
-
-    # check if have failed to cancel order positions
-    def check_error_cancel_order(self, positions):
-        for position in positions:
-            symbol = position['ticker']['symbol']
-            # still in tracking
-            if self.trading_tracker.is_tracking(symbol):
-                continue
-            # handling in short positions
-            if symbol in self.error_short_tickers:
-                continue
-            # is day position
-            if DayPosition.objects.filter(symbol=symbol).first():
-                continue
-            # is swing position
-            if SwingPosition.objects.filter(symbol=symbol).first():
-                continue
-            ticker_id = position['ticker']['tickerId']
-            ticker = TrackingTicker(symbol, ticker_id)
-            ticker.set_positions(int(position['position']))
-            ticker.set_last_buy_time(datetime.now())
-            ticker.set_initial_cost(float(position['costPrice']))
-            order_id = utils.get_attr_to_num(self.canceled_orders, symbol)
-            # save order note
-            # TODO, remove
-            utils.save_webull_order_note(
-                order_id,
-                setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
-                note="Failed to cancel buy order")
-            # recover day position
-            position_obj = utils.add_day_position(
-                symbol=symbol,
-                ticker_id=ticker_id,
-                order_id=order_id,
-                setup=SetupType.ERROR_FAILED_TO_CANCEL_ORDER,
-                cost=float(position['costPrice']),
-                quant=int(position['position']),
-                buy_time=timezone.now(),
-            )
-            ticker.set_position_obj(position_obj)
-            # recover tracking
-            self.trading_tracker.start_tracking(ticker)
 
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point.",
                                retry: bool = False, retry_limit: int = 0):
@@ -310,10 +207,6 @@ class StrategyBase:
         # tracking pending sell order
         self.start_tracking_pending_sell_order(
             ticker, order_response, exit_note=note, retry=retry, retry_limit=retry_limit)
-        # update trading stats
-        # TODO, tracking status when order done
-        # self.update_trading_stats(
-        #     ticker, last_price, cost_price, profit_loss_rate)
 
     def check_buy_order_done(self, ticker: TrackingTicker,
                              stop_tracking_ticker_after_order_filled: bool = False):
@@ -353,7 +246,8 @@ class StrategyBase:
                 ticker.set_position_obj(position_obj)
                 # set initial cost
                 ticker.set_initial_cost(order.avg_price)
-            ticker.set_positions(position_obj.quantity)
+            ticker.inc_positions(order.filled_quantity)
+            ticker.inc_units()
             ticker.reset_resubmit_order_count()
             # stop tracking buy order
             self.stop_tracking_pending_buy_order(ticker, order_id)
@@ -362,7 +256,7 @@ class StrategyBase:
                 self.trading_tracker.stop_tracking(ticker)
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
-            if ticker.is_order_timeout() or self.trading_end:
+            if ticker.is_order_timeout() or self.trading_complete:
                 # timeout, cancel order
                 if webullsdk.cancel_order(order_id):
                     # start tracking cancel order
@@ -394,7 +288,7 @@ class StrategyBase:
         if order.status == webullsdk.ORDER_STATUS_FILLED:
             position_obj = ticker.get_position_obj()
             # add trade object
-            db.add_day_trade(
+            trade = db.add_day_trade(
                 symbol=symbol,
                 ticker_id=ticker_id,
                 position_obj=position_obj,
@@ -404,8 +298,7 @@ class StrategyBase:
             )
             # remove position object
             position_obj.delete()
-            ticker.set_position_obj(None)
-            ticker.set_positions(0)
+            ticker.clear_positions()
             ticker.reset_resubmit_order_count()
             # stop tracking sell order
             self.stop_tracking_pending_sell_order(ticker, order_id)
@@ -413,8 +306,10 @@ class StrategyBase:
             if stop_tracking_ticker_after_order_filled:
                 self.trading_tracker.stop_tracking(ticker)
             # update account status
-            account_data = webullsdk.get_account()
-            db.save_webull_account(account_data, paper=self.paper)
+            self.update_account()
+            # update trading stats
+            tracking_stat = self.trading_tracker.get_stat(symbol)
+            tracking_stat.update_by_trade(trade)
         # partially filled
         elif order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             position_obj = ticker.get_position_obj()
@@ -423,8 +318,7 @@ class StrategyBase:
             position_obj.require_adjustment = True
             position_obj.save()
             # update tracking ticker
-            holding_quantity = ticker.get_positions() - order.filled_quantity
-            ticker.set_positions(holding_quantity)
+            ticker.dec_positions(order.filled_quantity)
             ticker.reset_resubmit_order_count()
             retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
                 order_id)
@@ -432,12 +326,11 @@ class StrategyBase:
             self.stop_tracking_pending_sell_order(ticker, order_id)
             # continue sell reset positions
             utils.print_trading_log(
-                f"Continue sell rest <{symbol}> positions, quant: {holding_quantity}")
+                f"Continue sell rest <{symbol}> positions, quant: {ticker.get_positions()}")
             self.submit_sell_limit_order(
                 ticker, note="Sell rest positions.", retry=retry_after_cancel, retry_limit=retry_limit)
             # update account status
-            account_data = webullsdk.get_account()
-            db.save_webull_account(account_data, paper=self.paper)
+            self.update_account()
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
             if ticker.is_order_timeout():
@@ -454,7 +347,7 @@ class StrategyBase:
             resubmit_count = ticker.get_resubmit_order_count()
             retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
                 order_id)
-            if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
+            if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
                 # retry sell order
                 utils.print_trading_log(
                     f"Resubmitting sell order <{symbol}>...")
@@ -501,7 +394,7 @@ class StrategyBase:
                 order_id)
             # buy order
             if order.action == ActionType.BUY:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
+                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
                     # retry buy order
                     utils.print_trading_log(
                         f"Resubmitting buy order <{symbol}>...")
@@ -514,7 +407,7 @@ class StrategyBase:
                         self.trading_tracker.stop_tracking(ticker)
             # sell order
             if order.action == ActionType.SELL:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
+                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_complete:
                     # retry sell order
                     utils.print_trading_log(
                         f"Resubmitting sell order <{symbol}>...")
@@ -538,21 +431,6 @@ class StrategyBase:
             # TODO, log exception
             raise exceptions.WebullOrderStatusError(
                 f"Error cancel order status '{order.status}' for order {order_id}")
-
-    def update_trading_stats(self, ticker, price, cost, profit_loss_rate):
-        symbol = ticker['symbol']
-        # after perform 1 trade
-        self.tracking_stats[symbol]['trades'] += 1
-        self.tracking_stats[symbol]['last_trade_time'] = datetime.now()
-        last_high_price = self.tracking_stats[symbol]['last_high_price'] or 0
-        self.tracking_stats[symbol]['last_high_price'] = max(
-            cost, price, last_high_price)
-        if profit_loss_rate > 0:
-            self.tracking_stats[symbol]['win_trades'] += 1
-            self.tracking_stats[symbol]['continue_lose_trades'] = 0
-        else:
-            self.tracking_stats[symbol]['lose_trades'] += 1
-            self.tracking_stats[symbol]['continue_lose_trades'] += 1
 
     def start_tracking_pending_buy_order(self, ticker: TrackingTicker, order_response: dict, entry_note: str = "",
                                          retry: bool = False, retry_limit: int = 0):
@@ -767,24 +645,6 @@ class StrategyBase:
         # return min(ask_price, round(last_price * 1.01, 2))
         return buy_price
 
-    def get_buy_price2(self, ticker: TrackingTicker) -> float:
-        ticker_id = ticker.get_id()
-        symbol = ticker.get_symbol()
-        quote = webullsdk.get_quote(ticker_id=ticker_id)
-        utils.print_level2_log(quote)
-        # bid_price = webullsdk.get_bid_price_from_quote(quote)
-        # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
-        # if ask_price == None or bid_price == None:
-        #     return None
-        # buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
-        # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
-        # return buy_price
-        ask_price = webullsdk.get_ask_price_from_quote(quote)
-        if not ask_price:
-            utils.print_trading_log(f"<{symbol}> ask price not existed!")
-            utils.print_trading_log(json.dumps(quote))
-        return ask_price
-
     def get_sell_price(self, ticker: TrackingTicker) -> float:
         ticker_id = ticker.get_id()
         symbol = ticker.get_symbol()
@@ -806,14 +666,32 @@ class StrategyBase:
             utils.print_trading_log(json.dumps(quote))
         return bid_price or last_price
 
+    def get_buy_price2(self, ticker: TrackingTicker) -> float:
+        ticker_id = ticker.get_id()
+        symbol = ticker.get_symbol()
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        utils.print_level2_log(quote)
+        # bid_price = webullsdk.get_bid_price_from_quote(quote)
+        # bid_volume = webullsdk.get_bid_volume_from_quote(quote)
+        # if ask_price == None or bid_price == None:
+        #     return None
+        # buy_price = min(bid_price + 0.1, round((ask_price + bid_price) / 2, 2))
+        # # buy_price = min(ask_price, round(bid_price * config.BUY_BID_PRICE_RATIO, 2))
+        # return buy_price
+        ask_price = webullsdk.get_ask_price_from_quote(quote)
+        if not ask_price:
+            utils.print_trading_log(f"<{symbol}> ask price not existed!")
+            utils.print_trading_log(json.dumps(quote))
+        return ask_price
+
     def get_sell_price2(self, position: dict) -> float:
         return float(position['lastPrice'])
 
-    def get_stop_loss_price(self, buy_price: float, bars: pd.DataFrame) -> float:
+    def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
 
-    def get_scale_stop_loss_price(self, buy_price: float, bars: pd.DataFrame) -> float:
+    def get_scale_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
 
-    def get_buy_dip_loss_price(self, buy_price: float, bars: pd.DataFrame) -> float:
+    def get_buy_dip_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
