@@ -47,7 +47,7 @@ class DayTradingEarningsOvernight(StrategyBase):
         # TODO
         if ticker['pending_buy']:
             order_id = ticker['pending_order_id']
-            if self.check_buy_order_filled(ticker, resubmit=True, stop_tracking=True):
+            if self.check_buy_order_filled(ticker, retry=True, stop_tracking=True):
                 # add overnight position
                 cost = self.trading_price[symbol]['cost']
                 quantity = self.trading_price[symbol]['quantity']
@@ -57,7 +57,7 @@ class DayTradingEarningsOvernight(StrategyBase):
 
         if ticker['pending_sell']:
             order_id = ticker['pending_order_id']
-            if self.check_sell_order_filled(ticker, resubmit=50):
+            if self.check_sell_order_filled(ticker, retry_limit=50):
                 # remove overnight position
                 position = DayPosition.objects.filter(
                     symbol=symbol, setup=self.get_setup()).first()
@@ -132,7 +132,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 self.update_pending_sell_order(
                     ticker, order_response, exit_note=exit_note)
 
-    def on_begin(self):
+    def begin(self):
         # prepare tickers for buy
         if self.is_extended_market_hour():
             today = date.today()
@@ -163,12 +163,12 @@ class DayTradingEarningsOvernight(StrategyBase):
                 utils.print_trading_log(
                     "Add ticker <{}> to sell during regular hour!".format(symbol))
 
-    def on_update(self):
+    def update(self):
         # trading tickers
         for symbol in self.trading_tracker.get_tickers():
             ticker = self.trading_tracker.get_ticker(symbol)
             # do trade
             self.trade(ticker)
 
-    def on_end(self):
+    def end(self):
         self.trading_end = True

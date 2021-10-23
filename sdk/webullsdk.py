@@ -3,6 +3,7 @@ import json
 import time
 import traceback
 import pandas as pd
+from typing import List
 from common import utils
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
@@ -834,7 +835,7 @@ def check_order_canceled(order_id):
 #    },
 #    ...
 # ]
-def get_positions():
+def get_positions() -> List[dict]:
     try:
         instance = _get_instance()
         return instance.get_positions()

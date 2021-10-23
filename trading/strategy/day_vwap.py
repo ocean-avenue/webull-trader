@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
-from common import config, utils
+from common import utils, constants
 from sdk import webullsdk, finvizsdk
 
 
@@ -27,7 +26,7 @@ class DayTradingVWAPPaper(StrategyBase):
         # check if have prev candles below vwap
         below_vwap_count = 0
         period_high = 0
-        period_low = config.MAX_SECURITY_PRICE
+        period_low = constants.MAX_SECURITY_PRICE
         for _, candle in bars.iterrows():
             if candle['low'] < candle['vwap']:
                 below_vwap_count += 1
@@ -88,7 +87,7 @@ class DayTradingVWAPPaper(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, resubmit_count=50)
+            self.check_sell_order_filled(ticker, retry_limit=50)
             return
 
         holding_quantity = ticker['positions']
@@ -193,7 +192,7 @@ class DayTradingVWAPPaper(StrategyBase):
                     self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
                         ticker_position['costPrice']), profit_loss_rate)
 
-    def on_update(self):
+    def update(self):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
@@ -227,7 +226,7 @@ class DayTradingVWAPPaper(StrategyBase):
             # do trade
             self.trade(ticker)
 
-    def on_end(self):
+    def end(self):
         self.trading_end = True
 
         # check if still holding any positions before exit
@@ -281,7 +280,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
         period_bars = bars.head(len(bars) - 1).tail(exit_period)
-        period_low_price = config.MAX_SECURITY_PRICE
+        period_low_price = constants.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
             close_price = row['close']
             if close_price < period_low_price:
@@ -305,7 +304,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, resubmit_count=50)
+            self.check_sell_order_filled(ticker, retry_limit=50)
             return
 
         holding_quantity = ticker['positions']
@@ -414,7 +413,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 self.update_trading_stats(ticker, float(ticker_position['lastPrice']), float(
                     ticker_position['costPrice']), profit_loss_rate)
 
-    def on_update(self):
+    def update(self):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
@@ -450,7 +449,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             # do trade
             self.trade(ticker)
 
-    def on_end(self):
+    def end(self):
         self.trading_end = True
 
         # check if still holding any positions before exit

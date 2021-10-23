@@ -1,29 +1,17 @@
+from typing import List
 import pandas as pd
 import numpy as np
 import pytz
 import math
-import traceback
 from django.utils import timezone
 from django.contrib.auth.models import User
-from datetime import datetime, date
-from common import config, enums
+from datetime import datetime
+from common import config, enums, constants
 from sdk import fmpsdk, webullsdk, twiliosdk
-from webull_trader.models import DayPosition, DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
-    StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, WebullAccountStatistics, \
-    WebullCredentials, WebullNews, WebullOrder, WebullOrderNote, HistoricalMinuteBar, HistoricalDailyBar, HistoricalMarketStatistics
+from webull_trader.models import DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
+    StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, \
+    WebullNews, WebullOrder, HistoricalMinuteBar, HistoricalDailyBar, HistoricalMarketStatistics
 
-# sector values
-BASIC_MATERIALS = "Basic Materials"
-COMMUNICATION_SERVICES = "Communication Services"
-CONSUMER_CYCLICAL = "Consumer Cyclical"
-CONSUMER_DEFENSIVE = "Consumer Defensive"
-ENERGY = "Energy"
-FINANCIAL_SERVICES = "Financial Services"
-HEALTHCARE = "Healthcare"
-INDUSTRIALS = "Industrials"
-REAL_ESTATE = "Real Estate"
-TECHNOLOGY = "Technology"
-UTILITIES = "Utilities"
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
@@ -1316,59 +1304,6 @@ def save_swing_hist_daily_bar(bar_data):
         bar.save()
 
 
-def add_day_position(symbol, ticker_id, order_id, setup, cost, quant, buy_time, units=1, target_units=4, add_unit_price=9999, stop_loss_price=0):
-    try:
-        position = DayPosition(
-            symbol=symbol,
-            ticker_id=ticker_id,
-            order_ids=order_id,
-            total_cost=round(cost * quant, 2),
-            quantity=quant,
-            units=units,
-            target_units=target_units,
-            add_unit_price=add_unit_price,
-            stop_loss_price=stop_loss_price,
-            buy_date=buy_time.date(),
-            buy_time=buy_time,
-            setup=setup,
-            require_adjustment=True,
-        )
-        position.save()
-        return position
-    except Exception as e:
-        log_text = "symbol: {}, ticker_id: {}, order_id: {}, setup: {}, cost: {}, quant: {}, total_cost: {}, buy_time: {}".format(
-            symbol,
-            ticker_id,
-            order_id,
-            setup,
-            cost,
-            quant,
-            round(cost * quant, 2),
-            buy_time)
-        save_exception_log(str(e), traceback.format_exc(), log_text)
-        return None
-
-
-def add_day_trade(symbol, ticker_id, position, order_id, sell_price, sell_time):
-    trade = DayTrade(
-        symbol=symbol,
-        ticker_id=ticker_id,
-        order_ids="{},{}".format(position.order_ids, order_id),
-        total_cost=position.total_cost,
-        total_sold=round(sell_price * position.quantity, 2),
-        quantity=position.quantity,
-        units=position.units,
-        buy_date=position.buy_date,
-        buy_time=position.buy_time,
-        sell_date=sell_time.date(),
-        sell_time=sell_time,
-        setup=position.setup,
-        require_adjustment=True,
-    )
-    trade.save()
-    return trade
-
-
 def fetch_stock_quotes(symbol_list):
     if len(symbol_list) == 0:
         return
@@ -1906,46 +1841,46 @@ def get_relative_volume_index(rel_vol):
     return index
 
 
-def get_sector_labels():
+def get_sector_labels() -> List[str]:
     return [
-        BASIC_MATERIALS,  # 0
-        COMMUNICATION_SERVICES,  # 1
-        CONSUMER_CYCLICAL,  # 2
-        CONSUMER_DEFENSIVE,  # 3
-        ENERGY,  # 4
-        FINANCIAL_SERVICES,  # 5
-        HEALTHCARE,  # 6
-        INDUSTRIALS,  # 7
-        REAL_ESTATE,  # 8
-        TECHNOLOGY,  # 9
-        UTILITIES,  # 10
+        constants.BASIC_MATERIALS,  # 0
+        constants.COMMUNICATION_SERVICES,  # 1
+        constants.CONSUMER_CYCLICAL,  # 2
+        constants.CONSUMER_DEFENSIVE,  # 3
+        constants.ENERGY,  # 4
+        constants.FINANCIAL_SERVICES,  # 5
+        constants.HEALTHCARE,  # 6
+        constants.INDUSTRIALS,  # 7
+        constants.REAL_ESTATE,  # 8
+        constants.TECHNOLOGY,  # 9
+        constants.UTILITIES,  # 10
         "None",  # 11
     ]
 
 
-def get_sector_index(sector):
+def get_sector_index(sector: str) -> int:
     index = -1
-    if sector == BASIC_MATERIALS:
+    if sector == constants.BASIC_MATERIALS:
         index = 0
-    elif sector == COMMUNICATION_SERVICES:
+    elif sector == constants.COMMUNICATION_SERVICES:
         index = 1
-    elif sector == CONSUMER_CYCLICAL:
+    elif sector == constants.CONSUMER_CYCLICAL:
         index = 2
-    elif sector == CONSUMER_DEFENSIVE:
+    elif sector == constants.CONSUMER_DEFENSIVE:
         index = 3
-    elif sector == ENERGY:
+    elif sector == constants.ENERGY:
         index = 4
-    elif sector == FINANCIAL_SERVICES:
+    elif sector == constants.FINANCIAL_SERVICES:
         index = 5
-    elif sector == HEALTHCARE:
+    elif sector == constants.HEALTHCARE:
         index = 6
-    elif sector == INDUSTRIALS:
+    elif sector == constants.INDUSTRIALS:
         index = 7
-    elif sector == REAL_ESTATE:
+    elif sector == constants.REAL_ESTATE:
         index = 8
-    elif sector == TECHNOLOGY:
+    elif sector == constants.TECHNOLOGY:
         index = 9
-    elif sector == UTILITIES:
+    elif sector == constants.UTILITIES:
         index = 10
     elif sector == None or sector == "":
         index = 11

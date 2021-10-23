@@ -1,6 +1,7 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
-from common import config
+from common import config, constants
+from trading.strategy.strategy_base import StrategyBase
 from webull_trader.models import DayPosition
 
 
@@ -15,20 +16,21 @@ class TrackingTicker:
         self.pending_cancel: bool = False
         self.pending_order_id: Optional[str] = None
         self.pending_order_time: Optional[datetime] = None
+        self.resubmit_order_count: int = 0
+        self.target_units: int = config.DAY_EXTENDED_TARGET_UNITS
         self.last_buy_time: Optional[datetime] = None
         self.last_sell_time: Optional[datetime] = None
         self.last_profit_loss_rate: float = 0.0
         # paper trade do not have stop trailing order, this value keep track of max P&L
         self.max_profit_loss_rate: float = 0.0
-        self.positions: int = 0
         self.start_time: datetime = datetime.now()
-        self.target_profit: Optional[float] = None
-        self.stop_loss: Optional[float] = None
+        self.target_profit: float = constants.MAX_SECURITY_PRICE
+        self.stop_loss: float = 0.0
         self.prev_close: Optional[float] = None
         self.prev_high: Optional[float] = None
-        self.resubmit_order_count: int = 0
         self.initial_cost: Optional[float] = None
         self.exit_period: Optional[int] = None
+        self.positions: int = 0
         self.position_obj: Optional[DayPosition] = None
 
     def get_id(self) -> str:
@@ -36,6 +38,13 @@ class TrackingTicker:
 
     def get_symbol(self) -> str:
         return self.symbol
+
+    def reset_pending_order(self):
+        self.set_pending_buy(False)
+        self.set_pending_sell(False)
+        self.set_pending_cancel(False)
+        self.set_pending_order_id(None)
+        self.set_pending_order_time(None)
 
     def set_pending_buy(self, pending_buy: bool):
         self.pending_buy = pending_buy
@@ -46,22 +55,22 @@ class TrackingTicker:
     def set_pending_sell(self, pending_sell: bool):
         self.pending_sell = pending_sell
 
-    def get_pending_sell(self) -> bool:
+    def is_pending_sell(self) -> bool:
         return self.pending_sell
 
     def set_pending_cancel(self, pending_cancel: bool):
         self.pending_cancel = pending_cancel
 
-    def get_pending_cancel(self) -> bool:
+    def is_pending_cancel(self) -> bool:
         return self.pending_cancel
 
-    def set_pending_order_id(self, order_id: str):
+    def set_pending_order_id(self, order_id: Optional[str]):
         self.pending_order_id = order_id
 
     def get_pending_order_id(self) -> Optional[str]:
         return self.pending_order_id
 
-    def set_pending_order_time(self, order_time: datetime):
+    def set_pending_order_time(self, order_time: Optional[datetime]):
         self.pending_order_time = order_time
 
     def get_pending_order_time(self) -> Optional[datetime]:
@@ -70,16 +79,22 @@ class TrackingTicker:
     def get_start_time(self) -> datetime:
         return self.start_time
 
+    def get_target_units(self) -> int:
+        return self.target_units
+
+    def set_target_units(self, target_units: int):
+        self.target_units = target_units
+
     def set_target_profit(self, target_profit: float):
         self.target_profit = target_profit
 
-    def get_target_profit(self) -> Optional[float]:
+    def get_target_profit(self) -> float:
         return self.target_profit
 
     def set_stop_loss(self, stop_loss: float):
         self.stop_loss = stop_loss
 
-    def get_stop_loss(self) -> Optional[float]:
+    def get_stop_loss(self) -> float:
         return self.stop_loss
 
     def set_last_profit_loss_rate(self, profit_loss_rate: float):
@@ -124,7 +139,7 @@ class TrackingTicker:
     def get_last_sell_time(self) -> Optional[datetime]:
         return self.last_sell_time
 
-    def set_initial_cost(self, initial_cost: float):
+    def set_initial_cost(self, initial_cost: Optional[float]):
         self.initial_cost = initial_cost
 
     def get_initial_cost(self) -> Optional[float]:
@@ -139,19 +154,27 @@ class TrackingTicker:
     def inc_resubmit_order_count(self):
         self.resubmit_order_count += 1
 
+    def reset_resubmit_order_count(self):
+        self.resubmit_order_count = 0
+
     def get_resubmit_order_count(self) -> int:
         return self.resubmit_order_count
 
-    def set_position_obj(self, position_obj: DayPosition):
+    def set_position_obj(self, position_obj: Optional[DayPosition]):
         self.position_obj = position_obj
 
     def get_position_obj(self) -> Optional[DayPosition]:
         return self.position_obj
 
-    def is_timeout(self) -> bool:
+    def is_tracking_timeout(self) -> bool:
         if self.last_buy_time and (datetime.now() - self.last_buy_time) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
             return True
         elif (datetime.now() - self.start_time) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):
+            return True
+        return False
+
+    def is_order_timeout(self) -> bool:
+        if (datetime.now() - self.pending_order_time) >= timedelta(seconds=config.PENDING_ORDER_TIMEOUT_IN_SEC):
             return True
         return False
 
@@ -242,22 +265,22 @@ class TradingTracker:
     def start_tracking(self, ticker: TrackingTicker):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
-        if symbol not in self.tickers:
+        if ticker_id not in self.tickers:
             # add tracking ticker
-            self.tickers[symbol] = ticker
+            self.tickers[ticker_id] = ticker
         # init tracking stats if not
         if symbol not in self.status:
             # add tracking status
-            tracking_status = TrackingStatus(symbol, ticker_id)
+            tracking_status = TrackingStatus(symbol)
             self.status[symbol] = tracking_status
 
     def stop_tracking(self, ticker: TrackingTicker):
-        symbol = ticker.get_symbol()
-        if symbol in self.tickers:
-            del self.tickers[symbol]
+        ticker_id = ticker.get_id()
+        if ticker_id in self.tickers:
+            del self.tickers[ticker_id]
 
-    def is_tracking(self, symbol: str) -> bool:
-        if symbol in self.tickers:
+    def is_tracking(self, ticker_id: str) -> bool:
+        if ticker_id in self.tickers:
             return True
         return False
 

@@ -1,5 +1,5 @@
 from django.db import models
-from common import enums
+from common import enums, constants
 
 # Create your models here.
 
@@ -331,7 +331,7 @@ class DayPosition(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     units = models.PositiveIntegerField(default=0)
     target_units = models.PositiveIntegerField(default=4)
-    add_unit_price = models.FloatField(default=9999)
+    add_unit_price = models.FloatField(default=constants.MAX_SECURITY_PRICE)
     stop_loss_price = models.FloatField(default=0)
 
     # initial buy date
@@ -447,7 +447,7 @@ class SwingPosition(models.Model):
     quantity = models.PositiveIntegerField(default=0)
     units = models.PositiveIntegerField(default=0)
     target_units = models.PositiveIntegerField(default=4)
-    add_unit_price = models.FloatField(default=9999)
+    add_unit_price = models.FloatField(default=constants.MAX_SECURITY_PRICE)
     stop_loss_price = models.FloatField(default=0)
 
     # initial buy date

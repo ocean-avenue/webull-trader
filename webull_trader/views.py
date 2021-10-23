@@ -8,7 +8,7 @@ from common import utils, config
 from common.enums import SetupType, TradingHourType
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
     HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, \
-    WebullNews, WebullOrderNote, TradingLog, ExceptionLog
+    WebullNews, TradingLog, ExceptionLog
 
 # Create your views here.
 

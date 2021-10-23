@@ -31,7 +31,7 @@ class DayTradingRedGreen(StrategyBase):
 
         if ticker['pending_sell']:
             self.check_sell_order_filled(
-                ticker, stop_tracking=False, resubmit_count=50)
+                ticker, stop_tracking=False, retry_limit=50)
             return
 
         holding_quantity = ticker['positions']
@@ -151,7 +151,7 @@ class DayTradingRedGreen(StrategyBase):
                 self.update_pending_sell_order(
                     ticker, order_response, exit_note=exit_note)
 
-    def on_begin(self):
+    def begin(self):
 
         if not self.is_regular_market_hour():
             return
@@ -205,7 +205,7 @@ class DayTradingRedGreen(StrategyBase):
             return True
         return False
 
-    def on_update(self):
+    def update(self):
         if not self.is_regular_market_hour():
             self.trading_end = False
             return
@@ -220,6 +220,6 @@ class DayTradingRedGreen(StrategyBase):
         else:
             self.trading_end = True
 
-    def on_end(self):
+    def end(self):
         # check if still holding any positions before exit
         self.clear_positions()

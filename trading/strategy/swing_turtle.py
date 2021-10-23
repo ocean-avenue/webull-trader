@@ -2,39 +2,41 @@
 
 # Turtle trading
 
+from typing import List
 from django.utils import timezone
-from trading.strategy.strategy_base import StrategyBase
-from common.enums import ActionType, SetupType
-from common import utils, config
+from common import utils, config, constants
 from sdk import webullsdk
+from trading.strategy.strategy_base import StrategyBase
+from common.enums import ActionType, SetupType, TradingHourType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 
 
 class SwingTurtle(StrategyBase):
 
-    def __init__(self, paper, trading_hour, entry_period=55, exit_period=20):
+    def __init__(self, paper, trading_hour: TradingHourType, entry_period: int = 55, exit_period: int = 20):
         super().__init__(paper=paper, trading_hour=trading_hour)
+        self.watchlist: List[dict] = []
         self.entry_period = entry_period
         self.exit_period = exit_period
 
-    def get_tag(self):
+    def get_tag(self) -> str:
         return "SwingTurtle"
 
-    def get_setup(self):
+    def get_setup(self) -> SetupType:
         if self.entry_period == 20:
             return SetupType.SWING_20_DAYS_NEW_HIGH
         return SetupType.SWING_55_DAYS_NEW_HIGH
 
-    def get_buy_order_limit(self, unit_weight):
+    def get_buy_order_limit(self, unit_weight: int):
         return self.swing_position_amount_limit * unit_weight
 
-    def check_has_volume(self, daily_bars):
+    def check_has_volume(self, daily_bars: List[SwingHistoricalDailyBar]) -> bool:
         if not utils.check_daily_bars_volume_grinding(daily_bars, period=4) and \
                 not utils.check_daily_bars_rel_volume(daily_bars):
             return False
         return True
 
-    def check_period_high(self, daily_bars):
+    def check_period_high(self, daily_bars: List[SwingHistoricalDailyBar]):
         latest_close = daily_bars[-1].close
         latest_sma120 = daily_bars[-1].sma_120
         period_close = daily_bars[self.entry_period].close
@@ -61,7 +63,7 @@ class SwingTurtle(StrategyBase):
             return False
         latest_close = daily_bars[-1].close
         # get exit_period lowest
-        exit_period_lowest = config.MAX_SECURITY_PRICE
+        exit_period_lowest = constants.MAX_SECURITY_PRICE
         for i in range(len(daily_bars) - self.exit_period - 1, len(daily_bars) - 1):
             daily_bar = daily_bars[i]
             if daily_bar.close < exit_period_lowest:
@@ -220,19 +222,19 @@ class SwingTurtle(StrategyBase):
         request.complete = True
         request.save()
 
-    def on_begin(self):
+    def begin(self):
         # only trade regular market hour once
         if not self.is_regular_market_hour():
             return
-
+        # load swing watchlist
         swing_watchlist = SwingWatchlist.objects.all()
-        for swing_watch in swing_watchlist:
-            self.trading_watchlist.append({
-                "symbol": swing_watch.symbol,
-                "unit_weight": swing_watch.unit_weight,
+        for watchlist in swing_watchlist:
+            self.watchlist.append({
+                "symbol": watchlist.symbol,
+                "unit_weight": watchlist.unit_weight,
             })
 
-    def on_update(self):
+    def update(self):
         # only trade regular market hour once
         if not self.is_regular_market_hour():
             return
@@ -245,12 +247,12 @@ class SwingTurtle(StrategyBase):
             return
 
         # swing trading one symbol in each update
-        if len(self.trading_watchlist) > 0:
-            watchlist = self.trading_watchlist[0]
+        if len(self.watchlist) > 0:
+            watchlist = self.watchlist[0]
             # swing trade using market order
             self.trade(watchlist)
             # remove from swing_symbols
-            del self.trading_watchlist[0]
+            del self.watchlist[0]
 
-    def on_end(self):
+    def end(self):
         self.trading_end = True

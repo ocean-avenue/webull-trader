@@ -1,15 +1,16 @@
 import pytz
+import traceback
 from django.conf import settings
 from datetime import datetime, date
-from common import enums, utils
+from common import enums, utils, constants
 from sdk import webullsdk
-from webull_trader.models import TradingSettings, WebullAccountStatistics, WebullCredentials, WebullOrder
+from webull_trader.models import DayPosition, DayTrade, TradingSettings, WebullAccountStatistics, WebullCredentials, WebullOrder
 
 
-def get_or_create_trading_settings():
-    settings = TradingSettings.objects.first()
-    if not settings:
-        settings = TradingSettings(
+def get_or_create_trading_settings() -> TradingSettings:
+    trading_settings = TradingSettings.objects.first()
+    if not trading_settings:
+        trading_settings = TradingSettings(
             paper=True,
             algo_type=enums.AlgorithmType.DAY_BREAKOUT_20,
             order_amount_limit=1000.0,
@@ -22,8 +23,8 @@ def get_or_create_trading_settings():
             swing_position_amount_limit=1000.0,
             day_trade_usable_cash_threshold=10000.0,
         )
-        settings.save()
-    return settings
+        trading_settings.save()
+    return trading_settings
 
 
 def save_webull_credentials(cred_data: dict, paper: bool = True):
@@ -251,3 +252,50 @@ def save_webull_min_usable_cash(usable_cash: float):
     if usable_cash < acc_stat.min_usable_cash or acc_stat.min_usable_cash == 0.0:
         acc_stat.min_usable_cash = usable_cash
         acc_stat.save()
+
+
+def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.SetupType,
+                     cost: float, quant: int, buy_time: datetime, units: int = 1, target_units: int = 4,
+                     add_unit_price: float = constants.MAX_SECURITY_PRICE, stop_loss_price: float = 0.0):
+    try:
+        position = DayPosition(
+            symbol=symbol,
+            ticker_id=ticker_id,
+            order_ids=order_id,
+            total_cost=round(cost * quant, 2),
+            quantity=quant,
+            units=units,
+            target_units=target_units,
+            add_unit_price=add_unit_price,
+            stop_loss_price=stop_loss_price,
+            buy_date=buy_time.date(),
+            buy_time=buy_time,
+            setup=setup,
+            require_adjustment=True,
+        )
+        position.save()
+        return position
+    except Exception as e:
+        utils.save_exception_log(str(e), traceback.format_exc(),
+                                 f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
+        return None
+
+
+def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: str, sell_price: float, sell_time: datetime):
+    trade = DayTrade(
+        symbol=symbol,
+        ticker_id=ticker_id,
+        order_ids=f"{position.order_ids},{order_id}",
+        total_cost=position.total_cost,
+        total_sold=round(sell_price * position.quantity, 2),
+        quantity=position.quantity,
+        units=position.units,
+        buy_date=position.buy_date,
+        buy_time=position.buy_time,
+        sell_date=sell_time.date(),
+        sell_time=sell_time,
+        setup=position.setup,
+        require_adjustment=True,
+    )
+    trade.save()
+    return trade

@@ -21,7 +21,7 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
     def get_setup(self):
         return SetupType.DAY_GRINDING_UP
 
-    def on_update(self):
+    def update(self):
         # only trade in regular hour
         if not self.is_regular_market_hour():
             return
@@ -93,7 +93,7 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
     def get_setup(self):
         return SetupType.DAY_GRINDING_UP
 
-    def on_begin(self):
+    def begin(self):
         # only trade in pre-market and regular hour
         if self.is_after_market_hour():
             return
@@ -109,7 +109,7 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
             utils.print_trading_log(
                 "Tracking <{}> for grinding up...".format(symbol))
 
-    def on_update(self):
+    def update(self):
         # only trade in pre-market and regular hour
         if self.is_after_market_hour():
             return

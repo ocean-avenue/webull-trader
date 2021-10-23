@@ -1,7 +1,5 @@
 # trading config
 
-# max stock price
-MAX_SECURITY_PRICE = 9999.0
 # min gap ratio for momo, breakout strategy
 MIN_SURGE_CHANGE_RATIO = 0.04
 # min surge volume for momo, breakout strategy

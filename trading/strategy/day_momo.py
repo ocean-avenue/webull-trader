@@ -109,7 +109,7 @@ class DayTradingMomo(StrategyBase):
             return
 
         if ticker['pending_sell']:
-            self.check_sell_order_filled(ticker, resubmit=50)
+            self.check_sell_order_filled(ticker, retry_limit=50)
             return
 
         holding_quantity = ticker['positions']
@@ -273,7 +273,7 @@ class DayTradingMomo(StrategyBase):
         #     return False
         return True
 
-    def on_update(self):
+    def update(self):
         # trading tickers
         for symbol in list(self.tracking_tickers):
             ticker = self.tracking_tickers[symbol]
@@ -318,7 +318,7 @@ class DayTradingMomo(StrategyBase):
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)
 
-    def on_end(self):
+    def end(self):
         self.trading_end = True
 
         # check if still holding any positions before exit
@@ -385,7 +385,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
             return price > last_high_price
         return True
 
-    def on_update(self):
+    def update(self):
 
         # only trading in extended hour
         if self.is_regular_market_hour():

@@ -62,16 +62,17 @@ class TradingExecutor:
 
         # prepare strategies
         for strategy in self.strategies:
-            strategy.on_begin()
+            strategy.begin()
 
         # main loop
         while utils.is_market_hour():
             # go through strategies trades
             for strategy in self.strategies:
                 if not strategy.trading_end:
-                    straregy.update_orders()
-                    strategy.on_update()
-                    strategy.save_logs()
+                    strategy.update_orders()
+                    strategy.update_positions()
+                    strategy.update()
+                    strategy.write_logs()
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
@@ -93,8 +94,9 @@ class TradingExecutor:
 
         # finish strategies
         for strategy in self.strategies:
-            strategy.on_end()
-            strategy.save_logs()
+            strategy.end()
+            # TODO, remove here, add to end
+            strategy.write_logs()
 
         # update account status
         account_data = webullsdk.get_account()
