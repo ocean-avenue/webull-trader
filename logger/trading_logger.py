@@ -1,6 +1,6 @@
 from datetime import date
-from common.utils import get_now
-from common.enums import AlgorithmType, UNKNOWN, TradingHourType
+from common import utils
+from common.enums import UNKNOWN, TradingHourType, AlgorithmType
 from webull_trader.models import TradingLog, TradingSettings
 
 _algo_tag = UNKNOWN
@@ -9,7 +9,7 @@ _trading_logs = []
 
 def log(text: str):
     global _trading_logs
-    log_record = "[{}] {}".format(get_now(), text)
+    log_record = "[{}] {}".format(utils.get_now(), text)
     _trading_logs.append(log_record)
     # output
     print(log_record)
