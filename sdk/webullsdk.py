@@ -5,6 +5,7 @@ import traceback
 import pandas as pd
 from typing import List, Optional
 from common import utils
+from logger import trading_logger
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
 
@@ -77,7 +78,7 @@ def login(paper=True):
 
     credentials = WebullCredentials.objects.filter(paper=paper).first()
     if not credentials:
-        utils.print_trading_log(
+        trading_logger.log(
             "Can not load webull credentials, login failed!")
         return False
 
@@ -99,7 +100,7 @@ def login(paper=True):
 
         utils.save_webull_credentials(json.dumps(credentials_data), paper)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception refresh_login: {}".format(e))
+        trading_logger.log("⚠️  Exception refresh_login: {}".format(e))
         return False
 
     _wb_instance.get_account_id()
@@ -523,7 +524,7 @@ def get_quote(ticker_id=None) -> Optional[dict]:
         instance = _get_instance()
         return instance.get_quote(tId=ticker_id)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_quote: {}".format(e))
+        trading_logger.log("⚠️  Exception get_quote: {}".format(e))
         return None
 
 
@@ -560,7 +561,7 @@ def get_ticker(symbol: Optional[str] = None) -> Optional[str]:
         instance = _get_instance()
         return instance.get_ticker(stock=symbol)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_ticker: {}".format(e))
+        trading_logger.log("⚠️  Exception get_ticker: {}".format(e))
         return None
 
 
@@ -583,7 +584,7 @@ def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
         instance = _get_instance()
         return instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_1m_bars: {}".format(e))
+        trading_logger.log("⚠️  Exception get_1m_bars: {}".format(e))
         return pd.DataFrame()
 
 
@@ -593,7 +594,7 @@ def get_1d_bars(ticker_id=None, count=20) -> pd.DataFrame:
         instance = _get_instance()
         return instance.get_bars(tId=ticker_id, interval='d1', count=count, extendTrading=1)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_1d_bars: {}".format(e))
+        trading_logger.log("⚠️  Exception get_1d_bars: {}".format(e))
         return pd.DataFrame()
 
 # symbol = 'AVCT'
@@ -627,7 +628,7 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
             enforce="DAY",
         )
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception buy_limit_order: {}".format(e))
+        trading_logger.log("⚠️  Exception buy_limit_order: {}".format(e))
         return {'msg': "Exception during submit buy limit order!"}
 
 # Paper
@@ -651,7 +652,7 @@ def buy_market_order(ticker_id=None, quant=0):
             enforce="DAY",
         )
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception buy_market_order: {}".format(e))
+        trading_logger.log("⚠️  Exception buy_market_order: {}".format(e))
         return {'msg': "Exception during submit buy market order!"}
 
 # Paper
@@ -676,7 +677,7 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
             enforce="DAY",
         )
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception sell_limit_order: {}".format(e))
+        trading_logger.log("⚠️  Exception sell_limit_order: {}".format(e))
         return {'msg': "Exception during submit sell limit order!"}
 
 
@@ -700,7 +701,7 @@ def sell_market_order(ticker_id=None, quant=0):
             enforce="DAY",
         )
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception sell_market_order: {}".format(e))
         return {'msg': "Exception during submit sell market order!"}
 
@@ -715,7 +716,7 @@ def cancel_order(order_id):
     try:
         return instance.cancel_order(order_id)
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception cancel_order {}: {}".format(order_id, e))
         return False
 
@@ -840,7 +841,7 @@ def get_positions() -> List[dict]:
         instance = _get_instance()
         return instance.get_positions()
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_positions: {}".format(e))
+        trading_logger.log("⚠️  Exception get_positions: {}".format(e))
         return None
 
 
@@ -849,7 +850,7 @@ def get_current_orders():
         instance = _get_instance()
         return instance.get_current_orders()
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_current_orders: {}".format(e))
         return None
 
@@ -999,7 +1000,7 @@ def get_history_orders(status=ORDER_STATUS_ALL, count=20):
         instance = _get_instance()
         return instance.get_history_orders(status=status, count=count)
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_history_orders: {}".format(e))
         return []
 
@@ -1030,7 +1031,7 @@ def get_news(stock=None, items=5):
         instance = _get_instance()
         return instance.get_news(stock=stock, Id=0, items=items)
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_news: {}".format(e))
+        trading_logger.log("⚠️  Exception get_news: {}".format(e))
         return []
 
 
@@ -1100,7 +1101,7 @@ def get_pre_market_gainers(count=10) -> List[dict]:
                     )
         return gainers
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_pre_market_gainers: {}".format(e))
         return []
 
@@ -1151,7 +1152,7 @@ def get_top_gainers(count=10) -> List[dict]:
                     )
         return gainers
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_top_gainers: {}".format(e))
+        trading_logger.log("⚠️  Exception get_top_gainers: {}".format(e))
         return []
 
 
@@ -1189,7 +1190,7 @@ def get_after_market_gainers(count=10) -> List[dict]:
                     )
         return gainers
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_after_market_gainers: {}".format(e))
         return []
 
@@ -1228,7 +1229,7 @@ def get_pre_market_losers(count=10) -> List[dict]:
                     )
         return losers
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_pre_market_losers: {}".format(e))
         return []
 
@@ -1279,7 +1280,7 @@ def get_top_losers(count=10) -> List[dict]:
                     )
         return losers
     except Exception as e:
-        utils.print_trading_log("⚠️  Exception get_top_losers: {}".format(e))
+        trading_logger.log("⚠️  Exception get_top_losers: {}".format(e))
         return []
 
 
@@ -1317,6 +1318,6 @@ def get_after_market_losers(count=10) -> List[dict]:
                     )
         return gainers
     except Exception as e:
-        utils.print_trading_log(
+        trading_logger.log(
             "⚠️  Exception get_after_market_losers: {}".format(e))
         return []

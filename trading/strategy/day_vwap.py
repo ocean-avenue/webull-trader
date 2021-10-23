@@ -5,6 +5,7 @@ from typing import Tuple
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType, TradingHourType
 from common import utils, constants
+from logger import trading_logger
 from sdk import webullsdk, finvizsdk
 from trading.tracker.trading_tracker import TrackingTicker
 
@@ -74,7 +75,7 @@ class DayTradingVWAPPaper(StrategyBase):
                 exit_trading = True
                 exit_note = "Price (${}) reach target profit (${}).".format(
                     candle['high'], target_profit)
-                utils.print_trading_log("<{}> price (${}) is reach target profit (${}), exit!".format(
+                trading_logger.log("<{}> price (${}) is reach target profit (${}), exit!".format(
                     symbol, candle['high'], target_profit))
                 break
 
@@ -105,7 +106,7 @@ class DayTradingVWAPPaper(StrategyBase):
                 ticker, bars)
             # check entry: current above vwap
             if should_entry:
-                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                trading_logger.log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
                     symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                 # set target profit
                 ticker.set_target_profit(target_profit)
@@ -116,12 +117,12 @@ class DayTradingVWAPPaper(StrategyBase):
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
-                utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
+                trading_logger.log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
                 self.trading_tracker.stop_tracking(ticker)
                 return
@@ -131,7 +132,7 @@ class DayTradingVWAPPaper(StrategyBase):
 
             # get bars error
             if m1_bars.empty:
-                utils.print_trading_log("<{}> bars data error!".format(symbol))
+                trading_logger.log("<{}> bars data error!".format(symbol))
                 exit_trading = True
                 exit_note = "Bars data error!"
             else:
@@ -144,7 +145,7 @@ class DayTradingVWAPPaper(StrategyBase):
                 exit_trading, exit_note = self.check_stop_loss(ticker, bars)
                 # check exit trade
                 if not exit_trading:
-                    utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                    trading_logger.log("Checking exit for <{}>, unrealized P&L: {}%".format(
                         symbol, round(profit_loss_rate * 100, 2)))
                     exit_trading, exit_note = self.check_exit(ticker, bars)
 
@@ -179,7 +180,7 @@ class DayTradingVWAPPaper(StrategyBase):
             ticker = TrackingTicker(symbol, ticker_id)
             # check if can trade with requirements
             if not self.check_can_trade_ticker(ticker):
-                # utils.print_trading_log(
+                # trading_logger.log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
             # start tracking
@@ -255,7 +256,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
         if current_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
-            utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
+            trading_logger.log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, period_low_price))
 
         return (exit_trading, exit_note)
@@ -282,19 +283,19 @@ class DayTradingVWAPLargeCap(StrategyBase):
 
             # check entry: current above vwap
             if self.check_entry(ticker, bars):
-                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                trading_logger.log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
                     symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                 # submit buy limit order
                 self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
-                utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
+                trading_logger.log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
                 self.trading_tracker.stop_tracking(ticker)
                 return
@@ -311,7 +312,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             m1_bars = webullsdk.get_1m_bars(ticker_id, count=15)
             # get bars error
             if m1_bars.empty:
-                utils.print_trading_log("<{}> bars data error!".format(symbol))
+                trading_logger.log("<{}> bars data error!".format(symbol))
                 exit_trading = True
                 exit_note = "Bars data error!"
             else:
@@ -321,7 +322,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 # check exit trade
                 if not exit_trading:
                     # check exit trade
-                    utils.print_trading_log("Checking exit for <{}>, unrealized P&L: {}%".format(
+                    trading_logger.log("Checking exit for <{}>, unrealized P&L: {}%".format(
                         symbol, round(profit_loss_rate * 100, 2)))
                     exit_trading, exit_note = self.check_exit(ticker, bars)
 
@@ -352,7 +353,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
                 "symbol": symbol,
                 "ticker_id": ticker_id,
             }
-            utils.print_trading_log(
+            trading_logger.log(
                 "Found ticker <{}> to check reclaim vwap!".format(symbol))
 
         for symbol in list(self.large_cap_with_major_news):

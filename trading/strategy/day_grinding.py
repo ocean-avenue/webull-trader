@@ -6,8 +6,9 @@ from typing import List
 from datetime import datetime, date
 from trading.strategy.day_breakout import DayTradingBreakout
 from common.enums import SetupType, TradingHourType
-from common import utils, constants, db
+from common import constants, db
 from sdk import webullsdk, finvizsdk
+from logger import trading_logger
 from trading.tracker.trading_tracker import TrackingTicker
 
 
@@ -61,12 +62,12 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
                         title = news["title"]
                         source = news["source"]
                         news_link = news["news_link"]
-                        utils.print_trading_log(
+                        trading_logger.log(
                             "Found <{}> news...".format(symbol))
-                        utils.print_trading_log("Title: {}".format(title))
-                        utils.print_trading_log("Source: {}".format(source))
-                        utils.print_trading_log("Time: {}".format(news_time))
-                        utils.print_trading_log("Link: {}".format(news_link))
+                        trading_logger.log("Title: {}".format(title))
+                        trading_logger.log("Source: {}".format(source))
+                        trading_logger.log("Time: {}".format(news_time))
+                        trading_logger.log("Link: {}".format(news_link))
                 if not has_news_today:
                     continue
                 # find news today
@@ -76,7 +77,7 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
                 ticker = TrackingTicker(symbol, ticker_id)
                 # found trading ticker
                 self.trading_tracker.start_tracking(ticker)
-                utils.print_trading_log("Start trading <{}>...".format(symbol))
+                trading_logger.log("Start trading <{}>...".format(symbol))
                 # do trade
                 self.trade(ticker)
 
@@ -108,7 +109,7 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
                 "symbol": symbol,
                 "ticker_id": ticker_id,
             })
-            utils.print_trading_log(
+            trading_logger.log(
                 "Tracking <{}> for grinding up...".format(symbol))
 
     def update(self):
@@ -131,6 +132,6 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
             ticker = TrackingTicker(symbol, ticker_id)
             # found trading ticker
             self.trading_tracker.start_tracking(ticker)
-            utils.print_trading_log("Start trading <{}>...".format(symbol))
+            trading_logger.log("Start trading <{}>...".format(symbol))
             # do trade
             self.trade(ticker)

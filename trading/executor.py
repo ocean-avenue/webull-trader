@@ -3,11 +3,12 @@
 # Trading executor class
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import List
 from common.enums import AlgorithmType, TradingHourType
 from common import utils, db, config
 from sdk import webullsdk
+from logger import trading_logger
 from trading.strategy.strategy_base import StrategyBase
 
 
@@ -23,12 +24,12 @@ class TradingExecutor:
         self.load_settings()
 
         if len(self.strategies) == 0:
-            utils.print_trading_log("Cannot find trading strategy, quit!")
+            trading_logger.log("Cannot find trading strategy, quit!")
             return
 
-        utils.print_trading_log("Trading started...")
+        trading_logger.log("Trading started...")
 
-        utils.print_trading_log(AlgorithmType.tostr(self.algo_type))
+        trading_logger.log(AlgorithmType.tostr(self.algo_type))
 
         while not utils.is_market_hour():
             print("[{}] Waiting for market hour...".format(utils.get_now()))
@@ -39,10 +40,12 @@ class TradingExecutor:
             message = "Webull login failed, quit trading!"
             # send message
             utils.notify_message(message)
-            utils.print_trading_log(message)
+            trading_logger.log(message)
             return
-        utils.print_trading_log("Webull logged in")
+        trading_logger.log("Webull logged in")
         last_login_refresh_time = datetime.now()
+
+        today = date.today()
 
         # prepare strategies
         for strategy in self.strategies:
@@ -56,18 +59,18 @@ class TradingExecutor:
                     continue
                 strategy.update_orders()
                 strategy.update()
-                strategy.write_logs()
+                trading_logger.write(self.trading_hour, today)
 
             # refresh login
             if (datetime.now() - last_login_refresh_time) >= timedelta(minutes=config.REFRESH_LOGIN_INTERVAL_IN_MIN):
                 if webullsdk.login(paper=self.paper):
-                    # utils.print_trading_log("Refresh webull login")
+                    # trading_logger.log("Refresh webull login")
                     last_login_refresh_time = datetime.now()
                 else:
                     message = "Webull refresh login failed, quit trading!"
                     # send message
                     utils.notify_message(message)
-                    utils.print_trading_log(message)
+                    trading_logger.log(message)
                     break
 
             # at least slepp 1 sec
@@ -77,27 +80,27 @@ class TradingExecutor:
         while not utils.is_trading_hour_end(self.trading_hour):
             for strategy in self.strategies:
                 strategy.end()
-                # TODO, remove here, add to end
-                strategy.write_logs()
+                trading_logger.write(self.trading_hour, today)
 
         # final round
         for strategy in self.strategies:
             strategy.final()
-            # TODO, remove here, add to end
-            strategy.write_logs()
+            trading_logger.write(self.trading_hour, today)
 
         # update account status
         account_data = webullsdk.get_account()
         utils.save_webull_account(account_data, paper=self.paper)
 
-        utils.print_trading_log("Trading ended!")
+        trading_logger.log("Trading ended!")
 
         # output today's proft loss
         day_profit_loss = webullsdk.get_day_profit_loss()
-        utils.print_trading_log("Today's P&L: {}".format(day_profit_loss))
+        trading_logger.log("Today's P&L: {}".format(day_profit_loss))
+
+        trading_logger.write(self.trading_hour, today)
 
         # webullsdk.logout()
-        # utils.print_trading_log("Webull logged out")
+        # trading_logger.log("Webull logged out")
 
     # load settings
     def load_settings(self):
@@ -140,7 +143,7 @@ def start():
     paper = utils.check_paper()
     trading_hour = utils.get_trading_hour()
     if trading_hour == None:
-        utils.print_trading_log("Not in trading hour, skip...")
+        trading_logger.log("Not in trading hour, skip...")
         return
     strategies: List[StrategyBase] = []
     # load algo type

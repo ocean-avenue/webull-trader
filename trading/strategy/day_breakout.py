@@ -6,6 +6,7 @@ from common.enums import SetupType, TradingHourType
 from typing import List, Tuple
 from common import utils, config, constants
 from sdk import webullsdk
+from logger import trading_logger
 from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
 from trading.tracker.trading_tracker import TrackingTicker
@@ -38,7 +39,7 @@ class DayTradingBreakout(StrategyBase):
         vwap = bar["vwap"]
         volume = int(bar["volume"])
         if close * volume >= config.MIN_SURGE_AMOUNT and volume >= config.MIN_SURGE_VOLUME and close > vwap:
-            utils.print_trading_log(
+            trading_logger.log(
                 f"Found <{ticker.get_symbol()}> surge, price: {close}, volume: {volume}")
             return True
         return False
@@ -52,7 +53,7 @@ class DayTradingBreakout(StrategyBase):
         current_price = current_candle['close']
         # check if above vwap
         if current_price <= current_candle['vwap']:
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> price is not above vwap, no entry!".format(symbol))
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
@@ -67,7 +68,7 @@ class DayTradingBreakout(StrategyBase):
                 period_low_price = row['low']
         # check if new high
         if current_price <= period_high_price:
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> price (${}) is not breakout high (${}), no entry!".format(symbol, current_price, period_high_price))
             return False
 
@@ -77,20 +78,20 @@ class DayTradingBreakout(StrategyBase):
 
         # check ema 9
         if current_price < current_candle['ema9']:
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> price is not above ema9, no entry!".format(symbol))
             return False
 
         # check if current low is above period low price
         current_low = current_candle['low']
         if current_low < period_low_price:
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> current low (${}) is lower than period low (${}), no entry!".format(symbol, current_low, period_low_price))
             return False
 
         # # check if gap already too large
         # if period_high_price * config.PERIOD_HIGH_PRICE_GAP_RATIO < current_price:
-        #     utils.print_trading_log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
+        #     trading_logger.log("<{}> new high price gap too large, new high: {}, period high: {}, no entry!".format(
         #         symbol, current_price, period_high_price))
         #     return False
 
@@ -101,19 +102,19 @@ class DayTradingBreakout(StrategyBase):
         if surge_ratio >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
             surge_ratio = "{}%".format(
                 round((current_price - prev_close) / prev_close * 100, 2))
-            utils.print_trading_log(
+            trading_logger.log(
                 f"<{symbol}> current price (${current_price}) already surge {'{}%'.format(round(surge_ratio * 100, 2))} than prev close (${prev_close}), no entry!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
@@ -123,44 +124,44 @@ class DayTradingBreakout(StrategyBase):
                 not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
                 not pattern.check_bars_amount_grinding(bars, period=5):
             # has no relative volume
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart volume not meet requirements, no entry!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
             # no volatility
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
         if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period):
             # has long wick up
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
         if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
                 not pattern.check_bars_has_most_green_candle(bars):
             # not most green candles and no largest green candle
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
             return False
 
         if pattern.check_bars_has_bearish_candle(bars, period=5):
             # has bearish candle
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart has bearish candle, no entry!".format(symbol))
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
         if ticker.is_just_sold():
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
 
@@ -205,28 +206,28 @@ class DayTradingBreakout(StrategyBase):
         if current_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
-            utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
+            trading_logger.log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, round(period_low_price, 2)))
         # # check if has long wick up
         elif pattern.check_bars_has_long_wick_up(bars, period=5, count=2):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
         elif self.is_extended_market_hour() and not pattern.check_bars_volatility(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
         # check if bar chart is at peak
         elif self.is_regular_market_hour() and pattern.check_bars_at_peak(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is at peak, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is at peak."
         elif pattern.check_bars_reversal(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart will reversal, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart will reversal."
@@ -298,7 +299,7 @@ class DayTradingBreakout(StrategyBase):
         if holding_quantity == 0:
             # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
             if ticker.is_tracking_timeout():
-                utils.print_trading_log(
+                trading_logger.log(
                     "Trading <{}> session timeout!".format(symbol))
                 # stop ticker tracking
                 self.trading_tracker.stop_tracking(ticker)
@@ -325,20 +326,20 @@ class DayTradingBreakout(StrategyBase):
                 ticker.set_stop_loss(self.get_stop_loss_price(bars))
                 # candle data
                 current_candle = bars.iloc[-1]
-                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
+                trading_logger.log("Trading <{}>, price: {}, vwap: {}, volume: {}".format(
                     symbol, current_candle['close'], current_candle['vwap'], int(current_candle['volume'])))
                 # submit buy limit order
                 self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
                 self.trading_tracker.stop_tracking(ticker)
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
-                utils.print_trading_log("<{}> holding quantity is negitive {}!".format(
+                trading_logger.log("<{}> holding quantity is negitive {}!".format(
                     symbol, holding_quantity))
                 self.trading_tracker.stop_tracking(ticker)
                 return
@@ -364,7 +365,7 @@ class DayTradingBreakout(StrategyBase):
                     ticker_id, count=(self.exit_period*self.time_scale + 30))
                 # check bars error
                 if m1_bars.empty:
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "<{}> bars data error!".format(symbol))
                     exit_trading = True
                     exit_note = "Bars data error!"
@@ -379,14 +380,14 @@ class DayTradingBreakout(StrategyBase):
                     ticker, ticker_position)
 
             if not exit_trading:
-                utils.print_trading_log("Checking exit for <{}>, price: ${}, unrealized P&L: {}%".format(
+                trading_logger.log("Checking exit for <{}>, price: ${}, unrealized P&L: {}%".format(
                     symbol, bars.iloc[-1]['close'], round(profit_loss_rate * 100, 2)))
                 # check exit trade
                 exit_trading, exit_note = self.check_exit(ticker, bars)
 
             # exit trading
             if exit_trading:
-                utils.print_trading_log(
+                trading_logger.log(
                     f"📈 Exit trading <{symbol}> P&L: {profit_loss_rate * 100}%")
 
                 self.submit_sell_limit_order(
@@ -424,7 +425,7 @@ class DayTradingBreakout(StrategyBase):
         elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # utils.print_trading_log("Scanning top gainers <{}>...".format(
+        # trading_logger.log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -436,10 +437,10 @@ class DayTradingBreakout(StrategyBase):
             ticker = TrackingTicker(symbol, ticker_id)
             # check if can trade with requirements, skip check top 1 gainer
             if not self.check_can_trade_ticker(ticker):
-                # utils.print_trading_log(
+                # trading_logger.log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
-            # utils.print_trading_log("Scanning <{}>...".format(symbol))
+            # trading_logger.log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
@@ -458,7 +459,7 @@ class DayTradingBreakout(StrategyBase):
                             config.DAY_EXTENDED_TARGET_UNITS)
                         # start tracking ticker
                         self.trading_tracker.start_tracking(ticker)
-                        utils.print_trading_log(
+                        trading_logger.log(
                             "Start trading <{}>...".format(symbol))
                         # do trade
                         self.trade(ticker, m1_bars=m1_bars)
@@ -467,7 +468,7 @@ class DayTradingBreakout(StrategyBase):
                     ticker.set_target_units(config.DAY_TARGET_UNITS)
                     # start tracking ticker
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
                     self.trade(ticker)
@@ -564,14 +565,14 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
                     # start tracking ticker
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)
             elif self.is_regular_market_hour():
                 # start tracking ticker
                 self.trading_tracker.start_tracking(ticker)
-                utils.print_trading_log(
+                trading_logger.log(
                     "Start trading <{}>...".format(symbol))
                 # do trade
                 self.trade(ticker)
@@ -594,7 +595,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 "symbol": symbol,
                 "ticker_id": ticker_id,
             })
-            utils.print_trading_log(
+            trading_logger.log(
                 "Add ticker <{}> to check earning gap!".format(symbol))
 
     def update(self):
@@ -615,7 +616,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
             elif self.is_after_market_hour():
                 top_gainers = webullsdk.get_after_market_gainers()
 
-            # utils.print_trading_log("Scanning top gainers <{}>...".format(
+            # trading_logger.log("Scanning top gainers <{}>...".format(
             #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
             for gainer in top_gainers:
                 symbol = gainer["symbol"]
@@ -624,7 +625,7 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
                 if self.trading_tracker.is_tracking(ticker_id):
                     continue
                 ticker = TrackingTicker(symbol, ticker_id)
-                # utils.print_trading_log("Scanning <{}>...".format(symbol))
+                # trading_logger.log("Scanning <{}>...".format(symbol))
                 change_percentage = gainer["change_percentage"]
                 self.check_trade(ticker, change_percentage)
         else:
@@ -681,7 +682,7 @@ class DayTradingBreakoutPeriod(DayTradingBreakout):
         exit_trading = False
         exit_note = None
         if time_out:
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> trading period timeout, exit!".format(symbol))
             exit_trading = True
             exit_note = "Trading period timeout."
@@ -705,7 +706,7 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
         # check pre-market losers
         if self.is_regular_market_hour():
             self.preloser_tickers = webullsdk.get_pre_market_losers(count=10)
-            utils.print_trading_log("Add {} tickers to check loser reversal!".format(
+            trading_logger.log("Add {} tickers to check loser reversal!".format(
                 len(self.preloser_tickers)))
 
     def update(self):
@@ -729,7 +730,7 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
             # found trading ticker
             ticker = TrackingTicker(symbol, ticker_id)
             self.trading_tracker.start_tracking(ticker)
-            utils.print_trading_log("Start trading <{}>...".format(symbol))
+            trading_logger.log("Start trading <{}>...".format(symbol))
             # do trade
             self.trade(ticker)
 
@@ -782,12 +783,12 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not updated, stop scale in!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
@@ -795,18 +796,18 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
                 not pattern.check_bars_amount_grinding(bars, period=5) and not pattern.check_bars_all_green(bars, period=5):
             # has no volume and amount
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart volume not meet requirements, no scale in!".format(symbol))
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
         if ROC <= config.DAY_SCALE_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no scale in!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
-        utils.print_trading_log(
+        trading_logger.log(
             "Scale in <{}> position, period breakout.".format(symbol))
         return True
 
@@ -841,11 +842,11 @@ class DayTradingBreakoutScale(DayTradingBreakout):
 
         if current_price <= last_high:
             # no first candle new high
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> candle not formed first candle new high, no buy dip!".format(symbol))
             return False
 
-        utils.print_trading_log(
+        trading_logger.log(
             "Buy dip <{}> position, first candle new high.".format(symbol))
         return True
 

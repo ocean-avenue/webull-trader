@@ -15,38 +15,13 @@ from webull_trader.models import DayTrade, HistoricalKeyStatistics, HistoricalTo
 
 MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
-TRADING_LOGS = []
 
 
-def print_trading_log(text):
-    global TRADING_LOGS
-    log_record = "[{}] {}".format(get_now(), text)
-    TRADING_LOGS.append(log_record)
-    # output
-    print(log_record)
 
 
-def save_trading_log(tag, trading_hour, date):
-    global TRADING_LOGS
-    if len(TRADING_LOGS) == 0:
-        return
-    log = TradingLog.objects.filter(date=date).filter(
-        tag=tag).filter(trading_hour=trading_hour).first()
-    if log == None:
-        log = TradingLog(
-            date=date,
-            tag=tag,
-            trading_hour=trading_hour,
-        )
-    log_text = "\n".join(TRADING_LOGS)
-    if log.log_text == None:
-        log.log_text = log_text
-    else:
-        log.log_text = log.log_text + log_text
-    log.log_text += "\n"
-    log.save()
-    # reset TRADING_LOGS
-    TRADING_LOGS = []
+
+
+
 
 
 def save_exception_log(exception, traceback, log_text):

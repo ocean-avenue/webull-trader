@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from typing import Optional, Tuple
-from django.utils import timezone
 from datetime import date, datetime
 from trading.tracker.trading_tracker import TrackingTicker
 from trading.strategy.strategy_base import StrategyBase
 from webull_trader.models import EarningCalendar, DayPosition
 from common.enums import SetupType
-from common import utils, config
+from common import config
 from sdk import webullsdk
+from logger import trading_logger
 
 
 # Earning day trading class, may holding positions overnight
@@ -76,7 +76,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 ticker_id = str(webullsdk.get_ticker(symbol=symbol))
                 ticker = TrackingTicker(symbol, ticker_id)
                 self.trading_tracker.start_tracking(ticker)
-                utils.print_trading_log(
+                trading_logger.log(
                     "Add ticker <{}> to check earning gap!".format(symbol))
         # prepare tickers for sell
         if self.is_regular_market_hour():
@@ -89,7 +89,7 @@ class DayTradingEarningsOvernight(StrategyBase):
                 ticker = TrackingTicker(symbol, ticker_id)
                 ticker.set_positions(position.quantity)
                 ticker.set_position_obj(position)
-                utils.print_trading_log(
+                trading_logger.log(
                     "Add ticker <{}> to sell during regular hour!".format(symbol))
                 self.trading_tracker.start_tracking(ticker)
 

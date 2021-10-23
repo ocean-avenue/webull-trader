@@ -8,6 +8,7 @@ from common import utils, config, constants
 from sdk import webullsdk
 from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
+from logger import trading_logger
 from common.enums import ActionType, SetupType, TradingHourType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 
@@ -96,7 +97,7 @@ class SwingTurtle(StrategyBase):
         # buy swing position amount
         buy_position_amount = self.get_buy_order_limit(unit_weight)
         if usable_cash <= buy_position_amount:
-            utils.print_trading_log(
+            trading_logger.log(
                 "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
             return
         buy_quant = (int)(buy_position_amount / latest_close)
@@ -107,7 +108,7 @@ class SwingTurtle(StrategyBase):
             order_response = webullsdk.buy_market_order(
                 ticker_id=ticker_id,
                 quant=buy_quant)
-            utils.print_trading_log("🟢 Submit buy order <{}> for {}, quant: {}, latest price: {}".format(
+            trading_logger.log("🟢 Submit buy order <{}> for {}, quant: {}, latest price: {}".format(
                 symbol, reason, buy_quant, latest_close))
             # add swing position
             self.update_pending_swing_position(
@@ -120,10 +121,10 @@ class SwingTurtle(StrategyBase):
                 setup=self.get_setup())
         else:
             if buy_quant == 0:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Order amount limit not enough for to buy <{}>, price: {}".format(symbol, latest_close))
             if usable_cash <= self.day_trade_usable_cash_threshold:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, latest_close))
 
     # TODO, refactor
@@ -133,7 +134,7 @@ class SwingTurtle(StrategyBase):
         order_response = webullsdk.sell_market_order(
             ticker_id=ticker_id,
             quant=position.quantity)
-        utils.print_trading_log("🔴 Submit sell order <{}> for {}, quant: {}, latest price: {}".format(
+        trading_logger.log("🔴 Submit sell order <{}> for {}, quant: {}, latest price: {}".format(
             symbol, reason, position.quantity, latest_close))
         # add swing trade
         self.update_pending_swing_trade(
@@ -181,10 +182,10 @@ class SwingTurtle(StrategyBase):
                         self.submit_buy_order(
                             symbol, None, unit_weight, latest_close, reason="period high")
                     else:
-                        utils.print_trading_log(
+                        trading_logger.log(
                             "<{}> daily chart has not enough volume, no entry!".format(symbol))
             else:
-                utils.print_trading_log(
+                trading_logger.log(
                     "<{}> daily chart has not enough data, no entry!".format(symbol))
 
     def manual_trade(self, request: ManualTradeRequest):
@@ -208,7 +209,7 @@ class SwingTurtle(StrategyBase):
                 order_response = webullsdk.sell_market_order(
                     ticker_id=ticker_id,
                     quant=quantity)
-                utils.print_trading_log("🔴 Submit manual sell order <{}>, quant: {}, latest price: {}".format(
+                trading_logger.log("🔴 Submit manual sell order <{}>, quant: {}, latest price: {}".format(
                     symbol, quantity, latest_price))
                 # add swing trade
                 self.update_pending_swing_trade(
@@ -219,7 +220,7 @@ class SwingTurtle(StrategyBase):
                     sell_time=timezone.now(),
                     manual_request=request)
             else:
-                utils.print_trading_log("Unable to find match position <{}>, quant: {} for sell manual request.".format(
+                trading_logger.log("Unable to find match position <{}>, quant: {} for sell manual request.".format(
                     symbol, quantity))
         # mark request done
         request.complete = True

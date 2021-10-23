@@ -3,6 +3,7 @@
 from typing import List
 from trading.strategy.strategy_base import StrategyBase
 from common import utils
+from logger import trading_logger
 from common.enums import SetupType
 from trading.tracker.trading_tracker import TrackingTicker
 from webull_trader.models import DayPosition
@@ -46,7 +47,7 @@ class DayTradingClean(StrategyBase):
             self.check_cancel_order_done(ticker)
             return
 
-        utils.print_trading_log(f"❌ Clean failed to sell position <{symbol}>!")
+        trading_logger.log(f"❌ Clean failed to sell position <{symbol}>!")
         self.submit_sell_limit_order(
             ticker, note="Clear failed to sell position.", retry=True, retry_limit=50)
 

@@ -3,12 +3,12 @@
 # Base trading class
 
 import json
-from typing import Tuple
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime
 from sdk import webullsdk, fmpsdk
-from common import utils, db, config, constants, exceptions
+from common import utils, db, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
+from logger import trading_logger
 from trading.tracker.trading_tracker import TradingTracker, TrackingTicker
 from trading.tracker.order_tracker import OrderTracker
 from webull_trader.models import SwingPosition, SwingTrade
@@ -23,9 +23,6 @@ class StrategyBase:
         self.trading_hour: TradingHourType = trading_hour
         self.trading_tracker: TradingTracker = TradingTracker()
         self.order_tracker: OrderTracker = OrderTracker()
-        # TODO, migrate to trading logger
-        # init trading logs
-        utils.TRADING_LOGS = []
 
     def begin(self):
         pass
@@ -58,39 +55,39 @@ class StrategyBase:
                       day_trade_usable_cash_threshold: float):
 
         self.order_amount_limit: float = order_amount_limit
-        utils.print_trading_log(
+        trading_logger.log(
             "Buy order limit: {}".format(self.order_amount_limit))
 
         self.extended_order_amount_limit: float = extended_order_amount_limit
-        utils.print_trading_log("Buy order limit (extended hour): {}".format(
+        trading_logger.log("Buy order limit (extended hour): {}".format(
             self.extended_order_amount_limit))
 
         self.target_profit_ratio: float = target_profit_ratio
-        utils.print_trading_log("Target profit rate: {}%".format(
+        trading_logger.log("Target profit rate: {}%".format(
             round(self.target_profit_ratio * 100, 2)))
 
         self.stop_loss_ratio: float = stop_loss_ratio
-        utils.print_trading_log("Stop loss rate: {}%".format(
+        trading_logger.log("Stop loss rate: {}%".format(
             round(self.stop_loss_ratio * 100, 2)))
 
         self.day_free_float_limit_in_million: float = day_free_float_limit_in_million
-        utils.print_trading_log("Day trading max free float (million): {}".format(
+        trading_logger.log("Day trading max free float (million): {}".format(
             self.day_free_float_limit_in_million))
 
         self.day_turnover_rate_limit_percentage: float = day_turnover_rate_limit_percentage
-        utils.print_trading_log("Day trading min turnover rate: {}%".format(
+        trading_logger.log("Day trading min turnover rate: {}%".format(
             self.day_turnover_rate_limit_percentage))
 
         self.day_sectors_limit: str = day_sectors_limit
-        utils.print_trading_log("Day trading sectors limit: {}".format(
+        trading_logger.log("Day trading sectors limit: {}".format(
             self.day_sectors_limit))
 
         self.swing_position_amount_limit: float = swing_position_amount_limit
-        utils.print_trading_log("Swing position amount limit: {}".format(
+        trading_logger.log("Swing position amount limit: {}".format(
             self.swing_position_amount_limit))
 
         self.day_trade_usable_cash_threshold: float = day_trade_usable_cash_threshold
-        utils.print_trading_log("Usable cash threshold for day trade: {}".format(
+        trading_logger.log("Usable cash threshold for day trade: {}".format(
             self.day_trade_usable_cash_threshold))
 
     def update_orders(self):
@@ -100,11 +97,6 @@ class StrategyBase:
     def update_account(self):
         account_data = webullsdk.get_account()
         db.save_webull_account(account_data, paper=self.paper)
-
-    def write_logs(self):
-        # save trading logs
-        # TODO, trading log based on algo
-        utils.save_trading_log(self.get_tag(), self.trading_hour, date.today())
 
     def build_error_short_ticker(self, symbol, ticker_id):
         return {
@@ -176,7 +168,7 @@ class StrategyBase:
         db.save_webull_min_usable_cash(usable_cash)
         buy_position_amount = self.get_buy_order_limit(ticker)
         if usable_cash <= buy_position_amount:
-            utils.print_trading_log(
+            trading_logger.log(
                 "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
             return
         buy_price = self.get_buy_price(ticker)
@@ -187,13 +179,13 @@ class StrategyBase:
                 ticker_id=ticker_id,
                 price=buy_price,
                 quant=buy_quant)
-            utils.print_trading_log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
+            trading_logger.log("🟢 Submit buy order <{}>, quant: {}, limit price: {}".format(
                 symbol, buy_quant, buy_price))
             # tracking pending buy order
             self.start_tracking_pending_buy_order(
                 ticker, order_response, entry_note=note, retry=retry, retry_limit=retry_limit)
         else:
-            utils.print_trading_log(
+            trading_logger.log(
                 "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
 
     # submit sell limit order, only use for day trade
@@ -207,7 +199,7 @@ class StrategyBase:
             ticker_id=ticker_id,
             price=sell_price,
             quant=holding_quantity)
-        utils.print_trading_log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
+        trading_logger.log("🔴 Submit sell order <{}>, quant: {}, limit price: {}".format(
             symbol, holding_quantity, sell_price))
         # tracking pending sell order
         self.start_tracking_pending_sell_order(
@@ -235,7 +227,7 @@ class StrategyBase:
         order = self.order_tracker.get_order(order_id)
         if order == None:
             return
-        utils.print_trading_log(f"Buy order <{symbol}> {order.status}")
+        trading_logger.log(f"Buy order <{symbol}> {order.status}")
         # filled or partially filled
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             position_obj = ticker.get_position_obj()
@@ -282,7 +274,7 @@ class StrategyBase:
                     self.start_tracking_pending_cancel_order(
                         ticker, order_id, cancel_note="Buy order timeout, canceled!")
                 else:
-                    utils.print_trading_log(
+                    trading_logger.log(
                         f"Failed to cancel timeout buy <{symbol}> order: {order_id}!")
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
@@ -302,7 +294,7 @@ class StrategyBase:
         order = self.order_tracker.get_order(order_id)
         if order == None:
             return
-        utils.print_trading_log(f"Sell order <{symbol}> {order.status}")
+        trading_logger.log(f"Sell order <{symbol}> {order.status}")
         # filled
         if order.status == webullsdk.ORDER_STATUS_FILLED:
             position_obj = ticker.get_position_obj()
@@ -344,7 +336,7 @@ class StrategyBase:
             # stop tracking sell order
             self.stop_tracking_pending_sell_order(ticker, order_id)
             # continue sell reset positions
-            utils.print_trading_log(
+            trading_logger.log(
                 f"Continue sell rest <{symbol}> positions, quant: {ticker.get_positions()}")
             self.submit_sell_limit_order(
                 ticker, note="Sell rest positions.", retry=retry_after_cancel, retry_limit=retry_limit)
@@ -359,7 +351,7 @@ class StrategyBase:
                     self.start_tracking_pending_cancel_order(
                         ticker, order_id, cancel_note="Sell order timeout, canceled!")
                 else:
-                    utils.print_trading_log(
+                    trading_logger.log(
                         f"Failed to cancel timeout sell <{symbol}> order: {order_id}!")
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
@@ -368,7 +360,7 @@ class StrategyBase:
                 order_id)
             if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                 # retry sell order
-                utils.print_trading_log(
+                trading_logger.log(
                     f"Resubmitting sell order <{symbol}>...")
                 self.submit_sell_limit_order(
                     ticker, note=f"Resubmit sell order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
@@ -379,7 +371,7 @@ class StrategyBase:
                 # update setup
                 position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
                 position_obj.save()
-                utils.print_trading_log(
+                trading_logger.log(
                     "Failed to sell position <{}>!".format(symbol))
                 # send message
                 utils.notify_message(
@@ -397,7 +389,7 @@ class StrategyBase:
     def check_cancel_order_done(self, ticker: TrackingTicker,
                                 stop_tracking_ticker_after_order_canceled: bool = False):
         symbol = ticker.get_symbol()
-        utils.print_trading_log(
+        trading_logger.log(
             "Checking cancel order <{}> done...".format(symbol))
         order_id = ticker.get_pending_order_id()
         order = self.order_tracker.get_order(order_id)
@@ -415,7 +407,7 @@ class StrategyBase:
             if order.action == ActionType.BUY:
                 if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                     # retry buy order
-                    utils.print_trading_log(
+                    trading_logger.log(
                         f"Resubmitting buy order <{symbol}>...")
                     self.submit_buy_limit_order(
                         ticker, note=f"Resubmit buy order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
@@ -428,7 +420,7 @@ class StrategyBase:
             if order.action == ActionType.SELL:
                 if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
                     # retry sell order
-                    utils.print_trading_log(
+                    trading_logger.log(
                         f"Resubmitting sell order <{symbol}>...")
                     self.submit_sell_limit_order(
                         ticker, note=f"Resubmit sell order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
@@ -439,7 +431,7 @@ class StrategyBase:
                     # update setup
                     position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
                     position_obj.save()
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Failed to sell position <{}>!".format(symbol))
                     # send message
                     utils.notify_message(
@@ -465,7 +457,7 @@ class StrategyBase:
             self.order_tracker.start_tracking(
                 order_id, self.get_setup(), entry_note, retry, retry_limit)
         else:
-            utils.print_trading_log(
+            trading_logger.log(
                 "⚠️  Invalid buy order response: {}".format(order_response))
 
     def stop_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str):
@@ -487,7 +479,7 @@ class StrategyBase:
             self.order_tracker.start_tracking(
                 order_id, self.get_setup(), exit_note, retry, retry_limit)
         else:
-            utils.print_trading_log(
+            trading_logger.log(
                 "⚠️  Invalid sell order response: {}".format(order_response))
 
     def stop_tracking_pending_sell_order(self, ticker: TrackingTicker, order_id: str):
@@ -539,7 +531,7 @@ class StrategyBase:
                 position.require_adjustment = True
             position.save()
         else:
-            utils.print_trading_log(
+            trading_logger.log(
                 "⚠️  Invalid swing buy order response: {}".format(order_response))
 
     def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time, manual_request=None):
@@ -569,7 +561,7 @@ class StrategyBase:
             if manual_request:
                 manual_request.delete()
         else:
-            utils.print_trading_log(
+            trading_logger.log(
                 "⚠️  Invalid swing sell order response: {}".format(order_response))
 
     def get_position(self, ticker: TrackingTicker):
@@ -668,8 +660,8 @@ class StrategyBase:
             last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
         bid_price = webullsdk.get_bid_price_from_quote(quote)
         if not bid_price:
-            utils.print_trading_log(f"<{symbol}> bid price not existed!")
-            utils.print_trading_log(json.dumps(quote))
+            trading_logger.log(f"<{symbol}> bid price not existed!")
+            trading_logger.log(json.dumps(quote))
         return bid_price or last_price
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:

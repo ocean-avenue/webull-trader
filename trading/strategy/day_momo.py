@@ -7,6 +7,7 @@ from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
 from common import utils, config
 from sdk import webullsdk
+from logger import trading_logger
 from trading import pattern
 from trading.tracker.trading_tracker import TrackingTicker
 
@@ -44,7 +45,7 @@ class DayTradingMomo(StrategyBase):
         current_low = current_candle['low']
         prev_close = prev_candle['close']
         if current_low <= min(prev_close - 0.1, prev_close * 0.99):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
             return False
 
@@ -52,12 +53,12 @@ class DayTradingMomo(StrategyBase):
         # if (current_price - prev_close) / prev_close >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
         #     surge_ratio = "{}%".format(
         #         round((current_price - prev_close) / prev_close * 100, 2))
-        #     utils.print_trading_log(
+        #     trading_logger.log(
         #         "<{}> current price (${}) already surge {} than prev close (${}), no entry!".format(symbol, current_price, surge_ratio, prev_close))
         #     return False
 
         if ticker.is_just_sold():
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
 
@@ -90,13 +91,13 @@ class DayTradingMomo(StrategyBase):
         exit_note = None
         # check if momentum is stop
         if pattern.check_bars_current_low_less_than_prev_low(bars):
-            utils.print_trading_log("<{}> current low price is less than previous low price.".format(
+            trading_logger.log("<{}> current low price is less than previous low price.".format(
                 ticker.get_symbol()))
             exit_trading = True
             exit_note = "Current Low < Previous Low."
         # check if price fixed in last 3 candles
         elif pattern.check_bars_price_fixed(bars):
-            utils.print_trading_log(
+            trading_logger.log(
                 "<{}> price is fixed during last 3 candles.".format(ticker.get_symbol()))
             exit_trading = True
             exit_note = "Price fixed during last 3 candles."
@@ -114,7 +115,7 @@ class DayTradingMomo(StrategyBase):
         holding_quantity = ticker.get_positions()
         # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
         if holding_quantity == 0 and ticker.is_tracking_timeout():
-            utils.print_trading_log(
+            trading_logger.log(
                 "Trading <{}> session timeout!".format(symbol))
             # remove from tracking
             self.trading_tracker.stop_tracking(ticker)
@@ -129,21 +130,21 @@ class DayTradingMomo(StrategyBase):
                 return
 
             if not pattern.check_bars_updated(m1_bars):
-                utils.print_trading_log(
+                trading_logger.log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
                 # remove from tracking
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
             # if not pattern.check_bars_volatility(m1_bars):
-            #     utils.print_trading_log("<{}> candle chart is not volatility, stop trading!".format(symbol))
+            #     trading_logger.log("<{}> candle chart is not volatility, stop trading!".format(symbol))
             #     # remove from tracking
             #     self.trading_tracker.stop_tracking(ticker)
             #     return
 
             # check if last sell time is too short compare current time
             # if ticker.is_just_sold():
-            #     utils.print_trading_log("Don't buy <{}> too quick after sold!".format(symbol))
+            #     trading_logger.log("Don't buy <{}> too quick after sold!".format(symbol))
             #     return
 
             # calculate and fill ema 9 data
@@ -156,14 +157,14 @@ class DayTradingMomo(StrategyBase):
             if self.check_entry(ticker, m2_bars):
                 # use prev low as stop loss
                 ticker.set_stop_loss(prev_candle['low'])
-                utils.print_trading_log("Trading <{}>, price: {}, vwap: {}, ema9: {}, volume: {}".format(
+                trading_logger.log("Trading <{}>, price: {}, vwap: {}, ema9: {}, volume: {}".format(
                     symbol, current_candle['close'], current_candle['vwap'], round(current_candle['ema9'], 3), int(current_candle['volume'])))
                 # submit buy limit order
                 self.submit_buy_limit_order(ticker)
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
                 return
             # cost = float(ticker_position['cost'])
@@ -175,7 +176,7 @@ class DayTradingMomo(StrategyBase):
             if profit_loss_rate > ticker.get_max_profit_loss_rate():
                 ticker.set_max_profit_loss_rate(profit_loss_rate)
             # quantity = int(ticker_position['position'])
-            # utils.print_trading_log("Checking <{}>, cost: {}, last: {}, change: {}%".format(
+            # trading_logger.log("Checking <{}>, cost: {}, last: {}, change: {}%".format(
             #     symbol, cost, last_price, round(profit_loss_rate * 100, 2)))
 
             # cancel buy prev low stop loss if hit 1% profit
@@ -192,7 +193,7 @@ class DayTradingMomo(StrategyBase):
 
             # check if holding too long without profit
             if not exit_trading and ticker.is_holing_too_long() and profit_loss_rate < 0.01:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Holding <{}> too long.".format(symbol))
                 exit_note = "Holding too long."
                 exit_trading = True
@@ -204,7 +205,7 @@ class DayTradingMomo(StrategyBase):
 
                 # get bars error
                 if m2_bars.empty:
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "<{}> bars data error!".format(symbol))
                     exit_note = "Bars data error!"
                     exit_trading = True
@@ -214,7 +215,7 @@ class DayTradingMomo(StrategyBase):
 
             # exit trading
             if exit_trading:
-                utils.print_trading_log(
+                trading_logger.log(
                     f"📈 Exit trading <{symbol}> P&L: {profit_loss_rate}%")
 
                 self.submit_sell_limit_order(
@@ -236,7 +237,7 @@ class DayTradingMomo(StrategyBase):
         elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # utils.print_trading_log("Scanning top gainers <{}>...".format(
+        # trading_logger.log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -245,7 +246,7 @@ class DayTradingMomo(StrategyBase):
             if self.trading_tracker.is_tracking(ticker_id):
                 continue
             ticker = TrackingTicker(symbol, ticker_id)
-            # utils.print_trading_log("Scanning <{}>...".format(symbol))
+            # trading_logger.log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
@@ -260,7 +261,7 @@ class DayTradingMomo(StrategyBase):
                 if self.check_track(latest_candle) or self.check_track(latest_candle2):
                     # found trading ticker
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)
@@ -368,7 +369,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
         elif self.is_after_market_hour():
             top_gainers = webullsdk.get_after_market_gainers()
 
-        # utils.print_trading_log("Scanning top gainers <{}>...".format(
+        # trading_logger.log("Scanning top gainers <{}>...".format(
         #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
         for gainer in top_gainers:
             symbol = gainer["symbol"]
@@ -377,7 +378,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
             if self.trading_tracker.is_tracking(ticker_id):
                 continue
             ticker = TrackingTicker(symbol, ticker_id)
-            # utils.print_trading_log("Scanning <{}>...".format(symbol))
+            # trading_logger.log("Scanning <{}>...".format(symbol))
             change_percentage = gainer["change_percentage"]
             # check gap change
             if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
@@ -392,7 +393,7 @@ class DayTradingMomoExtendedHour(DayTradingMomo):
                 if self.check_track(latest_candle) or self.check_track(latest_candle2):
                     # found trading ticker
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
                     self.trade(ticker, m1_bars=m1_bars)

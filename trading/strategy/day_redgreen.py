@@ -5,6 +5,7 @@ from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
 from common import utils, config
 from sdk import webullsdk
+from logger import trading_logger
 from trading import pattern
 from trading.tracker.trading_tracker import TrackingTicker
 from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
@@ -59,21 +60,21 @@ class DayTradingRedGreen(StrategyBase):
         if holding_quantity == 0:
 
             if not pattern.check_bars_updated(m2_bars):
-                utils.print_trading_log(
+                trading_logger.log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
                 # remove from tracking
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
             if not pattern.check_bars_has_volume(m2_bars, time_scale=2):
-                utils.print_trading_log(
+                trading_logger.log(
                     "<{}> candle chart has not enough volume, stop trading!".format(symbol))
                 # remove from tracking
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
             if not pattern.check_bars_rel_volume(m2_bars):
-                utils.print_trading_log(
+                trading_logger.log(
                     "<{}> candle chart has no relative volume, stop trading!".format(symbol))
                 # remove from tracking
                 self.trading_tracker.stop_tracking(ticker)
@@ -89,7 +90,7 @@ class DayTradingRedGreen(StrategyBase):
                     return
                 # check if ask_price is too high above prev day close
                 if (ask_price - prev_day_close) / prev_day_close > config.MAX_PREV_DAY_CLOSE_GAP_RATIO:
-                    utils.print_trading_log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
+                    trading_logger.log("<{}> gap too large, ask: {}, prev day close: {}, stop trading!".format(
                         symbol, ask_price, prev_day_close))
                     return
                 # use prev day close as stop loss
@@ -101,7 +102,7 @@ class DayTradingRedGreen(StrategyBase):
         else:
             ticker_position = self.get_position(ticker)
             if not ticker_position:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
                 return
             # profit loss rate
@@ -121,7 +122,7 @@ class DayTradingRedGreen(StrategyBase):
                 exit_trading = True
             # exit trading
             if exit_trading:
-                utils.print_trading_log("📈 Exit trading <{}> P&L: {}%".format(
+                trading_logger.log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
                 self.submit_sell_limit_order(
                     ticker, note=exit_note, retry=True, retry_limit=50)
@@ -154,10 +155,10 @@ class DayTradingRedGreen(StrategyBase):
                     ticker.set_prev_high(key_stat.high)
                     # start tracking
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Add gainer <{}> to trade!".format(symbol))
             else:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Cannot find <{}> open price!".format(symbol))
         # hist top losers
         top_losers = HistoricalTopLoser.objects.filter(date=last_market_day)
@@ -176,10 +177,10 @@ class DayTradingRedGreen(StrategyBase):
                     ticker.set_prev_high(key_stat.high)
                     # start tracking
                     self.trading_tracker.start_tracking(ticker)
-                    utils.print_trading_log(
+                    trading_logger.log(
                         "Add loser <{}> to trade!".format(symbol))
             else:
-                utils.print_trading_log(
+                trading_logger.log(
                     "Cannot find <{}> open price!".format(symbol))
 
     def is_power_hour(self) -> bool:
