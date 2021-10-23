@@ -6,7 +6,7 @@ def start():
     from sdk import webullsdk
     from common import utils
 
-    paper = utils.check_paper()
+    paper = utils.is_paper_trading()
 
     if webullsdk.login(paper=paper):
         history_orders = webullsdk.get_history_orders(

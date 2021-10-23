@@ -140,7 +140,7 @@ def start():
     from trading.strategy.day_grinding import DayTradingGrindingLargeCap, DayTradingGrindingSymbols
     from trading.strategy.swing_turtle import SwingTurtle
 
-    paper = utils.check_paper()
+    paper = utils.is_paper_trading()
     trading_hour = utils.get_trading_hour()
     if trading_hour == None:
         trading_logger.log("Not in trading hour, skip...")

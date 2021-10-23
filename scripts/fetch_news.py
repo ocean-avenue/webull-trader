@@ -9,7 +9,7 @@ def start(day=None):
     from common import db
     from webull_trader.models import WebullOrder
 
-    # paper = utils.check_paper()
+    # paper = utils.is_paper_trading()
     # webullsdk.login(paper=paper)
 
     if day == None:

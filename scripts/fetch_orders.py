@@ -12,7 +12,7 @@ def start():
 
     global FETCH_ORDER_COUNT
 
-    paper = utils.check_paper()
+    paper = utils.is_paper_trading()
 
     if webullsdk.login(paper=paper):
         # fetch enough count to cover today's orders

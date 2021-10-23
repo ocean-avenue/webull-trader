@@ -7,7 +7,7 @@ def start(day=None):
     from sdk import webullsdk
     from common import utils, db
 
-    paper = utils.check_paper()
+    paper = utils.is_paper_trading()
 
     if day == None:
         day = date.today()

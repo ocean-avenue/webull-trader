@@ -440,7 +440,7 @@ def get_day_avg_true_range(bars: pd.DataFrame, period: int = 10) -> float:
     return N
 
 
-def check_paper():
+def is_paper_trading():
     settings = TradingSettings.objects.first()
     if not settings:
         print(
@@ -1359,7 +1359,7 @@ def get_algo_type_tags():
 def get_account_user_desc():
     account_type = "LIVE"
     account_email = ""
-    if check_paper():
+    if is_paper_trading():
         account_type = "PAPER"
     users = User.objects.all()
     for user in users:
@@ -1372,7 +1372,7 @@ def get_account_user_desc():
 # utils for render UI
 
 def get_account_type_for_render():
-    if check_paper():
+    if is_paper_trading():
         account_type = {
             "value": "PAPER",
             "value_style": "bg-warning",

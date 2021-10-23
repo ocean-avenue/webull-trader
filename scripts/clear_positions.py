@@ -10,7 +10,7 @@ def start():
     from webull_trader.models import DayPosition
     from logger import exception_logger
 
-    paper = utils.check_paper()
+    paper = utils.is_paper_trading()
 
     algo_type = utils.get_algo_type()
     if utils.check_swing_trade_algo(algo_type):
