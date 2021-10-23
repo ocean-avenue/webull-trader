@@ -33,7 +33,12 @@ def _get_avg_confirm_amount() -> float:
 def _get_min_rel_volume_ratio() -> float:
     if utils.is_regular_market_hour_now():
         return config.DAY_MIN_RELATIVE_VOLUME
-    return config.EXTENDED_DAY_MIN_RELATIVE_VOLUME
+    return config.DAY_EXTENDED_MIN_RELATIVE_VOLUME
+
+def _get_vol_for_pos_size(size: float) -> float:
+    if utils.is_regular_market_hour_now():
+        return config.DAY_VOLUME_POS_SIZE_RATIO * size
+    return config.DAY_EXTENDED_VOLUME_POS_SIZE_RATIO * size
 
 
 def check_bars_continue(bars: pd.DataFrame, time_scale: int = 1, period: int = 10) -> bool:
@@ -142,6 +147,24 @@ def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int =
     confirm_amount = _get_avg_confirm_amount() * time_scale
 
     return avg_amount >= confirm_amount
+
+
+def check_bars_volume_with_pos_size(bars: pd.DataFrame, size: int, period: int = 10) -> bool:
+    # make sure not use the last candle
+    period = min(len(bars) - 1, period)
+    period_bars = bars.tail(period + 1)
+    period_bars = period_bars.head(period)
+    volume_is_enough = True
+    target_volume = _get_vol_for_pos_size(size)
+    for index, row in period_bars.iterrows():
+        time = index.to_pydatetime()
+        if not _check_trading_time_match(time):
+            continue
+        volume = row["volume"]
+        if volume < target_volume:
+            volume_is_enough = False
+            break
+    return volume_is_enough
 
 
 def check_bars_amount_grinding(bars: pd.DataFrame, period: int = 10) -> bool:
@@ -470,7 +493,6 @@ def check_bars_has_more_green_candle(bars: pd.DataFrame, period: int = 10) -> bo
 
 
 # daily candle pattern
-
 
 def check_daily_bars_volume_grinding(bars: List[SwingHistoricalDailyBar], period: int = 10) -> bool:
     """

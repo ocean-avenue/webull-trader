@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import pandas as pd
 from datetime import datetime, date, timedelta
 from common.enums import SetupType, TradingHourType
@@ -125,7 +126,15 @@ class DayTradingBreakout(StrategyBase):
                 not pattern.check_bars_amount_grinding(bars, period=5):
             # has no relative volume
             trading_logger.log(
-                "<{}> candle chart volume not meet requirements, no entry!".format(symbol))
+                "<{}> candle chart has no relative volume or amount, no entry!".format(symbol))
+            return False
+
+        # position size if buy
+        pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
+        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
+            # volume not enough for my position size
+            trading_logger.log(
+                f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no entry!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
@@ -773,7 +782,9 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         if not self.precheck_scale_in(ticker, position):
             return False
         symbol = ticker.get_symbol()
+        current_candle = bars.iloc[-1]
         last_candle = bars.iloc[-2]
+        current_price = current_candle['close']
         last_price = last_candle['close']
         period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
@@ -800,7 +811,15 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 not pattern.check_bars_amount_grinding(bars, period=5) and not pattern.check_bars_all_green(bars, period=5):
             # has no volume and amount
             trading_logger.log(
-                "<{}> candle chart volume not meet requirements, no scale in!".format(symbol))
+                "<{}> candle chart has no relative volume or amount, no scale in!".format(symbol))
+            return False
+
+        # position size if buy
+        pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
+        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
+            # volume not enough for my position size
+            trading_logger.log(
+                f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no scale in!")
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
@@ -847,6 +866,14 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             # no first candle new high
             trading_logger.log(
                 "<{}> candle not formed first candle new high, no buy dip!".format(symbol))
+            return False
+
+        # position size if buy
+        pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
+        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
+            # volume not enough for my position size
+            trading_logger.log(
+                f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no dip buy!")
             return False
 
         trading_logger.log(

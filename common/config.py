@@ -32,7 +32,7 @@ BLACKLIST_TIMEOUT_IN_SEC = 1800
 MAX_PREV_DAY_CLOSE_GAP_RATIO = 0.02
 # relative volume required for day trade entry
 DAY_MIN_RELATIVE_VOLUME = 3.0
-EXTENDED_DAY_MIN_RELATIVE_VOLUME = 2.0
+DAY_EXTENDED_MIN_RELATIVE_VOLUME = 2.0
 # relative volume required for swint trade entry
 SWING_MIN_RELATIVE_VOLUME = 2.0
 # earning gap ratio for earning strategy
@@ -76,6 +76,9 @@ BEARISH_AVG_CANDLE_RATIO = 1.4
 MAX_DAY_ENTRY_CANDLE_SURGE_RATIO = 0.2
 # candle check count for day trade buy the dip scale in
 DAY_BUY_DIP_CANDLE_CHECK_COUNT = 4
+# volume to my position size ratio
+DAY_VOLUME_POS_SIZE_RATIO = 10
+DAY_EXTENDED_VOLUME_POS_SIZE_RATIO = 5
 
 # memcache config
 
