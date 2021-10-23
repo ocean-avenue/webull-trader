@@ -184,7 +184,7 @@ def start():
             webull_order.save()
         # update total cost
         day_trade.total_cost = round(total_cost, 2)
-        if buy_quantity > sell_quantity:
+        if buy_quantity > sell_quantity and sell_quantity > 0:
             total_sold = (total_sold / sell_quantity) * buy_quantity
         # update total sold
         day_trade.total_sold = round(total_sold, 2)
