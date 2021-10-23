@@ -7,30 +7,10 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from datetime import datetime
 from common import config, enums, constants
-from sdk import fmpsdk, webullsdk, twiliosdk
-from webull_trader.models import DayTrade, HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
-    StockQuote, SwingHistoricalDailyBar, TradingLog, ExceptionLog, TradingSettings, TradingSymbols, \
-    WebullNews, WebullOrder, HistoricalMinuteBar, HistoricalDailyBar, HistoricalMarketStatistics
-
-
-MILLNAMES = ['', 'K', 'M', 'B', 'T']
-
-
-
-
-
-
-
-
-
-
-def save_exception_log(exception, traceback, log_text):
-    log = ExceptionLog(
-        exception=exception,
-        traceback=traceback,
-        log_text=log_text,
-    )
-    log.save()
+from sdk import fmpsdk, twiliosdk
+from webull_trader.models import HistoricalKeyStatistics, HistoricalTopGainer, HistoricalTopLoser, \
+    StockQuote, SwingHistoricalDailyBar, TradingSettings, WebullNews, WebullOrder, HistoricalMinuteBar, \
+    HistoricalDailyBar, HistoricalMarketStatistics
 
 
 def get_attr(obj, key):
@@ -64,6 +44,9 @@ def get_attr_to_float_or_none(obj, key):
         except:
             pass
     return None
+
+
+MILLNAMES = ['', 'K', 'M', 'B', 'T']
 
 
 def millify(n):

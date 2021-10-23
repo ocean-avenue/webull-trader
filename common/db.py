@@ -1,9 +1,11 @@
+from typing import Optional
 import pytz
 import traceback
 from django.conf import settings
 from datetime import datetime, date
 from common import enums, utils, constants
 from sdk import webullsdk
+from logger import exception_logger
 from webull_trader.models import DayPosition, DayTrade, TradingSettings, TradingSymbols, \
     WebullAccountStatistics, WebullCredentials, WebullOrder
 
@@ -267,7 +269,7 @@ def save_webull_min_usable_cash(usable_cash: float):
 
 def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.SetupType,
                      cost: float, quant: int, buy_time: datetime, units: int = 1, target_units: int = 4,
-                     add_unit_price: float = constants.MAX_SECURITY_PRICE, stop_loss_price: float = 0.0):
+                     add_unit_price: float = constants.MAX_SECURITY_PRICE, stop_loss_price: float = 0.0) -> Optional[DayPosition]:
     try:
         position = DayPosition(
             symbol=symbol,
@@ -287,12 +289,13 @@ def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.Se
         position.save()
         return position
     except Exception as e:
-        utils.save_exception_log(str(e), traceback.format_exc(),
-                                 f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
+        exception_logger.log(
+            str(e), traceback.format_exc(),
+            f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
         return None
 
 
-def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: str, sell_price: float, sell_time: datetime):
+def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: str, sell_price: float, sell_time: datetime) -> Optional[DayTrade]:
     trade = DayTrade(
         symbol=symbol,
         ticker_id=ticker_id,

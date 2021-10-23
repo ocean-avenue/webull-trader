@@ -5,7 +5,7 @@ import traceback
 import pandas as pd
 from typing import List, Optional
 from common import utils
-from logger import trading_logger
+from logger import trading_logger, exception_logger
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
 
@@ -741,7 +741,7 @@ def check_order_canceled(order_id):
                     order_canceled = True
                     break
             except Exception as e:
-                utils.save_exception_log(
+                exception_logger.log(
                     str(e), traceback.format_exc(), json.dumps(canceled_order))
         else:
             try:
@@ -749,7 +749,7 @@ def check_order_canceled(order_id):
                     order_canceled = True
                     break
             except Exception as e:
-                utils.save_exception_log(
+                exception_logger.log(
                     str(e), traceback.format_exc(), json.dumps(canceled_order))
     return order_canceled
 

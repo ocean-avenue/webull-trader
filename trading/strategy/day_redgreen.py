@@ -211,5 +211,8 @@ class DayTradingRedGreen(StrategyBase):
 
     def final(self):
 
+        # cancel all existing order
+        webullsdk.cancel_all_orders()
+
         # track failed to sell positions
         self.track_rest_positions()

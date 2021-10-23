@@ -8,6 +8,7 @@ def start():
     from sdk import webullsdk
     from common import utils
     from webull_trader.models import DayPosition
+    from logger import exception_logger
 
     paper = utils.check_paper()
 
@@ -41,8 +42,8 @@ def start():
                     'order_id': order_id,
                     'sell_price': last_price,
                 }
-                utils.save_exception_log(
-                    "TradingExceptionPosition", "", "⚠️  Exit trading exception position <{}>!".format(symbol))
+                exception_logger.log("TradingPositionException", "",
+                                     f"⚠️  Exit trading exception position <{symbol}>!")
         for symbol, sell_order in clear_positions:
             order_id = sell_order['order_id']
             ticker_id = sell_order['ticker_id']
