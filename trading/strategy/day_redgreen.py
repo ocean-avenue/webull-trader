@@ -65,14 +65,14 @@ class DayTradingRedGreen(StrategyBase):
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
-            if not utils.check_bars_has_volume(m2_bars, time_scale=2):
+            if not pattern.check_bars_has_volume(m2_bars, time_scale=2):
                 utils.print_trading_log(
                     "<{}> candle chart has not enough volume, stop trading!".format(symbol))
                 # remove from tracking
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
-            if not utils.check_bars_rel_volume(m2_bars):
+            if not pattern.check_bars_rel_volume(m2_bars):
                 utils.print_trading_log(
                     "<{}> candle chart has no relative volume, stop trading!".format(symbol))
                 # remove from tracking

@@ -6,6 +6,7 @@ from typing import List
 from django.utils import timezone
 from common import utils, config, constants
 from sdk import webullsdk
+from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import ActionType, SetupType, TradingHourType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
@@ -31,8 +32,8 @@ class SwingTurtle(StrategyBase):
         return self.swing_position_amount_limit * unit_weight
 
     def check_has_volume(self, daily_bars: List[SwingHistoricalDailyBar]) -> bool:
-        if not utils.check_daily_bars_volume_grinding(daily_bars, period=4) and \
-                not utils.check_daily_bars_rel_volume(daily_bars):
+        if not pattern.check_daily_bars_volume_grinding(daily_bars, period=4) and \
+                not pattern.check_daily_bars_rel_volume(daily_bars):
             return False
         return True
 

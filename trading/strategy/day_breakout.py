@@ -120,33 +120,33 @@ class DayTradingBreakout(StrategyBase):
             return False
 
         if not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
-                not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars) and \
+                not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
                 not pattern.check_bars_amount_grinding(bars, period=5):
             # has no relative volume
             utils.print_trading_log(
                 "<{}> candle chart volume not meet requirements, no entry!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_volatility(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
             # no volatility
             utils.print_trading_log(
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
-        if utils.check_bars_has_long_wick_up(bars, period=self.entry_period):
+        if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period):
             # has long wick up
             utils.print_trading_log(
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
-        if not (utils.check_bars_has_largest_green_candle(bars) and utils.check_bars_has_more_green_candle(bars)) and \
-                not utils.check_bars_has_most_green_candle(bars):
+        if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
+                not pattern.check_bars_has_most_green_candle(bars):
             # not most green candles and no largest green candle
             utils.print_trading_log(
                 "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
             return False
 
-        if utils.check_bars_has_bearish_candle(bars, period=5):
+        if pattern.check_bars_has_bearish_candle(bars, period=5):
             # has bearish candle
             utils.print_trading_log(
                 "<{}> candle chart has bearish candle, no entry!".format(symbol))
@@ -208,24 +208,24 @@ class DayTradingBreakout(StrategyBase):
             utils.print_trading_log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, round(period_low_price, 2)))
         # # check if has long wick up
-        elif utils.check_bars_has_long_wick_up(bars, period=5, count=2):
+        elif pattern.check_bars_has_long_wick_up(bars, period=5, count=2):
             utils.print_trading_log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
-        elif self.is_extended_market_hour() and not utils.check_bars_volatility(bars):
+        elif self.is_extended_market_hour() and not pattern.check_bars_volatility(bars):
             utils.print_trading_log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is not volatility."
         # check if bar chart is at peak
-        elif self.is_regular_market_hour() and utils.check_bars_at_peak(bars):
+        elif self.is_regular_market_hour() and pattern.check_bars_at_peak(bars):
             utils.print_trading_log(
                 "<{}> candle chart is at peak, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is at peak."
-        elif utils.check_bars_reversal(bars):
+        elif pattern.check_bars_reversal(bars):
             utils.print_trading_log(
                 "<{}> candle chart will reversal, exit!".format(symbol))
             exit_trading = True
@@ -792,8 +792,8 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
-                not utils.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not utils.check_bars_rel_volume(bars) and \
-                not pattern.check_bars_amount_grinding(bars, period=5) and not utils.check_bars_all_green(bars, period=5):
+                not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
+                not pattern.check_bars_amount_grinding(bars, period=5) and not pattern.check_bars_all_green(bars, period=5):
             # has no volume and amount
             utils.print_trading_log(
                 "<{}> candle chart volume not meet requirements, no scale in!".format(symbol))

@@ -135,7 +135,7 @@ class DayTradingMomo(StrategyBase):
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
-            # if not utils.check_bars_volatility(m1_bars):
+            # if not pattern.check_bars_volatility(m1_bars):
             #     utils.print_trading_log("<{}> candle chart is not volatility, stop trading!".format(symbol))
             #     # remove from tracking
             #     self.trading_tracker.stop_tracking(ticker)
