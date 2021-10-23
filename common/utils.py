@@ -415,36 +415,6 @@ def calculate_charts_ema9(charts: List[dict]) -> List[dict]:
                 (candle['close'] - prev_candle['ema9']) * multiplier + prev_candle['ema9'], 2)
     return charts
 
-
-def print_level2_log(quote):
-    if not quote:
-        return
-    symbol = quote["symbol"]
-    # level 1
-    ask_list = []
-    bid_list = []
-    if 'askList' in quote and 'bidList' in quote:
-        ask_list = quote['askList']
-        bid_list = quote['bidList']
-    # level 2
-    if 'depth' in quote and 'ntvAggAskList' in quote['depth'] and 'ntvAggBidList' in quote['depth']:
-        ask_list = quote['depth']['ntvAggAskList']
-        bid_list = quote['depth']['ntvAggBidList']
-    # print log
-    print_trading_log("Order book for <{}>:".format(symbol))
-    depth = max(len(ask_list), len(bid_list))
-    for i in range(0, depth):
-        bid_record = "{:<10} {:>10}".format("*", "*")
-        if i < len(bid_list):
-            bid_record = "{:<10} {:>10}".format(
-                bid_list[i]['volume'], bid_list[i]['price'])
-        ask_record = "{:<10} {:>10}".format("*", "*")
-        if i < len(ask_list):
-            ask_record = "{:<10} {:>10}".format(
-                ask_list[i]['price'], ask_list[i]['volume'])
-        print_trading_log("{} - {}".format(bid_record, ask_record))
-
-
 def get_quote_sector(quote=None):
     if quote:
         if quote.is_etf:

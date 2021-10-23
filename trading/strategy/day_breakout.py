@@ -498,7 +498,7 @@ class DayTradingBreakoutAsk(DayTradingBreakout):
     def get_buy_price(self, ticker: TrackingTicker) -> float:
         ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
-        utils.print_level2_log(quote)
+        trading_logger.log_level2(quote)
         ask_price = webullsdk.get_ask_price_from_quote(quote)
         if self.is_regular_market_hour():
             last_price = utils.get_attr_to_float_or_none(quote, 'close')
