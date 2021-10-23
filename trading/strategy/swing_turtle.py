@@ -17,8 +17,8 @@ class SwingTurtle(StrategyBase):
     def __init__(self, paper, trading_hour: TradingHourType, entry_period: int = 55, exit_period: int = 20):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.watchlist: List[dict] = []
-        self.entry_period = entry_period
-        self.exit_period = exit_period
+        self.entry_period: int = entry_period
+        self.exit_period: int = exit_period
 
     def get_tag(self) -> str:
         return "SwingTurtle"
@@ -37,7 +37,7 @@ class SwingTurtle(StrategyBase):
             return False
         return True
 
-    def check_period_high(self, daily_bars: List[SwingHistoricalDailyBar]):
+    def check_period_high(self, daily_bars: List[SwingHistoricalDailyBar]) -> bool:
         latest_close = daily_bars[-1].close
         latest_sma120 = daily_bars[-1].sma_120
         period_close = daily_bars[self.entry_period].close
@@ -59,7 +59,7 @@ class SwingTurtle(StrategyBase):
                 return True
         return False
 
-    def check_period_low(self, daily_bars):
+    def check_period_low(self, daily_bars: List[SwingHistoricalDailyBar]) -> bool:
         if len(daily_bars) <= self.exit_period:
             return False
         latest_close = daily_bars[-1].close
@@ -74,7 +74,7 @@ class SwingTurtle(StrategyBase):
             return True
         return False
 
-    def check_scale_in(self, daily_bars, swing_position):
+    def check_scale_in(self, daily_bars: List[SwingHistoricalDailyBar], swing_position: SwingPosition) -> bool:
         # already full positions
         if swing_position.units >= swing_position.target_units:
             return False
@@ -89,6 +89,7 @@ class SwingTurtle(StrategyBase):
             return False
         return True
 
+    # TODO, refactor
     def submit_buy_order(self, symbol, position, unit_weight, latest_close, reason):
         usable_cash = webullsdk.get_usable_cash()
         utils.save_webull_min_usable_cash(usable_cash)
@@ -125,6 +126,7 @@ class SwingTurtle(StrategyBase):
                 utils.print_trading_log(
                     "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, latest_close))
 
+    # TODO, refactor
     def submit_sell_order(self, symbol, position, latest_close, reason):
         ticker_id = webullsdk.get_ticker(symbol)
         # submit market sell order
@@ -141,7 +143,7 @@ class SwingTurtle(StrategyBase):
             price=latest_close,
             sell_time=timezone.now())
 
-    def trade(self, watchlist):
+    def trade(self, watchlist: List[dict]):
         symbol = watchlist["symbol"]
         unit_weight = watchlist["unit_weight"]
         # check if already has possition
@@ -185,7 +187,7 @@ class SwingTurtle(StrategyBase):
                 utils.print_trading_log(
                     "<{}> daily chart has not enough data, no entry!".format(symbol))
 
-    def manual_trade(self, request):
+    def manual_trade(self, request: ManualTradeRequest):
         symbol = request.symbol
         quantity = request.quantity
         action = request.action

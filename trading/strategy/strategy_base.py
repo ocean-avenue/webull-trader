@@ -167,6 +167,7 @@ class StrategyBase:
 
         return (free_float_check or turnover_rate_check) and sectors_check
 
+    # submit buy limit order, only use for day trade
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point.",
                                retry: bool = False, retry_limit: int = 0):
         symbol = ticker.get_symbol()
@@ -195,6 +196,7 @@ class StrategyBase:
             utils.print_trading_log(
                 "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
 
+    # submit sell limit order, only use for day trade
     def submit_sell_limit_order(self, ticker: TrackingTicker, note: str = "Exit point.",
                                 retry: bool = True, retry_limit: int = 20):
         symbol = ticker.get_symbol()
