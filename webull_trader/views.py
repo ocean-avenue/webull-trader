@@ -6,7 +6,6 @@ from django.core.cache import cache
 from sdk import fmpsdk
 from common import utils, config, db
 from common.enums import SetupType, TradingHourType
-from trading import pattern
 from webull_trader.models import DayTrade, EarningCalendar, HistoricalDayTradePerformance, HistoricalMarketStatistics, \
     HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingTrade, WebullAccountStatistics, \
     WebullNews, TradingLog, ExceptionLog, WebullOrder
@@ -508,10 +507,10 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
         buy_order = WebullOrder.objects.filter(order_id=buy_order_id).first()
         if buy_order:
             setup = SetupType.tostr(buy_order.setup)
-        notes = []
+        note = None
         sell_order = WebullOrder.objects.filter(order_id=sell_order_id).first()
-        if sell_order and sell_order.note:
-            notes.append(sell_order.note)
+        if sell_order:
+            note = sell_order.note or ""
         trade_records.append({
             "symbol": symbol,
             "quantity": quantity,
@@ -522,7 +521,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             "buy_time": utils.local_time_minute_second(day_trade.buy_time),
             "sell_time": utils.local_time_minute_second(day_trade.sell_time),
             "setup": setup,
-            "notes": " ".join(notes),
+            "note": note,
             "profit_loss": profit_loss,
             "profit_loss_percent": profit_loss_percent,
             "profit_loss_style": profit_loss_style,
