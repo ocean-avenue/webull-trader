@@ -510,7 +510,7 @@ def day_analytics_date_symbol(request, date=None, symbol=None):
             setup = SetupType.tostr(buy_order.setup)
         notes = []
         sell_order = WebullOrder.objects.filter(order_id=sell_order_id).first()
-        if sell_order:
+        if sell_order and sell_order.note:
             notes.append(sell_order.note)
         trade_records.append({
             "symbol": symbol,
