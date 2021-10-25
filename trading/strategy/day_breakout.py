@@ -119,7 +119,7 @@ class DayTradingBreakout(StrategyBase):
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
+        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars, time_scale=self.time_scale):
             trading_logger.log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # stop tracking
@@ -806,7 +806,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not updated, stop scale in!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not utils.check_bars_continue(bars, time_scale=self.time_scale):
+        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars, time_scale=self.time_scale):
             trading_logger.log(
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
