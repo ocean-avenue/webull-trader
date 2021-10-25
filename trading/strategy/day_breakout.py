@@ -18,6 +18,11 @@ from webull_trader.models import EarningCalendar
 
 class DayTradingBreakout(StrategyBase):
 
+    import pandas as pd
+    from common.enums import SetupType, TradingHourType
+    from typing import Tuple
+    from trading.tracker.trading_tracker import TrackingTicker
+
     def __init__(self, paper: bool, trading_hour: TradingHourType, entry_period: int = 20, exit_period: int = 10, time_scale: int = 1):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.entry_period: int = entry_period

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from typing import Tuple
 from datetime import datetime, timedelta
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType
@@ -15,6 +14,11 @@ from trading.tracker.trading_tracker import TrackingTicker
 # Momo day trading class
 
 class DayTradingMomo(StrategyBase):
+
+    import pandas as pd
+    from typing import Tuple
+    from common.enums import SetupType
+    from trading.tracker.trading_tracker import TrackingTicker
 
     def get_tag(self) -> str:
         return "DayTradingMomo"

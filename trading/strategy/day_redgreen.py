@@ -15,6 +15,9 @@ from webull_trader.models import HistoricalTopGainer, HistoricalTopLoser
 
 class DayTradingRedGreen(StrategyBase):
 
+    from common.enums import SetupType
+    from trading.tracker.trading_tracker import TrackingTicker
+
     def get_tag(self) -> str:
         return "DayTradingRedGreen"
 

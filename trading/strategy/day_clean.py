@@ -2,7 +2,6 @@
 
 from typing import List
 from trading.strategy.strategy_base import StrategyBase
-from common import utils
 from logger import trading_logger
 from common.enums import SetupType
 from trading.tracker.trading_tracker import TrackingTicker
@@ -13,6 +12,9 @@ from webull_trader.models import DayPosition
 # this only for clean failed to sell position during last trading hour session
 
 class DayTradingClean(StrategyBase):
+
+    from common.enums import SetupType
+    from trading.tracker.trading_tracker import TrackingTicker
 
     def get_tag(self) -> str:
         return "DayTradingClean"

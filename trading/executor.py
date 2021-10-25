@@ -14,7 +14,12 @@ from trading.strategy.strategy_base import StrategyBase
 
 class TradingExecutor:
 
-    def __init__(self, strategies: List[StrategyBase] = [], trading_hour: TradingHourType = TradingHourType.REGULAR, paper: bool = True):
+    from typing import List
+    from common.enums import TradingHourType
+    from trading.strategy.strategy_base import StrategyBase
+
+    def __init__(self, strategies: List[StrategyBase] = [],
+                 trading_hour: TradingHourType = TradingHourType.REGULAR, paper: bool = True):
         self.paper: bool = paper
         self.trading_hour: TradingHourType = trading_hour
         self.strategies: List[StrategyBase] = strategies

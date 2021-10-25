@@ -9,11 +9,14 @@ from sdk import webullsdk
 from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
 from logger import trading_logger
-from common.enums import ActionType, SetupType, TradingHourType
+from common.enums import ActionType, SetupType
 from webull_trader.models import ManualTradeRequest, StockQuote, SwingHistoricalDailyBar, SwingPosition, SwingWatchlist
 
 
 class SwingTurtle(StrategyBase):
+
+    from common.enums import SetupType, TradingHourType
+    from webull_trader.models import ManualTradeRequest, SwingHistoricalDailyBar, SwingPosition
 
     def __init__(self, paper, trading_hour: TradingHourType, entry_period: int = 55, exit_period: int = 20):
         super().__init__(paper=paper, trading_hour=trading_hour)

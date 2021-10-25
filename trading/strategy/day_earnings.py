@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Tuple
 from datetime import date, datetime
 from trading.tracker.trading_tracker import TrackingTicker
 from trading.strategy.strategy_base import StrategyBase
@@ -14,6 +13,10 @@ from logger import trading_logger
 # Earning day trading class, may holding positions overnight
 
 class DayTradingEarningsOvernight(StrategyBase):
+
+    from typing import Optional, Tuple
+    from trading.tracker.trading_tracker import TrackingTicker
+    from common.enums import SetupType
 
     def get_tag(self) -> str:
         return "DayTradingEarningsOvernight"

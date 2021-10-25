@@ -14,6 +14,8 @@ from trading.tracker.trading_tracker import TrackingTicker
 
 class DayTradingGrindingLargeCap(DayTradingBreakout):
 
+    from common.enums import SetupType, TradingHourType
+
     def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)
         self.large_cap_with_major_news: List[dict] = []

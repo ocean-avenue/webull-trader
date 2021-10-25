@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from typing import Tuple
 from trading.strategy.strategy_base import StrategyBase
 from common.enums import SetupType, TradingHourType
-from common import utils, constants
+from common import constants
 from logger import trading_logger
 from sdk import webullsdk, finvizsdk
 from trading.tracker.trading_tracker import TrackingTicker
@@ -15,6 +14,11 @@ from trading.tracker.trading_tracker import TrackingTicker
 
 # OTOCO order is not available in paper account
 class DayTradingVWAPPaper(StrategyBase):
+
+    import pandas as pd
+    from typing import Tuple
+    from common.enums import SetupType, TradingHourType
+    from trading.tracker.trading_tracker import TrackingTicker
 
     def __init__(self, paper: bool, trading_hour: TradingHourType):
         super().__init__(paper=paper, trading_hour=trading_hour)

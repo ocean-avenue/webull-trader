@@ -3,18 +3,21 @@
 # Base trading class
 
 import json
-import pandas as pd
 from datetime import datetime
 from sdk import webullsdk, fmpsdk
 from common import utils, db, sms, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
 from logger import trading_logger
-from trading.tracker.trading_tracker import TradingTracker, TrackingTicker
+from trading.tracker.trading_tracker import TradingTracker
 from trading.tracker.order_tracker import OrderTracker
 from webull_trader.models import SwingPosition, SwingTrade
 
 
 class StrategyBase:
+
+    import pandas as pd
+    from common.enums import SetupType, TradingHourType
+    from trading.tracker.trading_tracker import TrackingTicker
 
     def __init__(self, paper: bool = True, trading_hour: TradingHourType = TradingHourType.REGULAR):
         # init strategy variables
