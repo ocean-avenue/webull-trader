@@ -302,7 +302,7 @@ class StrategyBase:
             trade = db.add_day_trade(
                 symbol=symbol,
                 ticker_id=ticker_id,
-                position_obj=position_obj,
+                position=position_obj,
                 order_id=order_id,
                 sell_price=order.avg_price,
                 sell_time=order.filled_time,
