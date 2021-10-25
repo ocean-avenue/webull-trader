@@ -264,4 +264,4 @@ class Command(BaseCommand):
         except KeyboardInterrupt:
             print("[{}] stopping scheduler...".format(utils.get_now()))
             scheduler.shutdown()
-            print("[{}] scheduler shut down successfully!".format(utils.get_now()))
+            print("[{}] scheduler shutdown successfully!".format(utils.get_now()))
