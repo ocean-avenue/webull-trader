@@ -235,12 +235,12 @@ def save_webull_order(order_data: dict, paper: bool = True):
         time_in_force = _time_in_force_fmt(order_obj['timeInForce'])
 
     order = WebullOrder.objects.filter(order_id=order_id).first()
-    if order:
-        print("[{}] Updating order <{}> {} ({})...".format(
-            utils.get_now(), symbol, order_id, create_time))
-    else:
-        print("[{}] Importing order <{}> {} ({})...".format(
-            utils.get_now(), symbol, order_id, create_time))
+    # if order:
+    #     print("[{}] Updating order <{}> {} ({})...".format(
+    #         utils.get_now(), symbol, order_id, create_time))
+    # else:
+    #     print("[{}] Importing order <{}> {} ({})...".format(
+    #         utils.get_now(), symbol, order_id, create_time))
     if order:
         order.ticker_id = ticker_id
         order.symbol = symbol
