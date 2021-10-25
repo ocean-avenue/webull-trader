@@ -32,8 +32,8 @@ class DayTradingGrindingLargeCap(DayTradingBreakout):
             return
 
         # trading tickers
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 
@@ -120,8 +120,8 @@ class DayTradingGrindingSymbols(DayTradingBreakout):
             return
 
         # trading tickers
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 

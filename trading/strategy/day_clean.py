@@ -58,7 +58,7 @@ class DayTradingClean(StrategyBase):
             self.trading_end = True
             return
 
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # clean ticker
             self.clean(ticker)

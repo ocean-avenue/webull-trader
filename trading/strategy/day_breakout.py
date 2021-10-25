@@ -425,8 +425,8 @@ class DayTradingBreakout(StrategyBase):
 
     def update(self):
         # trading tickers
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 
@@ -617,8 +617,8 @@ class DayTradingBreakoutEarnings(DayTradingBreakout):
 
     def update(self):
         # trading tickers
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 
@@ -733,8 +733,8 @@ class DayTradingBreakoutPreLosers(DayTradingBreakout):
             return
 
         # trading tickers
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 

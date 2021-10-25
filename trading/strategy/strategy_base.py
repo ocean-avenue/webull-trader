@@ -602,8 +602,8 @@ class StrategyBase:
 
     # clear all positions
     def clear_positions(self):
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
             self.clear_position(ticker)
 
     def clear_position(self, ticker: TrackingTicker):
@@ -630,8 +630,9 @@ class StrategyBase:
             ticker, note="Clear position.", retry=True, retry_limit=50)
 
     def track_rest_positions(self):
-        for symbol in self.trading_tracker.get_tickers():
-            ticker = self.trading_tracker.get_ticker(symbol)
+        for ticker_id in self.trading_tracker.get_tickers():
+            ticker = self.trading_tracker.get_ticker(ticker_id)
+            symbol = ticker.get_symbol()
             position_obj = ticker.get_position_obj()
             if position_obj:
                 # update setup

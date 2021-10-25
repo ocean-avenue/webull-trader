@@ -200,8 +200,8 @@ class DayTradingRedGreen(StrategyBase):
         # only trade regular market hour before 13:00
         if self.is_power_hour():
             # trading tickers
-            for symbol in self.trading_tracker.get_tickers():
-                ticker = self.trading_tracker.get_ticker(symbol)
+            for ticker_id in self.trading_tracker.get_tickers():
+                ticker = self.trading_tracker.get_ticker(ticker_id)
                 # do trade
                 self.trade(ticker)
         else:

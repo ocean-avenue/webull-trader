@@ -337,9 +337,9 @@ class TradingTracker:
     def get_tickers(self) -> List[TrackingTicker]:
         return list(self.tickers)
 
-    def get_ticker(self, symbol) -> Optional[TrackingTicker]:
-        if self.is_tracking(symbol):
-            return self.tickers[symbol]
+    def get_ticker(self, ticker_id: str) -> Optional[TrackingTicker]:
+        if self.is_tracking(ticker_id):
+            return self.tickers[ticker_id]
         return None
 
     def get_stat(self, symbol) -> TrackingStat:
