@@ -282,14 +282,16 @@ class TrackingStat:
         return self.last_trade_time
 
     def update_by_trade(self, trade: DayTrade):
-        symbol = trade.symbol
         # inc trade count
         self.inc_trades()
         # last high price
         buy_price = round(trade.total_sold / trade.quantity, 2)
         sell_price = round(trade.total_cost / trade.quantity, 2)
-        self.set_last_high_price(
-            max(self.get_last_high_price(), buy_price, sell_price))
+        if self.get_last_high_price():
+            self.set_last_high_price(
+                max(self.get_last_high_price(), buy_price, sell_price))
+        else:
+            self.set_last_high_price(max(buy_price, sell_price))
         # last trade time
         self.set_last_trade_time(datetime.now())
         # profit loss
