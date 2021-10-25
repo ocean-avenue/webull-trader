@@ -10,7 +10,7 @@ from common.enums import ActionType, SetupType, TradingHourType
 from logger import trading_logger
 from trading.tracker.trading_tracker import TradingTracker
 from trading.tracker.order_tracker import OrderTracker
-from webull_trader.models import SwingPosition, SwingTrade
+from webull_trader.models import SwingPosition, SwingTrade, WebullOrder
 
 
 class StrategyBase:
@@ -222,16 +222,11 @@ class StrategyBase:
             self.check_cancel_order_done(ticker)
             return
 
-    def check_buy_order_done(self, ticker: TrackingTicker,
+    def _on_buy_order_filled(self, ticker: TrackingTicker, order: WebullOrder,
                              stop_tracking_ticker_after_order_filled: bool = False):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
-        order_id = ticker.get_pending_order_id()
-        order = self.order_tracker.get_order(order_id)
-        if order == None:
-            return
-        trading_logger.log(f"Buy order <{symbol}> {order.status}")
-        # filled or partially filled
+        order_id = order.order_id
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             position_obj = ticker.get_position_obj()
             if position_obj:
@@ -268,6 +263,19 @@ class StrategyBase:
             # stop tracking ticker
             if stop_tracking_ticker_after_order_filled:
                 self.trading_tracker.stop_tracking(ticker)
+
+    def check_buy_order_done(self, ticker: TrackingTicker,
+                             stop_tracking_ticker_after_order_filled: bool = False):
+        symbol = ticker.get_symbol()
+        order_id = ticker.get_pending_order_id()
+        order = self.order_tracker.get_order(order_id)
+        if order == None:
+            return
+        trading_logger.log(f"Buy order <{symbol}> {order.status}")
+        # filled or partially filled
+        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+            self._on_buy_order_filled(
+                ticker, order, stop_tracking_ticker_after_order_filled)
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
             if ticker.is_order_timeout() or self.trading_end:
@@ -289,16 +297,11 @@ class StrategyBase:
             raise exceptions.WebullOrderStatusError(
                 f"Unknown order status '{order.status}' for order: {order_id}!")
 
-    def check_sell_order_done(self, ticker: TrackingTicker,
+    def _on_sell_order_filled(self, ticker: TrackingTicker, order: WebullOrder,
                               stop_tracking_ticker_after_order_filled: bool = True):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
-        order_id = ticker.get_pending_order_id()
-        order = self.order_tracker.get_order(order_id)
-        if order == None:
-            return
-        trading_logger.log(f"Sell order <{symbol}> {order.status}")
-        # filled
+        order_id = order.order_id
         if order.status == webullsdk.ORDER_STATUS_FILLED:
             position_obj = ticker.get_position_obj()
             # add trade object
@@ -319,8 +322,6 @@ class StrategyBase:
             # stop tracking ticker
             if stop_tracking_ticker_after_order_filled:
                 self.trading_tracker.stop_tracking(ticker)
-            # update account status
-            self.update_account()
             # update trading stats
             tracking_stat = self.trading_tracker.get_stat(symbol)
             tracking_stat.update_by_trade(trade)
@@ -343,8 +344,21 @@ class StrategyBase:
                 f"Continue sell rest <{symbol}> positions, quant: {ticker.get_positions()}")
             self.submit_sell_limit_order(
                 ticker, note="Sell rest positions.", retry=retry_after_cancel, retry_limit=retry_limit)
-            # update account status
-            self.update_account()
+        # update account status
+        self.update_account()
+
+    def check_sell_order_done(self, ticker: TrackingTicker,
+                              stop_tracking_ticker_after_order_filled: bool = True):
+        symbol = ticker.get_symbol()
+        order_id = ticker.get_pending_order_id()
+        order = self.order_tracker.get_order(order_id)
+        if order == None:
+            return
+        trading_logger.log(f"Sell order <{symbol}> {order.status}")
+        # filled or partially filled
+        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+            self._on_sell_order_filled(
+                ticker, order, stop_tracking_ticker_after_order_filled)
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
             if ticker.is_order_timeout():
@@ -441,6 +455,13 @@ class StrategyBase:
                         "Failed to sell <{}> position, please check now!".format(symbol))
                     if stop_tracking_ticker_after_order_canceled:
                         self.trading_tracker.stop_tracking(ticker)
+        elif order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+            # buy order
+            if order.action == ActionType.BUY:
+                self._on_buy_order_filled(ticker, order)
+            # sell order
+            if order.action == ActionType.SELL:
+                self._on_sell_order_filled(ticker, order)
         elif ticker.is_order_timeout():
             # TODO, log exception
             raise exceptions.WebullOrderStatusError(
