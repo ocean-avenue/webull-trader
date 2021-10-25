@@ -272,7 +272,7 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "Stop loss at {}!".format(last_price)
         return (exit_trading, exit_note)
 
-    def get_stop_loss_price(self, float, bars: pd.DataFrame) -> float:
+    def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         current_candle = bars.iloc[-1]
         prev_candle = bars.iloc[-2]
         # current_price = current_candle['close']
