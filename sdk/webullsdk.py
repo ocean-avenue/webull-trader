@@ -30,6 +30,8 @@ ORDER_STATUS_PENDING = "Pending"
 ORDER_STATUS_FAILED = "Failed"
 ORDER_STATUS_ALL = "All"
 
+ORDER_STATUS_NOT_FOUND = "Not Found"
+
 
 _wb_session = None
 
@@ -728,30 +730,6 @@ def cancel_all_orders():
         return
     instance = _get_instance()
     instance.cancel_all_orders()
-
-
-def check_order_canceled(order_id):
-    global _wb_paper
-    order_canceled = False
-    canceled_orders = get_history_orders(status="Cancelled", count=100)
-    for canceled_order in canceled_orders:
-        if _wb_paper:
-            try:
-                if order_id == canceled_order["orderId"]:
-                    order_canceled = True
-                    break
-            except Exception as e:
-                exception_logger.log(
-                    str(e), traceback.format_exc(), json.dumps(canceled_order))
-        else:
-            try:
-                if order_id == canceled_order["orders"][0]["orderId"]:
-                    order_canceled = True
-                    break
-            except Exception as e:
-                exception_logger.log(
-                    str(e), traceback.format_exc(), json.dumps(canceled_order))
-    return order_canceled
 
 
 # Paper
