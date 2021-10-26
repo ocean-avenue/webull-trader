@@ -225,7 +225,7 @@ class AlgorithmType:
     @staticmethod
     def todesc(val):
         if val == AlgorithmType.DAY_MOMENTUM:
-            return 'Momo day trade as much as possible, mainly for collect data.'
+            return 'Momo day trade, entry if first candle make new high.'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
             return 'Momo day trade based on win rate, reduce size when win rate low.'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
