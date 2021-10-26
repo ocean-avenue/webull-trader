@@ -42,10 +42,10 @@ class TradingExecutor:
 
         # login
         if not webullsdk.login(paper=self.paper):
-            message = "Webull login failed, quit trading!"
+            error_msg = "Webull login failed, quit trading!"
             # send message
-            sms.notify_message(message)
-            trading_logger.log(message)
+            sms.notify_message(error_msg)
+            trading_logger.log(error_msg)
             return
         trading_logger.log("Webull logged in")
         last_login_refresh_time = datetime.now()
@@ -72,10 +72,10 @@ class TradingExecutor:
                     # trading_logger.log("Refresh webull login")
                     last_login_refresh_time = datetime.now()
                 else:
-                    message = "Webull refresh login failed, quit trading!"
+                    error_msg = "Webull refresh login failed, quit trading!"
                     # send message
-                    sms.notify_message(message)
-                    trading_logger.log(message)
+                    sms.notify_message(error_msg)
+                    trading_logger.log(error_msg)
                     break
 
             # at least slepp 1 sec
@@ -329,7 +329,8 @@ def start():
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return
-    executor = TradingExecutor(strategies=strategies, trading_hour=trading_hour, paper=paper)
+    executor = TradingExecutor(
+        strategies=strategies, trading_hour=trading_hour, paper=paper)
     executor.start()
 
 

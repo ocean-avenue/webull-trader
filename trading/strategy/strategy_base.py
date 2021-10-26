@@ -513,7 +513,11 @@ class StrategyBase:
         ticker.set_pending_order_time(datetime.now())
         # tracking order
         self.order_tracker.start_tracking(
-            order_id, self.get_setup(), entry_note, retry, retry_limit)
+            order_id=order_id,
+            setup=self.get_setup(),
+            note=entry_note,
+            retry_after_cancel=retry,
+            retry_limit=retry_limit)
 
     def stop_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str):
         if ticker.get_pending_order_id() == order_id:
@@ -530,7 +534,11 @@ class StrategyBase:
         ticker.set_pending_order_time(datetime.now())
         # tracking order
         self.order_tracker.start_tracking(
-            order_id, self.get_setup(), exit_note, retry, retry_limit)
+            order_id=order_id,
+            setup=self.get_setup(),
+            note=exit_note,
+            retry_after_cancel=retry,
+            retry_limit=retry_limit)
 
     def stop_tracking_pending_sell_order(self, ticker: TrackingTicker, order_id: str):
         if ticker.get_pending_order_id() == order_id:
