@@ -295,6 +295,7 @@ class StrategyBase:
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             self._on_buy_order_filled(
                 ticker, order, stop_tracking_ticker_after_order_filled)
+            trading_logger.log(f"Filled price: ${order.avg_price}")
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
             if ticker.is_order_timeout() or self.trading_end:
@@ -420,6 +421,7 @@ class StrategyBase:
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             self._on_sell_order_filled(
                 ticker, order, stop_tracking_ticker_after_order_filled)
+            trading_logger.log(f"Filled price: ${order.avg_price}")
         # pending or working
         elif order.status == webullsdk.ORDER_STATUS_PENDING or order.status == webullsdk.ORDER_STATUS_WORKING:
             if ticker.is_order_timeout():

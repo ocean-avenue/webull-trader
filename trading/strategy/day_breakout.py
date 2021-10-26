@@ -850,13 +850,14 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         symbol = ticker.get_symbol()
         last_candle = bars.iloc[-2]
         last_low = min(last_candle['open'], last_candle['close'])
-        last_high = max(last_candle['open'], last_candle['close'])
+        # last_high = max(last_candle['open'], last_candle['close'])
         period_bars = bars.head(
             len(bars) - 2).tail(config.DAY_BUY_DIP_CANDLE_CHECK_COUNT)
         period_low_price = constants.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
             # use mid price, min(close, open)
-            low_price = min(row['close'], row['open'])
+            # low_price = min(row['close'], row['open'])
+            low_price = row['close']
             if low_price < period_low_price:
                 period_low_price = low_price
 
@@ -867,7 +868,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
 
-        if current_price <= last_high:
+        if current_price <= last_candle['close']:
             # no first candle new high
             trading_logger.log(
                 "<{}> candle not formed first candle new high, no buy dip!".format(symbol))
