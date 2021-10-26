@@ -794,7 +794,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
-            close_price = row['close']  # use close price
+            close_price = row['high']  # use high price
             if close_price > period_high_price:
                 period_high_price = close_price
         # check if new high

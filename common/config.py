@@ -75,7 +75,7 @@ BEARISH_AVG_CANDLE_RATIO = 1.4
 # max current candle surge ratio for day trade entry
 MAX_DAY_ENTRY_CANDLE_SURGE_RATIO = 0.2
 # candle check count for day trade buy the dip scale in
-DAY_BUY_DIP_CANDLE_CHECK_COUNT = 3
+DAY_BUY_DIP_CANDLE_CHECK_COUNT = 4
 # volume to my position size ratio
 DAY_VOLUME_POS_SIZE_RATIO = 10
 DAY_EXTENDED_VOLUME_POS_SIZE_RATIO = 5
