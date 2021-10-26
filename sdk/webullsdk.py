@@ -683,6 +683,33 @@ def sell_limit_order(ticker_id=None, price=0, quant=0):
         return {'msg': "Exception during submit sell limit order!"}
 
 
+def modify_sell_limit_order(ticker_id: str, order_id: str, price=0, quant=0):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
+    instance = _get_instance()
+    try:
+        return instance.modify_order(
+            {
+                'orderId': order_id,
+                'ticker': {
+                    'tickerId': ticker_id,
+                },
+                'totalQuantity': quant,
+            },
+            price=price,
+            action='SELL',
+            orderType='LMT',
+            quant=quant,
+            enforce="DAY",
+        )
+    except Exception as e:
+        trading_logger.log(
+            "⚠️  Exception modify_sell_limit_order: {}".format(e))
+        return {'msg': "Exception during modify sell limit order!"}
+
+
 # Paper
 # {'orderId': 41995648}
 # Live
@@ -709,7 +736,7 @@ def sell_market_order(ticker_id=None, quant=0):
 
 
 # True
-def cancel_order(order_id):
+def cancel_order(order_id: str):
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
