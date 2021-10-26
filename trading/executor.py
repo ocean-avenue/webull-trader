@@ -329,7 +329,7 @@ def start():
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return
-    executor = TradingExecutor(strategies=strategies, paper=paper)
+    executor = TradingExecutor(strategies=strategies, trading_hour=trading_hour, paper=paper)
     executor.start()
 
 
