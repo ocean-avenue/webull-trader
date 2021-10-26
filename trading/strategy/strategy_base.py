@@ -283,14 +283,14 @@ class StrategyBase:
         order = self.order_tracker.get_order(order_id)
         if order == None:
             trading_logger.log(
-                f"Buy order <{symbol}> {webullsdk.ORDER_STATUS_NOT_FOUND}")
+                f"Buy order {order_id} - <{symbol}> {webullsdk.ORDER_STATUS_NOT_FOUND}")
             if ticker.is_order_timeout():
                 # cancel in case we did not catch the order
                 webullsdk.cancel_order(order_id)
                 # stop tracking buy order
                 self.stop_tracking_pending_buy_order(ticker, order_id)
             return
-        trading_logger.log(f"Buy order <{symbol}> {order.status}")
+        trading_logger.log(f"Buy order {order_id} - <{symbol}> {order.status}")
         # filled or partially filled
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             self._on_buy_order_filled(
@@ -306,7 +306,7 @@ class StrategyBase:
                         ticker, order_id, cancel_note="Buy order timeout, canceled!")
                 else:
                     trading_logger.log(
-                        f"Failed to cancel timeout buy <{symbol}> order: {order_id}!")
+                        f"Failed to cancel timeout buy order {order_id} - <{symbol}>!")
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             # stop tracking buy order
@@ -314,7 +314,7 @@ class StrategyBase:
         # unknown status
         else:
             raise exceptions.WebullOrderStatusError(
-                f"Unknown order status '{order.status}' for order: {order_id}!")
+                f"Unknown order status '{order.status}', {order_id} - <{symbol}>!")
 
     def _on_sell_order_filled(self, ticker: TrackingTicker, order: WebullOrder,
                               stop_tracking_ticker_after_order_filled: bool = True):
@@ -365,7 +365,7 @@ class StrategyBase:
                 ticker, note="Sell rest positions.", retry=retry_after_cancel, retry_limit=retry_limit)
         else:
             raise exceptions.WebullOrderStatusError(
-                f"Unknown order status '{order.status}' for order: {order_id}!")
+                f"Unknown order status '{order.status}', {order_id} - <{symbol}>!")
         # update account status
         self.update_account()
 
@@ -409,14 +409,15 @@ class StrategyBase:
         order = self.order_tracker.get_order(order_id)
         if order == None:
             trading_logger.log(
-                f"Sell order <{symbol}> {webullsdk.ORDER_STATUS_NOT_FOUND}")
+                f"Sell order {order_id} - <{symbol}> {webullsdk.ORDER_STATUS_NOT_FOUND}")
             if ticker.is_order_timeout():
                 # cancel in case we did not catch the order
                 webullsdk.cancel_order(order_id)
                 self._on_sell_order_failed(
                     ticker, webullsdk.ORDER_STATUS_NOT_FOUND, stop_tracking_ticker_after_order_filled)
             return
-        trading_logger.log(f"Sell order <{symbol}> {order.status}")
+        trading_logger.log(
+            f"Sell order {order_id} - <{symbol}> {order.status}")
         # filled or partially filled
         if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             self._on_sell_order_filled(
@@ -432,7 +433,7 @@ class StrategyBase:
                         ticker, order_id, cancel_note="Sell order timeout, canceled!")
                 else:
                     trading_logger.log(
-                        f"Failed to cancel timeout sell <{symbol}> order: {order_id}!")
+                        f"Failed to cancel timeout sell order {order_id} - <{symbol}>!")
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             self._on_sell_order_failed(
@@ -440,24 +441,26 @@ class StrategyBase:
         # unknown status
         else:
             raise exceptions.WebullOrderStatusError(
-                f"Unknown order status '{order.status}' for order: {order_id}!")
+                f"Unknown order status '{order.status}', {order_id} - <{symbol}>!")
 
     def check_cancel_order_done(self, ticker: TrackingTicker,
                                 stop_tracking_ticker_after_order_canceled: bool = False):
         symbol = ticker.get_symbol()
-        trading_logger.log(
-            "Checking cancel order <{}> done...".format(symbol))
         order_id = ticker.get_pending_order_id()
         order = self.order_tracker.get_order(order_id)
         if not order:
+            trading_logger.log(
+                f"Cancel order {order_id} - <{symbol}> {webullsdk.ORDER_STATUS_NOT_FOUND}")
             raise exceptions.WebullOrderNotFoundError()
+        trading_logger.log(
+            f"Cancel order {order_id} - <{symbol}> {order.status}")
         # failed or canceled
         if order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
-            # stop tracking cancel order
-            self.stop_tracking_pending_cancel_order(ticker, order_id)
             resubmit_count = ticker.get_resubmit_order_count()
             retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
                 order_id)
+            # stop tracking cancel order
+            self.stop_tracking_pending_cancel_order(ticker, order_id)
             # buy order
             if order.action == ActionType.BUY:
                 if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
@@ -502,7 +505,7 @@ class StrategyBase:
                 self._on_sell_order_filled(ticker, order)
         elif ticker.is_order_timeout():
             raise exceptions.WebullOrderStatusError(
-                f"Error cancel order status '{order.status}' for order {order_id}")
+                f"Error cancel order status '{order.status}', {order_id} - <{symbol}>")
 
     def start_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str, entry_note: str = "",
                                          retry: bool = False, retry_limit: int = 0):
