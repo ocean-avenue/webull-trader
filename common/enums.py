@@ -74,6 +74,7 @@ class TimeInForceType:
 
 # Day trade: [0, 100)
 # Swing trade: [100, 200)
+# Error: [500, 600)
 class SetupType:
     DAY_FIRST_CANDLE_NEW_HIGH = 0
     DAY_GAP_AND_GO = 1
@@ -89,7 +90,6 @@ class SetupType:
     SWING_20_DAYS_NEW_HIGH = 100
     SWING_55_DAYS_NEW_HIGH = 101
     ERROR_FAILED_TO_SELL = 500
-    ERROR_FAILED_TO_CANCEL_ORDER = 501
     UNKNOWN = 999
 
     @staticmethod
@@ -122,8 +122,6 @@ class SetupType:
             return '[Swing] 55 days new high'
         if val == SetupType.ERROR_FAILED_TO_SELL:
             return '[Error] Failed to sell'
-        if val == SetupType.ERROR_FAILED_TO_CANCEL_ORDER:
-            return '[Error] Failed to cancel order'
         return UNKNOWN
 
     @staticmethod
@@ -157,8 +155,6 @@ class SetupType:
                 SetupType.SWING_55_DAYS_NEW_HIGH)),
             (SetupType.ERROR_FAILED_TO_SELL, SetupType.tostr(
                 SetupType.ERROR_FAILED_TO_SELL)),
-            (SetupType.ERROR_FAILED_TO_CANCEL_ORDER, SetupType.tostr(
-                SetupType.ERROR_FAILED_TO_CANCEL_ORDER)),
             (SetupType.UNKNOWN, SetupType.tostr(
                 SetupType.UNKNOWN)),
         )

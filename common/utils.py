@@ -524,7 +524,8 @@ def fetch_stock_quotes(symbol_list):
 
 
 def is_day_trade_setup(setup: enums.SetupType) -> bool:
-    return setup < 100
+    # include failed to sell order
+    return setup < 100 or setup == enums.SetupType.ERROR_FAILED_TO_SELL
 
 
 def is_day_trade_algo(algo: enums.AlgorithmType) -> bool:
