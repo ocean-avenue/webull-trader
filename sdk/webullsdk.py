@@ -1,11 +1,10 @@
-import requests
 import json
 import time
-import traceback
+import requests
 import pandas as pd
 from typing import List, Optional
 from common import utils, db
-from logger import trading_logger, exception_logger
+from logger import trading_logger
 from webull import webull, paper_webull
 from webull_trader.models import WebullCredentials
 
@@ -33,10 +32,10 @@ ORDER_STATUS_ALL = "All"
 ORDER_STATUS_NOT_FOUND = "Not Found"
 
 
-_wb_session = None
+_wb_session: requests.Session = None
 
 
-def _get_browser_headers():
+def _get_browser_headers() -> dict:
     return {
         "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
         "referer": "quotes-gw.webullfintech.com/",
@@ -44,7 +43,7 @@ def _get_browser_headers():
     }
 
 
-def _get_session():
+def _get_session() -> requests.Session:
     global _wb_session
     if not _wb_session:
         _wb_session = requests.Session()
@@ -52,12 +51,12 @@ def _get_session():
     return _wb_session
 
 
-_wb_instance = None
-_wb_paper = True
-_wb_trade_pwd = "123456"
+_wb_instance: webull = None
+_wb_paper: bool = True
+_wb_trade_pwd: str = "123456"
 
 
-def _get_instance():
+def _get_instance() -> webull:
     global _wb_instance
     global _wb_paper
     if _wb_instance:
@@ -68,7 +67,7 @@ def _get_instance():
         return webull()
 
 
-def login(paper=True):
+def login(paper: bool = True) -> bool:
     global _wb_instance
     global _wb_paper
     global _wb_trade_pwd
@@ -109,7 +108,7 @@ def login(paper=True):
     return True
 
 
-def logout():
+def logout() -> bool:
     instance = _get_instance()
     instance.logout()
     return True
@@ -244,12 +243,12 @@ def logout():
 #    "openOrderSize":0
 # }
 
-def get_account():
+def get_account() -> dict:
     instance = _get_instance()
     return instance.get_account()
 
 
-def get_account_id():
+def get_account_id() -> Optional[str]:
     instance = _get_instance()
     return instance._account_id
 
@@ -269,7 +268,7 @@ def get_account_id():
 # }
 
 
-def get_portfolio():
+def get_portfolio() -> dict:
     instance = _get_instance()
     data = instance.get_account()
     output = {}
@@ -299,7 +298,7 @@ def get_portfolio():
     return output
 
 
-def get_usable_cash():
+def get_usable_cash() -> float:
     global _wb_paper
     portfolio = get_portfolio()
     usable_cash = 0.0
@@ -310,7 +309,7 @@ def get_usable_cash():
     return usable_cash
 
 
-def get_day_profit_loss():
+def get_day_profit_loss() -> str:
     global _wb_paper
     day_profit_loss = "-"
     if _wb_paper:
@@ -324,7 +323,7 @@ def get_day_profit_loss():
     return day_profit_loss
 
 
-def get_trade_token(password=''):
+def get_trade_token(password='') -> bool:
     instance = _get_instance()
     return instance.get_trade_token(password=password)
 
@@ -351,7 +350,7 @@ def get_trade_token(password=''):
 #    }
 # ]
 
-def get_daily_profitloss():
+def get_daily_profitloss() -> List[dict]:
     instance = _get_instance()
     headers = instance.build_req_headers()
     response = requests.get(WEBULL_DAILY_PL_URL.format(
@@ -614,7 +613,7 @@ def get_sample_ticker() -> str:
 # {'success': True, 'data': {'orderId': 466848369441001472}}
 
 
-def buy_limit_order(ticker_id=None, price=0, quant=0):
+def buy_limit_order(ticker_id=None, price=0, quant=0) -> dict:
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
@@ -639,7 +638,7 @@ def buy_limit_order(ticker_id=None, price=0, quant=0):
 # {'success': True, 'data': {'orderId': 466848369441001472}}
 
 
-def buy_market_order(ticker_id=None, quant=0):
+def buy_market_order(ticker_id=None, quant=0) -> dict:
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
@@ -663,7 +662,7 @@ def buy_market_order(ticker_id=None, quant=0):
 # {'success': True, 'data': {'orderId': 466847988010979328}}
 
 
-def sell_limit_order(ticker_id=None, price=0, quant=0):
+def sell_limit_order(ticker_id=None, price=0, quant=0) -> dict:
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
@@ -715,7 +714,7 @@ def modify_sell_limit_order(ticker_id: str, order_id: str, price=0, quant=0):
 # Live
 # {'success': True, 'data': {'orderId': 466847988010979328}}
 
-def sell_market_order(ticker_id=None, quant=0):
+def sell_market_order(ticker_id=None, quant=0) -> dict:
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
@@ -736,7 +735,7 @@ def sell_market_order(ticker_id=None, quant=0):
 
 
 # True
-def cancel_order(order_id: str):
+def cancel_order(order_id: str) -> bool:
     global _wb_paper
     global _wb_trade_pwd
     if not _wb_paper and not get_trade_token(_wb_trade_pwd):
@@ -999,7 +998,7 @@ def get_current_orders():
 # ]
 
 
-def get_history_orders(status=ORDER_STATUS_ALL, count=20):
+def get_history_orders(status=ORDER_STATUS_ALL, count=20) -> List[dict]:
     time.sleep(0.5)
     try:
         instance = _get_instance()
@@ -1024,7 +1023,7 @@ def get_history_orders(status=ORDER_STATUS_ALL, count=20):
 # ]
 
 
-def get_news(stock=None, items=5):
+def get_news(stock=None, items=5) -> List[dict]:
     '''
     get news and returns a list of articles
     params:

@@ -5,6 +5,7 @@
 
 def start(day=None):
     import time
+    import pandas as pd
     from datetime import date
     from sdk import webullsdk, fmpsdk, finvizsdk
     from common import utils, db
@@ -37,7 +38,7 @@ def start(day=None):
         while timestamp:
             finish = False
             temp_bar_list = []
-            bars = webullsdk.get_1m_bars(
+            bars: pd.DataFrame = webullsdk.get_1m_bars(
                 ticker_id=ticker_id, count=500, timestamp=timestamp)
             for index, bar in bars.iterrows():
                 date_time = index.to_pydatetime()
@@ -58,7 +59,7 @@ def start(day=None):
             minute_bar_list = temp_bar_list + minute_bar_list
             # reset temp list
             temp_bar_list = []
-            if finish:
+            if finish or bars.size == 0:
                 timestamp = None
             else:
                 timestamp = int(bars.index[0].timestamp()) - 1
