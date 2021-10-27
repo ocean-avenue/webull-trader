@@ -2,9 +2,8 @@
 
 # Base trading class
 
-import json
 from datetime import datetime
-from time import timezone
+from django.utils import timezone
 from typing import Optional
 from sdk import webullsdk, fmpsdk
 from common import utils, db, sms, constants, exceptions

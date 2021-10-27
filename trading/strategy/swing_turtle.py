@@ -3,9 +3,7 @@
 # Turtle trading
 
 from typing import List
-from django.utils import timezone
 from common import config, constants
-from sdk import webullsdk
 from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
 from logger import trading_logger
