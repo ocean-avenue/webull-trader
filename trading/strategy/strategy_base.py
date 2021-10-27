@@ -25,7 +25,7 @@ class StrategyBase:
         self.trading_end: bool = False
         self.trading_hour: TradingHourType = trading_hour
         self.trading_tracker: TradingTracker = TradingTracker()
-        self.order_tracker: OrderTracker = OrderTracker()
+        self.order_tracker: OrderTracker = OrderTracker(paper=self.paper)
 
     def begin(self):
         pass

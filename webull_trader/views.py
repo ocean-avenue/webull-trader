@@ -134,7 +134,7 @@ def logs(request):
             "text_style": text_style,
         })
     exception_logs = []
-    exception_log_list = list(ExceptionLog.objects.order_by('-id')[:20])
+    exception_log_list = list(ExceptionLog.objects.order_by('-id')[:10])
     for log in exception_log_list:
         days = (date.today() - log.created_at.date()).days
         text_style = "text-muted"
