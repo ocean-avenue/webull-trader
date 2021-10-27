@@ -786,9 +786,9 @@ class StrategyBase:
         else:
             last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
         bid_price = webullsdk.get_bid_price_from_quote(quote)
-        if not bid_price:
-            trading_logger.log(f"<{symbol}> bid price not existed!")
-            trading_logger.log(json.dumps(quote))
+        # if not bid_price:
+        #     trading_logger.log(f"<{symbol}> bid price not existed!")
+        #     trading_logger.log(json.dumps(quote))
         return bid_price or last_price or close_price
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:

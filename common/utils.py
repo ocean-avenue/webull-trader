@@ -457,15 +457,16 @@ def get_algo_type() -> enums.AlgorithmType:
     return settings.algo_type
 
 
-def get_order_id_from_response(order_response, paper=True):
-    order_id = None
+def get_order_id_from_response(order_response: dict, paper: bool=True) -> Optional[str]:
     if paper:
         if 'orderId' in order_response:
             order_id = order_response['orderId']
+            return str(order_id)
     else:
         if 'data' in order_response and 'orderId' in order_response['data']:
             order_id = order_response['data']['orderId']
-    return str(order_id)
+            return str(order_id)
+    return None
 
 
 def get_avg_change_from_movers(movers):
