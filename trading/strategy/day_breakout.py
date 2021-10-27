@@ -793,7 +793,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
-            close_price = row['high']  # use high price
+            close_price = row['close']  # use close price
             if close_price > period_high_price:
                 period_high_price = close_price
         # check if new high
@@ -816,6 +816,25 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             # has no volume and amount
             trading_logger.log(
                 "<{}> candle chart has no relative volume or amount, no scale in!".format(symbol))
+            return False
+
+        if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period):
+            # has long wick up
+            trading_logger.log(
+                "<{}> candle chart has long wick up, no scale in!".format(symbol))
+            return False
+
+        if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
+                not pattern.check_bars_has_most_green_candle(bars):
+            # not most green candles and no largest green candle
+            trading_logger.log(
+                "<{}> candle chart has no most green candles or largest candle is red, no scale in!".format(symbol))
+            return False
+
+        if pattern.check_bars_has_bearish_candle(bars, period=5):
+            # has bearish candle
+            trading_logger.log(
+                "<{}> candle chart has bearish candle, no scale in!".format(symbol))
             return False
 
         # position size if buy
@@ -848,7 +867,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         symbol = ticker.get_symbol()
         last_candle = bars.iloc[-2]
         last_low = min(last_candle['open'], last_candle['close'])
-        # last_high = max(last_candle['open'], last_candle['close'])
+        last_high = max(last_candle['open'], last_candle['close'])
         period_bars = bars.head(
             len(bars) - 2).tail(config.DAY_BUY_DIP_CANDLE_CHECK_COUNT)
         period_low_price = constants.MAX_SECURITY_PRICE
@@ -866,7 +885,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
 
-        if current_price <= last_candle['close']:
+        if current_price <= last_high:
             # no first candle new high
             trading_logger.log(
                 "<{}> candle not formed first candle new high, no buy dip!".format(symbol))
