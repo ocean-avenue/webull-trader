@@ -106,10 +106,8 @@ class DayTradingBreakout(StrategyBase):
         prev_close = prev_candle['close']
         surge_ratio = (current_price - prev_close) / prev_close
         if surge_ratio >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
-            surge_ratio = "{}%".format(
-                round((current_price - prev_close) / prev_close * 100, 2))
             trading_logger.log(
-                f"<{symbol}> current price (${current_price}) already surge {'{}%'.format(round(surge_ratio * 100, 2))} than prev close (${prev_close}), no entry!")
+                f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev close (${prev_close}), no entry!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
