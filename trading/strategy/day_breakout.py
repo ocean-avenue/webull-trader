@@ -187,6 +187,7 @@ class DayTradingBreakout(StrategyBase):
         exit_period = ticker.get_exit_period() or self.exit_period
         # latest candle
         current_candle = bars.iloc[-1]
+        last_candle = bars.iloc[-2]
         current_candle_time = bars.index[-1].to_pydatetime()
         last_buy_time = ticker.get_last_buy_time()
         # align timezone info
@@ -202,7 +203,8 @@ class DayTradingBreakout(StrategyBase):
         exit_trading = False
         exit_note = None
         current_price = current_candle['close']
-        period_bars = bars.head(len(bars) - 1).tail(exit_period)
+        last_price = last_candle['close']
+        period_bars = bars.head(len(bars) - 2).tail(exit_period)
         period_low_price = constants.MAX_SECURITY_PRICE
         period_low_idx = -1
         for i in range(0, len(period_bars)):
@@ -215,7 +217,7 @@ class DayTradingBreakout(StrategyBase):
             threshold = 0.01
             period_low_price = period_low_price * (1-threshold)
         # check if new low
-        if current_price < period_low_price:
+        if current_price < period_low_price or last_price < period_low_price:
             exit_trading = True
             exit_note = "{} candles new low.".format(exit_period)
             trading_logger.log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
