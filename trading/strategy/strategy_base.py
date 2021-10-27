@@ -530,6 +530,7 @@ class StrategyBase:
             resubmit_count = ticker.get_resubmit_order_count()
             retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
                 order_id)
+            trading_logger.log(f"retry_after_cancel: {retry_after_cancel}, retry_limit: {retry_limit}")
             # stop tracking cancel order
             self.stop_tracking_pending_cancel_order(ticker, order_id)
             # buy order
