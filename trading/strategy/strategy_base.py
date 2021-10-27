@@ -753,6 +753,7 @@ class StrategyBase:
         ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         trading_logger.log_level2(quote)
+        close_price = utils.get_attr_to_float_or_none(quote, 'close')
         if self.is_regular_market_hour():
             last_price = utils.get_attr_to_float_or_none(quote, 'close')
         else:
@@ -766,7 +767,7 @@ class StrategyBase:
             else:
                 buy_price = bid_price + 0.1
         # return min(ask_price, round(last_price * 1.01, 2))
-        return buy_price
+        return buy_price or close_price
 
     def get_sell_price(self, ticker: TrackingTicker) -> float:
         ticker_id = ticker.get_id()
@@ -779,6 +780,7 @@ class StrategyBase:
         # sell_price = max(
         #     ask_price - 0.1, round((ask_price + bid_price) / 2, 2))
         # return sell_price
+        close_price = utils.get_attr_to_float_or_none(quote, 'close')
         if self.is_regular_market_hour():
             last_price = utils.get_attr_to_float_or_none(quote, 'close')
         else:
@@ -787,7 +789,7 @@ class StrategyBase:
         if not bid_price:
             trading_logger.log(f"<{symbol}> bid price not existed!")
             trading_logger.log(json.dumps(quote))
-        return bid_price or last_price
+        return bid_price or last_price or close_price
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
