@@ -371,7 +371,7 @@ def is_trading_hour_end(trading_hour: enums.TradingHourType) -> bool:
     return False
 
 
-def get_trading_hour() -> enums.TradingHourType:
+def get_trading_hour() -> Optional[enums.TradingHourType]:
     if is_pre_market_hour_now():
         return enums.TradingHourType.BEFORE_MARKET_OPEN
     elif is_after_market_hour_now():
@@ -449,7 +449,7 @@ def is_paper_trading():
     return settings.paper
 
 
-def get_algo_type():
+def get_algo_type() -> enums.AlgorithmType:
     settings = TradingSettings.objects.first()
     if settings == None:
         print("[{}] Cannot find trading settings, default algo type!".format(get_now()))
@@ -532,12 +532,8 @@ def is_day_trade_algo(algo: enums.AlgorithmType) -> bool:
     return algo < 100 or (algo >= 200 and algo < 300)
 
 
-def check_swing_trade_algo(algo):
-    if algo == enums.AlgorithmType.SWING_TURTLE_20 or algo == enums.AlgorithmType.SWING_TURTLE_55 or \
-            algo == enums.AlgorithmType.DAY_SWING_BREAKOUT_TURTLE or algo == enums.AlgorithmType.DAY_SWING_RG_TURTLE or \
-            algo == enums.AlgorithmType.DAY_SWING_EARNINGS_TURTLE or algo == enums.AlgorithmType.DAY_SWING_MOMO_TURTLE:
-        return True
-    return False
+def is_swing_trade_algo(algo: enums.AlgorithmType) -> bool:
+    return algo >= 100 and algo < 300
 
 
 def check_require_top_list_algo(algo):

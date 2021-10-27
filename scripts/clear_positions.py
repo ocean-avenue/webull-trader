@@ -13,7 +13,7 @@ def start():
     paper = utils.is_paper_trading()
 
     algo_type = utils.get_algo_type()
-    if utils.check_swing_trade_algo(algo_type):
+    if utils.is_swing_trade_algo(algo_type):
         return
     if not utils.get_trading_hour():
         return

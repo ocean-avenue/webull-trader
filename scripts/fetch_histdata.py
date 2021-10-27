@@ -152,7 +152,7 @@ def start(day=None):
                 # save historical quote
                 db.save_hist_key_statistics(quote_data, day)
 
-    if utils.check_swing_trade_algo(algo_type):
+    if utils.is_swing_trade_algo(algo_type):
         # fetch watchlist symbol daily data
         swing_watchlist = SwingWatchlist.objects.all()
         for swing_watch in swing_watchlist:

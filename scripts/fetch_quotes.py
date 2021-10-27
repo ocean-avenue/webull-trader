@@ -9,7 +9,7 @@ def start():
 
     algo_type = utils.get_algo_type()
 
-    if utils.check_swing_trade_algo(algo_type):
+    if utils.is_swing_trade_algo(algo_type):
         swing_watchlist = SwingWatchlist.objects.all()
         symbol_list = []
         for swing_watch in swing_watchlist:

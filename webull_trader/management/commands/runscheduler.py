@@ -80,9 +80,11 @@ def fetch_webull_order_job():
             utils.get_now(), holiday))
         return
 
-    # print("[{}] Start webull orders job...".format(utils.get_now()))
-    # fetch_orders.start()
-    # print("[{}] Done webull orders job!".format(utils.get_now()))
+    print("[{}] Start webull orders job...".format(utils.get_now()))
+    if utils.is_swing_trade_algo(utils.get_algo_type()):
+        # only fetch orders for swing trade, day trade has order tracker internally
+        fetch_orders.start()
+    print("[{}] Done webull orders job!".format(utils.get_now()))
 
     print("[{}] Start adjust trades job...".format(utils.get_now()))
     adjust_trades.start()

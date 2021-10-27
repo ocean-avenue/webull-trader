@@ -4,13 +4,15 @@
 
 import json
 from datetime import datetime
+from time import timezone
+from typing import Optional
 from sdk import webullsdk, fmpsdk
 from common import utils, db, sms, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
 from logger import trading_logger
 from trading.tracker.trading_tracker import TradingTracker
 from trading.tracker.order_tracker import OrderTracker
-from webull_trader.models import SwingPosition, SwingTrade, WebullOrder
+from webull_trader.models import ManualTradeRequest, SwingPosition, SwingTrade, WebullOrder
 
 
 class StrategyBase:
@@ -161,6 +163,76 @@ class StrategyBase:
                 sectors_check = False
 
         return (free_float_check or turnover_rate_check) and sectors_check
+
+    # submit buy market order, only use for swing trade
+    def submit_buy_market_order(self, symbol: str, position: Optional[SwingPosition], unit_weight: int, last_price: float, reason: str):
+        usable_cash = webullsdk.get_usable_cash()
+        db.save_webull_min_usable_cash(usable_cash)
+        # buy swing position amount
+        buy_position_amount = self.get_buy_order_limit(unit_weight)
+        if usable_cash <= buy_position_amount:
+            trading_logger.log(
+                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
+            return
+        buy_quant = (int)(buy_position_amount / last_price)
+        # make sure usable cash is enough
+        if buy_quant > 0 and (usable_cash - buy_position_amount) > self.day_trade_usable_cash_threshold:
+            ticker_id = webullsdk.get_ticker(symbol)
+            # submit market buy order
+            order_response = webullsdk.buy_market_order(
+                ticker_id=ticker_id,
+                quant=buy_quant)
+            order_id = utils.get_order_id_from_response(
+                order_response, paper=self.paper)
+            if order_id:
+                trading_logger.log(
+                    f"🟢 Submit buy order <{symbol}> for {reason}, quant: {buy_quant}, latest price: {last_price}")
+                # add/update swing position, always assume market order filled
+                self.upsert_pending_swing_position(
+                    symbol=symbol,
+                    order_id=order_id,
+                    position=position,
+                    cost=last_price,
+                    quant=buy_quant,
+                    buy_time=timezone.now(),
+                    setup=self.get_setup())
+            else:
+                trading_logger.log(
+                    f"⚠️  Invalid buy order response: {order_response}")
+        else:
+            if buy_quant == 0:
+                trading_logger.log(
+                    "Order amount limit not enough for to buy <{}>, price: {}".format(symbol, last_price))
+            elif (usable_cash - buy_position_amount) <= self.day_trade_usable_cash_threshold:
+                trading_logger.log(
+                    "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, last_price))
+
+    # submit buy market order, only use for swing trade
+    def submit_sell_market_order(self, symbol: str, position: SwingPosition, last_price: float, reason: str, manual_request: Optional[ManualTradeRequest] = None):
+        ticker_id = webullsdk.get_ticker(symbol)
+        # submit market sell order
+        order_response = webullsdk.sell_market_order(
+            ticker_id=ticker_id,
+            quant=position.quantity)
+        order_id = utils.get_order_id_from_response(
+            order_response, paper=self.paper)
+        if order_id:
+            trading_logger.log(
+                f"🔴 Submit sell order <{symbol}> for {reason}, quant: {position.quantity}, latest price: ${last_price}")
+            # add swing trade
+            self.add_pending_swing_trade(
+                symbol=symbol,
+                order_id=order_id,
+                position=position,
+                price=last_price,
+                sell_time=timezone.now(),
+                manual_request=manual_request)
+        else:
+            trading_logger.log(
+                f"⚠️  Invalid buy order response: {order_response}")
+            # send message
+            sms.notify_message(
+                "Failed to sell <{}> swing position, please check now!".format(symbol))
 
     # submit buy limit order, only use for day trade
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point.",
@@ -564,68 +636,57 @@ class StrategyBase:
             ticker.reset_pending_order()
         self.order_tracker.stop_tracking(order_id)
 
-    def update_pending_swing_position(self, symbol, order_response, position, cost, quant, buy_time, setup):
-        order_id = utils.get_order_id_from_response(
-            order_response, paper=self.paper)
-        if order_id:
-            if not position:
-                # create swing position
-                position = SwingPosition(
-                    symbol=symbol,
-                    order_ids=order_id,
-                    total_cost=cost * quant,
-                    quantity=quant,
-                    units=1,
-                    buy_time=buy_time,
-                    buy_date=buy_time.date(),
-                    setup=setup,
-                    require_adjustment=True,
-                )
-            else:
-                # update swing position for add unit
-                position.order_ids = "{},{}".format(
-                    position.order_ids, order_id)
-                position.total_cost = position.total_cost + cost * quant
-                position.quantity = position.quantity + quant
-                position.units = position.units + 1
-                # temp add unit, stop loss price
-                position.add_unit_price = constants.MAX_SECURITY_PRICE
-                position.stop_loss_price = 0
-                position.require_adjustment = True
-            position.save()
-        else:
-            trading_logger.log(
-                "⚠️  Invalid swing buy order response: {}".format(order_response))
-
-    def update_pending_swing_trade(self, symbol, order_response, position, price, sell_time, manual_request=None):
-        order_id = utils.get_order_id_from_response(
-            order_response, paper=self.paper)
-        if order_id:
-            order_ids = "{},{}".format(position.order_ids, order_id)
+    def upsert_pending_swing_position(self, symbol: str, order_id: str, position: Optional[SwingPosition],
+                                      cost: float, quant: int, buy_time: datetime, setup: SetupType):
+        if not position:
             # create swing position
-            trade = SwingTrade(
+            position = SwingPosition(
                 symbol=symbol,
-                order_ids=order_ids,
-                total_cost=position.total_cost,
-                total_sold=price * position.quantity,
-                quantity=position.quantity,
-                units=position.units,
-                buy_time=position.buy_time,
-                buy_date=position.buy_date,
-                sell_time=sell_time,
-                sell_date=sell_time.date(),
-                setup=position.setup,
+                order_ids=order_id,
+                total_cost=cost * quant,
+                quantity=quant,
+                units=1,
+                buy_time=buy_time,
+                buy_date=buy_time.date(),
+                setup=setup,
                 require_adjustment=True,
             )
-            trade.save()
-            # clear position
-            position.delete()
-            # clear manual request if exist
-            if manual_request:
-                manual_request.delete()
         else:
-            trading_logger.log(
-                "⚠️  Invalid swing sell order response: {}".format(order_response))
+            # update swing position for add unit
+            position.order_ids = f"{position.order_ids},{order_id}"
+            position.total_cost = position.total_cost + cost * quant
+            position.quantity = position.quantity + quant
+            position.units = position.units + 1
+            # temp add unit, stop loss price
+            position.add_unit_price = constants.MAX_SECURITY_PRICE
+            position.stop_loss_price = 0
+            position.require_adjustment = True
+        position.save()
+
+    def add_pending_swing_trade(self, symbol: str, order_id: str, position: SwingPosition,
+                                price: float, sell_time: datetime, manual_request: Optional[ManualTradeRequest] = None):
+        order_ids = f"{position.order_ids},{order_id}"
+        # create swing position
+        trade = SwingTrade(
+            symbol=symbol,
+            order_ids=order_ids,
+            total_cost=position.total_cost,
+            total_sold=price * position.quantity,
+            quantity=position.quantity,
+            units=position.units,
+            buy_time=position.buy_time,
+            buy_date=position.buy_date,
+            sell_time=sell_time,
+            sell_date=sell_time.date(),
+            setup=position.setup,
+            require_adjustment=True,
+        )
+        trade.save()
+        # clear position
+        position.delete()
+        # clear manual request if exist
+        if manual_request:
+            manual_request.delete()
 
     def get_position(self, ticker: TrackingTicker):
         symbol = ticker.get_symbol()

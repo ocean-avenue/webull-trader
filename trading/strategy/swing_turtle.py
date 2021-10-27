@@ -4,7 +4,7 @@
 
 from typing import List
 from django.utils import timezone
-from common import db, config, constants
+from common import config, constants
 from sdk import webullsdk
 from trading import pattern
 from trading.strategy.strategy_base import StrategyBase
@@ -93,60 +93,6 @@ class SwingTurtle(StrategyBase):
             return False
         return True
 
-    # TODO, refactor
-    def submit_buy_order(self, symbol, position, unit_weight, latest_close, reason):
-        usable_cash = webullsdk.get_usable_cash()
-        db.save_webull_min_usable_cash(usable_cash)
-        # buy swing position amount
-        buy_position_amount = self.get_buy_order_limit(unit_weight)
-        if usable_cash <= buy_position_amount:
-            trading_logger.log(
-                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
-            return
-        buy_quant = (int)(buy_position_amount / latest_close)
-        # make sure usable cash is enough
-        if buy_quant > 0 and usable_cash > self.day_trade_usable_cash_threshold:
-            ticker_id = webullsdk.get_ticker(symbol)
-            # submit market buy order
-            order_response = webullsdk.buy_market_order(
-                ticker_id=ticker_id,
-                quant=buy_quant)
-            trading_logger.log("🟢 Submit buy order <{}> for {}, quant: {}, latest price: {}".format(
-                symbol, reason, buy_quant, latest_close))
-            # add swing position
-            self.update_pending_swing_position(
-                symbol,
-                order_response,
-                position=position,
-                cost=latest_close,
-                quant=buy_quant,
-                buy_time=timezone.now(),
-                setup=self.get_setup())
-        else:
-            if buy_quant == 0:
-                trading_logger.log(
-                    "Order amount limit not enough for to buy <{}>, price: {}".format(symbol, latest_close))
-            if usable_cash <= self.day_trade_usable_cash_threshold:
-                trading_logger.log(
-                    "Not enough cash for day trade threshold, skip <{}>, price: {}".format(symbol, latest_close))
-
-    # TODO, refactor
-    def submit_sell_order(self, symbol, position, latest_close, reason):
-        ticker_id = webullsdk.get_ticker(symbol)
-        # submit market sell order
-        order_response = webullsdk.sell_market_order(
-            ticker_id=ticker_id,
-            quant=position.quantity)
-        trading_logger.log("🔴 Submit sell order <{}> for {}, quant: {}, latest price: {}".format(
-            symbol, reason, position.quantity, latest_close))
-        # add swing trade
-        self.update_pending_swing_trade(
-            symbol=symbol,
-            order_response=order_response,
-            position=position,
-            price=latest_close,
-            sell_time=timezone.now())
-
     def trade(self, watchlist: List[dict]):
         symbol = watchlist["symbol"]
         unit_weight = watchlist["unit_weight"]
@@ -161,13 +107,13 @@ class SwingTurtle(StrategyBase):
             latest_close = current_daily_bars[-1].close
             # check period low for exit
             if self.check_period_low(current_daily_bars):
-                self.submit_sell_order(
+                self.submit_sell_market_order(
                     symbol, position, latest_close, reason="period low")
             elif latest_close < position.stop_loss_price:  # check if stop loss
-                self.submit_sell_order(
+                self.submit_sell_market_order(
                     symbol, position, latest_close, reason="stop loss")
             elif self.check_scale_in(current_daily_bars, position):  # check if add unit
-                self.submit_buy_order(
+                self.submit_buy_market_order(
                     symbol, position, unit_weight, latest_close, reason="add unit")
         else:
             # check if buy
@@ -182,7 +128,7 @@ class SwingTurtle(StrategyBase):
                     # check daily bars has volume
                     if self.check_has_volume(current_daily_bars):
                         latest_close = current_daily_bars[-1].close
-                        self.submit_buy_order(
+                        self.submit_buy_market_order(
                             symbol, None, unit_weight, latest_close, reason="period high")
                     else:
                         trading_logger.log(
@@ -203,28 +149,15 @@ class SwingTurtle(StrategyBase):
             position = SwingPosition.objects.filter(
                 symbol=symbol, setup=self.get_setup(), quantity=quantity).first()
             if position:
-                ticker_id = webullsdk.get_ticker(symbol)
                 latest_price = 0.0
                 quote = StockQuote.objects.filter(symbol=symbol).first()
                 if quote:
                     latest_price = quote.price
-                # submit market sell order
-                order_response = webullsdk.sell_market_order(
-                    ticker_id=ticker_id,
-                    quant=quantity)
-                trading_logger.log("🔴 Submit manual sell order <{}>, quant: {}, latest price: {}".format(
-                    symbol, quantity, latest_price))
-                # add swing trade
-                self.update_pending_swing_trade(
-                    symbol=symbol,
-                    order_response=order_response,
-                    position=position,
-                    price=latest_price,
-                    sell_time=timezone.now(),
-                    manual_request=request)
+                self.submit_sell_market_order(
+                    symbol, position, latest_price, reason="manual request", manual_request=request)
             else:
-                trading_logger.log("Unable to find match position <{}>, quant: {} for sell manual request.".format(
-                    symbol, quantity))
+                trading_logger.log(
+                    f"Unable to find match position <{symbol}>, quant: {quantity} for sell manual request.")
         # mark request done
         request.complete = True
         request.save()
