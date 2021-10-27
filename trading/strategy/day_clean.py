@@ -50,8 +50,7 @@ class DayTradingClean(StrategyBase):
             return
 
         trading_logger.log(f"❌ Clean failed to sell position <{symbol}>!")
-        self.submit_sell_limit_order(
-            ticker, note="Clear failed to sell position.", retry=True, retry_limit=50)
+        self.submit_sell_limit_order(ticker, note="Clear failed to sell position.")
 
     def update(self):
         if len(self.trading_tracker.get_tickers()) == 0:

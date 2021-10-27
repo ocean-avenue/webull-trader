@@ -127,8 +127,7 @@ class DayTradingRedGreen(StrategyBase):
             if exit_trading:
                 trading_logger.log("📈 Exit trading <{}> P&L: {}%".format(
                     symbol, round(profit_loss_rate * 100, 2)))
-                self.submit_sell_limit_order(
-                    ticker, note=exit_note, retry=True, retry_limit=50)
+                self.submit_sell_limit_order(ticker, note=exit_note)
 
     def begin(self):
 

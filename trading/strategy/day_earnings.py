@@ -58,8 +58,7 @@ class DayTradingEarningsOvernight(StrategyBase):
             exit_trading, exit_note = self.check_exit(ticker)
             if exit_trading:
                 # submit sell limit order
-                self.submit_sell_limit_order(
-                    ticker, note=exit_note, retry=True, retry_limit=50)
+                self.submit_sell_limit_order(ticker, note=exit_note)
 
     def begin(self):
         # prepare tickers for buy

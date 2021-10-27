@@ -20,6 +20,8 @@ class StrategyBase:
     from common.enums import SetupType, TradingHourType
     from trading.tracker.trading_tracker import TrackingTicker
 
+    ORDER_RETRY_LIMIT = 30
+
     def __init__(self, paper: bool = True, trading_hour: TradingHourType = TradingHourType.REGULAR):
         # init strategy variables
         self.paper: bool = paper
@@ -234,8 +236,7 @@ class StrategyBase:
                 "Failed to sell <{}> swing position, please check now!".format(symbol))
 
     # submit buy limit order, only use for day trade
-    def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point.",
-                               retry: bool = False, retry_limit: int = 0):
+    def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
         usable_cash = webullsdk.get_usable_cash()
@@ -260,7 +261,7 @@ class StrategyBase:
                     f"🟢 Submit buy order {order_id}, ticker: <{symbol}>, quant: {buy_quant}, limit price: {buy_price}")
                 # tracking pending buy order
                 self.start_tracking_pending_buy_order(
-                    ticker, order_id, entry_note=note, retry=retry, retry_limit=retry_limit)
+                    ticker, order_id, entry_note=note)
             else:
                 trading_logger.log(
                     f"⚠️  Invalid buy order response: {order_response}")
@@ -269,8 +270,7 @@ class StrategyBase:
                 "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
 
     # submit sell limit order, only use for day trade
-    def submit_sell_limit_order(self, ticker: TrackingTicker, note: str = "Exit point.",
-                                retry: bool = True, retry_limit: int = 20):
+    def submit_sell_limit_order(self, ticker: TrackingTicker, note: str = "Exit point."):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
         holding_quantity = ticker.get_positions()
@@ -286,7 +286,7 @@ class StrategyBase:
                 f"🔴 Submit sell order {order_id}, ticker: <{symbol}>, quant: {holding_quantity}, limit price: {sell_price}")
             # tracking pending sell order
             self.start_tracking_pending_sell_order(
-                ticker, order_id, exit_note=note, retry=retry, retry_limit=retry_limit)
+                ticker, order_id, exit_note=note)
         else:
             trading_logger.log(
                 f"⚠️  Invalid sell order response: {order_response}")
@@ -425,35 +425,30 @@ class StrategyBase:
             # update tracking ticker
             ticker.dec_positions(order.filled_quantity)
             ticker.reset_resubmit_order_count()
-            retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
-                order_id)
             # stop tracking sell order
             self.stop_tracking_pending_sell_order(ticker, order_id)
             # continue sell reset positions
             trading_logger.log(
                 f"Continue sell rest <{symbol}> positions, quant: {ticker.get_positions()}")
-            self.submit_sell_limit_order(
-                ticker, note="Sell rest positions.", retry=retry_after_cancel, retry_limit=retry_limit)
+            self.submit_sell_limit_order(ticker, note="Sell rest positions.")
         else:
             raise exceptions.WebullOrderStatusError(
                 f"Unknown order status '{order.status}', {order_id} - <{symbol}>!")
         # update account status
         self.update_account()
 
-    def _on_sell_order_failed(self, ticker: TrackingTicker, order_status: str, stop_tracking_ticker_after_order_filled: bool = True):
+    def _on_sell_order_failed(self, ticker: TrackingTicker, order_status: str, stop_tracking_ticker_after_order_done: bool = True):
         symbol = ticker.get_symbol()
         order_id = ticker.get_pending_order_id()
         if order_status in [webullsdk.ORDER_STATUS_FAILED, webullsdk.ORDER_STATUS_CANCELED, webullsdk.ORDER_STATUS_NOT_FOUND]:
             resubmit_count = ticker.get_resubmit_order_count()
-            retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
-                order_id)
             self.stop_tracking_pending_sell_order(ticker, order_id)
-            if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
+            if resubmit_count < self.ORDER_RETRY_LIMIT and not self.trading_end:
                 # retry sell order
                 trading_logger.log(
                     f"Resubmitting sell order <{symbol}>...")
                 self.submit_sell_limit_order(
-                    ticker, note=f"Resubmit sell order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
+                    ticker, note=f"Resubmit sell order ({resubmit_count}).")
                 # increment resubmit order count
                 ticker.inc_resubmit_order_count()
             else:
@@ -467,7 +462,7 @@ class StrategyBase:
                 sms.notify_message(
                     "Failed to sell <{}> position, please check now!".format(symbol))
                 # stop tracking ticker
-                if stop_tracking_ticker_after_order_filled:
+                if stop_tracking_ticker_after_order_done:
                     self.trading_tracker.stop_tracking(ticker)
         else:
             raise exceptions.WebullOrderStatusError(
@@ -527,47 +522,16 @@ class StrategyBase:
             f"Cancel order {order_id} - <{symbol}> {order.status}")
         # failed or canceled
         if order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
-            resubmit_count = ticker.get_resubmit_order_count()
-            retry_after_cancel, retry_limit = self.order_tracker.check_retry_after_cancel(
-                order_id)
-            trading_logger.log(f"retry_after_cancel: {retry_after_cancel}, retry_limit: {retry_limit}")
             # stop tracking cancel order
             self.stop_tracking_pending_cancel_order(ticker, order_id)
             # buy order
             if order.action == ActionType.BUY:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
-                    # retry buy order
-                    trading_logger.log(
-                        f"Resubmitting buy order <{symbol}>...")
-                    self.submit_buy_limit_order(
-                        ticker, note=f"Resubmit buy order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
-                    # increment resubmit order count
-                    ticker.inc_resubmit_order_count()
-                else:
-                    if stop_tracking_ticker_after_order_canceled:
-                        self.trading_tracker.stop_tracking(ticker)
+                if stop_tracking_ticker_after_order_canceled:
+                    self.trading_tracker.stop_tracking(ticker)
             # sell order
             if order.action == ActionType.SELL:
-                if retry_after_cancel and resubmit_count < retry_limit and not self.trading_end:
-                    # retry sell order
-                    trading_logger.log(
-                        f"Resubmitting sell order <{symbol}>...")
-                    self.submit_sell_limit_order(
-                        ticker, note=f"Resubmit sell order ({resubmit_count}).", retry=retry_after_cancel, retry_limit=retry_limit)
-                    # increment resubmit order count
-                    ticker.inc_resubmit_order_count()
-                else:
-                    position_obj = ticker.get_position_obj()
-                    # update setup
-                    position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
-                    position_obj.save()
-                    trading_logger.log(
-                        "Failed to sell position <{}>!".format(symbol))
-                    # send message
-                    sms.notify_message(
-                        "Failed to sell <{}> position, please check now!".format(symbol))
-                    if stop_tracking_ticker_after_order_canceled:
-                        self.trading_tracker.stop_tracking(ticker)
+                self._on_sell_order_failed(
+                    ticker, order.status, stop_tracking_ticker_after_order_canceled)
         elif order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
             # buy order
             if order.action == ActionType.BUY:
@@ -579,8 +543,7 @@ class StrategyBase:
             raise exceptions.WebullOrderStatusError(
                 f"Error cancel order status '{order.status}', {order_id} - <{symbol}>")
 
-    def start_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str, entry_note: str = "",
-                                         retry: bool = False, retry_limit: int = 0):
+    def start_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str, entry_note: str = ""):
         ticker.reset_pending_order()
         # mark pending buy
         ticker.set_pending_buy(True)
@@ -590,9 +553,7 @@ class StrategyBase:
         self.order_tracker.start_tracking(
             order_id=order_id,
             setup=self.get_setup(),
-            note=entry_note,
-            retry_after_cancel=retry,
-            retry_limit=retry_limit)
+            note=entry_note)
 
     def stop_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str):
         if ticker.get_pending_order_id() == order_id:
@@ -600,8 +561,7 @@ class StrategyBase:
         ticker.set_last_buy_time(datetime.now())
         self.order_tracker.stop_tracking(order_id)
 
-    def start_tracking_pending_sell_order(self, ticker: TrackingTicker, order_id: str, exit_note: str = "",
-                                          retry: bool = True, retry_limit: int = 20):
+    def start_tracking_pending_sell_order(self, ticker: TrackingTicker, order_id: str, exit_note: str = ""):
         ticker.reset_pending_order()
         # mark pending sell
         ticker.set_pending_sell(True)
@@ -611,9 +571,7 @@ class StrategyBase:
         self.order_tracker.start_tracking(
             order_id=order_id,
             setup=self.get_setup(),
-            note=exit_note,
-            retry_after_cancel=retry,
-            retry_limit=retry_limit)
+            note=exit_note)
 
     def stop_tracking_pending_sell_order(self, ticker: TrackingTicker, order_id: str):
         if ticker.get_pending_order_id() == order_id:
@@ -726,8 +684,7 @@ class StrategyBase:
             self.trading_tracker.stop_tracking(ticker)
             return
 
-        self.submit_sell_limit_order(
-            ticker, note="Clear position.", retry=True, retry_limit=50)
+        self.submit_sell_limit_order(ticker, note="Clear position.")
 
     def track_rest_positions(self):
         for ticker_id in self.trading_tracker.get_tickers():

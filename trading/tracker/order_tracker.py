@@ -19,29 +19,12 @@ class OrderTracker:
             return True
         return False
 
-    def start_tracking(self, order_id: str, setup: SetupType, note: Optional[str] = None, retry_after_cancel: Optional[bool] = None, retry_limit: Optional[int] = None):
-        if order_id in self.current_orders:
-            self.current_orders[order_id]['setup'] = setup
-            if note != None:
-                self.current_orders[order_id]['note'] = note
-            if retry_after_cancel != None:
-                self.current_orders[order_id]['retry_after_cancel'] = retry_after_cancel
-            if retry_limit != None:
-                self.current_orders[order_id]['retry_limit'] = retry_limit
-        else:
-            self.current_orders[order_id] = {
-                # 'status': webullsdk.ORDER_STATUS_PENDING,
-                'setup': setup,
-                'note': note or "",
-                'retry_after_cancel': retry_after_cancel or False,
-                'retry_limit': retry_limit or 0,
-            }
-
-    def check_retry_after_cancel(self, order_id) -> Tuple[bool, int]:
-        if order_id in self.current_orders:
-            open_order = self.current_orders[order_id]
-            return (open_order['retry_after_cancel'], open_order['retry_limit'])
-        return (False, 0)
+    def start_tracking(self, order_id: str, setup: SetupType, note: Optional[str] = None):
+        self.current_orders[order_id] = {
+            # 'status': webullsdk.ORDER_STATUS_PENDING,
+            'setup': setup,
+            'note': note or "",
+        }
 
     def stop_tracking(self, order_id: str):
         if order_id in self.current_orders:

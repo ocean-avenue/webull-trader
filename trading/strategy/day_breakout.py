@@ -403,8 +403,7 @@ class DayTradingBreakout(StrategyBase):
                 trading_logger.log(
                     f"📈 Exit trading <{symbol}> P&L: {round(profit_loss_rate * 100, 2)}%")
 
-                self.submit_sell_limit_order(
-                    ticker, note=exit_note, retry=True, retry_limit=50)
+                self.submit_sell_limit_order(ticker, note=exit_note)
 
             # check scale in position
             elif self.check_scale_in(ticker, bars, ticker_position):

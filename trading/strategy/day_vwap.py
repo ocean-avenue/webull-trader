@@ -155,8 +155,7 @@ class DayTradingVWAPPaper(StrategyBase):
 
                 # exit trading
                 if exit_trading:
-                    self.submit_sell_limit_order(
-                        ticker, note=exit_note, retry=True, retry_limit=50)
+                    self.submit_sell_limit_order(ticker, note=exit_note)
 
     def update(self):
         # trading tickers
@@ -336,8 +335,7 @@ class DayTradingVWAPLargeCap(StrategyBase):
             # exit trading
             if exit_trading:
                 # submit sell limit order
-                self.submit_sell_limit_order(
-                    ticker, note=exit_note, retry=True, retry_limit=50)
+                self.submit_sell_limit_order(ticker, note=exit_note)
 
     def update(self):
         # trading tickers

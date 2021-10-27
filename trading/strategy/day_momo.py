@@ -222,8 +222,7 @@ class DayTradingMomo(StrategyBase):
                 trading_logger.log(
                     f"📈 Exit trading <{symbol}> P&L: {round(profit_loss_rate * 100, 2)}%")
 
-                self.submit_sell_limit_order(
-                    ticker, note=exit_note, retry=True, retry_limit=50)
+                self.submit_sell_limit_order(ticker, note=exit_note)
 
     def update(self):
         # trading tickers
