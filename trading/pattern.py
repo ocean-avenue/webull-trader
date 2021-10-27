@@ -319,12 +319,15 @@ def check_bars_reversal(bars: pd.DataFrame, period: int = 5) -> bool:
     # prev_bar2 should be red
     if prev_bar2['close'] > prev_bar2['open']:
         return False
-    # prev_bar2 up wick should > down wick
+    # prev_bar2 up wick should > down wick or body
     prev_bar2_high = prev_bar2['high']
     prev_bar2_low = prev_bar2['low']
     prev_bar2_up = max(prev_bar2['open'], prev_bar2['close'])
     prev_bar2_down = min(prev_bar2['open'], prev_bar2['close'])
-    if prev_bar2_high - prev_bar2_up < prev_bar2_down - prev_bar2_low:
+    prev_bar2_up_wick = prev_bar2_high - prev_bar2_up
+    prev_bar2_down_wick = prev_bar2_down - prev_bar2_low
+    prev_bar2_body = prev_bar2_up - prev_bar2_down
+    if prev_bar2_up_wick < max(prev_bar2_down_wick, prev_bar2_body):
         return False
     # prev_bar2_mid = max(prev_bar2['open'], prev_bar2['close'])
     # prev_bar2_body = abs(prev_bar2['close'] - prev_bar2['open'])
