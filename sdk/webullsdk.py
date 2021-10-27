@@ -696,6 +696,7 @@ def modify_sell_limit_order(ticker_id: str, order_id: str, price=0, quant=0):
                     'tickerId': ticker_id,
                 },
                 'totalQuantity': quant,
+                'outsideRegularTradingHour': True,
             },
             price=price,
             action='SELL',

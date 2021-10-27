@@ -291,6 +291,22 @@ class StrategyBase:
             trading_logger.log(
                 f"⚠️  Invalid sell order response: {order_response}")
 
+    def modify_sell_limit_order(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
+        order_id = ticker.get_pending_order_id()
+        holding_quantity = ticker.get_positions()
+        sell_price = self.get_sell_price(ticker)
+        order_response = webullsdk.modify_sell_limit_order(
+            ticker_id=ticker_id,
+            order_id=order_id,
+            price=sell_price,
+            quant=holding_quantity)
+        trading_logger.log(
+            f"🔴 Modify sell order {order_id}, ticker: <{symbol}>, quant: {holding_quantity}, limit price: {sell_price}")
+        trading_logger.log(
+            f"⚠️  Modify sell order response: {order_response}")
+
     def check_pending_order_done(self, ticker: TrackingTicker):
 
         if ticker.is_pending_buy():
@@ -500,6 +516,9 @@ class StrategyBase:
                 else:
                     trading_logger.log(
                         f"Failed to cancel timeout sell order {order_id} - <{symbol}>!")
+            else:
+                # modify order price to make it easier to sell
+                self.modify_sell_limit_order(ticker)
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             self._on_sell_order_failed(
