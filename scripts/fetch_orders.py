@@ -16,11 +16,10 @@ def start():
     paper = utils.is_paper_trading()
 
     if webullsdk.login(paper=paper):
-        # fetch enough count to cover today's orders
-        history_orders = webullsdk.get_history_orders(
-            status=webullsdk.ORDER_STATUS_ALL, count=FETCH_ORDER_COUNT)[::-1]
-
         try:
+            # fetch enough count to cover today's orders
+            history_orders = webullsdk.get_history_orders(
+                status=webullsdk.ORDER_STATUS_ALL, count=FETCH_ORDER_COUNT)[::-1]
             for order_data in history_orders:
                 db.save_webull_order(order_data, paper=paper)
         except Exception as e:
