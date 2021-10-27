@@ -50,7 +50,7 @@ class DayTradingMomo(StrategyBase):
         prev_close = prev_candle['close']
         if current_low <= min(prev_close - 0.1, prev_close * 0.99):
             trading_logger.log(
-                "<{}> current low (${}) is lower than previous close (${}), no entry!".format(symbol, current_low, prev_close))
+                f"<{symbol}> current low (${current_low}) is lower than previous close (${prev_close}), no entry!")
             return False
 
         # # check if current candle already surge too much
@@ -91,20 +91,15 @@ class DayTradingMomo(StrategyBase):
         return (exit_trading, exit_note)
 
     def check_exit(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
+        symbol = ticker.get_symbol()
         exit_trading = False
         exit_note = None
         # check if momentum is stop
         if pattern.check_bars_current_low_less_than_prev_low(bars):
-            trading_logger.log("<{}> current low price is less than previous low price.".format(
-                ticker.get_symbol()))
+            trading_logger.log(
+                f"<{symbol}> current low price is less than previous low price.")
             exit_trading = True
             exit_note = "Current Low < Previous Low."
-        # check if price fixed in last 3 candles
-        elif pattern.check_bars_price_fixed(bars):
-            trading_logger.log(
-                "<{}> price is fixed during last 3 candles.".format(ticker.get_symbol()))
-            exit_trading = True
-            exit_note = "Price fixed during last 3 candles."
         return (exit_trading, exit_note)
 
     def trade(self, ticker: TrackingTicker, m1_bars: pd.DataFrame = pd.DataFrame()):
@@ -136,9 +131,15 @@ class DayTradingMomo(StrategyBase):
             if not pattern.check_bars_updated(m1_bars):
                 trading_logger.log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
-                # remove from tracking
+                # stop tracking
                 self.trading_tracker.stop_tracking(ticker)
                 return
+
+            if pattern.check_bars_has_long_wick_up(m1_bars, period=self.entry_period):
+                # has long wick up
+                trading_logger.log(
+                    "<{}> candle chart has long wick up, no entry!".format(symbol))
+                return False
 
             # if not pattern.check_bars_volatility(m1_bars):
             #     trading_logger.log("<{}> candle chart is not volatility, stop trading!".format(symbol))
@@ -203,9 +204,9 @@ class DayTradingMomo(StrategyBase):
                 exit_trading = True
 
             if not exit_trading:
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=20)
                 # get 2m bar charts
-                m2_bars = utils.convert_2m_bars(
-                    webullsdk.get_1m_bars(ticker_id, count=20))
+                m2_bars = utils.convert_2m_bars(m1_bars)
 
                 # get bars error
                 if m2_bars.empty:
@@ -214,6 +215,26 @@ class DayTradingMomo(StrategyBase):
                     exit_note = "Bars data error!"
                     exit_trading = True
                 else:
+
+                    # check if price fixed in last 3 candles
+                    if pattern.check_bars_price_fixed(m1_bars):
+                        trading_logger.log(
+                            f"<{symbol}> price is fixed during last 3 candles.")
+                        exit_trading = True
+                        exit_note = "Price fixed during last 3 candles."
+                    # check if has long wick up
+                    elif pattern.check_bars_has_long_wick_up(m1_bars, period=5, count=2):
+                        trading_logger.log(
+                            f"<{symbol}> candle chart has long wick up, exit!")
+                        exit_trading = True
+                        exit_note = "Candle chart has long wick up."
+                    # check if bar chart is at peak
+                    elif self.is_regular_market_hour() and pattern.check_bars_at_peak(m1_bars):
+                        trading_logger.log(
+                            f"<{symbol}> candle chart is at peak, exit!")
+                        exit_trading = True
+                        exit_note = "Candle chart is at peak."
+
                     # check exit trade
                     exit_trading, exit_note = self.check_exit(ticker, m2_bars)
 

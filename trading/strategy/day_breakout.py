@@ -222,7 +222,7 @@ class DayTradingBreakout(StrategyBase):
             exit_note = "{} candles new low.".format(exit_period)
             trading_logger.log("<{}> new period low price, new low: {}, period low: {}, exit!".format(
                 symbol, current_price, round(period_low_price, 2)))
-        # # check if has long wick up
+        # check if has long wick up
         elif pattern.check_bars_has_long_wick_up(bars, period=5, count=2):
             trading_logger.log(
                 "<{}> candle chart has long wick up, exit!".format(symbol))
@@ -240,6 +240,7 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart is at peak, exit!".format(symbol))
             exit_trading = True
             exit_note = "Candle chart is at peak."
+        # check bar will reversal
         elif pattern.check_bars_reversal(bars):
             trading_logger.log(
                 "<{}> candle chart will reversal, exit!".format(symbol))

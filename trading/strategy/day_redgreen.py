@@ -29,17 +29,8 @@ class DayTradingRedGreen(StrategyBase):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
 
-        if ticker.is_pending_buy():
-            self.check_buy_order_done(ticker)
-            return
-
-        if ticker.is_pending_sell():
-            self.check_sell_order_done(
-                ticker, stop_tracking_ticker_after_order_filled=False)
-            return
-
-        if ticker.is_pending_cancel():
-            self.check_cancel_order_done(ticker)
+        if ticker.has_pending_order():
+            self.check_pending_order_done(ticker)
             return
 
         prev_day_close = ticker.get_prev_close()

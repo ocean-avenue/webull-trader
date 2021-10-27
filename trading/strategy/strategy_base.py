@@ -404,7 +404,7 @@ class StrategyBase:
                 f"Unknown order status '{order.status}', {order_id} - <{symbol}>!")
 
     def _on_sell_order_filled(self, ticker: TrackingTicker, order: WebullOrder,
-                              stop_tracking_ticker_after_order_filled: bool = True):
+                              stop_tracking_ticker_after_order_filled: bool = False):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
         order_id = order.order_id
