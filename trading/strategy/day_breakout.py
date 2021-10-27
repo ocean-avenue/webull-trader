@@ -837,10 +837,9 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         return True
 
     def get_scale_stop_loss_price(self, bars: pd.DataFrame) -> float:
-        # current_candle = bars.iloc[-1]
-        # prev_candle = bars.iloc[-2]
-        # return min(current_candle['low'], prev_candle['low'])
-        return 0.0
+        current_candle = bars.iloc[-1]
+        prev_candle = bars.iloc[-2]
+        return min(current_candle['low'], prev_candle['low'])
 
     def check_buy_dip(self, ticker: TrackingTicker, bars: pd.DataFrame, position: dict) -> bool:
         if not self.precheck_scale_in(ticker, position):
