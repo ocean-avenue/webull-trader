@@ -344,7 +344,7 @@ class DayPosition(models.Model):
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
+        default=enums.SetupType.DAY_20_CANDLES_NEW_HIGH
     )
 
     def __str__(self):
@@ -379,7 +379,7 @@ class DayTrade(models.Model):
 
     setup = models.PositiveSmallIntegerField(
         choices=enums.SetupType.tochoices(),
-        default=enums.SetupType.SWING_20_DAYS_NEW_HIGH
+        default=enums.SetupType.DAY_20_CANDLES_NEW_HIGH
     )
 
     def __str__(self):

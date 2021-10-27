@@ -3,6 +3,7 @@ from common import db
 from common.enums import SetupType
 from sdk import webullsdk
 from webull_trader.models import WebullOrder
+from logger import exception_logger
 
 
 # Order tracker class
@@ -51,11 +52,14 @@ class OrderTracker:
 
     def update_orders(self):
         if len(self.current_orders) > 0:
-            orders = webullsdk.get_history_orders(count=50)
+            orders = webullsdk.get_history_orders(count=50)[::-1]
 
-            for order_data in orders:
-                # save order to db
-                db.save_webull_order(order_data, self.paper)
+            try:
+                for order_data in orders:
+                    # save order to db
+                    db.save_webull_order(order_data, self.paper)
+            except Exception as e:
+                exception_logger.log(str(e), f"orders: {str(orders)}")
 
             for order_id in list(self.current_orders):
                 order = WebullOrder.objects.filter(order_id=order_id).first()

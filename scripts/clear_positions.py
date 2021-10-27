@@ -42,7 +42,7 @@ def start():
                     'order_id': order_id,
                     'sell_price': last_price,
                 }
-                exception_logger.log("TradingPositionException", "",
+                exception_logger.log("TradingPositionException",
                                      f"⚠️  Exit trading exception position <{symbol}>!")
         for symbol, sell_order in clear_positions:
             order_id = sell_order['order_id']

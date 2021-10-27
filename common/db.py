@@ -1,6 +1,5 @@
 from typing import List, Optional
 import pytz
-import traceback
 from django.conf import settings
 from datetime import datetime, date
 from common import enums, utils, constants
@@ -179,104 +178,100 @@ def _time_in_force_fmt(time_in_force_str: str) -> enums.TimeInForceType:
 
 
 def save_webull_order(order_data: dict, paper: bool = True):
-    try:
-        avg_price = 0.0
-        price = 0.0
-        filled_time = None
-        placed_time = None
-        # create_time = None
-        if paper:
-            order_id = str(order_data['orderId'])
-            if "symbol" in order_data['ticker']:
-                symbol = order_data['ticker']['symbol']
-            else:
-                symbol = order_data['ticker']['disSymbol']
-            ticker_id = str(order_data['ticker']['tickerId'])
-            action = _order_action_fmt(order_data['action'])
-            status = order_data['statusStr']
-            order_type = _order_type_fmt(order_data['orderType'])
-            total_quantity = int(order_data['totalQuantity'])
-            filled_quantity = int(order_data['filledQuantity'])
-            if 'avgFilledPrice' in order_data:
-                avg_price = float(order_data['avgFilledPrice'])
-                price = avg_price
-            if 'lmtPrice' in order_data:
-                price = float(order_data['lmtPrice'])
-            if 'filledTime' in order_data:
-                filled_time = _order_time_fmt(order_data['filledTime'])
-            if 'placedTime' in order_data:
-                placed_time = _order_time_fmt(order_data['placedTime'])
-                # create_time = order_data['placedTime']
-            time_in_force = _time_in_force_fmt(order_data['timeInForce'])
+    avg_price = 0.0
+    price = 0.0
+    filled_time = None
+    placed_time = None
+    # create_time = None
+    if paper:
+        order_id = str(order_data['orderId'])
+        if "symbol" in order_data['ticker']:
+            symbol = order_data['ticker']['symbol']
         else:
-            order_obj = order_data['orders'][0]
-            order_id = str(order_obj['orderId'])
-            if "symbol" in order_obj['ticker']:
-                symbol = order_obj['ticker']['symbol']
-            else:
-                symbol = order_obj['ticker']['disSymbol']
-            ticker_id = str(order_obj['ticker']['tickerId'])
-            action = _order_action_fmt(order_obj['action'])
-            status = order_obj['statusStr']
-            order_type = _order_type_fmt(order_obj['orderType'])
-            total_quantity = int(order_obj['totalQuantity'])
-            filled_quantity = int(order_obj['filledQuantity'])
-            if 'avgFilledPrice' in order_obj:
-                avg_price = float(order_obj['avgFilledPrice'])
-                price = avg_price
-            if 'lmtPrice' in order_obj:
-                price = float(order_obj['lmtPrice'])
-            if 'auxPrice' in order_obj:  # for stop order
-                price = float(order_obj['auxPrice'])
-            if 'filledTime' in order_obj:
-                filled_time = _order_time_fmt(order_obj['filledTime'])
-            if 'createTime' in order_obj:
-                placed_time = _order_time_fmt(order_obj['createTime'])
-                # create_time = order_obj['createTime']
-            time_in_force = _time_in_force_fmt(order_obj['timeInForce'])
+            symbol = order_data['ticker']['disSymbol']
+        ticker_id = str(order_data['ticker']['tickerId'])
+        action = _order_action_fmt(order_data['action'])
+        status = order_data['statusStr']
+        order_type = _order_type_fmt(order_data['orderType'])
+        total_quantity = int(order_data['totalQuantity'])
+        filled_quantity = int(order_data['filledQuantity'])
+        if 'avgFilledPrice' in order_data:
+            avg_price = float(order_data['avgFilledPrice'])
+            price = avg_price
+        if 'lmtPrice' in order_data:
+            price = float(order_data['lmtPrice'])
+        if 'filledTime' in order_data:
+            filled_time = _order_time_fmt(order_data['filledTime'])
+        if 'placedTime' in order_data:
+            placed_time = _order_time_fmt(order_data['placedTime'])
+            # create_time = order_data['placedTime']
+        time_in_force = _time_in_force_fmt(order_data['timeInForce'])
+    else:
+        order_obj = order_data['orders'][0]
+        order_id = str(order_obj['orderId'])
+        if "symbol" in order_obj['ticker']:
+            symbol = order_obj['ticker']['symbol']
+        else:
+            symbol = order_obj['ticker']['disSymbol']
+        ticker_id = str(order_obj['ticker']['tickerId'])
+        action = _order_action_fmt(order_obj['action'])
+        status = order_obj['statusStr']
+        order_type = _order_type_fmt(order_obj['orderType'])
+        total_quantity = int(order_obj['totalQuantity'])
+        filled_quantity = int(order_obj['filledQuantity'])
+        if 'avgFilledPrice' in order_obj:
+            avg_price = float(order_obj['avgFilledPrice'])
+            price = avg_price
+        if 'lmtPrice' in order_obj:
+            price = float(order_obj['lmtPrice'])
+        if 'auxPrice' in order_obj:  # for stop order
+            price = float(order_obj['auxPrice'])
+        if 'filledTime' in order_obj:
+            filled_time = _order_time_fmt(order_obj['filledTime'])
+        if 'createTime' in order_obj:
+            placed_time = _order_time_fmt(order_obj['createTime'])
+            # create_time = order_obj['createTime']
+        time_in_force = _time_in_force_fmt(order_obj['timeInForce'])
 
-        order = WebullOrder.objects.filter(order_id=order_id).first()
-        # if order:
-        #     print("[{}] Updating order <{}> {} ({})...".format(
-        #         utils.get_now(), symbol, order_id, create_time))
-        # else:
-        #     print("[{}] Importing order <{}> {} ({})...".format(
-        #         utils.get_now(), symbol, order_id, create_time))
-        if order:
-            order.ticker_id = ticker_id
-            order.symbol = symbol
-            order.action = action
-            order.status = status
-            order.total_quantity = total_quantity
-            order.filled_quantity = filled_quantity
-            order.price = price
-            order.avg_price = avg_price
-            order.order_type = order_type
-            order.filled_time = filled_time
-            order.placed_time = placed_time
-            order.time_in_force = time_in_force
-            order.paper = paper
-        else:
-            order = WebullOrder(
-                order_id=order_id,
-                ticker_id=ticker_id,
-                symbol=symbol,
-                action=action,
-                status=status,
-                total_quantity=total_quantity,
-                filled_quantity=filled_quantity,
-                price=price,
-                avg_price=avg_price,
-                order_type=order_type,
-                filled_time=filled_time,
-                placed_time=placed_time,
-                time_in_force=time_in_force,
-                paper=paper,
-            )
-        order.save()
-    except Exception as e:
-        exception_logger.log(
-            str(e), traceback.format_exc(), f"order_data: {str(order_data)}")
+    order = WebullOrder.objects.filter(order_id=order_id).first()
+    # if order:
+    #     print("[{}] Updating order <{}> {} ({})...".format(
+    #         utils.get_now(), symbol, order_id, create_time))
+    # else:
+    #     print("[{}] Importing order <{}> {} ({})...".format(
+    #         utils.get_now(), symbol, order_id, create_time))
+    if order:
+        order.ticker_id = ticker_id
+        order.symbol = symbol
+        order.action = action
+        order.status = status
+        order.total_quantity = total_quantity
+        order.filled_quantity = filled_quantity
+        order.price = price
+        order.avg_price = avg_price
+        order.order_type = order_type
+        order.filled_time = filled_time
+        order.placed_time = placed_time
+        order.time_in_force = time_in_force
+        order.paper = paper
+    else:
+        order = WebullOrder(
+            order_id=order_id,
+            ticker_id=ticker_id,
+            symbol=symbol,
+            action=action,
+            status=status,
+            total_quantity=total_quantity,
+            filled_quantity=filled_quantity,
+            price=price,
+            avg_price=avg_price,
+            order_type=order_type,
+            filled_time=filled_time,
+            placed_time=placed_time,
+            time_in_force=time_in_force,
+            paper=paper,
+        )
+    order.save()
 
 
 def save_webull_min_usable_cash(usable_cash: float):
@@ -317,8 +312,7 @@ def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.Se
         position.save()
         return position
     except Exception as e:
-        exception_logger.log(
-            str(e), traceback.format_exc(),
+        exception_logger.log(str(e),
             f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
         return None
 
