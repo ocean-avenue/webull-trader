@@ -349,7 +349,6 @@ class DayTradingBreakout(StrategyBase):
             if not ticker_position:
                 trading_logger.log(
                     "Finding <{}> position error!".format(symbol))
-                self.trading_tracker.stop_tracking(ticker)
                 return
             if holding_quantity <= 0:
                 # position is negitive, some unknown error happen
