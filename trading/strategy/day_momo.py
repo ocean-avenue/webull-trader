@@ -135,7 +135,7 @@ class DayTradingMomo(StrategyBase):
                 self.trading_tracker.stop_tracking(ticker)
                 return
 
-            if pattern.check_bars_has_long_wick_up(m1_bars, period=self.entry_period):
+            if pattern.check_bars_has_long_wick_up(m1_bars, period=5, count=1):
                 # has long wick up
                 trading_logger.log(
                     "<{}> candle chart has long wick up, no entry!".format(symbol))
