@@ -763,7 +763,7 @@ class StrategyBase:
         last_price = last_price or close_price
         bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
         ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
-        buy_price = round((ask_price + bid_price) / 2, 2)
+        buy_price = round((ask_price + bid_price) / 2 + 0.005, 2)
         # return min(ask_price, round(last_price * 1.01, 2))
         return buy_price
 
@@ -785,7 +785,7 @@ class StrategyBase:
         last_price = last_price or close_price
         bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
         ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
-        sell_price = round((ask_price + bid_price) / 2, 2)
+        sell_price = round((ask_price + bid_price) / 2 - 0.005, 2)
         return sell_price
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:

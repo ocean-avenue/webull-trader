@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import pandas as pd
 from datetime import datetime, timedelta
 from trading.strategy.strategy_base import StrategyBase
@@ -128,6 +129,8 @@ class DayTradingMomo(StrategyBase):
             if m2_bars.empty:
                 return
 
+            current_price = m1_bars.iloc[-1]['close']
+
             if not pattern.check_bars_updated(m1_bars):
                 trading_logger.log(
                     "<{}> candle chart is not updated, stop trading!".format(symbol))
@@ -139,6 +142,22 @@ class DayTradingMomo(StrategyBase):
                 # has long wick up
                 trading_logger.log(
                     "<{}> candle chart has long wick up, no entry!".format(symbol))
+                return False
+
+            # position size if buy
+            pos_size = math.ceil(
+                self.get_buy_order_limit(ticker) / current_price)
+            if not pattern.check_bars_volume_with_pos_size(m1_bars, pos_size, period=10):
+                # volume not enough for my position size
+                trading_logger.log(
+                    f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no entry!")
+                return False
+
+            if not (pattern.check_bars_has_largest_green_candle(m1_bars) and pattern.check_bars_has_more_green_candle(m1_bars)) and \
+                    not pattern.check_bars_has_most_green_candle(m1_bars):
+                # not most green candles and no largest green candle
+                trading_logger.log(
+                    f"<{symbol}> candle chart has no most green candles or largest candle is red, no entry!")
                 return False
 
             # if not pattern.check_bars_volatility(m1_bars):
