@@ -147,7 +147,7 @@ class DayTradingMomo(StrategyBase):
             # position size if buy
             pos_size = math.ceil(
                 self.get_buy_order_limit(ticker) / current_price)
-            if not pattern.check_bars_volume_with_pos_size(m1_bars, pos_size, period=10):
+            if not pattern.check_bars_volume_with_pos_size(m1_bars, pos_size, period=2):
                 # volume not enough for my position size
                 trading_logger.log(
                     f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no entry!")
