@@ -333,17 +333,6 @@ class DayTradingMomoShareSize(DayTradingMomo):
     def get_tag(self) -> str:
         return "DayTradingMomoShareSize"
 
-    def get_buy_order_limit(self, ticker: TrackingTicker):
-        buy_position_amount = super().get_buy_order_limit()
-        symbol = ticker.get_symbol()
-        tracking_stat = self.trading_tracker.get_stat(symbol)
-        trades_count = tracking_stat.get_trades()
-        # check win rate
-        if trades_count > 0:
-            win_rate = float(tracking_stat.get_win_trades()) / trades_count
-            buy_position_amount = buy_position_amount * max(win_rate, 0.3)
-        return buy_position_amount
-
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
         from common import db
         symbol = ticker.get_symbol()
@@ -387,7 +376,7 @@ class DayTradingMomoReduceSize(DayTradingMomo):
         return "DayTradingMomoReduceSize"
 
     def get_buy_order_limit(self, ticker: TrackingTicker):
-        buy_position_amount = super().get_buy_order_limit()
+        buy_position_amount = super().get_buy_order_limit(ticker)
         symbol = ticker.get_symbol()
         tracking_stat = self.trading_tracker.get_stat(symbol)
         trades_count = tracking_stat.get_trades()
