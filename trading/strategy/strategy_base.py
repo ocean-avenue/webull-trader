@@ -417,9 +417,9 @@ class StrategyBase:
                 else:
                     trading_logger.log(
                         f"Failed to cancel timeout buy order {order_id} - <{symbol}>!")
-            else:
-                # modify order price to make it easier to buy
-                self.modify_buy_limit_order(ticker)
+            # else:
+            #     # modify order price to make it easier to buy
+            #     self.modify_buy_limit_order(ticker)
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             # stop tracking buy order
@@ -542,9 +542,9 @@ class StrategyBase:
                 else:
                     trading_logger.log(
                         f"Failed to cancel timeout sell order {order_id} - <{symbol}>!")
-            else:
-                # modify order price to make it easier to sell
-                self.modify_sell_limit_order(ticker)
+            # else:
+            #     # modify order price to make it easier to sell
+            #     self.modify_sell_limit_order(ticker)
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             self._on_sell_order_failed(
