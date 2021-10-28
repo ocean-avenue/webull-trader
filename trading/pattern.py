@@ -35,6 +35,7 @@ def _get_min_rel_volume_ratio() -> float:
         return config.DAY_MIN_RELATIVE_VOLUME
     return config.DAY_EXTENDED_MIN_RELATIVE_VOLUME
 
+
 def _get_vol_for_pos_size(size: float) -> float:
     if utils.is_regular_market_hour_now():
         return config.DAY_VOLUME_POS_SIZE_RATIO * size
@@ -268,6 +269,8 @@ def check_bars_at_peak(bars: pd.DataFrame, long_period: int = 10, short_period: 
     """
     check if bar chart is at peak
     """
+    if len(bars) < long_period + 4:
+        return False
     prev_bar2 = bars.iloc[-2]
     # prev_bar2 should be red
     if prev_bar2['close'] > prev_bar2['open']:
