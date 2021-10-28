@@ -115,6 +115,7 @@ def logs(request):
     trading_logs = []
     trading_log_list = list(TradingLog.objects.order_by('-id')[:100])
     for log in trading_log_list:
+        log: TradingLog = log
         days = (date.today() - log.date).days
         text_style = "text-muted"
         if days == 0:
@@ -124,13 +125,18 @@ def logs(request):
             days_ago = "Yesterday"
         else:
             days_ago = "{}d ago".format(days)
+        trading_hour = "regular"
+        if log.trading_hour == TradingHourType.AFTER_MARKET_CLOSE:
+            trading_hour = "amc"
+        elif log.trading_hour == TradingHourType.BEFORE_MARKET_OPEN:
+            trading_hour = "bmo"
         trading_logs.append({
             "date_hour": "{} ({})".format(
                 log.date.strftime("%b %d, %Y"),
                 TradingHourType.tostr(log.trading_hour)),
             "tag": log.tag,
             "days_ago": days_ago,
-            "date_hour_url": "{}/{}".format(log.date.strftime("%Y-%m-%d"), log.trading_hour),
+            "date_hour_url": "{}/{}".format(log.date.strftime("%Y-%m-%d"), trading_hour),
             "text_style": text_style,
         })
     exception_logs = []
@@ -173,7 +179,14 @@ def trading_logs_date_hour(request, date=None, hour=None):
     # algo type data
     algo_type_texts = utils.get_algo_type_texts()
 
-    log = get_object_or_404(TradingLog, date=date, trading_hour=hour)
+    if hour == "regular":
+        trading_hour = TradingHourType.REGULAR
+    elif hour == "bmo":
+        trading_hour = TradingHourType.BEFORE_MARKET_OPEN
+    elif hour == "amc":
+        trading_hour = TradingHourType.AFTER_MARKET_CLOSE
+
+    log = get_object_or_404(TradingLog, date=date, trading_hour=trading_hour)
     log_lines = log.log_text.splitlines()
 
     return render(request, 'webull_trader/trading_logs_date_hour.html', {
