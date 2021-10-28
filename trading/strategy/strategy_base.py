@@ -734,20 +734,15 @@ class StrategyBase:
             last_price = utils.get_attr_to_float_or_none(quote, 'close')
         else:
             last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
-        bid_price = webullsdk.get_bid_price_from_quote(quote) or 0.0
-        buy_price = last_price
-        if bid_price > last_price:
-            ask_price = webullsdk.get_ask_price_from_quote(quote)
-            if ask_price:
-                buy_price = round((ask_price + bid_price) / 2, 2)
-            else:
-                buy_price = bid_price + 0.1
+        last_price = last_price or close_price
+        bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
+        ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
+        buy_price = round((ask_price + bid_price) / 2, 2)
         # return min(ask_price, round(last_price * 1.01, 2))
-        return buy_price or close_price
+        return buy_price
 
     def get_sell_price(self, ticker: TrackingTicker) -> float:
         ticker_id = ticker.get_id()
-        symbol = ticker.get_symbol()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         trading_logger.log_level2(quote)
         # ask_price = webullsdk.get_ask_price_from_quote(quote)
@@ -761,11 +756,11 @@ class StrategyBase:
             last_price = utils.get_attr_to_float_or_none(quote, 'close')
         else:
             last_price = utils.get_attr_to_float_or_none(quote, 'pPrice')
-        bid_price = webullsdk.get_bid_price_from_quote(quote)
-        # if not bid_price:
-        #     trading_logger.log(f"<{symbol}> bid price not existed!")
-        #     trading_logger.log(json.dumps(quote))
-        return bid_price or last_price or close_price
+        last_price = last_price or close_price
+        bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
+        ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
+        sell_price = round((ask_price + bid_price) / 2, 2)
+        return sell_price
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0
