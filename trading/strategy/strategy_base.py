@@ -269,6 +269,29 @@ class StrategyBase:
             trading_logger.log(
                 "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
 
+    def modify_buy_limit_order(self, ticker: TrackingTicker):
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
+        order_id = ticker.get_pending_order_id()
+        usable_cash = webullsdk.get_usable_cash()
+        db.save_webull_min_usable_cash(usable_cash)
+        buy_position_amount = self.get_buy_order_limit(ticker)
+        if usable_cash <= buy_position_amount:
+            trading_logger.log(
+                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
+            return
+        buy_price = self.get_buy_price(ticker)
+        buy_quant = (int)(buy_position_amount / buy_price)
+        order_response = webullsdk.modify_buy_limit_order(
+            ticker_id=ticker_id,
+            order_id=order_id,
+            price=buy_price,
+            quant=buy_quant)
+        trading_logger.log(
+            f"🟢 Modify buy order {order_id}, ticker: <{symbol}>, quant: {buy_quant}, limit price: {buy_price}")
+        trading_logger.log(
+            f"⚠️  Modify buy order response: {order_response}")
+
     # submit sell limit order, only use for day trade
     def submit_sell_limit_order(self, ticker: TrackingTicker, note: str = "Exit point."):
         symbol = ticker.get_symbol()
@@ -394,6 +417,9 @@ class StrategyBase:
                 else:
                     trading_logger.log(
                         f"Failed to cancel timeout buy order {order_id} - <{symbol}>!")
+            else:
+                # modify order price to make it easier to buy
+                self.modify_buy_limit_order(ticker)
         # failed or canceled
         elif order.status == webullsdk.ORDER_STATUS_FAILED or order.status == webullsdk.ORDER_STATUS_CANCELED:
             # stop tracking buy order

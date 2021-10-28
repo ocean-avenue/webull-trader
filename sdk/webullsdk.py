@@ -632,6 +632,35 @@ def buy_limit_order(ticker_id=None, price=0, quant=0) -> dict:
         trading_logger.log("⚠️  Exception buy_limit_order: {}".format(e))
         return {'msg': "Exception during submit buy limit order!"}
 
+
+def modify_buy_limit_order(ticker_id: str, order_id: str, price=0, quant=0):
+    global _wb_paper
+    global _wb_trade_pwd
+    if not _wb_paper and not get_trade_token(_wb_trade_pwd):
+        return {'msg': "Get trading token failed!"}
+    instance = _get_instance()
+    try:
+        return instance.modify_order(
+            {
+                'orderId': order_id,
+                'ticker': {
+                    'tickerId': ticker_id,
+                },
+                'totalQuantity': quant,
+                'outsideRegularTradingHour': True,
+            },
+            price=price,
+            action='BUY',
+            orderType='LMT',
+            quant=quant,
+            enforce="DAY",
+        )
+    except Exception as e:
+        trading_logger.log(
+            "⚠️  Exception modify_buy_limit_order: {}".format(e))
+        return {'msg': "Exception during modify buy limit order!"}
+
+
 # Paper
 # {'orderId': 41995367}
 # Live
