@@ -328,7 +328,7 @@ class DayTradingMomo(StrategyBase):
 
 class DayTradingMomoShareSize(DayTradingMomo):
 
-    SHARE_SIZE = 1
+    SHARE_SIZE = 100
 
     def get_tag(self) -> str:
         return "DayTradingMomoShareSize"
