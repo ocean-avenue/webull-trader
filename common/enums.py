@@ -163,7 +163,9 @@ class SetupType:
 # Swing trade: [100, 200)
 # Hybrid: [200, 300)
 class AlgorithmType:
+    # momentum entry with firt candle new high
     DAY_MOMENTUM = 0
+    # momentum trade with reduce size by win rate
     DAY_MOMENTUM_REDUCE_SIZE = 1
     DAY_RED_TO_GREEN = 2
     DAY_MOMENTUM_NEW_HIGH = 3
@@ -211,6 +213,8 @@ class AlgorithmType:
     DAY_BREAKOUT_SCALE_PERIOD_ROC = 28
     # entry if price reclaim vwap for large cap
     DAY_VWAP_RECLAIM_LARGE_CAP = 29
+    # momentum trade with same share size
+    DAY_MOMENTUM_SHARE_SIZE = 30
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -228,6 +232,8 @@ class AlgorithmType:
             return 'Momo day trade, entry if first candle make new high.'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
             return 'Momo day trade based on win rate, reduce size when win rate low.'
+        if val == AlgorithmType.DAY_MOMENTUM_SHARE_SIZE:
+            return 'Momo day trade with same share size.'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
             return 'Day trade based on red to green strategy.'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
@@ -304,6 +310,8 @@ class AlgorithmType:
             return 'DAY (MOMO)'
         if val == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
             return 'DAY (MOMO REDUCE SIZE)'
+        if val == AlgorithmType.DAY_MOMENTUM_SHARE_SIZE:
+            return 'DAY (MOMO SHARE SIZE)'
         if val == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
             return 'DAY (MOMO NEW HIGH)'
         if val == AlgorithmType.DAY_RED_TO_GREEN:
@@ -381,6 +389,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_MOMENTUM)),
             (AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE, AlgorithmType.totag(
                 AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE)),
+            (AlgorithmType.DAY_MOMENTUM_SHARE_SIZE, AlgorithmType.totag(
+                AlgorithmType.DAY_MOMENTUM_SHARE_SIZE)),
             (AlgorithmType.DAY_MOMENTUM_NEW_HIGH, AlgorithmType.totag(
                 AlgorithmType.DAY_MOMENTUM_NEW_HIGH)),
             (AlgorithmType.DAY_RED_TO_GREEN, AlgorithmType.totag(

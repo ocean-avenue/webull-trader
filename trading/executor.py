@@ -135,7 +135,7 @@ def start():
     from trading.strategy.strategy_base import StrategyBase
     from trading.strategy.day_clean import DayTradingClean
     # from trading.day_momo import DayTradingMomoNewHigh
-    from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
+    from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoShareSize, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.strategy.day_redgreen import DayTradingRedGreen
     from trading.strategy.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
         DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers, DayTradingBreakoutScale, \
@@ -165,6 +165,10 @@ def start():
     elif algo_type == AlgorithmType.DAY_MOMENTUM_REDUCE_SIZE:
         # DAY_MOMENTUM_REDUCE_SIZE: momo trade with reduce size
         strategies.append(DayTradingMomoReduceSize(
+            paper=paper, trading_hour=trading_hour))
+    elif algo_type == AlgorithmType.DAY_MOMENTUM_SHARE_SIZE:
+        # DAY_MOMENTUM_SHARE_SIZE: momo trade with same share size
+        strategies.append(DayTradingMomoShareSize(
             paper=paper, trading_hour=trading_hour))
     elif algo_type == AlgorithmType.DAY_MOMENTUM_NEW_HIGH:
         # DAY_MOMENTUM_NEW_HIGH: momo trade with new high confirm

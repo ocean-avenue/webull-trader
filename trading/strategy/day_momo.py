@@ -324,6 +324,61 @@ class DayTradingMomo(StrategyBase):
         self.track_rest_positions()
 
 
+# Momo day trading with same share size
+
+class DayTradingMomoShareSize(DayTradingMomo):
+
+    SHARE_SIZE = 100
+
+    def get_tag(self) -> str:
+        return "DayTradingMomoShareSize"
+
+    def get_buy_order_limit(self, ticker: TrackingTicker):
+        buy_position_amount = super().get_buy_order_limit()
+        symbol = ticker.get_symbol()
+        tracking_stat = self.trading_tracker.get_stat(symbol)
+        trades_count = tracking_stat.get_trades()
+        # check win rate
+        if trades_count > 0:
+            win_rate = float(tracking_stat.get_win_trades()) / trades_count
+            buy_position_amount = buy_position_amount * max(win_rate, 0.3)
+        return buy_position_amount
+
+    def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
+        from common import db
+        symbol = ticker.get_symbol()
+        ticker_id = ticker.get_id()
+        usable_cash = webullsdk.get_usable_cash()
+        db.save_webull_min_usable_cash(usable_cash)
+        buy_price = self.get_buy_price(ticker)
+        buy_position_amount = buy_price * self.SHARE_SIZE
+        if usable_cash <= buy_position_amount:
+            trading_logger.log(
+                "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
+            return
+        buy_quant = (int)(buy_position_amount / buy_price)
+        if buy_quant > 0:
+            # submit limit order at ask price
+            order_response = webullsdk.buy_limit_order(
+                ticker_id=ticker_id,
+                price=buy_price,
+                quant=buy_quant)
+            order_id = utils.get_order_id_from_response(
+                order_response, paper=self.paper)
+            if order_id:
+                trading_logger.log(
+                    f"🟢 Submit buy order {order_id}, ticker: <{symbol}>, quant: {buy_quant}, limit price: {buy_price}")
+                # tracking pending buy order
+                self.start_tracking_pending_buy_order(
+                    ticker, order_id, entry_note=note)
+            else:
+                trading_logger.log(
+                    f"⚠️  Invalid buy order response: {order_response}")
+        else:
+            trading_logger.log(
+                "Order amount limit not enough for <{}>, price: {}".format(symbol, buy_price))
+
+
 # Momo day trading based on win rate, reduce size if win rate is low
 
 class DayTradingMomoReduceSize(DayTradingMomo):
