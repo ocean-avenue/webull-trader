@@ -153,12 +153,12 @@ class DayTradingMomo(StrategyBase):
                     f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no entry!")
                 return False
 
-            if not (pattern.check_bars_has_largest_green_candle(m1_bars) and pattern.check_bars_has_more_green_candle(m1_bars)) and \
-                    not pattern.check_bars_has_most_green_candle(m1_bars):
-                # not most green candles and no largest green candle
-                trading_logger.log(
-                    f"<{symbol}> candle chart has no most green candles or largest candle is red, no entry!")
-                return False
+            # if not (pattern.check_bars_has_largest_green_candle(m1_bars) and pattern.check_bars_has_more_green_candle(m1_bars)) and \
+            #         not pattern.check_bars_has_most_green_candle(m1_bars):
+            #     # not most green candles and no largest green candle
+            #     trading_logger.log(
+            #         f"<{symbol}> candle chart has no most green candles or largest candle is red, no entry!")
+            #     return False
 
             # if not pattern.check_bars_volatility(m1_bars):
             #     trading_logger.log("<{}> candle chart is not volatility, stop trading!".format(symbol))
