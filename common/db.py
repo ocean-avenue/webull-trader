@@ -1,4 +1,5 @@
 from typing import List, Optional
+from django.db.models.query import QuerySet
 import pytz
 from django.conf import settings
 from datetime import datetime, date
@@ -313,7 +314,7 @@ def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.Se
         return position
     except Exception as e:
         exception_logger.log(str(e),
-            f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
+                             f"symbol: <{symbol}>, ticker_id: {ticker_id}, order_id: {order_id}, setup: {setup}, cost: {cost}, quant: {quant}, buy_time: {buy_time}")
         return None
 
 
@@ -399,7 +400,8 @@ def save_hist_key_statistics(quote_data: dict, date: date):
             avg_vol_10d=utils.get_attr_to_float(quote_data, 'avgVol10D'),
             avg_vol_3m=utils.get_attr_to_float(quote_data, 'avgVol3M'),
             pe=utils.get_attr_to_float_or_none(quote_data, 'pe'),
-            forward_pe=utils.get_attr_to_float_or_none(quote_data, 'forwardPe'),
+            forward_pe=utils.get_attr_to_float_or_none(
+                quote_data, 'forwardPe'),
             pe_ttm=utils.get_attr_to_float_or_none(quote_data, 'peTtm'),
             eps=utils.get_attr_to_float_or_none(quote_data, 'eps'),
             eps_ttm=utils.get_attr_to_float_or_none(quote_data, 'epsTtm'),
@@ -409,9 +411,12 @@ def save_hist_key_statistics(quote_data: dict, date: date):
             short_float=short_float,
             total_shares=total_shares,
             outstanding_shares=outstanding_shares,
-            fifty_two_wk_high=utils.get_attr_to_float(quote_data, 'fiftyTwoWkHigh'),
-            fifty_two_wk_low=utils.get_attr_to_float(quote_data, 'fiftyTwoWkLow'),
-            latest_earnings_date=utils.get_attr(quote_data, 'latestEarningsDate'),
+            fifty_two_wk_high=utils.get_attr_to_float(
+                quote_data, 'fiftyTwoWkHigh'),
+            fifty_two_wk_low=utils.get_attr_to_float(
+                quote_data, 'fiftyTwoWkLow'),
+            latest_earnings_date=utils.get_attr(
+                quote_data, 'latestEarningsDate'),
             estimate_earnings_date=utils.get_attr(
                 quote_data, 'estimateEarningsDate'),
             date=date,
@@ -464,6 +469,11 @@ def save_hist_top_loser(loser_data: dict, date: date):
     top_loser.change_percentage = loser_data['change_percentage']
     top_loser.price = loser_data['close']
     top_loser.save()
+
+
+def get_hist_minute_bar(symbol: str, time: datetime) -> Optional[HistoricalMinuteBar]:
+    return HistoricalMinuteBar.objects.filter(symbol=symbol).filter(
+        time__year=str(time.year), time__month=str(time.month), time__day=str(time.day), time__hour=str(time.hour), time__minute=str(time.minute)).first()
 
 
 def save_hist_minute_bar_list(bar_list: List[dict]):

@@ -469,11 +469,13 @@ def get_order_id_from_response(order_response: dict, paper: bool=True) -> Option
     return None
 
 
-def get_avg_change_from_movers(movers):
-    total_change = 0.0
-    for mover in movers:
-        total_change += mover['change_percentage']
-    return round(total_change / len(movers), 2)
+def get_avg_change_from_movers(movers) -> float:
+    if len(movers) > 0:
+        total_change = 0.0
+        for mover in movers:
+            total_change += mover['change_percentage']
+        return round(total_change / len(movers), 2)
+    return 0.0
 
 
 def fetch_stock_quotes(symbol_list):
@@ -976,32 +978,78 @@ def get_plpct_range_index(percentage):
 
 def get_relative_volume_labels():
     return [
-        "0-0.5",  # 0
-        "0.5-1",  # 1
-        "1-1.5",  # 2
-        "1.5-2",  # 3
-        "2-3",  # 4
-        "3-5",  # 5
-        "5-10",  # 6
-        "10+",  # 7
+        "0-1",  # 0
+        "1-2",  # 1
+        "2-3",  # 2
+        "3-5",  # 3
+        "5-10",  # 4
+        "10-15",  # 5
+        "15-20", # 6
+        "20-30", # 7
+        "30-40", # 8
+        "40-60", # 9
+        "60-100", # 10
+        "100+" # 11
     ]
 
 
 def get_relative_volume_index(rel_vol):
     index = -1
-    if rel_vol <= 0.5:
+    if rel_vol <= 1:
         index = 0
-    elif rel_vol <= 1:
-        index = 1
-    elif rel_vol <= 1.5:
-        index = 2
     elif rel_vol <= 2:
-        index = 3
+        index = 1
     elif rel_vol <= 3:
-        index = 4
+        index = 2
     elif rel_vol <= 5:
-        index = 5
+        index = 3
     elif rel_vol <= 10:
+        index = 4
+    elif rel_vol <= 15:
+        index = 5
+    elif rel_vol <= 20:
+        index = 6
+    elif rel_vol <= 30:
+        index = 7
+    elif rel_vol <= 40:
+        index = 8
+    elif rel_vol <= 60:
+        index = 9
+    elif rel_vol <= 100:
+        index = 10
+    else:
+        index = 11
+    return index
+
+
+def get_volume_labels():
+    return [
+        "None", # 0
+        "0-20K",  # 1
+        "20-50K",  # 2
+        "50-100K",  # 3
+        "100-200K",  # 4
+        "200-500K",  # 5
+        "0.5-1M",  # 6
+        "1M+",  # 7
+    ]
+
+
+def get_volume_index(vol):
+    index = -1
+    if vol == 0:
+        index = 0
+    elif vol <= 20000:
+        index = 1
+    elif vol <= 50000:
+        index = 2
+    elif vol <= 100000:
+        index = 3
+    elif vol <= 200000:
+        index = 4
+    elif vol <= 500000:
+        index = 5
+    elif vol <= 1000000:
         index = 6
     else:
         index = 7

@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
@@ -980,6 +980,300 @@ def day_reports_relvol(request):
     }
 
     cache.set('day_reports_relvol_cache', context, config.CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
+def day_reports_regvol(request):
+
+    cached_context = cache.get('day_reports_regvol_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    # day trades
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
+    volume_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_volume_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by relative volume
+    for day_trade in day_trades:
+        day_trade: DayTrade = day_trade
+        symbol = day_trade.symbol
+        buy_time = day_trade.buy_time
+        local_time = utils.local_datetime(buy_time)
+        # check regular hour
+        if not utils.is_regular_market_time(local_time):
+            continue
+        bars = []
+        for i in range(1, 3):
+            m_time = local_time - timedelta(minutes=i)
+            m_bar = db.get_hist_minute_bar(symbol, m_time)
+            # m_bar = db.get_hist_minute_bar(symbol, m_time)
+            if m_bar:
+                bars.append(m_bar)
+        avg_volume = 0
+        if len(bars) > 0:
+            total_vol = sum([bar.volume for bar in bars])
+            avg_volume = total_vol / len(bars)
+        vol_idx = utils.get_volume_index(avg_volume)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            volume_statistics[vol_idx]['win_trades'] += 1
+            volume_statistics[vol_idx]['total_profit'] += gain
+        else:
+            volume_statistics[vol_idx]['loss_trades'] += 1
+            volume_statistics[vol_idx]['total_loss'] += gain
+        volume_statistics[vol_idx]['profit_loss'] += gain
+        volume_statistics[vol_idx]['trades'] += 1
+
+    volume_profit_loss = []
+    volume_total_profit = []
+    volume_total_loss = []
+    volume_win_rate = []
+    volume_profit_loss_ratio = []
+    volume_trades = []
+    # calculate win rate and profit/loss ratio
+    for relvol_stat in volume_statistics:
+        volume_trades.append(relvol_stat['trades'])
+        volume_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(relvol_stat['profit_loss'], 2)))
+        volume_total_profit.append(round(relvol_stat['total_profit'], 2))
+        volume_total_loss.append(round(relvol_stat['total_loss'], 2))
+        if relvol_stat['trades'] > 0:
+            volume_win_rate.append(
+                round(relvol_stat['win_trades']/relvol_stat['trades'] * 100, 2))
+        else:
+            volume_win_rate.append(0.0)
+        avg_profit = 1.0
+        if relvol_stat['win_trades'] > 0:
+            avg_profit = relvol_stat['total_profit'] / \
+                relvol_stat['win_trades']
+        avg_loss = 1.0
+        if relvol_stat['loss_trades'] > 0:
+            avg_loss = relvol_stat['total_loss'] / relvol_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if relvol_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if relvol_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        volume_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Regular Market Hour Volume",
+        "labels": utils.get_volume_labels(),
+        "profit_loss": volume_profit_loss,
+        "total_profit": volume_total_profit,
+        "total_loss": volume_total_loss,
+        "win_rate": volume_win_rate,
+        "profit_loss_ratio": volume_profit_loss_ratio,
+        "trades": volume_trades,
+    }
+
+    cache.set('day_reports_regvol_cache', context, config.CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
+def day_reports_bmovol(request):
+
+    cached_context = cache.get('day_reports_bmovol_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    # day trades
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
+    volume_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_volume_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by relative volume
+    for day_trade in day_trades:
+        day_trade: DayTrade = day_trade
+        symbol = day_trade.symbol
+        buy_time = day_trade.buy_time
+        local_time = utils.local_datetime(buy_time)
+        # check bmo hour
+        if not utils.is_pre_market_time(local_time):
+            continue
+        bars = []
+        for i in range(1, 3):
+            m_time = local_time - timedelta(minutes=i)
+            m_bar = db.get_hist_minute_bar(symbol, m_time)
+            # m_bar = db.get_hist_minute_bar(symbol, m_time)
+            if m_bar:
+                bars.append(m_bar)
+        avg_volume = 0
+        if len(bars) > 0:
+            total_vol = sum([bar.volume for bar in bars])
+            avg_volume = total_vol / len(bars)
+        vol_idx = utils.get_volume_index(avg_volume)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            volume_statistics[vol_idx]['win_trades'] += 1
+            volume_statistics[vol_idx]['total_profit'] += gain
+        else:
+            volume_statistics[vol_idx]['loss_trades'] += 1
+            volume_statistics[vol_idx]['total_loss'] += gain
+        volume_statistics[vol_idx]['profit_loss'] += gain
+        volume_statistics[vol_idx]['trades'] += 1
+
+    volume_profit_loss = []
+    volume_total_profit = []
+    volume_total_loss = []
+    volume_win_rate = []
+    volume_profit_loss_ratio = []
+    volume_trades = []
+    # calculate win rate and profit/loss ratio
+    for relvol_stat in volume_statistics:
+        volume_trades.append(relvol_stat['trades'])
+        volume_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(relvol_stat['profit_loss'], 2)))
+        volume_total_profit.append(round(relvol_stat['total_profit'], 2))
+        volume_total_loss.append(round(relvol_stat['total_loss'], 2))
+        if relvol_stat['trades'] > 0:
+            volume_win_rate.append(
+                round(relvol_stat['win_trades']/relvol_stat['trades'] * 100, 2))
+        else:
+            volume_win_rate.append(0.0)
+        avg_profit = 1.0
+        if relvol_stat['win_trades'] > 0:
+            avg_profit = relvol_stat['total_profit'] / \
+                relvol_stat['win_trades']
+        avg_loss = 1.0
+        if relvol_stat['loss_trades'] > 0:
+            avg_loss = relvol_stat['total_loss'] / relvol_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if relvol_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if relvol_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        volume_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Regular Market Hour Volume",
+        "labels": utils.get_volume_labels(),
+        "profit_loss": volume_profit_loss,
+        "total_profit": volume_total_profit,
+        "total_loss": volume_total_loss,
+        "win_rate": volume_win_rate,
+        "profit_loss_ratio": volume_profit_loss_ratio,
+        "trades": volume_trades,
+    }
+
+    cache.set('day_reports_bmovol_cache', context, config.CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
+def day_reports_amcvol(request):
+
+    cached_context = cache.get('day_reports_amcvol_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    # day trades
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
+    volume_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_volume_labels()))
+    # for P&L, win rate and profit/loss ratio, trades by relative volume
+    for day_trade in day_trades:
+        day_trade: DayTrade = day_trade
+        symbol = day_trade.symbol
+        buy_time = day_trade.buy_time
+        local_time = utils.local_datetime(buy_time)
+        # check bmo hour
+        if not utils.is_after_market_time(local_time):
+            continue
+        bars = []
+        for i in range(1, 3):
+            m_time = local_time - timedelta(minutes=i)
+            m_bar = db.get_hist_minute_bar(symbol, m_time)
+            # m_bar = db.get_hist_minute_bar(symbol, m_time)
+            if m_bar:
+                bars.append(m_bar)
+        avg_volume = 0
+        if len(bars) > 0:
+            total_vol = sum([bar.volume for bar in bars])
+            avg_volume = total_vol / len(bars)
+        vol_idx = utils.get_volume_index(avg_volume)
+        gain = day_trade.total_sold - day_trade.total_cost
+        if gain > 0:
+            volume_statistics[vol_idx]['win_trades'] += 1
+            volume_statistics[vol_idx]['total_profit'] += gain
+        else:
+            volume_statistics[vol_idx]['loss_trades'] += 1
+            volume_statistics[vol_idx]['total_loss'] += gain
+        volume_statistics[vol_idx]['profit_loss'] += gain
+        volume_statistics[vol_idx]['trades'] += 1
+
+    volume_profit_loss = []
+    volume_total_profit = []
+    volume_total_loss = []
+    volume_win_rate = []
+    volume_profit_loss_ratio = []
+    volume_trades = []
+    # calculate win rate and profit/loss ratio
+    for relvol_stat in volume_statistics:
+        volume_trades.append(relvol_stat['trades'])
+        volume_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(relvol_stat['profit_loss'], 2)))
+        volume_total_profit.append(round(relvol_stat['total_profit'], 2))
+        volume_total_loss.append(round(relvol_stat['total_loss'], 2))
+        if relvol_stat['trades'] > 0:
+            volume_win_rate.append(
+                round(relvol_stat['win_trades']/relvol_stat['trades'] * 100, 2))
+        else:
+            volume_win_rate.append(0.0)
+        avg_profit = 1.0
+        if relvol_stat['win_trades'] > 0:
+            avg_profit = relvol_stat['total_profit'] / \
+                relvol_stat['win_trades']
+        avg_loss = 1.0
+        if relvol_stat['loss_trades'] > 0:
+            avg_loss = relvol_stat['total_loss'] / relvol_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if relvol_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if relvol_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        volume_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Regular Market Hour Volume",
+        "labels": utils.get_volume_labels(),
+        "profit_loss": volume_profit_loss,
+        "total_profit": volume_total_profit,
+        "total_loss": volume_total_loss,
+        "win_rate": volume_win_rate,
+        "profit_loss_ratio": volume_profit_loss_ratio,
+        "trades": volume_trades,
+    }
+
+    cache.set('day_reports_amcvol_cache', context, config.CACHE_TIMEOUT)
 
     return render(request, 'webull_trader/day_reports_field.html', context)
 

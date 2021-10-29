@@ -202,6 +202,27 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'day_reports_relvol' %}">Relative Volume</a>
                 </li>
+                {% if request.path == '/day-reports/bmovol' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_bmovol' %}">Volume (Pre Hours)</a>
+                </li>
+                {% if request.path == '/day-reports/regvol' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_regvol' %}">Volume (Regular Hours)</a>
+                </li>
+                {% if request.path == '/day-reports/amcvol' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_amcvol' %}">Volume (After Hours)</a>
+                </li>
                 {% if request.path == '/day-reports/sector' %}
                 <li class="sidebar-item active">
                 {% else  %}
