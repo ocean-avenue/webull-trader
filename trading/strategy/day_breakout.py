@@ -55,10 +55,8 @@ class DayTradingBreakout(StrategyBase):
 
     def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame) -> bool:
         symbol = ticker.get_symbol()
-        ticker_id = ticker.get_id()
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
-        current_high = current_candle['high']
         # check if above vwap
         if current_price <= current_candle['vwap']:
             trading_logger.log(
@@ -66,7 +64,6 @@ class DayTradingBreakout(StrategyBase):
             return False
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
-        period_max_price = 0
         period_low_price = constants.MAX_SECURITY_PRICE
         for _, row in period_bars.iterrows():
             # use close price for period high
@@ -75,29 +72,11 @@ class DayTradingBreakout(StrategyBase):
             # use low price for period low
             if row['low'] < period_low_price:
                 period_low_price = row['low']
-            if row['high'] > period_max_price:
-                period_max_price = row['high']
-
-        tracking_stat = self.trading_tracker.get_stat(symbol)
-        if self.is_regular_market_hour():
-            # use daily high price
-            quote = webullsdk.get_quote(ticker_id=ticker_id)
-            tracking_stat.set_last_high_price(float(quote['high']))
-        else:
-            last_high_price = tracking_stat.get_last_high_price()
-            if not last_high_price or period_max_price > last_high_price:
-                tracking_stat.set_last_high_price(period_max_price)
 
         # check if new high
         if current_price <= period_high_price:
             trading_logger.log(
                 f"<{symbol}> price ${current_price} is not breakout high ${period_high_price}, no entry!")
-            return False
-
-        # check if has resistance
-        if current_high < tracking_stat.get_last_high_price():
-            trading_logger.log(
-                f"<{symbol}> high price ${current_high} is not breakout all day high ${tracking_stat.get_last_high_price()}, no entry!")
             return False
 
         # additional check in subclass
@@ -814,41 +793,19 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         if not self.precheck_scale_in(ticker, position):
             return False
         symbol = ticker.get_symbol()
-        ticker_id = ticker.get_id()
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
-        current_high = current_candle['high']
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
-        period_max_price = 0
         for _, row in period_bars.iterrows():
             close_price = row['close']  # use close price
             if close_price > period_high_price:
                 period_high_price = close_price
-            high_price = row['high']
-            if high_price > period_max_price:
-                period_max_price = high_price
-
-        tracking_stat = self.trading_tracker.get_stat(symbol)
-        if self.is_regular_market_hour():
-            # use daily high price
-            quote = webullsdk.get_quote(ticker_id=ticker_id)
-            tracking_stat.set_last_high_price(float(quote['high']))
-        else:
-            last_high_price = tracking_stat.get_last_high_price()
-            if not last_high_price or period_max_price > last_high_price:
-                tracking_stat.set_last_high_price(period_max_price)
 
         # check if new high
         if current_price <= period_high_price:
             trading_logger.log(
                 f"<{symbol}> price ${current_price} is not breakout high ${period_high_price}, no scale in!")
-            return False
-
-        # check if has resistance
-        if current_high < tracking_stat.get_last_high_price():
-            trading_logger.log(
-                f"<{symbol}> high price ${current_high} is not breakout all day high ${tracking_stat.get_last_high_price()}, no scale in!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
