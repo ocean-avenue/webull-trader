@@ -153,7 +153,7 @@ class DayTradingBreakout(StrategyBase):
                 "<{}> candle chart has no relative volume, no entry!".format(symbol))
             return False
 
-        if pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no entry!".format(symbol))
@@ -861,7 +861,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no scale in!".format(symbol))
