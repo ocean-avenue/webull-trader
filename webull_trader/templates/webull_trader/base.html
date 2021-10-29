@@ -160,6 +160,13 @@
                 {% endif %}
                   <a class="sidebar-link" href="{% url 'day_reports_price' %}">Entry Price</a>
                 </li>
+                {% if request.path == '/day-reports/priceshares' %}
+                <li class="sidebar-item active">
+                {% else  %}
+                <li class="sidebar-item">
+                {% endif %}
+                  <a class="sidebar-link" href="{% url 'day_reports_price_shares' %}">Entry Price (Normalized Shares)</a>
+                </li>
                 {% if request.path == '/day-reports/mktcap' %}
                 <li class="sidebar-item active">
                 {% else  %}

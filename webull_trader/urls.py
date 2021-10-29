@@ -9,6 +9,7 @@ urlpatterns = [
     path('day-analytics/<str:date>', views.day_analytics_date, name='day_analytics_date'),
     path('day-analytics/<str:date>/<str:symbol>', views.day_analytics_date_symbol, name='day_analytics_date_symbol'),
     path('day-reports/price', views.day_reports_price, name='day_reports_price'),
+    path('day-reports/priceshares', views.day_reports_price_shares, name='day_reports_price_shares'),
     path('day-reports/mktcap', views.day_reports_mktcap, name='day_reports_mktcap'),
     path('day-reports/float', views.day_reports_float, name='day_reports_float'),
     path('day-reports/turnover', views.day_reports_turnover, name='day_reports_turnover'),

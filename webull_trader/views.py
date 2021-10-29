@@ -663,6 +663,89 @@ def day_reports_price(request):
 
 
 @login_required
+def day_reports_price_shares(request):
+
+    cached_context = cache.get('day_reports_price_shares_cache')
+    if cached_context:
+        return render(request, 'webull_trader/day_reports_field.html', cached_context)
+
+    # account type data
+    account_type = utils.get_account_type_for_render()
+
+    # algo type data
+    algo_type_texts = utils.get_algo_type_texts()
+
+    # day trades
+    day_trades = DayTrade.objects.filter(require_adjustment=False)
+    price_statistics = utils.get_stats_empty_list(
+        size=len(utils.get_entry_price_range_labels()))
+    NORMALIZED_SHARES = 100
+    # for price range P&L, win rate and profit/loss ratio, trades
+    for day_trade in day_trades:
+        day_trade: DayTrade = day_trade
+        buy_price = (day_trade.total_cost / day_trade.quantity)
+        price_idx = utils.get_entry_price_range_index(buy_price)
+        gain = (day_trade.total_sold - day_trade.total_cost) / \
+            day_trade.quantity * NORMALIZED_SHARES
+        if gain > 0:
+            price_statistics[price_idx]['win_trades'] += 1
+            price_statistics[price_idx]['total_profit'] += gain
+        else:
+            price_statistics[price_idx]['loss_trades'] += 1
+            price_statistics[price_idx]['total_loss'] += gain
+        price_statistics[price_idx]['profit_loss'] += gain
+        price_statistics[price_idx]['trades'] += 1
+    price_profit_loss = []
+    price_total_profit = []
+    price_total_loss = []
+    price_win_rate = []
+    price_profit_loss_ratio = []
+    price_trades = []
+    # calculate win rate and profit/loss ratio
+    for price_stat in price_statistics:
+        price_trades.append(price_stat['trades'])
+        price_profit_loss.append(utils.get_color_bar_chart_item_for_render(
+            round(price_stat['profit_loss'], 2)))
+        price_total_profit.append(round(price_stat['total_profit'], 2))
+        price_total_loss.append(round(price_stat['total_loss'], 2))
+        if price_stat['trades'] > 0:
+            price_win_rate.append(
+                round(price_stat['win_trades']/price_stat['trades'] * 100, 2))
+        else:
+            price_win_rate.append(0.0)
+        avg_profit = 1.0
+        if price_stat['win_trades'] > 0:
+            avg_profit = price_stat['total_profit'] / \
+                price_stat['win_trades']
+        avg_loss = 1.0
+        if price_stat['loss_trades'] > 0:
+            avg_loss = price_stat['total_loss'] / price_stat['loss_trades']
+        profit_loss_ratio = 0.0
+        if price_stat['trades'] > 0:
+            profit_loss_ratio = 1.0
+        if price_stat['trades'] > 0 and avg_loss < 0:
+            profit_loss_ratio = round(abs(avg_profit/avg_loss), 2)
+        price_profit_loss_ratio.append(profit_loss_ratio)
+
+    context = {
+        "account_type": account_type,
+        "algo_type_texts": algo_type_texts,
+        "title": "Entry Price (Normalized Shares)",
+        "labels": utils.get_entry_price_range_labels(),
+        "profit_loss": price_profit_loss,
+        "total_profit": price_total_profit,
+        "total_loss": price_total_loss,
+        "win_rate": price_win_rate,
+        "profit_loss_ratio": price_profit_loss_ratio,
+        "trades": price_trades,
+    }
+
+    cache.set('day_reports_price_shares_cache', context, config.CACHE_TIMEOUT)
+
+    return render(request, 'webull_trader/day_reports_field.html', context)
+
+
+@login_required
 def day_reports_mktcap(request):
 
     cached_context = cache.get('day_reports_mktcap_cache')
@@ -1067,7 +1150,7 @@ def day_reports_regvol(request):
     context = {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "title": "Regular Market Hour Volume",
+        "title": "Regular Hours Volume",
         "labels": utils.get_volume_labels(),
         "profit_loss": volume_profit_loss,
         "total_profit": volume_total_profit,
@@ -1165,7 +1248,7 @@ def day_reports_bmovol(request):
     context = {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "title": "Regular Market Hour Volume",
+        "title": "Pre Hours Volume",
         "labels": utils.get_volume_labels(),
         "profit_loss": volume_profit_loss,
         "total_profit": volume_total_profit,
@@ -1263,7 +1346,7 @@ def day_reports_amcvol(request):
     context = {
         "account_type": account_type,
         "algo_type_texts": algo_type_texts,
-        "title": "Regular Market Hour Volume",
+        "title": "After Hours Volume",
         "labels": utils.get_volume_labels(),
         "profit_loss": volume_profit_loss,
         "total_profit": volume_total_profit,
