@@ -99,17 +99,17 @@ def start(day=None):
 
     # fetch market statistics
     top_gainer_change = utils.get_avg_change_from_movers(
-        webullsdk.get_top_gainers(count=10))
+        webullsdk.get_top_gainers(count=5))
     pre_gainer_change = utils.get_avg_change_from_movers(
-        webullsdk.get_pre_market_gainers(count=10))
+        webullsdk.get_pre_market_gainers(count=5))
     after_gainer_change = utils.get_avg_change_from_movers(
-        webullsdk.get_after_market_gainers(count=10))
+        webullsdk.get_after_market_gainers(count=5))
     top_loser_change = utils.get_avg_change_from_movers(
-        webullsdk.get_top_losers(count=10))
+        webullsdk.get_top_losers(count=5))
     pre_loser_change = utils.get_avg_change_from_movers(
-        webullsdk.get_pre_market_losers(count=10))
+        webullsdk.get_pre_market_losers(count=5))
     after_loser_change = utils.get_avg_change_from_movers(
-        webullsdk.get_after_market_losers(count=10))
+        webullsdk.get_after_market_losers(count=5))
     db.save_hist_market_statistics({
         'top_gainer_change': top_gainer_change,
         'pre_gainer_change': pre_gainer_change,
