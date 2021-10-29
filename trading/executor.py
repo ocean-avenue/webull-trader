@@ -84,6 +84,7 @@ class TradingExecutor:
         # finish strategies
         while not utils.is_trading_hour_end(self.trading_hour):
             for strategy in self.strategies:
+                strategy.update_orders()
                 strategy.end()
                 trading_logger.write(self.trading_hour, today)
 
