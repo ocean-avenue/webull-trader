@@ -144,6 +144,12 @@ class DayTradingMomo(StrategyBase):
                     "<{}> candle chart has long wick up, no entry!".format(symbol))
                 return False
 
+            if pattern.check_bars_has_volume(m1_bars, period=2):
+                # has no enough volume
+                trading_logger.log(
+                    "<{}> candle chart has no enough volume, no entry!".format(symbol))
+                return False
+
             # position size if buy
             pos_size = math.ceil(
                 self.get_buy_order_limit(ticker) / current_price)

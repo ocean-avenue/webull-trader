@@ -121,20 +121,24 @@ def check_bars_has_volume(bars: pd.DataFrame, time_scale: int = 1, period: int =
     """
     if len(bars) < period + 1:
         return False
-    period_bars = bars.tail(period + 1)
-    period_bars = period_bars.head(period)
-    total_volume = 0.0
-    for index, row in period_bars.iterrows():
-        time = index.to_pydatetime()
-        if not _check_trading_time_match(time):
-            continue
-        volume = row["volume"]
-        total_volume += volume
-
-    avg_volume = total_volume / float(period)
-    confirm_volume = _get_avg_confirm_volume() * time_scale
-
-    return avg_volume >= confirm_volume
+    has_volume = False
+    # check current, pre or pre, prepre two candles
+    for i in range(0, 2):
+        period_bars = bars.tail(period + i)
+        period_bars = period_bars.head(period)
+        total_volume = 0.0
+        for index, row in period_bars.iterrows():
+            time = index.to_pydatetime()
+            if not _check_trading_time_match(time):
+                continue
+            volume = row["volume"]
+            total_volume += volume
+        avg_volume = total_volume / float(period)
+        confirm_volume = _get_avg_confirm_volume() * time_scale
+        if avg_volume >= confirm_volume:
+            has_volume = True
+            break
+    return has_volume
 
 
 def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int = 10) -> bool:

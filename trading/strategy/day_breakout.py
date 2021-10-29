@@ -124,20 +124,17 @@ class DayTradingBreakout(StrategyBase):
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
-                not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
-                not pattern.check_bars_amount_grinding(bars, period=5):
+        if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
+            not pattern.check_bars_all_green(bars, period=5):
             # has no relative volume
             trading_logger.log(
-                "<{}> candle chart has no relative volume or amount, no entry!".format(symbol))
+                "<{}> candle chart has no relative volume, no entry!".format(symbol))
             return False
 
-        # position size if buy
-        pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
-        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
-            # volume not enough for my position size
+        if pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+            # has no enough volume
             trading_logger.log(
-                f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no entry!")
+                "<{}> candle chart has no enough volume, no entry!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
@@ -786,9 +783,7 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         if not self.precheck_scale_in(ticker, position):
             return False
         symbol = ticker.get_symbol()
-        current_candle = bars.iloc[-1]
         last_candle = bars.iloc[-2]
-        current_price = current_candle['close']
         last_price = last_candle['close']
         period_bars = bars.head(len(bars) - 2).tail(self.entry_period)
         period_high_price = 0
@@ -810,12 +805,17 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_has_amount(bars, time_scale=self.time_scale, period=5) and \
-                not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=5) and not pattern.check_bars_rel_volume(bars) and \
+        if self.is_regular_market_hour() and not pattern.check_bars_rel_volume(bars) and \
                 not pattern.check_bars_amount_grinding(bars, period=5) and not pattern.check_bars_all_green(bars, period=5):
             # has no volume and amount
             trading_logger.log(
-                "<{}> candle chart has no relative volume or amount, no scale in!".format(symbol))
+                "<{}> candle chart has no relative volume, no scale in!".format(symbol))
+            return False
+
+        if pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+            # has no enough volume
+            trading_logger.log(
+                "<{}> candle chart has no enough volume, no scale in!".format(symbol))
             return False
 
         if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period):
@@ -835,14 +835,6 @@ class DayTradingBreakoutScale(DayTradingBreakout):
             # has bearish candle
             trading_logger.log(
                 "<{}> candle chart has bearish candle, no scale in!".format(symbol))
-            return False
-
-        # position size if buy
-        pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
-        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=2):
-            # volume not enough for my position size
-            trading_logger.log(
-                f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no scale in!")
             return False
 
         ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
