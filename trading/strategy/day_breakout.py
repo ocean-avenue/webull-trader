@@ -852,13 +852,6 @@ class DayTradingBreakoutScale(DayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_rel_volume(bars) and \
-                not pattern.check_bars_amount_grinding(bars, period=5) and not pattern.check_bars_all_green(bars, period=5):
-            # has no volume and amount
-            trading_logger.log(
-                "<{}> candle chart has no relative volume, no scale in!".format(symbol))
-            return False
-
         if pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
             # has no enough volume
             trading_logger.log(

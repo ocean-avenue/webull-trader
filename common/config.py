@@ -11,9 +11,9 @@ AVG_CONFIRM_VOLUME = 100000.0
 # average confirm volume in extended market
 EXTENDED_AVG_CONFIRM_VOLUME = 15000.0
 # average confirm amount in regular market
-AVG_CONFIRM_AMOUNT = 120000.0
+AVG_CONFIRM_AMOUNT = 150000.0
 # average confirm amount in extended market
-EXTENDED_AVG_CONFIRM_AMOUNT = 12000.0
+EXTENDED_AVG_CONFIRM_AMOUNT = 30000.0
 # trading observe timeout in seconds
 OBSERVE_TIMEOUT_IN_SEC = 300
 # buy after sell interval in seconds
