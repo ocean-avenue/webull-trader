@@ -210,33 +210,33 @@ class EarningCalendar(models.Model):
 
 
 class HistoricalTopGainer(models.Model):
-    symbol = models.CharField(max_length=64)
+    symbol = models.CharField(db_index=True, max_length=64)
     ticker_id = models.CharField(max_length=128)
     change = models.FloatField()
     change_percentage = models.FloatField()
     price = models.FloatField()
 
-    date = models.DateField(auto_now=False, auto_now_add=False)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
 
     def __str__(self):
         return "[{}] <{}> top gainer: +{}%".format(self.date, self.symbol, round(self.change_percentage * 100, 2))
 
 
 class HistoricalTopLoser(models.Model):
-    symbol = models.CharField(max_length=64)
+    symbol = models.CharField(db_index=True, max_length=64)
     ticker_id = models.CharField(max_length=128)
     change = models.FloatField()
     change_percentage = models.FloatField()
     price = models.FloatField()
 
-    date = models.DateField(auto_now=False, auto_now_add=False)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
 
     def __str__(self):
         return "[{}] <{}> top loser: {}%".format(self.date, self.symbol, round(self.change_percentage * 100, 2))
 
 
 class HistoricalKeyStatistics(models.Model):
-    symbol = models.CharField(max_length=64)
+    symbol = models.CharField(db_index=True, max_length=64)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
@@ -268,7 +268,7 @@ class HistoricalKeyStatistics(models.Model):
     latest_earnings_date = models.CharField(max_length=128)
     estimate_earnings_date = models.CharField(max_length=128)
 
-    date = models.DateField(auto_now=False, auto_now_add=False)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
 
     def __str__(self):
         return "[{}] <{}> historical mktcap: {}".format(self.date, self.symbol, self.market_value)
@@ -291,9 +291,9 @@ class HistoricalMarketStatistics(models.Model):
 
 
 class HistoricalMinuteBar(models.Model):
-    symbol = models.CharField(max_length=64)
-    date = models.DateField(auto_now=False, auto_now_add=False)
-    time = models.DateTimeField(auto_now=False, auto_now_add=False)
+    symbol = models.CharField(db_index=True, max_length=64)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
+    time = models.DateTimeField(db_index=True, auto_now=False, auto_now_add=False)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
@@ -306,8 +306,8 @@ class HistoricalMinuteBar(models.Model):
 
 
 class HistoricalDailyBar(models.Model):
-    symbol = models.CharField(max_length=64)
-    date = models.DateField(auto_now=False, auto_now_add=False)
+    symbol = models.CharField(db_index=True, max_length=64)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
@@ -503,8 +503,8 @@ class SwingTrade(models.Model):
 
 
 class SwingHistoricalDailyBar(models.Model):
-    symbol = models.CharField(max_length=64)
-    date = models.DateField(auto_now=False, auto_now_add=False)
+    symbol = models.CharField(db_index=True, max_length=64)
+    date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()
