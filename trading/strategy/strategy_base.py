@@ -104,16 +104,6 @@ class StrategyBase:
         account_data = webullsdk.get_account()
         db.save_webull_account(account_data, paper=self.paper)
 
-    def build_error_short_ticker(self, symbol, ticker_id):
-        return {
-            "symbol": symbol,
-            "ticker_id": ticker_id,
-            # pending buy back order id
-            "pending_order_id": None,
-            # pending buy back order time
-            "pending_order_time": None,
-        }
-
     def is_regular_market_hour(self) -> bool:
         return self.trading_hour == TradingHourType.REGULAR
 

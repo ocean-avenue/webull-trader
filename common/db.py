@@ -178,7 +178,7 @@ def _time_in_force_fmt(time_in_force_str: str) -> enums.TimeInForceType:
     return time_in_force
 
 
-def save_webull_order(order_data: dict, paper: bool = True):
+def save_webull_order(order_data: dict, paper: bool = True) -> WebullOrder:
     avg_price = 0.0
     price = 0.0
     filled_time = None
@@ -273,10 +273,33 @@ def save_webull_order(order_data: dict, paper: bool = True):
             paper=paper,
         )
     order.save()
+    return order
 
 
-def save_webull_min_usable_cash(usable_cash: float):
-    day = date.today()
+def save_webull_order_backtest(order_data: dict) -> WebullOrder:
+    order = WebullOrder(
+        order_id=str(order_data['orderId']),
+        ticker_id=str(order_data['ticker']['tickerId']),
+        symbol=order_data['ticker']['symbol'],
+        action=order_data['action'],
+        status=order_data['statusStr'],
+        total_quantity=int(order_data['totalQuantity']),
+        filled_quantity=int(order_data['filledQuantity']),
+        price=float(order_data['lmtPrice']),
+        avg_price=float(order_data['avgFilledPrice']),
+        order_type=order_data['orderType'],
+        filled_time=order_data['filledTime'],
+        placed_time=order_data['placedTime'],
+        time_in_force=order_data['timeInForce'],
+        paper=True,
+    )
+    order.save()
+    return order
+
+
+def save_webull_min_usable_cash(usable_cash: float, day: Optional[date] = None):
+    if not day:
+        day = date.today()
     acc_stat = WebullAccountStatistics.objects.filter(date=day).first()
     if not acc_stat:
         acc_stat = WebullAccountStatistics(
