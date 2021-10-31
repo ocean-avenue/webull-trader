@@ -2,14 +2,19 @@
 
 # Base backtest class
 
+import time
+import pandas as pd
 from datetime import datetime, date
+from typing import List, TypedDict
+from backtest.pattern import BacktestPattern
 from logger import trading_logger
 from common import db
+from django.utils import timezone
 from common.enums import ActionType, OrderType, SetupType, TimeInForceType, TradingHourType
 from trading.tracker.trading_tracker import TradingTracker
 from backtest.tracker.account_tracker import BacktestAccountTracker
 from backtest.tracker.order_tracker import BacktestOrderTracker
-from webull_trader.models import WebullOrder
+from webull_trader.models import DayPosition, HistoricalMinuteBar, WebullOrder
 
 
 class BacktestStrategyBase:
@@ -29,17 +34,50 @@ class BacktestStrategyBase:
         self.account_tracker = BacktestAccountTracker(
             balance=self.INIT_BALANCE)
         self.order_tracker = BacktestOrderTracker()
-
-        self.trading_time: datetime = datetime.now()
+        self.trading_time: datetime = None
+        self.backtest_tickers: List[dict] = []
+        self.backtest_df: TypedDict[str, pd.DataFrame] = {}
+        self.backtest_pattern: BacktestPattern = BacktestPattern()
 
     def set_trading_time(self, time: datetime):
-        self.trading_time = time
+        # set ny timezone
+        self.trading_time = time.astimezone(timezone.get_current_timezone())
+        self.backtest_pattern.set_trading_time(time)
 
     def begin(self):
-        pass
+        # prepare symbols
+        bars = HistoricalMinuteBar.objects.filter(date=self.trading_date)
+        symbol_list = []
+        for bar in bars:
+            bar: HistoricalMinuteBar = bar
+            if bar.symbol not in symbol_list:
+                symbol_list.append(bar.symbol)
+        current_t = int(time.time())
+        # attach ticker id
+        for symbol in symbol_list:
+            self.backtest_tickers.append({
+                "symbol": symbol,
+                "ticker_id": str(current_t),
+            })
+            current_t += 1
 
     def update(self):
-        pass
+        # clean bars
+        self.backtest_df = {}
+        # prepare symbol minute bars
+        for ticker in self.backtest_tickers:
+            symbol = ticker['symbol']
+            minute_bars = HistoricalMinuteBar.objects.filter(
+                date=self.trading_date, symbol=symbol, time__lte=self.trading_time).order_by('-id')[:60]
+            minute_bars = list(reversed(minute_bars))
+            data_list = []
+            for minute_bar in minute_bars:
+                data_list.append([minute_bar.time.astimezone(timezone.get_current_timezone(
+                )), minute_bar.open, minute_bar.high, minute_bar.low, minute_bar.close, minute_bar.volume, minute_bar.vwap])
+            df = pd.DataFrame(data_list, columns=[
+                'timestamp', 'open', 'high', 'low', 'close', 'volume', 'vwap'])
+            df.set_index('timestamp', inplace=True)
+            self.backtest_df[symbol] = df
 
     def end(self):
         pass
@@ -116,6 +154,20 @@ class BacktestStrategyBase:
     def check_can_trade_ticker(self, ticker: TrackingTicker):
         return True
 
+    def get_position(self, ticker: TrackingTicker) -> dict:
+        symbol = ticker.get_symbol()
+        # get current price
+        current_bar = db.get_hist_minute_bar(symbol, self.trading_time)
+        current_price = current_bar.close
+        position = DayPosition.objects.filter(symbol=symbol).first()
+        quantity = position.quantity
+        avg_cost = position.total_cost / quantity
+        unrealized_pl = round((current_price - avg_cost) / avg_cost, 2)
+        return {
+            'unrealizedProfitLossRate': unrealized_pl,
+            'lastPrice': current_price,
+        }
+
     # submit buy limit order, only use for backtesting
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
         symbol = ticker.get_symbol()
@@ -135,23 +187,26 @@ class BacktestStrategyBase:
             order_id = self.order_tracker.get_next_order_id()
             trading_logger.log(
                 f"🟢 Submit buy order {order_id}, ticker: <{symbol}>, quant: {buy_quant}, limit price: {buy_price}")
-            order = db.save_webull_order_backtest({
-                'orderId': order_id,
-                'ticker': {
-                    'symbol': symbol,
-                    'tickerId': ticker_id,
+            order = db.save_webull_order_backtest(
+                {
+                    'orderId': order_id,
+                    'ticker': {
+                        'symbol': symbol,
+                        'tickerId': ticker_id,
+                    },
+                    'action': ActionType.BUY,
+                    'statusStr': 'Filled',
+                    'orderType': OrderType.LMT,
+                    'totalQuantity': buy_quant,
+                    'filledQuantity': buy_quant,
+                    'avgFilledPrice': buy_price,
+                    'lmtPrice': buy_price,
+                    'filledTime': self.trading_time,
+                    'placedTime': self.trading_time,
+                    'timeInForce': TimeInForceType.DAY,
                 },
-                'action': ActionType.BUY,
-                'statusStr': 'Filled',
-                'orderType': OrderType.LMT,
-                'totalQuantity': buy_quant,
-                'filledQuantity': buy_quant,
-                'avgFilledPrice': buy_price,
-                'lmtPrice': buy_price,
-                'filled_time': self.trading_time,
-                'placedTime': self.trading_time,
-                'timeInForce': TimeInForceType.DAY,
-            })
+                note=note,
+            )
             # create day position
             self._on_buy_order_filled(ticker, order)
 
@@ -206,23 +261,26 @@ class BacktestStrategyBase:
         order_id = self.order_tracker.get_next_order_id()
         trading_logger.log(
             f"🔴 Submit sell order {order_id}, ticker: <{symbol}>, quant: {holding_quantity}, limit price: {sell_price}")
-        order = db.save_webull_order_backtest({
-            'orderId': order_id,
-            'ticker': {
-                'symbol': symbol,
-                'tickerId': ticker_id,
+        order = db.save_webull_order_backtest(
+            {
+                'orderId': order_id,
+                'ticker': {
+                    'symbol': symbol,
+                    'tickerId': ticker_id,
+                },
+                'action': ActionType.SELL,
+                'statusStr': 'Filled',
+                'orderType': OrderType.LMT,
+                'totalQuantity': holding_quantity,
+                'filledQuantity': holding_quantity,
+                'avgFilledPrice': sell_price,
+                'lmtPrice': sell_price,
+                'filledTime': self.trading_time,
+                'placedTime': self.trading_time,
+                'timeInForce': TimeInForceType.DAY,
             },
-            'action': ActionType.SELL,
-            'statusStr': 'Filled',
-            'orderType': OrderType.LMT,
-            'totalQuantity': holding_quantity,
-            'filledQuantity': holding_quantity,
-            'avgFilledPrice': sell_price,
-            'lmtPrice': sell_price,
-            'filled_time': self.trading_time,
-            'placedTime': self.trading_time,
-            'timeInForce': TimeInForceType.DAY,
-        })
+            note=note,
+        )
         self._on_sell_order_filled(ticker, order)
 
     def _on_sell_order_filled(self, ticker: TrackingTicker, order: WebullOrder):
@@ -271,14 +329,10 @@ class BacktestStrategyBase:
         return self.extended_order_amount_limit
 
     def get_buy_price(self, ticker: TrackingTicker) -> float:
-        symbol = ticker.get_symbol()
-        current_bar = db.get_hist_minute_bar(symbol, self.trading_time)
-        return current_bar.close
+        return ticker.get_backtest_sell_price()
 
     def get_sell_price(self, ticker: TrackingTicker) -> float:
-        symbol = ticker.get_symbol()
-        current_bar = db.get_hist_minute_bar(symbol, self.trading_time)
-        return current_bar.close
+        return ticker.get_backtest_sell_price()
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         return 0.0

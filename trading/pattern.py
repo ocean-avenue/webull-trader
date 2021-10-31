@@ -46,8 +46,7 @@ def check_bars_continue(bars: pd.DataFrame, time_scale: int = 1, period: int = 1
     """
     check if candle bar is continue of time scale minutes
     """
-    if len(bars) < period + 1:
-        return False
+    period = min(len(bars) - 1, period)
     last_minute = -1
     is_continue = True
     period_bars = bars.tail(period)
@@ -145,8 +144,6 @@ def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int =
     """
     check if bar chart has enough amount
     """
-    if len(bars) < period + 1:
-        return False
     # make sure not use the last candle
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
@@ -167,8 +164,6 @@ def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int =
 
 
 def check_bars_volume_with_pos_size(bars: pd.DataFrame, size: int, period: int = 10) -> bool:
-    if len(bars) < period + 1:
-        return False
     # make sure not use the last candle
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
@@ -190,8 +185,6 @@ def check_bars_amount_grinding(bars: pd.DataFrame, period: int = 10) -> bool:
     """
     check if bar chart amount is grinding
     """
-    if len(bars) < period + 1:
-        return False
     # make sure not use the last candle
     period = min(len(bars) - 1, period)
     amount_grinding = True
@@ -217,8 +210,6 @@ def check_bars_has_long_wick_up(bars: pd.DataFrame, period: int = 5, count: int 
     """
     check if bar chart has long wick up
     """
-    if len(bars) < period + 1:
-        return False
     long_wick_up_count = 0
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
@@ -265,8 +256,6 @@ def check_bars_has_bearish_candle(bars: pd.DataFrame, period: int = 5, count: in
     """
     check if bar chart has bearish candle
     """
-    if len(bars) < period + 1:
-        return False
     bearish_candle_count = 0
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
@@ -420,8 +409,6 @@ def check_bars_all_green(bars: pd.DataFrame, period: int = 5) -> bool:
     """
     check if has bar's candle all green
     """
-    if len(bars) < period + 1:
-        return False
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
@@ -436,8 +423,6 @@ def check_bars_volatility(bars: pd.DataFrame, period: int = 5) -> bool:
     """
     check if has bar's ohlc has different price
     """
-    if len(bars) < period + 1:
-        return False
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
@@ -481,8 +466,6 @@ def check_bars_has_largest_green_candle(bars: pd.DataFrame, period: int = 10) ->
     """
     check if candle chart in period's largest candle is green
     """
-    if len(bars) < period + 1:
-        return False
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
@@ -509,8 +492,6 @@ def check_bars_has_most_green_candle(bars: pd.DataFrame, period: int = 10) -> bo
     """
     check if candle chart in period are most green candles
     """
-    if len(bars) < period + 1:
-        return False
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)
@@ -533,8 +514,6 @@ def check_bars_has_more_green_candle(bars: pd.DataFrame, period: int = 10) -> bo
     """
     check if candle chart in period are more green candles
     """
-    if len(bars) < period + 1:
-        return False
     period = min(len(bars) - 1, period)
     period_bars = bars.tail(period + 1)
     period_bars = period_bars.head(period)

@@ -335,7 +335,7 @@ class DayTradingBreakout(StrategyBase):
                 return
             bars = m1_bars
             if self.time_scale == 5:
-                bars = pattern.convert_5m_bars(m1_bars)
+                bars = utils.convert_5m_bars(m1_bars)
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
@@ -395,7 +395,7 @@ class DayTradingBreakout(StrategyBase):
                 # convert bars
                 bars = m1_bars
                 if self.time_scale == 5:
-                    bars = pattern.convert_5m_bars(m1_bars)
+                    bars = utils.convert_5m_bars(m1_bars)
                 # check stop loss
                 exit_trading, exit_note = self.check_stop_loss(
                     ticker, ticker_position)
@@ -467,7 +467,7 @@ class DayTradingBreakout(StrategyBase):
                 if self.is_extended_market_hour():
                     m1_bars = webullsdk.get_1m_bars(
                         ticker_id, count=(self.entry_period*self.time_scale+5))
-                    if m1_bars.empty:
+                    if m1_bars.empty or len(m1_bars) < 2:
                         continue
                     # use latest 2 candle
                     latest_candle = m1_bars.iloc[-1]

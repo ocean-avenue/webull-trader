@@ -32,6 +32,9 @@ class TrackingTicker:
         self.exit_period: Optional[int] = None
         self.positions: int = 0
         self.position_obj: Optional[DayPosition] = None
+        # for backtesting
+        self.backtest_buy_price: float = 1.0
+        self.backtest_sell_price: float = 1.0
 
     def get_id(self) -> str:
         return self.ticker_id
@@ -185,6 +188,18 @@ class TrackingTicker:
 
     def get_position_obj(self) -> Optional[DayPosition]:
         return self.position_obj
+
+    def get_backtest_buy_price(self) -> float:
+        return self.backtest_buy_price
+
+    def set_backtest_buy_price(self, price: float):
+        self.backtest_buy_price = price
+
+    def get_backtest_sell_price(self) -> float:
+        return self.backtest_sell_price
+
+    def set_backtest_sell_price(self, price: float):
+        self.backtest_sell_price = price
 
     def is_tracking_timeout(self) -> bool:
         if self.last_buy_time and (datetime.now() - self.last_buy_time) >= timedelta(seconds=config.OBSERVE_TIMEOUT_IN_SEC):

@@ -16,8 +16,7 @@ class BacktestExecutor:
     from backtest.strategy.strategy_base import BacktestStrategyBase
 
     def __init__(self, strategy: BacktestStrategyBase = None, trading_date: date = date.today(),
-                 trading_hour: TradingHourType = TradingHourType.REGULAR, paper: bool = True):
-        self.paper: bool = paper
+                 trading_hour: TradingHourType = TradingHourType.REGULAR):
         self.trading_date: date = trading_date
         self.trading_hour: TradingHourType = trading_hour
         self.strategy: BacktestStrategyBase = strategy
@@ -53,29 +52,23 @@ class BacktestExecutor:
 
         trading_time, end_time = self.trading_time_range
 
-        # prepare strategies
-        for strategy in self.strategies:
-            strategy.begin()
+        # prepare strategy
+        self.strategy.begin()
 
         while trading_time <= end_time:
 
-            # go through strategies trades
-            for strategy in self.strategies:
-                if strategy.trading_end:
-                    continue
-                strategy.set_trading_time(trading_time)
-                strategy.update()
-                trading_logger.write(self.trading_hour, self.trading_date)
+            self.strategy.set_trading_time(trading_time)
+            # tick strategy
+            self.strategy.update()
+            trading_logger.write(self.trading_hour, self.trading_date)
 
             trading_time = trading_time + timedelta(minutes=1)
 
-        # finish strategies
-        for strategy in self.strategies:
-            strategy.end()
+        # finish strategy
+        self.strategy.end()
 
         # final round
-        for strategy in self.strategies:
-            strategy.final()
+        self.strategy.final()
 
         trading_logger.log("Trading ended!")
         trading_logger.write(self.trading_hour, self.trading_date)
@@ -86,19 +79,18 @@ class BacktestExecutor:
         trading_settings = db.get_or_create_trading_settings()
         # algorithm type
         self.algo_type = trading_settings.algo_type
-        # init setting for strategies
-        for strategy in self.strategies:
-            strategy.load_settings(
-                order_amount_limit=trading_settings.order_amount_limit,
-                extended_order_amount_limit=trading_settings.extended_order_amount_limit,
-                target_profit_ratio=trading_settings.target_profit_ratio,
-                stop_loss_ratio=trading_settings.stop_loss_ratio,
-                day_free_float_limit_in_million=trading_settings.day_free_float_limit_in_million,
-                day_turnover_rate_limit_percentage=trading_settings.day_turnover_rate_limit_percentage,
-                day_sectors_limit=trading_settings.day_sectors_limit,
-                swing_position_amount_limit=trading_settings.swing_position_amount_limit,
-                day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
-            )
+        # init setting for strategy
+        self.strategy.load_settings(
+            order_amount_limit=trading_settings.order_amount_limit,
+            extended_order_amount_limit=trading_settings.extended_order_amount_limit,
+            target_profit_ratio=trading_settings.target_profit_ratio,
+            stop_loss_ratio=trading_settings.stop_loss_ratio,
+            day_free_float_limit_in_million=trading_settings.day_free_float_limit_in_million,
+            day_turnover_rate_limit_percentage=trading_settings.day_turnover_rate_limit_percentage,
+            day_sectors_limit=trading_settings.day_sectors_limit,
+            swing_position_amount_limit=trading_settings.swing_position_amount_limit,
+            day_trade_usable_cash_threshold=trading_settings.day_trade_usable_cash_threshold,
+        )
 
 
 def start():
@@ -115,11 +107,11 @@ def start():
 
     # backtest function
     def backtest(trading_date: date, trading_hour: TradingHourType):
-        from trading.strategy.day_breakout import DayTradingBreakoutScale
-        strategy = DayTradingBreakoutScale(
-            paper=True, trading_hour=trading_hour, entry_period=20, exit_period=9)
+        from backtest.strategy.day_breakout import BacktestDayTradingBreakout
+        strategy = BacktestDayTradingBreakout(
+            trading_date=trading_date, trading_hour=trading_hour, entry_period=20, exit_period=9)
         executor = BacktestExecutor(
-            strategy=strategy, trading_date=trading_date, trading_hour=trading_hour, paper=True)
+            strategy=strategy, trading_date=trading_date, trading_hour=trading_hour)
         print(
             f"[{utils.get_now()}] Backtesting for {trading_date} ({TradingHourType.tostr(trading_hour)})...")
         executor.start()
@@ -130,6 +122,8 @@ def start():
         trading_date = trading_stat.date
         for trading_hour in [TradingHourType.BEFORE_MARKET_OPEN, TradingHourType.REGULAR, TradingHourType.AFTER_MARKET_CLOSE]:
             backtest(trading_date, trading_hour)
+        # test for 1
+        break
 
 
 if __name__ == "django.core.management.commands.shell":

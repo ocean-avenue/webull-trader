@@ -276,7 +276,7 @@ def save_webull_order(order_data: dict, paper: bool = True) -> WebullOrder:
     return order
 
 
-def save_webull_order_backtest(order_data: dict) -> WebullOrder:
+def save_webull_order_backtest(order_data: dict, note: str) -> WebullOrder:
     order = WebullOrder(
         order_id=str(order_data['orderId']),
         ticker_id=str(order_data['ticker']['tickerId']),
@@ -292,6 +292,7 @@ def save_webull_order_backtest(order_data: dict) -> WebullOrder:
         placed_time=order_data['placedTime'],
         time_in_force=order_data['timeInForce'],
         paper=True,
+        note=note,
     )
     order.save()
     return order

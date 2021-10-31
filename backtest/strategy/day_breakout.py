@@ -2,11 +2,10 @@
 
 import math
 import pandas as pd
-from datetime import datetime
+from datetime import timedelta
 from backtest.strategy.strategy_base import BacktestStrategyBase
 from common.enums import SetupType
-from common import config, constants
-from sdk import webullsdk
+from common import config, constants, utils
 from logger import trading_logger
 from trading import pattern
 from trading.tracker.trading_tracker import TrackingTicker
@@ -17,12 +16,13 @@ from trading.tracker.trading_tracker import TrackingTicker
 class BacktestDayTradingBreakout(BacktestStrategyBase):
 
     import pandas as pd
+    from datetime import date
     from common.enums import SetupType, TradingHourType
     from typing import Tuple
     from trading.tracker.trading_tracker import TrackingTicker
 
-    def __init__(self, paper: bool, trading_hour: TradingHourType, entry_period: int = 20, exit_period: int = 10, time_scale: int = 1):
-        super().__init__(paper=paper, trading_hour=trading_hour)
+    def __init__(self, trading_date: date, trading_hour: TradingHourType, entry_period: int = 20, exit_period: int = 10, time_scale: int = 1):
+        super().__init__(trading_date=trading_date, trading_hour=trading_hour)
         self.entry_period: int = entry_period
         self.exit_period: int = exit_period
         self.time_scale: int = time_scale
@@ -54,7 +54,8 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
     def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame) -> bool:
         symbol = ticker.get_symbol()
         current_candle = bars.iloc[-1]
-        current_price = current_candle['close']
+        # use high for backtesting
+        current_price = current_candle['high']
         # check if above vwap
         if current_price <= current_candle['vwap']:
             trading_logger.log(
@@ -70,6 +71,8 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             # use low price for period low
             if row['low'] < period_low_price:
                 period_low_price = row['low']
+        # for backtesting
+        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
 
         # check if new high
         if current_price <= period_high_price:
@@ -109,34 +112,34 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev close (${prev_close}), no entry!")
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
+        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_updated(bars):
             trading_logger.log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars, time_scale=self.time_scale):
+        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_continue(bars, time_scale=self.time_scale):
             trading_logger.log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
+        if not pattern.check_bars_rel_volume(bars) and not self.backtest_pattern.check_bars_amount_grinding(bars, period=5) and \
                 not pattern.check_bars_all_green(bars, period=5):
             # has no relative volume
             trading_logger.log(
                 "<{}> candle chart has no relative volume, no entry!".format(symbol))
             return False
 
-        if not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not self.backtest_pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no entry!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
+        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_volatility(bars):
             # no volatility
             trading_logger.log(
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
@@ -148,8 +151,8 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
-        if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
-                not pattern.check_bars_has_most_green_candle(bars):
+        if not (self.backtest_pattern.check_bars_has_largest_green_candle(bars) and self.backtest_pattern.check_bars_has_more_green_candle(bars)) and \
+                not self.backtest_pattern.check_bars_has_most_green_candle(bars):
             # not most green candles and no largest green candle
             trading_logger.log(
                 "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
@@ -168,7 +171,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
-        if ticker.is_just_sold():
+        if ticker.get_last_sell_time() and (self.trading_time - ticker.get_last_sell_time()) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):
             trading_logger.log(
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
@@ -198,7 +201,8 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 return (False, None)
         exit_trading = False
         exit_note = None
-        current_price = current_candle['close']
+        # use low for backtesting
+        current_price = current_candle['low']
         last_price = last_candle['close']
         period_bars = bars.head(len(bars) - 2).tail(exit_period)
         period_low_price = constants.MAX_SECURITY_PRICE
@@ -208,6 +212,8 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             if close_price < period_low_price:
                 period_low_price = close_price
                 period_low_idx = i
+        # for backtesting
+        ticker.set_backtest_sell_price(round(period_low_price * 0.99, 2))
         if period_low_idx < len(period_bars) - 1:
             # add 1% threshold
             threshold = 0.01
@@ -225,7 +231,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
-        elif self.is_extended_market_hour() and not pattern.check_bars_volatility(bars):
+        elif self.is_extended_market_hour() and not self.backtest_pattern.check_bars_volatility(bars):
             trading_logger.log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
@@ -262,6 +268,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
         if profit_loss_rate >= 1:
             exit_trading = True
             exit_note = "Home run at {}!".format(position['lastPrice'])
+        ticker.set_backtest_sell_price(round(position['lastPrice'] * 0.99, 2))
         return (exit_trading, exit_note)
 
     def check_stop_loss(self, ticker: TrackingTicker, position: dict) -> Tuple[bool, str]:
@@ -272,6 +279,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
         if last_price < ticker.get_stop_loss():
             exit_trading = True
             exit_note = "Stop loss at {}!".format(last_price)
+        ticker.set_backtest_sell_price(round(ticker.get_stop_loss() * 0.99, 2))
         return (exit_trading, exit_note)
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
@@ -317,23 +325,14 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
 
         holding_quantity = ticker.get_positions()
         if holding_quantity == 0:
-            # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
-            if ticker.is_tracking_timeout():
-                trading_logger.log(
-                    "Trading <{}> session timeout!".format(symbol))
-                # stop ticker tracking
-                self.trading_tracker.stop_tracking(ticker)
-                return
-
             # fetch 1m bar charts
             if m1_bars.empty:
-                m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.entry_period*self.time_scale+5))
+                m1_bars = self.backtest_df[symbol]
             if m1_bars.empty:
                 return
             bars = m1_bars
             if self.time_scale == 5:
-                bars = pattern.convert_5m_bars(m1_bars)
+                bars = utils.convert_5m_bars(m1_bars)
 
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
@@ -380,8 +379,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             if not exit_trading:
                 # get 1m bar charts
                 # check_bars_at_peak require 30 bars
-                m1_bars = webullsdk.get_1m_bars(
-                    ticker_id, count=(self.exit_period*self.time_scale + 30))
+                m1_bars = self.backtest_df[symbol]
                 # check bars error
                 if m1_bars.empty:
                     trading_logger.log(
@@ -393,7 +391,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 # convert bars
                 bars = m1_bars
                 if self.time_scale == 5:
-                    bars = pattern.convert_5m_bars(m1_bars)
+                    bars = utils.convert_5m_bars(m1_bars)
                 # check stop loss
                 exit_trading, exit_note = self.check_stop_loss(
                     ticker, ticker_position)
@@ -428,26 +426,19 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 self.submit_buy_limit_order(ticker, note="Buy dip.")
 
     def update(self):
+        super().update()
+
+        trading_logger.log(f"Backtesting time: [{self.trading_time}]")
+
         # trading tickers
         for ticker_id in self.trading_tracker.get_tickers():
             ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 
-        # find new ticker in top gainers
-        top_gainers = []
-        if self.is_regular_market_hour():
-            top_gainers = webullsdk.get_top_gainers()
-        elif self.is_pre_market_hour():
-            top_gainers = webullsdk.get_pre_market_gainers()
-        elif self.is_after_market_hour():
-            top_gainers = webullsdk.get_after_market_gainers()
-
-        # trading_logger.log("Scanning top gainers <{}>...".format(
-        #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
-        for gainer in top_gainers:
-            symbol = gainer["symbol"]
-            ticker_id = str(gainer["ticker_id"])
+        for backtest_ticker in self.backtest_tickers:
+            symbol = backtest_ticker["symbol"]
+            ticker_id = str(backtest_ticker["ticker_id"])
             # check if ticker already in tracking
             if self.trading_tracker.is_tracking(ticker_id):
                 continue
@@ -458,52 +449,40 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 # trading_logger.log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
-            # trading_logger.log("Scanning <{}>...".format(symbol))
-            change_percentage = gainer["change_percentage"]
-            # check gap change
-            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
-                if self.is_extended_market_hour():
-                    m1_bars = webullsdk.get_1m_bars(
-                        ticker_id, count=(self.entry_period*self.time_scale+5))
-                    if m1_bars.empty:
-                        continue
-                    # use latest 2 candle
-                    latest_candle = m1_bars.iloc[-1]
-                    latest_candle2 = m1_bars.iloc[-2]
-                    # check if trasaction amount and volume meets requirement
-                    if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
-                        # update target units
-                        ticker.set_target_units(
-                            config.DAY_EXTENDED_TARGET_UNITS)
-                        # start tracking ticker
-                        self.trading_tracker.start_tracking(ticker)
-                        trading_logger.log(
-                            "Start trading <{}>...".format(symbol))
-                        # do trade
-                        self.trade(ticker, m1_bars=m1_bars)
-                elif self.is_regular_market_hour():
+
+            if self.is_extended_market_hour():
+                m1_bars = self.backtest_df[symbol]
+                if m1_bars.empty or len(m1_bars) < 2:
+                    continue
+                # use latest 2 candle
+                latest_candle = m1_bars.iloc[-1]
+                latest_candle2 = m1_bars.iloc[-2]
+                # check if trasaction amount and volume meets requirement
+                if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
                     # update target units
-                    ticker.set_target_units(config.DAY_TARGET_UNITS)
+                    ticker.set_target_units(
+                        config.DAY_EXTENDED_TARGET_UNITS)
                     # start tracking ticker
                     self.trading_tracker.start_tracking(ticker)
                     trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
-                    self.trade(ticker)
+                    self.trade(ticker, m1_bars=m1_bars)
+            elif self.is_regular_market_hour():
+                # update target units
+                ticker.set_target_units(config.DAY_TARGET_UNITS)
+                # start tracking ticker
+                self.trading_tracker.start_tracking(ticker)
+                trading_logger.log(
+                    "Start trading <{}>...".format(symbol))
+                # do trade
+                self.trade(ticker)
 
     def end(self):
         self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()
-
-    def final(self):
-
-        # cancel all existing order
-        webullsdk.cancel_all_orders()
-
-        # track failed to sell positions
-        self.track_rest_positions()
 
 
 # Breakout day trade backtest, adjust exit period by profit & loss rate.
@@ -549,7 +528,7 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
         if units == 1:
             # give some time for trading to work out
             trade_interval_sec = 300
-        if (datetime.now() - last_buy_time).seconds <= trade_interval_sec:
+        if (self.trading_time - last_buy_time).seconds <= trade_interval_sec:
             return False
         # check if has 5% gain already
         profit_loss_rate = float(position['unrealizedProfitLossRate'])
@@ -562,13 +541,15 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
             return False
         symbol = ticker.get_symbol()
         current_candle = bars.iloc[-1]
-        current_price = current_candle['close']
+        # use high price for backtest
+        current_price = current_candle['high']
         period_bars = bars.head(len(bars) - 1).tail(self.entry_period)
         period_high_price = 0
         for _, row in period_bars.iterrows():
             close_price = row['close']  # use close price
             if close_price > period_high_price:
                 period_high_price = close_price
+        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
 
         # check if new high
         if current_price <= period_high_price:
@@ -576,17 +557,17 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
                 f"<{symbol}> price ${current_price} is not breakout high ${period_high_price}, no scale in!")
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
+        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_updated(bars):
             trading_logger.log(
                 "<{}> candle chart is not updated, stop scale in!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars, time_scale=self.time_scale):
+        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_continue(bars, time_scale=self.time_scale):
             trading_logger.log(
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if not pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not self.backtest_pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no scale in!".format(symbol))
@@ -598,8 +579,8 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
                 "<{}> candle chart has long wick up, no scale in!".format(symbol))
             return False
 
-        if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
-                not pattern.check_bars_has_most_green_candle(bars):
+        if not (self.backtest_pattern.check_bars_has_largest_green_candle(bars) and self.backtest_pattern.check_bars_has_more_green_candle(bars)) and \
+                not self.backtest_pattern.check_bars_has_most_green_candle(bars):
             # not most green candles and no largest green candle
             trading_logger.log(
                 "<{}> candle chart has no most green candles or largest candle is red, no scale in!".format(symbol))
@@ -660,6 +641,8 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
 
+        ticker.set_backtest_buy_price(round(current_price * 1.01, 2))
+
         if current_price <= last_high:
             # no first candle new high
             trading_logger.log(
@@ -668,7 +651,7 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
 
         # position size if buy
         pos_size = math.ceil(self.get_buy_order_limit(ticker) / current_price)
-        if not pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
+        if not self.backtest_pattern.check_bars_volume_with_pos_size(bars, pos_size, period=10):
             # volume not enough for my position size
             trading_logger.log(
                 f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no dip buy!")
@@ -693,6 +676,7 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
         if profit_loss_rate >= 1:
             exit_trading = True
             exit_note = "Home run at {}!".format(last_price)
+        ticker.set_backtest_sell_price(round(last_price * 0.99, 2))
         return (exit_trading, exit_note)
 
     def update_exit_period(self, ticker: TrackingTicker, position: dict):
