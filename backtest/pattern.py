@@ -1,7 +1,8 @@
 from datetime import datetime
 from django.utils import timezone
 import pandas as pd
-from common import utils, config
+from common import utils
+from backtest import config
 
 
 class BacktestPattern:
