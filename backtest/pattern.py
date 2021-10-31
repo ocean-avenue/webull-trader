@@ -24,7 +24,7 @@ class BacktestPattern:
             return False
         return True
 
-    def _get_vol_for_pos_size(size: float) -> float:
+    def _get_vol_for_pos_size(self, size: float) -> float:
         if utils.is_regular_market_hour_now():
             return config.DAY_VOLUME_POS_SIZE_RATIO * size
         return config.DAY_EXTENDED_VOLUME_POS_SIZE_RATIO * size

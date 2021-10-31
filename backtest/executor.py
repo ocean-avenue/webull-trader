@@ -8,7 +8,6 @@ from common import db
 from logger import trading_logger
 from backtest.strategy.strategy_base import BacktestStrategyBase
 
-
 class BacktestExecutor:
 
     from common.enums import TradingHourType
@@ -95,20 +94,23 @@ class BacktestExecutor:
 
 def start():
     from datetime import date
-    from webull_trader.models import WebullAccountStatistics, WebullOrder, DayTrade, TradingLog
+    from webull_trader.models import WebullAccountStatistics, WebullOrder, DayTrade, DayPosition, TradingLog
     from backtest.executor import BacktestExecutor
     from common.enums import TradingHourType
-    from common import utils
+    from common import utils, db
+    from backtest.tracker import account_tracker
+    from scripts import calculate_histdata
 
     # remove all existing trades, orders
     WebullOrder.objects.all().delete()
     DayTrade.objects.all().delete()
+    DayPosition.objects.all().delete()
     TradingLog.objects.all().delete()
 
     # backtest function
     def backtest(trading_date: date, trading_hour: TradingHourType):
-        from backtest.strategy.day_breakout import BacktestDayTradingBreakout
-        strategy = BacktestDayTradingBreakout(
+        from backtest.strategy.day_breakout import BacktestDayTradingBreakoutScale
+        strategy = BacktestDayTradingBreakoutScale(
             trading_date=trading_date, trading_hour=trading_hour, entry_period=20, exit_period=9)
         executor = BacktestExecutor(
             strategy=strategy, trading_date=trading_date, trading_hour=trading_hour)
@@ -122,9 +124,28 @@ def start():
         trading_date = trading_stat.date
         for trading_hour in [TradingHourType.BEFORE_MARKET_OPEN, TradingHourType.REGULAR, TradingHourType.AFTER_MARKET_CLOSE]:
             backtest(trading_date, trading_hour)
-        # test for 1
-        break
-
+        # calculate data
+        calculate_histdata.start(day=trading_date)
+        # save account stat
+        db.save_webull_account(
+            {
+                "accountMembers": [
+                    {
+                        "key": "dayProfitLoss",
+                        "value": db.get_hist_day_perf(day=trading_date).day_profit_loss,
+                    },
+                    {
+                        "key": "usableCash",
+                        "value": account_tracker.get_balance(),
+                    },
+                ],
+                "netLiquidation": account_tracker.get_balance(),
+                "totalProfitLoss": account_tracker.get_total_pl(),
+                "totalProfitLossRate": account_tracker.get_total_pl_rate(),
+            },
+            paper=True,
+            day=trading_date,
+        )
 
 if __name__ == "django.core.management.commands.shell":
     start()

@@ -428,8 +428,6 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
     def update(self):
         super().update()
 
-        trading_logger.log(f"Backtesting time: [{self.trading_time}]")
-
         # trading tickers
         for ticker_id in self.trading_tracker.get_tickers():
             ticker = self.trading_tracker.get_ticker(ticker_id)

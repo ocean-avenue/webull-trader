@@ -6,7 +6,7 @@ from datetime import datetime, date
 from common import enums, utils, constants
 from sdk import webullsdk
 from logger import exception_logger
-from webull_trader.models import DayPosition, DayTrade, HistoricalDailyBar, HistoricalKeyStatistics, HistoricalMarketStatistics, HistoricalMinuteBar, HistoricalTopGainer, \
+from webull_trader.models import DayPosition, DayTrade, HistoricalDailyBar, HistoricalDayTradePerformance, HistoricalKeyStatistics, HistoricalMarketStatistics, HistoricalMinuteBar, HistoricalTopGainer, \
     HistoricalTopLoser, SwingHistoricalDailyBar, TradingSettings, TradingSymbols, WebullAccountStatistics, WebullCredentials, WebullNews, WebullOrder
 
 
@@ -276,7 +276,7 @@ def save_webull_order(order_data: dict, paper: bool = True) -> WebullOrder:
     return order
 
 
-def save_webull_order_backtest(order_data: dict, note: str) -> WebullOrder:
+def save_webull_order_backtest(order_data: dict, setup: enums.SetupType, note: str) -> WebullOrder:
     order = WebullOrder(
         order_id=str(order_data['orderId']),
         ticker_id=str(order_data['ticker']['tickerId']),
@@ -292,6 +292,7 @@ def save_webull_order_backtest(order_data: dict, note: str) -> WebullOrder:
         placed_time=order_data['placedTime'],
         time_in_force=order_data['timeInForce'],
         paper=True,
+        setup=setup,
         note=note,
     )
     order.save()
@@ -317,7 +318,8 @@ def save_webull_min_usable_cash(usable_cash: float, day: Optional[date] = None):
 
 def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.SetupType,
                      cost: float, quant: int, buy_time: datetime, units: int = 1, target_units: int = 4,
-                     add_unit_price: float = constants.MAX_SECURITY_PRICE, stop_loss_price: float = 0.0) -> Optional[DayPosition]:
+                     add_unit_price: float = constants.MAX_SECURITY_PRICE, stop_loss_price: float = 0.0,
+                     require_adjustment: bool = True) -> Optional[DayPosition]:
     try:
         position = DayPosition(
             symbol=symbol,
@@ -332,7 +334,7 @@ def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.Se
             buy_date=buy_time.date(),
             buy_time=buy_time,
             setup=setup,
-            require_adjustment=True,
+            require_adjustment=require_adjustment,
         )
         position.save()
         return position
@@ -342,7 +344,7 @@ def add_day_position(symbol: str, ticker_id: str, order_id: str, setup: enums.Se
         return None
 
 
-def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: str, sell_price: float, sell_time: datetime) -> Optional[DayTrade]:
+def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: str, sell_price: float, sell_time: datetime, require_adjustment: bool = True) -> Optional[DayTrade]:
     trade = DayTrade(
         symbol=symbol,
         ticker_id=ticker_id,
@@ -356,7 +358,7 @@ def add_day_trade(symbol: str, ticker_id: str, position: DayPosition, order_id: 
         sell_date=sell_time.date(),
         sell_time=sell_time,
         setup=position.setup,
-        require_adjustment=True,
+        require_adjustment=require_adjustment,
     )
     trade.save()
     return trade
@@ -498,6 +500,10 @@ def save_hist_top_loser(loser_data: dict, date: date):
 def get_hist_minute_bar(symbol: str, time: datetime) -> Optional[HistoricalMinuteBar]:
     return HistoricalMinuteBar.objects.filter(symbol=symbol).filter(
         time__year=str(time.year), time__month=str(time.month), time__day=str(time.day), time__hour=str(time.hour), time__minute=str(time.minute)).first()
+
+
+def get_hist_day_perf(day: date) -> HistoricalDayTradePerformance:
+    return HistoricalDayTradePerformance.objects.filter(date=day).first()
 
 
 def save_hist_minute_bar_list(bar_list: List[dict]):

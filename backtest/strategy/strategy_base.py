@@ -4,16 +4,15 @@
 
 import time
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import List, TypedDict
 from backtest.pattern import BacktestPattern
+from backtest.tracker import order_tracker, account_tracker
 from logger import trading_logger
 from common import db
 from django.utils import timezone
 from common.enums import ActionType, OrderType, SetupType, TimeInForceType, TradingHourType
 from trading.tracker.trading_tracker import TradingTracker
-from backtest.tracker.account_tracker import BacktestAccountTracker
-from backtest.tracker.order_tracker import BacktestOrderTracker
 from webull_trader.models import DayPosition, HistoricalMinuteBar, WebullOrder
 
 
@@ -23,18 +22,12 @@ class BacktestStrategyBase:
     from common.enums import SetupType, TradingHourType
     from trading.tracker.trading_tracker import TrackingTicker
 
-    INIT_BALANCE = 30000.0
-
     def __init__(self, trading_date: date, trading_hour: TradingHourType = TradingHourType.REGULAR):
         # init strategy variables
         self.trading_date: date = trading_date
         self.trading_hour: TradingHourType = trading_hour
         self.trading_end: bool = False
         self.trading_tracker: TradingTracker = TradingTracker()
-        self.account_tracker = BacktestAccountTracker(
-            balance=self.INIT_BALANCE)
-        self.order_tracker = BacktestOrderTracker()
-        self.trading_time: datetime = None
         self.backtest_tickers: List[dict] = []
         self.backtest_df: TypedDict[str, pd.DataFrame] = {}
         self.backtest_pattern: BacktestPattern = BacktestPattern()
@@ -62,6 +55,9 @@ class BacktestStrategyBase:
             current_t += 1
 
     def update(self):
+        trading_logger.log("")
+        trading_logger.log(f"Backtesting timestamp: [{self.trading_time}]")
+        trading_logger.log("")
         # clean bars
         self.backtest_df = {}
         # prepare symbol minute bars
@@ -157,7 +153,11 @@ class BacktestStrategyBase:
     def get_position(self, ticker: TrackingTicker) -> dict:
         symbol = ticker.get_symbol()
         # get current price
-        current_bar = db.get_hist_minute_bar(symbol, self.trading_time)
+        current_bar = None
+        bar_time = self.trading_time
+        while current_bar == None:
+            current_bar = db.get_hist_minute_bar(symbol, bar_time)
+            bar_time = bar_time - timedelta(minutes=1)
         current_price = current_bar.close
         position = DayPosition.objects.filter(symbol=symbol).first()
         quantity = position.quantity
@@ -172,7 +172,7 @@ class BacktestStrategyBase:
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
-        usable_cash = self.account_tracker.get_cash_balance()
+        usable_cash = account_tracker.get_balance()
         db.save_webull_min_usable_cash(usable_cash, day=self.trading_date)
         buy_position_amount = self.get_buy_order_limit(ticker)
         if usable_cash <= buy_position_amount:
@@ -184,7 +184,7 @@ class BacktestStrategyBase:
         buy_quant = (int)(buy_position_amount / buy_price)
         if buy_quant > 0:
             # create webull buy order
-            order_id = self.order_tracker.get_next_order_id()
+            order_id = order_tracker.get_next_order_id()
             trading_logger.log(
                 f"🟢 Submit buy order {order_id}, ticker: <{symbol}>, quant: {buy_quant}, limit price: {buy_price}")
             order = db.save_webull_order_backtest(
@@ -205,6 +205,7 @@ class BacktestStrategyBase:
                     'placedTime': self.trading_time,
                     'timeInForce': TimeInForceType.DAY,
                 },
+                setup=self.get_setup(),
                 note=note,
             )
             # create day position
@@ -223,8 +224,8 @@ class BacktestStrategyBase:
             # update position obj
             position_obj.order_ids = f"{position_obj.order_ids},{order_id}"
             position_obj.quantity += order.filled_quantity
-            position_obj.total_cost += round(
-                order.filled_quantity * order.avg_price, 2)
+            position_obj.total_cost = round(
+                position_obj.total_cost + order.filled_quantity * order.avg_price, 2)
             position_obj.units += 1
             position_obj.require_adjustment = False
             position_obj.save()
@@ -240,16 +241,17 @@ class BacktestStrategyBase:
                 buy_time=order.filled_time,
                 stop_loss_price=ticker.get_stop_loss(),
                 target_units=ticker.get_target_units(),
+                require_adjustment=False,
             )
             # set position obj
             ticker.set_position_obj(position_obj)
             # set initial cost
             ticker.set_initial_cost(order.avg_price)
+        ticker.set_last_buy_time(self.trading_time)
         ticker.inc_positions(order.filled_quantity)
         ticker.inc_units()
         # update account tracker
-        self.account_tracker.update_cash_balance(
-            -round(order.filled_quantity * order.avg_price, 2))
+        account_tracker.update_balance(-(order.filled_quantity * order.avg_price))
 
     # submit sell limit order, only use for backtesting
     def submit_sell_limit_order(self, ticker: TrackingTicker, note: str = "Exit point."):
@@ -258,7 +260,7 @@ class BacktestStrategyBase:
         holding_quantity = ticker.get_positions()
         sell_price = self.get_sell_price(ticker)
         # create webull buy order
-        order_id = self.order_tracker.get_next_order_id()
+        order_id = order_tracker.get_next_order_id()
         trading_logger.log(
             f"🔴 Submit sell order {order_id}, ticker: <{symbol}>, quant: {holding_quantity}, limit price: {sell_price}")
         order = db.save_webull_order_backtest(
@@ -279,6 +281,7 @@ class BacktestStrategyBase:
                 'placedTime': self.trading_time,
                 'timeInForce': TimeInForceType.DAY,
             },
+            setup=self.get_setup(),
             note=note,
         )
         self._on_sell_order_filled(ticker, order)
@@ -296,16 +299,17 @@ class BacktestStrategyBase:
             order_id=order_id,
             sell_price=order.avg_price,
             sell_time=order.filled_time,
+            require_adjustment=False,
         )
         # remove position object
         position_obj.delete()
         ticker.reset_positions()
+        ticker.set_last_sell_time(self.trading_time)
         # update trading stats
         tracking_stat = self.trading_tracker.get_stat(symbol)
         tracking_stat.update_by_trade(trade)
         # update account tracker
-        self.account_tracker.update_cash_balance(
-            round(order.filled_quantity * order.avg_price, 2))
+        account_tracker.update_balance(order.filled_quantity * order.avg_price)
 
     # clear all positions
     def clear_positions(self):
@@ -329,7 +333,7 @@ class BacktestStrategyBase:
         return self.extended_order_amount_limit
 
     def get_buy_price(self, ticker: TrackingTicker) -> float:
-        return ticker.get_backtest_sell_price()
+        return ticker.get_backtest_buy_price()
 
     def get_sell_price(self, ticker: TrackingTicker) -> float:
         return ticker.get_backtest_sell_price()

@@ -1,10 +1,7 @@
 
-class BacktestOrderTracker:
+_order_id: int = 100000
 
-    def __init__(self):
-        self.order_id = 100000
-
-    def get_next_order_id(self):
-        order_id = self.order_id
-        self.order_id += 1
-        return order_id
+def get_next_order_id() -> int:
+    global _order_id
+    _order_id += 1
+    return _order_id
