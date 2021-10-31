@@ -279,7 +279,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
         if last_price < ticker.get_stop_loss():
             exit_trading = True
             exit_note = "Stop loss at {}!".format(last_price)
-        ticker.set_backtest_sell_price(round(ticker.get_stop_loss() * 0.99, 2))
+        ticker.set_backtest_sell_price(round(last_price * 0.99, 2))
         return (exit_trading, exit_note)
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
@@ -296,10 +296,10 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
         # if candle already up more than 10%
         if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss_1 = round(
-                current_candle['high'] + current_candle['low'], 2)
+                (current_candle['high'] + current_candle['low'] / 2), 2)
         if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
             stop_loss_2 = round(
-                prev_candle['high'] + prev_candle['low'], 2)
+                (prev_candle['high'] + prev_candle['low']) / 2, 2)
         return min(stop_loss_1, stop_loss_2)
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:
@@ -609,10 +609,10 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
         # if candle already up more than 10%
         if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss_1 = round(
-                current_candle['high'] + current_candle['low'], 2)
+                (current_candle['high'] + current_candle['low']) / 2, 2)
         if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
             stop_loss_2 = round(
-                prev_candle['high'] + prev_candle['low'], 2)
+                (prev_candle['high'] + prev_candle['low']) / 2, 2)
         return min(stop_loss_1, stop_loss_2)
 
     def check_buy_dip(self, ticker: TrackingTicker, bars: pd.DataFrame, position: dict) -> bool:

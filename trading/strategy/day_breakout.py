@@ -290,10 +290,10 @@ class DayTradingBreakout(StrategyBase):
         # if candle already up more than 10%
         if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss_1 = round(
-                current_candle['high'] + current_candle['low'], 2)
+                (current_candle['high'] + current_candle['low'] / 2), 2)
         if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
             stop_loss_2 = round(
-                prev_candle['high'] + prev_candle['low'], 2)
+                (prev_candle['high'] + prev_candle['low']) / 2, 2)
         return min(stop_loss_1, stop_loss_2)
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:
@@ -862,10 +862,10 @@ class DayTradingBreakoutScale(DayTradingBreakout):
         # if candle already up more than 10%
         if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss_1 = round(
-                current_candle['high'] + current_candle['low'], 2)
+                (current_candle['high'] + current_candle['low']) / 2, 2)
         if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
             stop_loss_2 = round(
-                prev_candle['high'] + prev_candle['low'], 2)
+                (prev_candle['high'] + prev_candle['low']) / 2, 2)
         return min(stop_loss_1, stop_loss_2)
 
     def check_buy_dip(self, ticker: TrackingTicker, bars: pd.DataFrame, position: dict) -> bool:
