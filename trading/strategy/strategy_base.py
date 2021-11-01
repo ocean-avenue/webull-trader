@@ -271,6 +271,8 @@ class StrategyBase:
                 "Not enough cash to buy <{}>, cash left: {}!".format(symbol, usable_cash))
             return
         buy_price = self.get_buy_price(ticker)
+        if not buy_price:
+            return
         buy_quant = (int)(buy_position_amount / buy_price)
         order_response = webullsdk.modify_buy_limit_order(
             ticker_id=ticker_id,
@@ -288,6 +290,8 @@ class StrategyBase:
         ticker_id = ticker.get_id()
         holding_quantity = ticker.get_positions()
         sell_price = self.get_sell_price(ticker)
+        if not sell_price:
+            return
         order_response = webullsdk.sell_limit_order(
             ticker_id=ticker_id,
             price=sell_price,
@@ -741,7 +745,7 @@ class StrategyBase:
             return self.order_amount_limit
         return self.extended_order_amount_limit
 
-    def get_buy_price(self, ticker: TrackingTicker) -> float:
+    def get_buy_price(self, ticker: TrackingTicker) -> Optional[float]:
         ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         trading_logger.log_level2(quote)
@@ -753,11 +757,15 @@ class StrategyBase:
         last_price = last_price or close_price
         bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
         ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
+        if not bid_price or not ask_price:
+            trading_logger.log(
+                f"<{ticker.get_symbol()}> buy price None, quote: {quote}")
+            return None
         buy_price = round((ask_price + bid_price) / 2 + 0.005, 2)
         # return min(ask_price, round(last_price * 1.01, 2))
         return buy_price
 
-    def get_sell_price(self, ticker: TrackingTicker) -> float:
+    def get_sell_price(self, ticker: TrackingTicker) -> Optional[float]:
         ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         trading_logger.log_level2(quote)
@@ -775,6 +783,10 @@ class StrategyBase:
         last_price = last_price or close_price
         bid_price = webullsdk.get_bid_price_from_quote(quote) or last_price
         ask_price = webullsdk.get_ask_price_from_quote(quote) or last_price
+        if not bid_price or not ask_price:
+            trading_logger.log(
+                f"<{ticker.get_symbol()}> sell price None, quote: {quote}")
+            return None
         sell_price = round((ask_price + bid_price) / 2 - 0.005, 2)
         return sell_price
 

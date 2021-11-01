@@ -4,7 +4,7 @@ import math
 import pandas as pd
 from datetime import datetime, date, timedelta
 from common.enums import SetupType, TradingHourType
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 from common import utils, config, constants
 from sdk import webullsdk
 from logger import trading_logger
@@ -515,7 +515,7 @@ class DayTradingBreakoutAsk(DayTradingBreakout):
     def get_tag(self) -> str:
         return "DayTradingBreakoutAsk"
 
-    def get_buy_price(self, ticker: TrackingTicker) -> float:
+    def get_buy_price(self, ticker: TrackingTicker) -> Optional[float]:
         ticker_id = ticker.get_id()
         quote = webullsdk.get_quote(ticker_id=ticker_id)
         trading_logger.log_level2(quote)
