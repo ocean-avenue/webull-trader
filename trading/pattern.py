@@ -282,7 +282,7 @@ def check_bars_at_peak(bars: pd.DataFrame, long_period: int = 10, short_period: 
     """
     check if bar chart is at peak
     """
-    if len(bars) < long_period + 5:
+    if len(bars) < long_period * 2:
         return False
     prev_bar2 = bars.iloc[-2]
     # prev_bar2 should be red

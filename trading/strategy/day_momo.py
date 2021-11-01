@@ -253,12 +253,6 @@ class DayTradingMomo(StrategyBase):
                             f"<{symbol}> candle chart has long wick up, exit!")
                         exit_trading = True
                         exit_note = "Candle chart has long wick up."
-                    # check if bar chart is at peak
-                    elif self.is_regular_market_hour() and pattern.check_bars_at_peak(m1_bars):
-                        trading_logger.log(
-                            f"<{symbol}> candle chart is at peak, exit!")
-                        exit_trading = True
-                        exit_note = "Candle chart is at peak."
 
                     # check exit trade
                     exit_trading, exit_note = self.check_exit(ticker, m2_bars)
