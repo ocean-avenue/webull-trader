@@ -71,8 +71,6 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             # use low price for period low
             if row['low'] < period_low_price:
                 period_low_price = row['low']
-        # for backtesting
-        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
 
         # check if new high
         if current_price <= period_high_price:
@@ -176,6 +174,9 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
 
+        # for backtesting
+        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
+
         return True
 
     def check_exit_extra(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
@@ -212,8 +213,6 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
             if close_price < period_low_price:
                 period_low_price = close_price
                 period_low_idx = i
-        # for backtesting
-        ticker.set_backtest_sell_price(round(period_low_price * 0.99, 2))
         if period_low_idx < len(period_bars) - 1:
             # add 1% threshold
             threshold = 0.01
@@ -252,6 +251,10 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
         if not exit_trading:
             # additional check in subclass
             exit_trading, exit_note = self.check_exit_extra(ticker, bars)
+
+        if exit_trading:
+            # for backtesting
+            ticker.set_backtest_sell_price(round(period_low_price * 0.99, 2))
 
         return (exit_trading, exit_note)
 
@@ -547,7 +550,6 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
             close_price = row['close']  # use close price
             if close_price > period_high_price:
                 period_high_price = close_price
-        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
 
         # check if new high
         if current_price <= period_high_price:
@@ -597,6 +599,8 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no scale in!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
+        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
+
         trading_logger.log(
             "Scale in <{}> position, period breakout.".format(symbol))
         return True
@@ -639,8 +643,6 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
 
-        ticker.set_backtest_buy_price(round(current_price * 1.01, 2))
-
         if current_price <= last_high:
             # no first candle new high
             trading_logger.log(
@@ -654,6 +656,8 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
             trading_logger.log(
                 f"<{symbol}> candle chart volume is not enough for position size {pos_size}, no dip buy!")
             return False
+
+        ticker.set_backtest_buy_price(round(current_price * 1.01, 2))
 
         trading_logger.log(
             "Buy dip <{}> position, first candle new high.".format(symbol))
