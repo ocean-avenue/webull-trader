@@ -299,28 +299,36 @@ def get_portfolio() -> dict:
 
 
 def get_usable_cash() -> float:
-    global _wb_paper
-    portfolio = get_portfolio()
-    usable_cash = 0.0
-    if _wb_paper:
-        usable_cash = float(portfolio['usableCash'])
-    else:
-        usable_cash = float(portfolio['cashBalance'])
-    return usable_cash
+    try:
+        global _wb_paper
+        portfolio = get_portfolio()
+        usable_cash = 0.0
+        if _wb_paper:
+            usable_cash = float(portfolio['usableCash'])
+        else:
+            usable_cash = float(portfolio['cashBalance'])
+        return usable_cash
+    except Exception as e:
+        trading_logger.log("⚠️  Exception get_usable_cash: {}".format(e))
+        return 0.0
 
 
 def get_day_profit_loss() -> str:
-    global _wb_paper
-    day_profit_loss = "-"
-    if _wb_paper:
-        portfolio = get_portfolio()
-        if "dayProfitLoss" in portfolio:
-            day_profit_loss = portfolio['dayProfitLoss']
-    else:
-        daily_pl = get_daily_profitloss()
-        if len(daily_pl) > 0:
-            day_profit_loss = daily_pl[-1]['profitLoss']
-    return day_profit_loss
+    try:
+        global _wb_paper
+        day_profit_loss = "-"
+        if _wb_paper:
+            portfolio = get_portfolio()
+            if "dayProfitLoss" in portfolio:
+                day_profit_loss = portfolio['dayProfitLoss']
+        else:
+            daily_pl = get_daily_profitloss()
+            if len(daily_pl) > 0:
+                day_profit_loss = daily_pl[-1]['profitLoss']
+        return day_profit_loss
+    except Exception as e:
+        trading_logger.log("⚠️  Exception get_day_profit_loss: {}".format(e))
+        return '-'
 
 
 def get_trade_token(password='') -> bool:
