@@ -9,7 +9,7 @@ from typing import List, TypedDict
 from backtest.pattern import BacktestPattern
 from backtest.tracker import order_tracker, account_tracker
 from logger import trading_logger
-from common import db
+from common import db, utils
 from django.utils import timezone
 from common.enums import ActionType, OrderType, SetupType, TimeInForceType, TradingHourType
 from trading.tracker.trading_tracker import TradingTracker
@@ -66,14 +66,8 @@ class BacktestStrategyBase:
             minute_bars = HistoricalMinuteBar.objects.filter(
                 date=self.trading_date, symbol=symbol, time__lte=self.trading_time).order_by('-id')[:60]
             minute_bars = list(reversed(minute_bars))
-            data_list = []
-            for minute_bar in minute_bars:
-                data_list.append([minute_bar.time.astimezone(timezone.get_current_timezone(
-                )), minute_bar.open, minute_bar.high, minute_bar.low, minute_bar.close, minute_bar.volume, minute_bar.vwap])
-            df = pd.DataFrame(data_list, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume', 'vwap'])
-            df.set_index('timestamp', inplace=True)
-            self.backtest_df[symbol] = df
+            bars_df = utils.get_minute_bars_df(minute_bars)
+            self.backtest_df[symbol] = bars_df
 
     def end(self):
         pass

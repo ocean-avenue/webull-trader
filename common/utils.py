@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from datetime import datetime
 from common import db, config, enums, constants
 from sdk import fmpsdk
-from webull_trader.models import StockQuote, SwingHistoricalDailyBar, TradingSettings, WebullNews, WebullOrder, HistoricalDailyBar
+from webull_trader.models import HistoricalMinuteBar, StockQuote, SwingHistoricalDailyBar, TradingSettings, WebullNews, WebullOrder, HistoricalDailyBar
 
 
 def get_attr(obj: dict, key: str) -> str:
@@ -1413,6 +1413,16 @@ def get_account_user_desc():
             account_email = user.email
             break
     return "[{}] {}".format(account_type, account_email)
+
+
+def get_minute_bars_df(minute_bars: HistoricalMinuteBar) -> pd.DataFrame:
+    minute_bars = list(reversed(minute_bars))
+    data_list = []
+    for minute_bar in minute_bars:
+        data_list.append([minute_bar.time.astimezone(timezone.get_current_timezone()), minute_bar.open, minute_bar.high, minute_bar.low, minute_bar.close, minute_bar.volume, minute_bar.vwap])
+    df = pd.DataFrame(data_list, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'vwap'])
+    df.set_index('timestamp', inplace=True)
+    return df
 
 
 # utils for render UI
