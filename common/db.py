@@ -507,10 +507,11 @@ def get_hist_day_perf(day: date) -> HistoricalDayTradePerformance:
 
 
 def save_hist_minute_bar_list(bar_list: List[dict]):
-    print("[{}] Importing minute bar for {}...".format(
-        utils.get_now(), bar_list[0]['symbol']))
-    for bar_data in bar_list:
-        save_hist_minute_bar(bar_data)
+    if len(bar_list) > 0:
+        print("[{}] Importing minute bar for {}...".format(
+            utils.get_now(), bar_list[0]['symbol']))
+        for bar_data in bar_list:
+            save_hist_minute_bar(bar_data)
 
 
 def save_hist_minute_bar(bar_data: dict):
@@ -532,10 +533,11 @@ def save_hist_minute_bar(bar_data: dict):
 
 
 def save_hist_daily_bar_list(bar_list: List[dict]):
-    print("[{}] Importing daily bar for {}...".format(
-        utils.get_now(), bar_list[0]['symbol']))
-    for bar_data in bar_list:
-        save_hist_daily_bar(bar_data)
+    if len(bar_list) > 0:
+        print("[{}] Importing daily bar for {}...".format(
+            utils.get_now(), bar_list[0]['symbol']))
+        for bar_data in bar_list:
+            save_hist_daily_bar(bar_data)
 
 
 def save_hist_daily_bar(bar_data: dict):
