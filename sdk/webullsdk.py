@@ -1,6 +1,7 @@
 import json
 import time
 import requests
+import traceback
 import pandas as pd
 from typing import List, Optional
 from common import utils, db
@@ -594,6 +595,7 @@ def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
         return instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
     except Exception as e:
         trading_logger.log("⚠️  Exception get_1m_bars: {}".format(e))
+        print(traceback.format_exc())
         return pd.DataFrame()
 
 
@@ -604,6 +606,7 @@ def get_1d_bars(ticker_id=None, count=20) -> pd.DataFrame:
         return instance.get_bars(tId=ticker_id, interval='d1', count=count, extendTrading=1)
     except Exception as e:
         trading_logger.log("⚠️  Exception get_1d_bars: {}".format(e))
+        print(traceback.format_exc())
         return pd.DataFrame()
 
 # symbol = 'AVCT'
