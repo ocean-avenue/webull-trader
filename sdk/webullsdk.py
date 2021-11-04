@@ -589,7 +589,7 @@ def get_ticker(symbol: Optional[str] = None) -> Optional[str]:
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
 def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         instance = _get_instance()
         return instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
@@ -1113,7 +1113,7 @@ def get_1m_charts(ticker_id, count=20):
 
 
 def get_pre_market_gainers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_PRE_MARKET_GAINERS_URL.format(count))
         res_json = res.json()
@@ -1164,7 +1164,7 @@ def get_pre_market_gainers(count=10) -> List[dict]:
 
 
 def get_top_gainers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_TOP_GAINERS_URL.format(count))
         res_json = res.json()
@@ -1202,7 +1202,7 @@ def get_top_gainers(count=10) -> List[dict]:
 
 
 def get_after_market_gainers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
         res_json = res.json()
@@ -1241,7 +1241,7 @@ def get_after_market_gainers(count=10) -> List[dict]:
 
 
 def get_pre_market_losers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_PRE_MARKET_LOSERS_URL.format(count))
         res_json = res.json()
@@ -1292,7 +1292,7 @@ def get_pre_market_losers(count=10) -> List[dict]:
 
 
 def get_top_losers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_TOP_LOSERS_URL.format(count))
         res_json = res.json()
@@ -1330,7 +1330,7 @@ def get_top_losers(count=10) -> List[dict]:
 
 
 def get_after_market_losers(count=10) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(1)
     try:
         res = _get_session().get(WEBULL_AFTER_MARKET_LOSERS_URL.format(count))
         res_json = res.json()
