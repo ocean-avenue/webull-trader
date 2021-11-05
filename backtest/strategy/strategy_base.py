@@ -65,7 +65,7 @@ class BacktestStrategyBase:
             symbol = ticker['symbol']
             minute_bars = HistoricalMinuteBar.objects.filter(
                 date=self.trading_date, symbol=symbol, time__lte=self.trading_time).order_by('-id')[:60]
-            minute_bars = list(reversed(minute_bars))
+            # minute_bars = list(reversed(minute_bars))
             bars_df = utils.get_minute_bars_df(minute_bars)
             self.backtest_df[symbol] = bars_df
 
