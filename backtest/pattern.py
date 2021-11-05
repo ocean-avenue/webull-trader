@@ -31,7 +31,7 @@ class BacktestPattern:
         return config.DAY_EXTENDED_VOLUME_POS_SIZE_RATIO * size
 
     def _get_avg_confirm_volume(self) -> float:
-        if utils.is_regular_market_hour_now():
+        if utils.is_regular_market_time(self.trading_time):
             return config.AVG_CONFIRM_VOLUME
         return config.EXTENDED_AVG_CONFIRM_VOLUME
 
