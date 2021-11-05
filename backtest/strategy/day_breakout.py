@@ -131,7 +131,7 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
                 "<{}> candle chart has no relative volume, no entry!".format(symbol))
             return False
 
-        if not self.backtest_pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not self.backtest_pattern.check_bars_has_volume2(bars):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no entry!".format(symbol))
@@ -287,7 +287,17 @@ class BacktestDayTradingBreakout(BacktestStrategyBase):
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         current_candle = bars.iloc[-1]
-        return current_candle['low']
+        prev_candle = bars.iloc[-2]
+        stop_loss_1 = current_candle['low']
+        stop_loss_2 = prev_candle['low']
+        # if candle already up more than 10%
+        if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
+            stop_loss_1 = round(
+                (current_candle['high'] + current_candle['low']) / 2, 2)
+        if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
+            stop_loss_2 = round(
+                (prev_candle['high'] + prev_candle['low']) / 2, 2)
+        return min(stop_loss_1, stop_loss_2)
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:
         period = min(len(bars) - 1, period)
@@ -551,7 +561,7 @@ class BacktestDayTradingBreakoutScale(BacktestDayTradingBreakout):
                 "<{}> candle chart is not continue, stop scale in!".format(symbol))
             return False
 
-        if not self.backtest_pattern.check_bars_has_volume(bars, time_scale=self.time_scale, period=2):
+        if not self.backtest_pattern.check_bars_has_volume2(bars):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no scale in!".format(symbol))

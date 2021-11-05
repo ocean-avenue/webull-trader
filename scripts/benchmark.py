@@ -31,7 +31,7 @@ def start():
             trade: DayTrade = trade
             total_cost += trade.total_cost
             total_sold += trade.total_sold
-        return f"{round((total_sold - total_cost) / total_cost * 100, 2)}%"
+        return f"{round((total_sold - total_cost) / total_cost * 100, 2)}%, ${round(total_sold - total_cost, 2)}"
 
     # performance benchmark
     all_trades = DayTrade.objects.all()
@@ -53,6 +53,23 @@ def start():
         if buy_bar.volume > 100000:
             filter_trades.append(trade)
     print(f"Volume > 100000 (regular): {_get_perf(filter_trades)}")
+
+    # filter out low volume trade
+    filter_trades = []
+    for trade in _progressbar(all_trades, "Computing: ", 60):
+        trade: DayTrade = trade
+        buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
+
+        # skip pre/after market
+        if utils.is_after_market_time(buy_time) or utils.is_pre_market_time(buy_time):
+            continue
+
+        buy_bar = db.get_hist_minute_bar(trade.symbol, buy_time)
+        if not buy_bar:
+            continue
+        if buy_bar.volume > 150000:
+            filter_trades.append(trade)
+    print(f"Volume > 150000 (regular): {_get_perf(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -112,6 +129,25 @@ def start():
         buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
 
         # skip pre/after market
+        if utils.is_after_market_time(buy_time) or utils.is_pre_market_time(buy_time):
+            continue
+
+        buy_bar = db.get_hist_minute_bar(trade.symbol, buy_time)
+        if not buy_bar:
+            continue
+        if buy_bar.volume > 1500000:
+            filter_trades.append(trade)
+    print(f"Volume > 1500000 (regular): {_get_perf(filter_trades)}")
+
+    print()
+
+    # filter out low volume trade
+    filter_trades = []
+    for trade in _progressbar(all_trades, "Computing: ", 60):
+        trade: DayTrade = trade
+        buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
+
+        # skip regular market
         if utils.is_regular_market_time(buy_time):
             continue
 
@@ -128,7 +164,24 @@ def start():
         trade: DayTrade = trade
         buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
 
-        # skip pre/after market
+        # skip regular market
+        if utils.is_regular_market_time(buy_time):
+            continue
+
+        buy_bar = db.get_hist_minute_bar(trade.symbol, buy_time)
+        if not buy_bar:
+            continue
+        if buy_bar.volume > 15000:
+            filter_trades.append(trade)
+    print(f"Volume > 15000 (pre/after): {_get_perf(filter_trades)}")
+
+    # filter out low volume trade
+    filter_trades = []
+    for trade in _progressbar(all_trades, "Computing: ", 60):
+        trade: DayTrade = trade
+        buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
+
+        # skip regular market
         if utils.is_regular_market_time(buy_time):
             continue
 
@@ -145,7 +198,7 @@ def start():
         trade: DayTrade = trade
         buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
 
-        # skip pre/after market
+        # skip regular market
         if utils.is_regular_market_time(buy_time):
             continue
 
@@ -155,6 +208,40 @@ def start():
         if buy_bar.volume > 50000:
             filter_trades.append(trade)
     print(f"Volume > 50000 (pre/after): {_get_perf(filter_trades)}")
+
+    # filter out low volume trade
+    filter_trades = []
+    for trade in _progressbar(all_trades, "Computing: ", 60):
+        trade: DayTrade = trade
+        buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
+
+        # skip regular market
+        if utils.is_regular_market_time(buy_time):
+            continue
+
+        buy_bar = db.get_hist_minute_bar(trade.symbol, buy_time)
+        if not buy_bar:
+            continue
+        if buy_bar.volume > 100000:
+            filter_trades.append(trade)
+    print(f"Volume > 100000 (pre/after): {_get_perf(filter_trades)}")
+
+    # filter out low volume trade
+    filter_trades = []
+    for trade in _progressbar(all_trades, "Computing: ", 60):
+        trade: DayTrade = trade
+        buy_time = trade.buy_time.astimezone(timezone.get_current_timezone())
+
+        # skip regular market
+        if utils.is_regular_market_time(buy_time):
+            continue
+
+        buy_bar = db.get_hist_minute_bar(trade.symbol, buy_time)
+        if not buy_bar:
+            continue
+        if buy_bar.volume > 150000:
+            filter_trades.append(trade)
+    print(f"Volume > 150000 (pre/after): {_get_perf(filter_trades)}")
 
 
 if __name__ == "django.core.management.commands.shell":

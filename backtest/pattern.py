@@ -30,10 +30,15 @@ class BacktestPattern:
             return config.DAY_VOLUME_POS_SIZE_RATIO * size
         return config.DAY_EXTENDED_VOLUME_POS_SIZE_RATIO * size
 
-    def _get_avg_confirm_volume(self) -> float:
-        if utils.is_regular_market_hour_now():
-            return config.AVG_CONFIRM_VOLUME
-        return config.EXTENDED_AVG_CONFIRM_VOLUME
+    def _get_avg_confirm_volume() -> float:
+        if utils.is_paper_trading():
+            if utils.is_regular_market_hour_now():
+                return config.PAPER_AVG_CONFIRM_VOLUME
+            return config.PAPER_EXTENDED_AVG_CONFIRM_VOLUME
+        else:
+            if utils.is_regular_market_hour_now():
+                return config.AVG_CONFIRM_VOLUME
+            return config.EXTENDED_AVG_CONFIRM_VOLUME
 
     def check_bars_updated(self, bars: pd.DataFrame, time_scale: int = 1) -> bool:
         """
@@ -121,6 +126,20 @@ class BacktestPattern:
                 has_volume = True
                 break
         return has_volume
+
+    def check_bars_has_volume2(self, bars: pd.DataFrame) -> bool:
+        """
+        check if bar chart has enough volume for 2 bars
+        """
+        if len(bars) <= 3:
+            return False
+        confirm_volume = self._get_avg_confirm_volume()
+        current_bar = bars.iloc[-1]
+        prev_bar2 = bars.iloc[-2]
+        prev_bar3 = bars.iloc[-3]
+        if max(current_bar["volume"], prev_bar2["volume"], prev_bar3["volume"]) >= confirm_volume:
+            return True
+        return False
 
     def check_bars_volatility(self, bars: pd.DataFrame, period: int = 5) -> bool:
         """
