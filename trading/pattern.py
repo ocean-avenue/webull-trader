@@ -436,7 +436,7 @@ def check_bars_volatility(bars: pd.DataFrame, period: int = 5) -> bool:
                 (utils.is_regular_market_hour_now() and utils.is_regular_market_time(time)):
             valid_candle_count += 1
         # check for pre market hour except for first 15 minutes
-        if utils.is_pre_market_hour_now() and not utils.is_pre_market_hour_first_15m() and utils.is_pre_market_time(time):
+        if utils.is_pre_market_hour_now() and not utils.is_pre_market_hour_15m() and utils.is_pre_market_time(time):
             if row['open'] == row['close'] and row['close'] == row['high'] and row['high'] == row['low']:
                 flat_count += 1
         # check for after market hour only
@@ -452,7 +452,7 @@ def check_bars_volatility(bars: pd.DataFrame, period: int = 5) -> bool:
         price_set.add(row['high'])
         price_set.add(row['low'])
         price_set.add(row['close'])
-    if valid_candle_count == len(bars):
+    if valid_candle_count == len(period_bars):
         # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
         if flat_count >= 3:
             return False

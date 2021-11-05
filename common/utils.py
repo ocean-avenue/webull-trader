@@ -228,7 +228,7 @@ def is_pre_market_hour() -> bool:
     return True
 
 
-def is_pre_market_hour_first_15m() -> bool:
+def is_pre_market_hour_15m() -> bool:
     """
     NY pre market hour from 04:00 to 04:15
     """
