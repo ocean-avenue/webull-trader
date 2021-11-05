@@ -155,7 +155,7 @@ class BacktestPattern:
             price_set.add(row['high'])
             price_set.add(row['low'])
             price_set.add(row['close'])
-        if valid_candle_count == len(bars):
+        if valid_candle_count == len(period_bars):
             # price not like open: 7.35, high: 7.35, low: 7.35, close: 7.35
             if flat_count >= 3:
                 return False
