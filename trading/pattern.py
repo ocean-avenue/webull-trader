@@ -19,9 +19,14 @@ def _check_trading_time_match(time: datetime) -> bool:
 
 
 def _get_avg_confirm_volume() -> float:
-    if utils.is_regular_market_hour_now():
-        return config.AVG_CONFIRM_VOLUME
-    return config.EXTENDED_AVG_CONFIRM_VOLUME
+    if utils.is_paper_trading():
+        if utils.is_regular_market_hour_now():
+            return config.PAPER_AVG_CONFIRM_VOLUME
+        return config.PAPER_EXTENDED_AVG_CONFIRM_VOLUME
+    else:
+        if utils.is_regular_market_hour_now():
+            return config.AVG_CONFIRM_VOLUME
+        return config.EXTENDED_AVG_CONFIRM_VOLUME
 
 
 def _get_avg_confirm_amount() -> float:
@@ -138,6 +143,21 @@ def check_bars_has_volume(bars: pd.DataFrame, time_scale: int = 1, period: int =
             has_volume = True
             break
     return has_volume
+
+
+def check_bars_has_volume2(bars: pd.DataFrame) -> bool:
+    """
+    check if bar chart has enough volume for 2 bars
+    """
+    if len(bars) <= 3:
+        return False
+    confirm_volume = _get_avg_confirm_volume()
+    current_bar = bars.iloc[-1]
+    prev_bar2 = bars.iloc[-2]
+    prev_bar3 = bars.iloc[-3]
+    if max(current_bar["volume"], prev_bar2["volume"], prev_bar3["volume"]) >= confirm_volume:
+        return True
+    return False
 
 
 def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int = 10) -> bool:
