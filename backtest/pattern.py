@@ -30,15 +30,10 @@ class BacktestPattern:
             return config.DAY_VOLUME_POS_SIZE_RATIO * size
         return config.DAY_EXTENDED_VOLUME_POS_SIZE_RATIO * size
 
-    def _get_avg_confirm_volume() -> float:
-        if utils.is_paper_trading():
-            if utils.is_regular_market_hour_now():
-                return config.PAPER_AVG_CONFIRM_VOLUME
-            return config.PAPER_EXTENDED_AVG_CONFIRM_VOLUME
-        else:
-            if utils.is_regular_market_hour_now():
-                return config.AVG_CONFIRM_VOLUME
-            return config.EXTENDED_AVG_CONFIRM_VOLUME
+    def _get_avg_confirm_volume(self) -> float:
+        if utils.is_regular_market_hour_now():
+            return config.AVG_CONFIRM_VOLUME
+        return config.EXTENDED_AVG_CONFIRM_VOLUME
 
     def check_bars_updated(self, bars: pd.DataFrame, time_scale: int = 1) -> bool:
         """
