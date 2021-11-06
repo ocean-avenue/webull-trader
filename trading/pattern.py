@@ -248,6 +248,7 @@ def check_bars_has_long_wick_up(bars: pd.DataFrame, period: int = 5, count: int 
     prev_candle_size = 0.0
     for _, row in period_bars.iterrows():
         mid = max(row["close"], row["open"])
+        mid2 = min(row["close"], row["open"])
         high = row["high"]
         low = row["low"]
         # # make sure the candle is red
@@ -262,11 +263,12 @@ def check_bars_has_long_wick_up(bars: pd.DataFrame, period: int = 5, count: int 
         if (high - low) < prev_candle_size * config.LONG_WICK_PREV_CANDLE_RATIO:
             continue
         # make sure wick tail is larger than body
-        if (high - mid) <= abs(row["close"] - row["open"]):
+        if (high - mid) < abs(row["close"] - row["open"]):
             continue
-        if (mid - low) > 0 and (high - mid) / (mid - low) >= config.LONG_WICK_UP_RATIO:
+        # make sure up tail is > than down tail
+        if (mid2 - low) > 0 and (high - mid) / (mid2 - low) >= config.LONG_WICK_UP_RATIO:
             long_wick_up_count += 1
-        elif (mid - low) == 0 and (high - mid) > 0:
+        elif (mid2 - low) == 0 and (high - mid) > 0:
             long_wick_up_count += 1
         prev_row = row
     return long_wick_up_count >= count

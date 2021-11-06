@@ -40,7 +40,7 @@ MIN_EARNING_GAP_RATIO = 0.05
 # period high price gap ratio
 PERIOD_HIGH_PRICE_GAP_RATIO = 1.01
 # long wick avg candle body ratio
-LONG_WICK_AVG_CANDLE_RATIO = 1.4
+LONG_WICK_AVG_CANDLE_RATIO = 1.0
 # long wick pre candle body ratio
 LONG_WICK_PREV_CANDLE_RATIO = 0.9
 # long wick up candle ratio
