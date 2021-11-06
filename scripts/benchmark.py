@@ -24,18 +24,19 @@ def start():
         file.write("\n")
         file.flush()
 
-    def _get_perf(trades):
+    def _output_result(trades):
         total_cost = 0.0
         total_sold = 0.0
         for trade in trades:
             trade: DayTrade = trade
             total_cost += trade.total_cost
             total_sold += trade.total_sold
-        return f"{round((total_sold - total_cost) / total_cost * 100, 2)}%, ${round(total_sold - total_cost, 2)}"
+        sign = '' if total_sold - total_cost > 0 else '-'
+        return f"{round((total_sold - total_cost) / total_cost * 100, 2)}%, {sign}${round(abs(total_sold - total_cost), 2)}"
 
     # performance benchmark
     all_trades = DayTrade.objects.all()
-    print(f"Benchmark: {_get_perf(all_trades)}")
+    print(f"Benchmark: {_output_result(all_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -52,7 +53,7 @@ def start():
             continue
         if buy_bar.volume > 100000:
             filter_trades.append(trade)
-    print(f"Volume > 100000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 100000 (regular): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -69,7 +70,7 @@ def start():
             continue
         if buy_bar.volume > 150000:
             filter_trades.append(trade)
-    print(f"Volume > 150000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 150000 (regular): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -86,7 +87,7 @@ def start():
             continue
         if buy_bar.volume > 200000:
             filter_trades.append(trade)
-    print(f"Volume > 200000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 200000 (regular): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -103,7 +104,7 @@ def start():
             continue
         if buy_bar.volume > 500000:
             filter_trades.append(trade)
-    print(f"Volume > 500000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 500000 (regular): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -120,7 +121,7 @@ def start():
             continue
         if buy_bar.volume > 1000000:
             filter_trades.append(trade)
-    print(f"Volume > 1000000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 1000000 (regular): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -137,7 +138,7 @@ def start():
             continue
         if buy_bar.volume > 1500000:
             filter_trades.append(trade)
-    print(f"Volume > 1500000 (regular): {_get_perf(filter_trades)}")
+    print(f"Volume > 1500000 (regular): {_output_result(filter_trades)}")
 
     print()
 
@@ -156,7 +157,7 @@ def start():
             continue
         if buy_bar.volume > 10000:
             filter_trades.append(trade)
-    print(f"Volume > 10000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 10000 (pre/after): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -173,7 +174,7 @@ def start():
             continue
         if buy_bar.volume > 15000:
             filter_trades.append(trade)
-    print(f"Volume > 15000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 15000 (pre/after): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -190,7 +191,7 @@ def start():
             continue
         if buy_bar.volume > 20000:
             filter_trades.append(trade)
-    print(f"Volume > 20000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 20000 (pre/after): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -207,7 +208,7 @@ def start():
             continue
         if buy_bar.volume > 50000:
             filter_trades.append(trade)
-    print(f"Volume > 50000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 50000 (pre/after): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -224,7 +225,7 @@ def start():
             continue
         if buy_bar.volume > 100000:
             filter_trades.append(trade)
-    print(f"Volume > 100000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 100000 (pre/after): {_output_result(filter_trades)}")
 
     # filter out low volume trade
     filter_trades = []
@@ -241,7 +242,7 @@ def start():
             continue
         if buy_bar.volume > 150000:
             filter_trades.append(trade)
-    print(f"Volume > 150000 (pre/after): {_get_perf(filter_trades)}")
+    print(f"Volume > 150000 (pre/after): {_output_result(filter_trades)}")
 
 
 if __name__ == "django.core.management.commands.shell":
