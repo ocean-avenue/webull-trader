@@ -9,6 +9,7 @@ from common.enums import AlgorithmType, TradingHourType
 from common import utils, db, config, sms
 from sdk import webullsdk
 from logger import trading_logger
+from trading.strategy.day_scalping import DayTradingScalping
 from trading.strategy.strategy_base import StrategyBase
 
 
@@ -289,6 +290,10 @@ def start():
         # DAY_BREAKOUT_ASK: breakout trade with ask price limit order
         strategies.append(DayTradingBreakoutAsk(
             paper=paper, trading_hour=trading_hour, entry_period=20, exit_period=10))
+    elif algo_type == AlgorithmType.DAY_SCALPING:
+        # DAY_SCALPING: scalping trade 20 candles
+        strategies.append(DayTradingScalping(
+            paper=paper, trading_hour=trading_hour, entry_period=20))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days
         strategies.append(SwingTurtle(

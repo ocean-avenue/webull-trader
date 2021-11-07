@@ -1,30 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta
-from backtest.strategy.strategy_base import BacktestStrategyBase
 from common.enums import SetupType
 from common import config, constants, utils
+from sdk import webullsdk
 from logger import trading_logger
 from trading import pattern
+from trading.strategy.strategy_base import StrategyBase
 from trading.tracker.trading_tracker import TrackingTicker
 
 
-# Scalping day trade backtest class
+# Scalping day trading class
 
-class BacktestDayTradingScalping(BacktestStrategyBase):
+class DayTradingScalping(StrategyBase):
 
     import pandas as pd
-    from datetime import date
     from common.enums import SetupType, TradingHourType
     from typing import Tuple
     from trading.tracker.trading_tracker import TrackingTicker
 
-    def __init__(self, trading_date: date, trading_hour: TradingHourType, entry_period: int = 20):
-        super().__init__(trading_date=trading_date, trading_hour=trading_hour)
+    def __init__(self, paper: bool, trading_hour: TradingHourType, entry_period: int = 20):
+        super().__init__(paper=paper, trading_hour=trading_hour)
         self.entry_period: int = entry_period
 
     def get_tag(self) -> str:
-        return "BacktestDayTradingScalping"
+        return "DayTradingScalping"
 
     def get_setup(self) -> SetupType:
         if self.entry_period == 30:
@@ -47,8 +46,7 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
     def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame) -> bool:
         symbol = ticker.get_symbol()
         current_candle = bars.iloc[-1]
-        # use high for backtesting
-        current_price = current_candle['high']
+        current_price = current_candle['close']
         # check if above vwap
         if current_price <= current_candle['vwap']:
             trading_logger.log(
@@ -99,34 +97,34 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
                 f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev close (${prev_close}), no entry!")
             return False
 
-        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_updated(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
             trading_logger.log(
                 "<{}> candle chart is not updated, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_continue(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars):
             trading_logger.log(
                 "<{}> candle chart is not continue, stop trading!".format(symbol))
             # stop tracking
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if not pattern.check_bars_rel_volume(bars) and not self.backtest_pattern.check_bars_amount_grinding(bars, period=5) and \
+        if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
                 not pattern.check_bars_all_green(bars, period=5):
             # has no relative volume
             trading_logger.log(
                 "<{}> candle chart has no relative volume, no entry!".format(symbol))
             return False
 
-        if not self.backtest_pattern.check_bars_has_volume2(bars):
+        if not pattern.check_bars_has_volume2(bars):
             # has no enough volume
             trading_logger.log(
                 "<{}> candle chart has no enough volume, no entry!".format(symbol))
             return False
 
-        if self.is_regular_market_hour() and not self.backtest_pattern.check_bars_volatility(bars):
+        if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):
             # no volatility
             trading_logger.log(
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
@@ -138,8 +136,8 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
             return False
 
-        if not (self.backtest_pattern.check_bars_has_largest_green_candle(bars) and self.backtest_pattern.check_bars_has_more_green_candle(bars)) and \
-                not self.backtest_pattern.check_bars_has_most_green_candle(bars):
+        if not (pattern.check_bars_has_largest_green_candle(bars) and pattern.check_bars_has_more_green_candle(bars)) and \
+                not pattern.check_bars_has_most_green_candle(bars):
             # not most green candles and no largest green candle
             trading_logger.log(
                 "<{}> candle chart has no most green candles or largest candle is red, no entry!".format(symbol))
@@ -158,13 +156,10 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
                 "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, self.entry_period, round(ROC, 2)))
             return False
 
-        if ticker.get_last_sell_time() and (self.trading_time - ticker.get_last_sell_time()) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):
+        if ticker.is_just_sold():
             trading_logger.log(
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
-
-        # for backtesting
-        ticker.set_backtest_buy_price(round(period_high_price * 1.01, 2))
 
         return True
 
@@ -187,7 +182,7 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
             exit_trading = True
             exit_note = "Candle chart has long wick up."
         # check if bar chart has volatility
-        elif self.is_extended_market_hour() and not self.backtest_pattern.check_bars_volatility(bars):
+        elif self.is_extended_market_hour() and not pattern.check_bars_volatility(bars):
             trading_logger.log(
                 "<{}> candle chart is not volatility, exit!".format(symbol))
             exit_trading = True
@@ -205,10 +200,6 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
             exit_trading = True
             exit_note = "Candle chart will reversal."
 
-        if exit_trading:
-            # for backtesting
-            ticker.set_backtest_sell_price(bars.iloc[-1]['low'])
-
         return (exit_trading, exit_note)
 
     def check_stop_profit(self, ticker: TrackingTicker, position: dict) -> Tuple[bool, str]:
@@ -218,7 +209,6 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
         if profit_loss_rate >= 1:
             exit_trading = True
             exit_note = "Home run at {}!".format(position['lastPrice'])
-        ticker.set_backtest_sell_price(round(position['lastPrice'] * 0.99, 2))
         return (exit_trading, exit_note)
 
     def check_stop_loss(self, ticker: TrackingTicker, position: dict) -> Tuple[bool, str]:
@@ -229,7 +219,6 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
         if last_price < ticker.get_stop_loss():
             exit_trading = True
             exit_note = "Stop loss at {}!".format(last_price)
-        ticker.set_backtest_sell_price(round(last_price * 0.99, 2))
         return (exit_trading, exit_note)
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
@@ -260,13 +249,21 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
 
         holding_quantity = ticker.get_positions()
         if holding_quantity == 0:
+            # check timeout, skip this ticker if no trade during last OBSERVE_TIMEOUT seconds
+            if ticker.is_tracking_timeout():
+                trading_logger.log(
+                    "Trading <{}> session timeout!".format(symbol))
+                # stop ticker tracking
+                self.trading_tracker.stop_tracking(ticker)
+                return
+
             # fetch 1m bar charts
             if m1_bars.empty:
-                m1_bars = self.backtest_df[symbol]
+                m1_bars = webullsdk.get_1m_bars(
+                    ticker_id, count=(self.entry_period+5))
             if m1_bars.empty:
                 return
             bars = m1_bars
-
             # calculate and fill ema 9 data
             bars['ema9'] = bars['close'].ewm(span=9, adjust=False).mean()
 
@@ -308,7 +305,7 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
             if not exit_trading:
                 # get 1m bar charts
                 # check_bars_at_peak require 30 bars
-                m1_bars = self.backtest_df[symbol]
+                m1_bars = webullsdk.get_1m_bars(ticker_id, count=30)
                 # check bars error
                 if m1_bars.empty:
                     trading_logger.log(
@@ -336,17 +333,26 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
                 self.submit_sell_limit_order(ticker, note=exit_note)
 
     def update(self):
-        super().update()
-
         # trading tickers
         for ticker_id in self.trading_tracker.get_tickers():
             ticker = self.trading_tracker.get_ticker(ticker_id)
             # do trade
             self.trade(ticker)
 
-        for backtest_ticker in self.backtest_tickers:
-            symbol = backtest_ticker["symbol"]
-            ticker_id = str(backtest_ticker["ticker_id"])
+        # find new ticker in top gainers
+        top_gainers = []
+        if self.is_regular_market_hour():
+            top_gainers = webullsdk.get_top_gainers()
+        elif self.is_pre_market_hour():
+            top_gainers = webullsdk.get_pre_market_gainers()
+        elif self.is_after_market_hour():
+            top_gainers = webullsdk.get_after_market_gainers()
+
+        # trading_logger.log("Scanning top gainers <{}>...".format(
+        #     ', '.join([gainer['symbol'] for gainer in top_10_gainers])))
+        for gainer in top_gainers:
+            symbol = gainer["symbol"]
+            ticker_id = str(gainer["ticker_id"])
             # check if ticker already in tracking
             if self.trading_tracker.is_tracking(ticker_id):
                 continue
@@ -357,37 +363,49 @@ class BacktestDayTradingScalping(BacktestStrategyBase):
                 # trading_logger.log(
                 #     "Can not trade <{}>, skip...".format(symbol))
                 continue
-
-            if self.is_extended_market_hour():
-                m1_bars = self.backtest_df[symbol]
-                if m1_bars.empty or len(m1_bars) < 2:
-                    continue
-                # use latest 2 candle
-                latest_candle = m1_bars.iloc[-1]
-                latest_candle2 = m1_bars.iloc[-2]
-                # check if trasaction amount and volume meets requirement
-                if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
+            # trading_logger.log("Scanning <{}>...".format(symbol))
+            change_percentage = gainer["change_percentage"]
+            # check gap change
+            if change_percentage >= config.MIN_SURGE_CHANGE_RATIO:
+                if self.is_extended_market_hour():
+                    m1_bars = webullsdk.get_1m_bars(
+                        ticker_id, count=(self.entry_period+5))
+                    if m1_bars.empty or len(m1_bars) < 2:
+                        continue
+                    # use latest 2 candle
+                    latest_candle = m1_bars.iloc[-1]
+                    latest_candle2 = m1_bars.iloc[-2]
+                    # check if trasaction amount and volume meets requirement
+                    if self.check_surge(ticker, latest_candle) or self.check_surge(ticker, latest_candle2):
+                        # update target units
+                        ticker.set_target_units(
+                            config.DAY_EXTENDED_TARGET_UNITS)
+                        # start tracking ticker
+                        self.trading_tracker.start_tracking(ticker)
+                        trading_logger.log(
+                            "Start trading <{}>...".format(symbol))
+                        # do trade
+                        self.trade(ticker, m1_bars=m1_bars)
+                elif self.is_regular_market_hour():
                     # update target units
-                    ticker.set_target_units(
-                        config.DAY_EXTENDED_TARGET_UNITS)
+                    ticker.set_target_units(config.DAY_TARGET_UNITS)
                     # start tracking ticker
                     self.trading_tracker.start_tracking(ticker)
                     trading_logger.log(
                         "Start trading <{}>...".format(symbol))
                     # do trade
-                    self.trade(ticker, m1_bars=m1_bars)
-            elif self.is_regular_market_hour():
-                # update target units
-                ticker.set_target_units(config.DAY_TARGET_UNITS)
-                # start tracking ticker
-                self.trading_tracker.start_tracking(ticker)
-                trading_logger.log(
-                    "Start trading <{}>...".format(symbol))
-                # do trade
-                self.trade(ticker)
+                    self.trade(ticker)
 
     def end(self):
         self.trading_end = True
 
         # check if still holding any positions before exit
         self.clear_positions()
+
+    def final(self):
+
+        # cancel all existing order
+        webullsdk.cancel_all_orders()
+
+        # track failed to sell positions
+        self.track_rest_positions()

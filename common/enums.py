@@ -215,6 +215,8 @@ class AlgorithmType:
     DAY_VWAP_RECLAIM_LARGE_CAP = 29
     # momentum trade with same share size
     DAY_MOMENTUM_SHARE_SIZE = 30
+    # scalping trade entry with 20 candles new high, exit with 2 candles new low
+    DAY_SCALPING = 31
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -290,6 +292,8 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add unit price and use ATR as stop loss.'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add check period high for ROC.'
+        if val == AlgorithmType.DAY_SCALPING:
+            return 'Scalping day trade, entry if price reach 20 candles new high, exit if first candle new low in 2 minutes timeframe.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -368,6 +372,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT SCALE ATR LOSS)'
         if val == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
             return 'DAY (BREAKOUT SCALE PERIOD ROC)'
+        if val == AlgorithmType.DAY_SCALPING:
+            return 'DAY (SCALPING)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -447,6 +453,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_SCALE_ATR_STOP_LOSS)),
             (AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC, AlgorithmType.totag(
                 AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC)),
+            (AlgorithmType.DAY_SCALPING, AlgorithmType.totag(
+                AlgorithmType.DAY_SCALPING)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.totag(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.totag(
