@@ -130,7 +130,7 @@ class DayTradingScalping(StrategyBase):
                 "<{}> candle chart is not volatility, no entry!".format(symbol))
             return False
 
-        if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period):
+        if pattern.check_bars_has_long_wick_up(bars, period=self.entry_period, count=4):
             # has long wick up
             trading_logger.log(
                 "<{}> candle chart has long wick up, no entry!".format(symbol))
