@@ -278,10 +278,19 @@ class DayTradingBreakout(StrategyBase):
 
     def get_stop_loss_price(self, bars: pd.DataFrame) -> float:
         current_candle = bars.iloc[-1]
+        current_price = current_candle['close']
         stop_loss = current_candle['low']
-        if (current_candle['high'] - current_candle['low']) / current_candle['low'] > 0.1:
+        if (current_price- current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss = round(
-                current_candle['low'] + (current_candle['high'] - current_candle['low']) * 0.4, 2)
+                current_candle['low'] + (current_price- current_candle['low']) * 0.4, 2)
+        # if stop loss is too tight
+        if current_price * .98 < stop_loss:
+            prev_candle = bars.iloc[-2]
+            stop_loss_2 = prev_candle['low']
+            if (prev_candle['high'] - prev_candle['low']) / prev_candle['low'] > 0.1:
+                stop_loss_2 = round(
+                    (prev_candle['high'] + prev_candle['low']) / 2, 2)
+            stop_loss = min(stop_loss, stop_loss_2)
         return stop_loss
 
     def get_price_rate_of_change(self, bars: pd.DataFrame, period: int = 10) -> float:
