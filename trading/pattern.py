@@ -527,7 +527,7 @@ def check_bars_has_most_green_candle(bars: pd.DataFrame, period: int = 10) -> bo
         if not _check_trading_time_match(time):
             continue
         # green candle
-        if row['close'] >= row['open']:
+        if row['close'] > row['open']:
             green_candle_count += 1
         total_candle_count += 1
     # make sure total is not zero
@@ -549,7 +549,7 @@ def check_bars_has_more_green_candle(bars: pd.DataFrame, period: int = 10) -> bo
         if not _check_trading_time_match(time):
             continue
         # green candle
-        if row['close'] >= row['open']:
+        if row['close'] > row['open']:
             green_candle_count += 1
         total_candle_count += 1
     # make sure total is not zero

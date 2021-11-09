@@ -217,7 +217,7 @@ class BacktestPattern:
             if not self._check_trading_time_match(time):
                 continue
             # green candle
-            if row['close'] >= row['open']:
+            if row['close'] > row['open']:
                 green_candle_count += 1
             total_candle_count += 1
         # make sure total is not zero
@@ -238,7 +238,7 @@ class BacktestPattern:
             if not self._check_trading_time_match(time):
                 continue
             # green candle
-            if row['close'] >= row['open']:
+            if row['close'] > row['open']:
                 green_candle_count += 1
             total_candle_count += 1
         # make sure total is not zero
