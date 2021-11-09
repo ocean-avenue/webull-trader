@@ -22,6 +22,8 @@ OBSERVE_TIMEOUT_IN_SEC = 300
 TRADE_INTERVAL_IN_SEC = 90
 # pending order timeout in seconds
 PENDING_ORDER_TIMEOUT_IN_SEC = 60
+# pending cancel order timeout in seconds
+CANCEL_ORDER_TIMEOUT_IN_SEC = 120
 # holding order timeout in seconds
 HOLDING_ORDER_TIMEOUT_IN_SEC = 1800
 # level 2, (ask - bid) / bid

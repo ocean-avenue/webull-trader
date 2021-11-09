@@ -213,6 +213,11 @@ class TrackingTicker:
             return True
         return False
 
+    def is_cancel_timeout(self) -> bool:
+        if (datetime.now() - self.pending_order_time) >= timedelta(seconds=config.CANCEL_ORDER_TIMEOUT_IN_SEC):
+            return True
+        return False
+
     def is_just_sold(self) -> bool:
         if self.last_sell_time and (datetime.now() - self.last_sell_time) <= timedelta(seconds=config.TRADE_INTERVAL_IN_SEC):
             return True
