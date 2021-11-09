@@ -110,12 +110,12 @@ def start():
 
     # backtest function
     def backtest(trading_date: date, trading_hour: TradingHourType):
-        # from backtest.strategy.day_breakout import BacktestDayTradingBreakoutDynExit
-        # strategy = BacktestDayTradingBreakoutDynExit(
-        #     trading_date=trading_date, trading_hour=trading_hour, entry_period=20, exit_period=9)
-        from backtest.strategy.day_scalping import BacktestDayTradingScalping
-        strategy = BacktestDayTradingScalping(
-            trading_date=trading_date, trading_hour=trading_hour, entry_period=20)
+        from backtest.strategy.day_breakout import BacktestDayTradingBreakoutDynExit
+        strategy = BacktestDayTradingBreakoutDynExit(
+            trading_date=trading_date, trading_hour=trading_hour, entry_period=20, exit_period=9)
+        # from backtest.strategy.day_scalping import BacktestDayTradingScalping
+        # strategy = BacktestDayTradingScalping(
+        #     trading_date=trading_date, trading_hour=trading_hour, entry_period=20)
         executor = BacktestExecutor(
             strategy=strategy, trading_date=trading_date, trading_hour=trading_hour)
         print(

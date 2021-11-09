@@ -265,6 +265,9 @@ def check_bars_has_long_wick_up(bars: pd.DataFrame, period: int = 5, count: int 
         # make sure wick tail is larger than body
         if (high - mid) < abs(row["close"] - row["open"]):
             continue
+        # make sure candle has enough change
+        if (high - low) / low < config.LONG_WICK_CHANGE_RATIO:
+            continue
         # make sure up tail is > than down tail
         if (mid2 - low) > 0 and (high - mid) / (mid2 - low) >= config.LONG_WICK_UP_RATIO:
             long_wick_up_count += 1
