@@ -223,6 +223,7 @@ class AlgorithmType:
     DAY_SWING_RG_TURTLE = 201
     DAY_SWING_BREAKOUT_TURTLE = 202
     DAY_SWING_EARNINGS_TURTLE = 203
+    DAY_SWING_SCALPING_TURTLE = 204
 
     @staticmethod
     def tostr(val):
@@ -293,7 +294,7 @@ class AlgorithmType:
         if val == AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add check period high for ROC.'
         if val == AlgorithmType.DAY_SCALPING:
-            return 'Scalping day trade, entry if price reach 20 candles new high, exit if first candle new low in 2 minutes timeframe.'
+            return 'Scalping day trade, entry if price reach 20 candles new high, exit if 2 minutes new low.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -306,6 +307,8 @@ class AlgorithmType:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_BREAKOUT_10), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_EARNINGS), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
+        if val == AlgorithmType.DAY_SWING_SCALPING_TURTLE:
+            return '{} / {}'.format(AlgorithmType.todesc(AlgorithmType.DAY_SCALPING), AlgorithmType.todesc(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
 
     @staticmethod
@@ -386,6 +389,8 @@ class AlgorithmType:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_BREAKOUT_10), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         if val == AlgorithmType.DAY_SWING_EARNINGS_TURTLE:
             return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_EARNINGS), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
+        if val == AlgorithmType.DAY_SWING_SCALPING_TURTLE:
+            return '{} / {}'.format(AlgorithmType.totag(AlgorithmType.DAY_SCALPING), AlgorithmType.totag(AlgorithmType.SWING_TURTLE_55))
         return UNKNOWN
 
     @staticmethod
@@ -465,6 +470,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_SWING_BREAKOUT_TURTLE)),
             (AlgorithmType.DAY_SWING_EARNINGS_TURTLE, AlgorithmType.totag(
                 AlgorithmType.DAY_SWING_EARNINGS_TURTLE)),
+            (AlgorithmType.DAY_SWING_SCALPING_TURTLE, AlgorithmType.totag(
+                AlgorithmType.DAY_SWING_SCALPING_TURTLE)),
         )
 
 

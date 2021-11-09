@@ -336,6 +336,14 @@ def start():
         # turtle trade 55 days
         strategies.append(SwingTurtle(
             paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
+    elif algo_type == AlgorithmType.DAY_SWING_SCALPING_TURTLE:
+        # DAY_SWING_SCALPING_TURTLE
+        # scalping trade
+        strategies.append(DayTradingScalping(
+            paper=paper, trading_hour=trading_hour, entry_period=20))
+        # turtle trade 55 days
+        strategies.append(SwingTurtle(
+            paper=paper, trading_hour=trading_hour, entry_period=55, exit_period=20))
     else:
         print("[{}] No trading job found, skip...".format(utils.get_now()))
         return
