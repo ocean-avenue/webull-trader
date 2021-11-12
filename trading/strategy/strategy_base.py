@@ -505,7 +505,7 @@ class StrategyBase:
                 f"Unknown order status '{order_status}' for order: {order_id}!")
 
     def check_sell_order_done(self, ticker: TrackingTicker,
-                              stop_tracking_ticker_after_order_filled: bool = True):
+                              stop_tracking_ticker_after_order_filled: bool = False):
         symbol = ticker.get_symbol()
         order_id = ticker.get_pending_order_id()
         order = self.order_tracker.get_order(order_id)
