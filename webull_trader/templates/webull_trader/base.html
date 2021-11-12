@@ -85,7 +85,11 @@
               </a>
             </li>
             <li class="sidebar-item">
+              {% if account_type.value == "LIVE" %}
               <a class="sidebar-link" href="https://app.webull.com/account" target="_blank">
+              {% else %}
+              <a class="sidebar-link" href="https://app.webull.com/paper" target="_blank">
+              {% endif %}
                 <i class="align-middle" data-feather="external-link"></i>
                 <span class="align-middle">Webull</span>
               </a>
