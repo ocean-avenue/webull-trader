@@ -27,13 +27,13 @@ ORDER_STATUS_FILLED = "Filled"
 ORDER_STATUS_WORKING = "Working"
 ORDER_STATUS_PARTIALLY_FILLED = "Partially Filled"
 ORDER_STATUS_PENDING = "Pending"
+ORDER_STATUS_PENDING = "Pending Cancel"
 ORDER_STATUS_FAILED = "Failed"
 ORDER_STATUS_ALL = "All"
 
 ORDER_STATUS_NOT_FOUND = "Not Found"
 
-
-_wb_session: requests.Session = None
+API_DELAY_IN_SEC = 1.0
 
 
 def _get_browser_headers() -> dict:
@@ -42,14 +42,6 @@ def _get_browser_headers() -> dict:
         "referer": "quotes-gw.webullfintech.com/",
         "Accept-Encoding": None,
     }
-
-
-def _get_session() -> requests.Session:
-    global _wb_session
-    if not _wb_session:
-        _wb_session = requests.Session()
-        _wb_session.headers.update(_get_browser_headers())
-    return _wb_session
 
 
 _wb_instance: webull = None
@@ -529,7 +521,7 @@ def get_daily_profitloss() -> List[dict]:
 
 
 def get_quote(ticker_id=None) -> Optional[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_quote(tId=ticker_id)
@@ -566,7 +558,7 @@ def get_bid_volume_from_quote(quote: dict) -> float:
 
 
 def get_ticker(symbol: Optional[str] = None) -> Optional[str]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_ticker(stock=symbol)
@@ -589,7 +581,7 @@ def get_ticker(symbol: Optional[str] = None) -> Optional[str]:
 # 2021-04-07 20:00:00-04:00  8.65  8.65  8.65   8.65   100.0  8.46
 
 def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_bars(tId=ticker_id, interval='m1', count=count, extendTrading=1, timeStamp=timestamp)
@@ -600,7 +592,7 @@ def get_1m_bars(ticker_id=None, count=20, timestamp=None) -> pd.DataFrame:
 
 
 def get_1d_bars(ticker_id=None, count=20) -> pd.DataFrame:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_bars(tId=ticker_id, interval='d1', count=count, extendTrading=1)
@@ -1040,7 +1032,7 @@ def get_current_orders():
 
 
 def get_history_orders(status=ORDER_STATUS_ALL, count=20) -> List[dict]:
-    time.sleep(0.5)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_history_orders(status=status, count=count)
@@ -1071,7 +1063,7 @@ def get_news(stock=None, items=5) -> List[dict]:
         Id: 0 is latest news article
         items: number of articles to return
     '''
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
         instance = _get_instance()
         return instance.get_news(stock=stock, Id=0, items=items)
@@ -1083,9 +1075,10 @@ def get_news(stock=None, items=5) -> List[dict]:
 # [{'timestamp': 1617840000, 'open': 8.65, 'close': 8.65, 'high': 8.65, 'low': 8.65, 'volume': 100, 'vwap': 8.46}, ...]
 
 def get_1m_charts(ticker_id, count=20):
-    time.sleep(1)
-    url = WEBULL_QUOTE_1M_CHARTS_URL.format(ticker_id, count)
-    res = _get_session().get(url)
+    time.sleep(API_DELAY_IN_SEC)
+    session = requests.Session()
+    res = session.get(WEBULL_QUOTE_1M_CHARTS_URL.format(
+        ticker_id, count), headers=_get_browser_headers())
     res_json = res.json()
     if len(res_json) == 0:
         return []
@@ -1113,9 +1106,11 @@ def get_1m_charts(ticker_id, count=20):
 
 
 def get_pre_market_gainers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_PRE_MARKET_GAINERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_PRE_MARKET_GAINERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1164,9 +1159,11 @@ def get_pre_market_gainers(count=10) -> List[dict]:
 
 
 def get_top_gainers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_TOP_GAINERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_TOP_GAINERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1202,9 +1199,11 @@ def get_top_gainers(count=10) -> List[dict]:
 
 
 def get_after_market_gainers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_AFTER_MARKET_GAINERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_AFTER_MARKET_GAINERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         gainers = []
         if "data" in res_json:
@@ -1241,9 +1240,11 @@ def get_after_market_gainers(count=10) -> List[dict]:
 
 
 def get_pre_market_losers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_PRE_MARKET_LOSERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_PRE_MARKET_LOSERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         losers = []
         if "data" in res_json:
@@ -1292,9 +1293,11 @@ def get_pre_market_losers(count=10) -> List[dict]:
 
 
 def get_top_losers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_TOP_LOSERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_TOP_LOSERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         losers = []
         if "data" in res_json:
@@ -1330,9 +1333,11 @@ def get_top_losers(count=10) -> List[dict]:
 
 
 def get_after_market_losers(count=10) -> List[dict]:
-    time.sleep(1)
+    time.sleep(API_DELAY_IN_SEC)
     try:
-        res = _get_session().get(WEBULL_AFTER_MARKET_LOSERS_URL.format(count))
+        session = requests.Session()
+        res = session.get(WEBULL_AFTER_MARKET_LOSERS_URL.format(
+            count), headers=_get_browser_headers())
         res_json = res.json()
         gainers = []
         if "data" in res_json:

@@ -223,7 +223,7 @@ class StrategyBase:
                 f"⚠️  Invalid buy order response: {order_response}")
             # send message
             sms.notify_message(
-                "Failed to sell <{}> swing position, please check now!".format(symbol))
+                f"Failed to sell <{symbol}> swing position, please check now!")
 
     # submit buy limit order, only use for day trade
     def submit_buy_limit_order(self, ticker: TrackingTicker, note: str = "Entry point."):
@@ -496,7 +496,7 @@ class StrategyBase:
                     "Failed to sell position <{}>!".format(symbol))
                 # send message
                 sms.notify_message(
-                    "Failed to sell <{}> position, please check now!".format(symbol))
+                    f"Failed to sell <{symbol}> position, please check now!")
                 # stop tracking ticker
                 if stop_tracking_ticker_after_order_done:
                     self.trading_tracker.stop_tracking(ticker)
@@ -579,8 +579,11 @@ class StrategyBase:
             if order.action == ActionType.SELL:
                 self._on_sell_order_filled(ticker, order)
         elif ticker.is_order_timeout():
-            raise exceptions.WebullOrderStatusError(
-                f"Error cancel order status '{order.status}', {order_id} - <{symbol}>")
+            if not utils.is_paper_trading():
+                sms.notify_message(
+                    f"Failed to cancel <{symbol}> order: {order_id}, please check now!")
+            raise exceptions.WebullOrderTimeoutError(
+                f"Error cancel order timeout '{order.status}', {order_id} - <{symbol}>")
 
     def start_tracking_pending_buy_order(self, ticker: TrackingTicker, order_id: str, entry_note: str = ""):
         ticker.reset_pending_order()
@@ -736,7 +739,7 @@ class StrategyBase:
                 position_obj.save()
                 # send message
                 sms.notify_message(
-                    "Failed to clear <{}> position, please check now!".format(symbol))
+                    f"Failed to clear <{symbol}> position, please check now!")
             # remove from tracking
             self.trading_tracker.stop_tracking(ticker)
 
