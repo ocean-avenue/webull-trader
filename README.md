@@ -51,6 +51,14 @@ python manage.py runstatsdata 2021-12-31
 python manage.py runamendtrades
 ```
 
+### Backtest:
+
+1. Run backtest command:
+
+```
+python manage.py shell < backtest/executor.py
+```
+
 ### Deploy:
 
 1. Run server:
