@@ -260,17 +260,17 @@
         <thead>
           <tr>
             <th>Symbol</th>
-            <th class="d-none d-xl-table-cell">Buy Price</th>
-            <th class="d-none d-xl-table-cell">Buy Time</th>
-            <th class="d-none d-xl-table-cell">Setup</th>
-            <th class="d-none d-xl-table-cell">Quantity</th>
-            <th class="d-none d-xl-table-cell">Units</th>
-            <th class="d-none d-xl-table-cell">Total Cost</th>
-            <th class="d-none d-xl-table-cell">Sell Price</th>
-            <th class="d-none d-xl-table-cell">Sell Time</th>
-            <th class="d-none d-xl-table-cell">Note</th>
-            <th class="d-none d-xl-table-cell">P&L</th>
-            <th class="d-none d-xl-table-cell">P&L %</th>
+            <th>Buy Price</th>
+            <th>Buy Time</th>
+            <th>Setup</th>
+            <th>Quantity</th>
+            <th>Units</th>
+            <th>Total Cost</th>
+            <th>Sell Price</th>
+            <th>Sell Time</th>
+            <th>Note</th>
+            <th>P&L</th>
+            <th>P&L %</th>
           </tr>
         </thead>
         <tbody>
@@ -279,19 +279,19 @@
             <td>
               <span class="badge badge-soft-dark">{{trade.symbol|safe}}</span>
             </td>
-            <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.setup|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
-            <td class="d-none d-md-table-cell">{{trade.sell_time|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{trade.note|safe}}</td>
-            <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
+            <td>{{trade.buy_price|safe}}</td>
+            <td>{{trade.buy_time|safe}}</td>
+            <td>{{trade.setup|safe}}</td>
+            <td>{{trade.quantity|safe}}</td>
+            <td>{{trade.units|safe}}</td>
+            <td>{{trade.total_cost|safe}}</td>
+            <td>{{trade.sell_price|safe}}</td>
+            <td>{{trade.sell_time|safe}}</td>
+            <td>{{trade.note|safe}}</td>
+            <td class="{{trade.profit_loss_style|safe}}">
               {{trade.profit_loss|safe}}
             </td>
-            <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
+            <td class="{{trade.profit_loss_style|safe}}">
               {{trade.profit_loss_percent|safe}}
             </td>
           </tr>
@@ -450,27 +450,27 @@
       <table class="table table-striped my-0">
         <thead>
           <tr>
-            <th class="d-none d-xl-table-cell">Title</th>
-            <th class="d-none d-xl-table-cell">Summary</th>
-            <th class="d-none d-xl-table-cell">Source Name</th>
-            <th class="d-none d-xl-table-cell">Collect Source</th>
-            <th class="d-none d-xl-table-cell">News Time</th>
-            <th class="d-none d-xl-table-cell">News Url</th>
+            <th>Title</th>
+            <th>Summary</th>
+            <th>Source Name</th>
+            <th>Collect Source</th>
+            <th>News Time</th>
+            <th>News Url</th>
           </tr>
         </thead>
         <tbody>
           {% for news_record in news %}
           <tr>
-            <td class="d-none d-xl-table-cell">{{news_record.title|safe}}</td>
-            <td class="d-none d-xl-table-cell">{{news_record.summary|safe}}</td>
-            <td class="d-none d-xl-table-cell">
+            <td>{{news_record.title|safe}}</td>
+            <td>{{news_record.summary|safe}}</td>
+            <td>
               {{news_record.source_name|safe}}
             </td>
-            <td class="d-none d-xl-table-cell">
+            <td>
               {{news_record.collect_source|safe}}
             </td>
-            <td class="d-none d-md-table-cell">{{news_record.news_time|safe}}</td>
-            <td class="d-none d-xl-table-cell">
+            <td>{{news_record.news_time|safe}}</td>
+            <td>
               <a href="{{news_record.news_url|safe}}" target="_blank">Click</a>
             </td>
           </tr>
