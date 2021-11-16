@@ -165,38 +165,40 @@
     <div class="card-header">
       <h5 class="card-title mb-0">Trades</h5>
     </div>
-    <table class="table table-striped my-0">
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th class="d-none d-xl-table-cell text-end">Avg Cost</th>
-          <th class="d-none d-xl-table-cell text-end">Total Cost</th>
-          <th class="d-none d-xl-table-cell text-end">Avg Sold</th>
-          <th class="d-none d-xl-table-cell text-end">Total Sold</th>
-          <th class="d-none d-xl-table-cell text-end">Trades</th>
-          <th class="d-none d-xl-table-cell text-end">Win Rate</th>
-          <th class="d-none d-xl-table-cell text-end">Profit/Loss Ratio</th>
-          <th class="d-none d-xl-table-cell text-end">P&L</th>
-          <th class="d-none d-xl-table-cell text-end">P&L %</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for trade in trade_records %}
-        <tr>
-          <td><a href="/swing-analytics/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.avg_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.total_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.avg_sold|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.total_sold|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.trades|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.win_rate|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end">{{trade.profit_loss_ratio|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
-          <td class="d-none d-xl-table-cell text-end {{trade.profit_loss_style|safe}}">{{trade.profit_loss_percent|safe}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-striped my-0">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th class="d-none d-xl-table-cell text-end">Avg Cost</th>
+            <th class="d-none d-xl-table-cell text-end">Total Cost</th>
+            <th class="d-none d-xl-table-cell text-end">Avg Sold</th>
+            <th class="d-none d-xl-table-cell text-end">Total Sold</th>
+            <th class="d-none d-xl-table-cell text-end">Trades</th>
+            <th class="d-none d-xl-table-cell text-end">Win Rate</th>
+            <th class="d-none d-xl-table-cell text-end">Profit/Loss Ratio</th>
+            <th class="d-none d-xl-table-cell text-end">P&L</th>
+            <th class="d-none d-xl-table-cell text-end">P&L %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trade in trade_records %}
+          <tr>
+            <td><a href="/swing-analytics/{{trade.symbol|safe}}"><span class="badge badge-soft-dark">{{trade.symbol|safe}}</span></a></td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.avg_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.total_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.avg_sold|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.total_sold|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.trades|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.win_rate|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{trade.profit_loss_ratio|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end {{trade.profit_loss_style|safe}}">{{trade.profit_loss_percent|safe}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 

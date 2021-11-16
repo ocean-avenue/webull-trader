@@ -255,48 +255,50 @@
     <div class="card-header">
       <h5 class="card-title mb-0">Trades</h5>
     </div>
-    <table class="table table-striped my-0">
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th class="d-none d-xl-table-cell">Buy Price</th>
-          <th class="d-none d-xl-table-cell">Buy Time</th>
-          <th class="d-none d-xl-table-cell">Setup</th>
-          <th class="d-none d-xl-table-cell">Quantity</th>
-          <th class="d-none d-xl-table-cell">Units</th>
-          <th class="d-none d-xl-table-cell">Total Cost</th>
-          <th class="d-none d-xl-table-cell">Sell Price</th>
-          <th class="d-none d-xl-table-cell">Sell Time</th>
-          <th class="d-none d-xl-table-cell">Note</th>
-          <th class="d-none d-xl-table-cell">P&L</th>
-          <th class="d-none d-xl-table-cell">P&L %</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for trade in trade_records %}
-        <tr>
-          <td>
-            <span class="badge badge-soft-dark">{{trade.symbol|safe}}</span>
-          </td>
-          <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.setup|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
-          <td class="d-none d-md-table-cell">{{trade.sell_time|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.note|safe}}</td>
-          <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
-            {{trade.profit_loss|safe}}
-          </td>
-          <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
-            {{trade.profit_loss_percent|safe}}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-striped my-0">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th class="d-none d-xl-table-cell">Buy Price</th>
+            <th class="d-none d-xl-table-cell">Buy Time</th>
+            <th class="d-none d-xl-table-cell">Setup</th>
+            <th class="d-none d-xl-table-cell">Quantity</th>
+            <th class="d-none d-xl-table-cell">Units</th>
+            <th class="d-none d-xl-table-cell">Total Cost</th>
+            <th class="d-none d-xl-table-cell">Sell Price</th>
+            <th class="d-none d-xl-table-cell">Sell Time</th>
+            <th class="d-none d-xl-table-cell">Note</th>
+            <th class="d-none d-xl-table-cell">P&L</th>
+            <th class="d-none d-xl-table-cell">P&L %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trade in trade_records %}
+          <tr>
+            <td>
+              <span class="badge badge-soft-dark">{{trade.symbol|safe}}</span>
+            </td>
+            <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.setup|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
+            <td class="d-none d-md-table-cell">{{trade.sell_time|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.note|safe}}</td>
+            <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
+              {{trade.profit_loss|safe}}
+            </td>
+            <td class="d-none d-xl-table-cell {{trade.profit_loss_style|safe}}">
+              {{trade.profit_loss_percent|safe}}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="row">
@@ -444,36 +446,38 @@
     <div class="card-header">
       <h5 class="card-title mb-0">News</h5>
     </div>
-    <table class="table table-striped my-0">
-      <thead>
-        <tr>
-          <th class="d-none d-xl-table-cell">Title</th>
-          <th class="d-none d-xl-table-cell">Summary</th>
-          <th class="d-none d-xl-table-cell">Source Name</th>
-          <th class="d-none d-xl-table-cell">Collect Source</th>
-          <th class="d-none d-xl-table-cell">News Time</th>
-          <th class="d-none d-xl-table-cell">News Url</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for news_record in news %}
-        <tr>
-          <td class="d-none d-xl-table-cell">{{news_record.title|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{news_record.summary|safe}}</td>
-          <td class="d-none d-xl-table-cell">
-            {{news_record.source_name|safe}}
-          </td>
-          <td class="d-none d-xl-table-cell">
-            {{news_record.collect_source|safe}}
-          </td>
-          <td class="d-none d-md-table-cell">{{news_record.news_time|safe}}</td>
-          <td class="d-none d-xl-table-cell">
-            <a href="{{news_record.news_url|safe}}" target="_blank">Click</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-striped my-0">
+        <thead>
+          <tr>
+            <th class="d-none d-xl-table-cell">Title</th>
+            <th class="d-none d-xl-table-cell">Summary</th>
+            <th class="d-none d-xl-table-cell">Source Name</th>
+            <th class="d-none d-xl-table-cell">Collect Source</th>
+            <th class="d-none d-xl-table-cell">News Time</th>
+            <th class="d-none d-xl-table-cell">News Url</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for news_record in news %}
+          <tr>
+            <td class="d-none d-xl-table-cell">{{news_record.title|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{news_record.summary|safe}}</td>
+            <td class="d-none d-xl-table-cell">
+              {{news_record.source_name|safe}}
+            </td>
+            <td class="d-none d-xl-table-cell">
+              {{news_record.collect_source|safe}}
+            </td>
+            <td class="d-none d-md-table-cell">{{news_record.news_time|safe}}</td>
+            <td class="d-none d-xl-table-cell">
+              <a href="{{news_record.news_url|safe}}" target="_blank">Click</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 {% endblock %}

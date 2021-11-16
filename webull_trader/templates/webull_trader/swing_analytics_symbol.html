@@ -206,44 +206,46 @@
     <div class="card-header">
       <h5 class="card-title mb-0">Trades</h5>
     </div>
-    <table class="table table-striped my-0">
-      <thead>
-        <tr>
-          <th>Symbol</th>
-          <th class="d-none d-xl-table-cell">Buy Date</th>
-          <th class="d-none d-xl-table-cell">Holding Days</th>
-          <th class="d-none d-xl-table-cell">Sell Date</th>
-          <th class="d-none d-xl-table-cell">Setup</th>
-          <th class="d-none d-xl-table-cell">Buy Price</th>
-          <th class="d-none d-xl-table-cell">Total Cost</th>
-          <th class="d-none d-xl-table-cell">Quantity</th>
-          <th class="d-none d-xl-table-cell">Units</th>
-          <th class="d-none d-xl-table-cell">Sell Price</th>
-          <th class="d-none d-xl-table-cell">Total Sold</th>
-          <th class="d-none d-xl-table-cell">P&L</th>
-          <th class="d-none d-xl-table-cell">P&L %</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for trade in trade_records %}
-        <tr>
-          <td><span class="badge badge-soft-dark">{{symbol|safe}}</span></td>
-          <td class="d-none d-xl-table-cell">{{trade.buy_date|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.holding_days|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.sell_date|safe}}</td>
-          <td class="d-none d-md-table-cell">{{trade.setup|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
-          <td class="d-none d-xl-table-cell">{{trade.total_sold|safe}}</td>
-          <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
-          <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss_percent|safe}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-responsive">
+      <table class="table table-striped my-0">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th class="d-none d-xl-table-cell">Buy Date</th>
+            <th class="d-none d-xl-table-cell">Holding Days</th>
+            <th class="d-none d-xl-table-cell">Sell Date</th>
+            <th class="d-none d-xl-table-cell">Setup</th>
+            <th class="d-none d-xl-table-cell">Buy Price</th>
+            <th class="d-none d-xl-table-cell">Total Cost</th>
+            <th class="d-none d-xl-table-cell">Quantity</th>
+            <th class="d-none d-xl-table-cell">Units</th>
+            <th class="d-none d-xl-table-cell">Sell Price</th>
+            <th class="d-none d-xl-table-cell">Total Sold</th>
+            <th class="d-none d-xl-table-cell">P&L</th>
+            <th class="d-none d-xl-table-cell">P&L %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trade in trade_records %}
+          <tr>
+            <td><span class="badge badge-soft-dark">{{symbol|safe}}</span></td>
+            <td class="d-none d-xl-table-cell">{{trade.buy_date|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.holding_days|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.sell_date|safe}}</td>
+            <td class="d-none d-md-table-cell">{{trade.setup|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.buy_price|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.sell_price|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.total_sold|safe}}</td>
+            <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss|safe}}</td>
+            <td class="d-none d-md-table-cell {{trade.profit_loss_style|safe}}">{{trade.profit_loss_percent|safe}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <div class="row">
