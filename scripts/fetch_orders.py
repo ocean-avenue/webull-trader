@@ -16,6 +16,7 @@ def start():
     paper = utils.is_paper_trading()
 
     if webullsdk.login(paper=paper):
+        history_orders = []
         try:
             # fetch enough count to cover today's orders
             history_orders = webullsdk.get_history_orders(
