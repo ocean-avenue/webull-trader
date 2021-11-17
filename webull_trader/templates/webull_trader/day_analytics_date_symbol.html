@@ -261,14 +261,14 @@
           <tr>
             <th>Symbol</th>
             <th>Buy Price</th>
-            <th>Buy Time</th>
-            <th>Setup</th>
-            <th>Quantity</th>
-            <th>Units</th>
-            <th>Total Cost</th>
+            <th class="d-none d-xl-table-cell">Buy Time</th>
+            <th class="d-none d-xl-table-cell">Setup</th>
+            <th class="d-none d-xl-table-cell">Quantity</th>
+            <th class="d-none d-xl-table-cell">Units</th>
+            <th class="d-none d-xl-table-cell">Total Cost</th>
             <th>Sell Price</th>
-            <th>Sell Time</th>
-            <th>Note</th>
+            <th class="d-none d-xl-table-cell">Sell Time</th>
+            <th class="d-none d-xl-table-cell">Note</th>
             <th>P&L</th>
             <th>P&L %</th>
           </tr>
@@ -280,14 +280,14 @@
               <span class="badge badge-soft-dark">{{trade.symbol|safe}}</span>
             </td>
             <td>{{trade.buy_price|safe}}</td>
-            <td>{{trade.buy_time|safe}}</td>
-            <td>{{trade.setup|safe}}</td>
-            <td>{{trade.quantity|safe}}</td>
-            <td>{{trade.units|safe}}</td>
-            <td>{{trade.total_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.buy_time|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.setup|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.quantity|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.units|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.total_cost|safe}}</td>
             <td>{{trade.sell_price|safe}}</td>
-            <td>{{trade.sell_time|safe}}</td>
-            <td>{{trade.note|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.sell_time|safe}}</td>
+            <td class="d-none d-xl-table-cell">{{trade.note|safe}}</td>
             <td class="{{trade.profit_loss_style|safe}}">
               {{trade.profit_loss|safe}}
             </td>

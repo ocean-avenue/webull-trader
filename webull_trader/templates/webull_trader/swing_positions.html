@@ -26,15 +26,15 @@
         <thead>
           <tr>
             <th>Symbol</th>
-            <th class="text-end">Holding</th>
+            <th class="d-none d-xl-table-cell text-end">Holding</th>
             <th class="text-end">Unit Cost</th>
             <th class="text-end">Price</th>
-            <th class="text-end">Quantity</th>
+            <th class="d-none d-xl-table-cell text-end">Quantity</th>
             <th class="text-end">Units</th>
-            <th class="text-end">Add Unit $</th>
-            <th class="text-end">Stop Loss $</th>
-            <th class="text-end">Cost</th>
-            <th class="text-end">Value</th>
+            <th class="d-none d-xl-table-cell text-end">Add Unit $</th>
+            <th class="d-none d-xl-table-cell text-end">Stop Loss $</th>
+            <th class="d-none d-xl-table-cell text-end">Cost</th>
+            <th class="d-none d-xl-table-cell text-end">Value</th>
             <th class="text-end">Day P&L</th>
             <th class="text-end">Day P&L %</th>
             <th class="text-end">Unrealized P&L</th>
@@ -46,15 +46,15 @@
           {% for position in swing_positions %}
           <tr>
             <td><a href="/swing-positions/{{position.symbol|safe}}"><span class="badge badge-soft-dark">{{position.symbol|safe}}</span></a></td>
-            <td class="text-end">{{position.holding_days|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.holding_days|safe}}</td>
             <td class="text-end">{{position.unit_cost|safe}}</td>
             <td class="text-end">{{position.price|safe}}</td>
-            <td class="text-end">{{position.quantity|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.quantity|safe}}</td>
             <td class="text-end">{{position.units|safe}}</td>
-            <td class="text-end">{{position.add_unit_price|safe}}</td>
-            <td class="text-end">{{position.stop_loss_price|safe}}</td>
-            <td class="text-end">{{position.total_cost|safe}}</td>
-            <td class="text-end">{{position.total_value|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.add_unit_price|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.stop_loss_price|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.total_cost|safe}}</td>
+            <td class="d-none d-xl-table-cell text-end">{{position.total_value|safe}}</td>
             <td class="text-end {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss|safe}}</td>
             <td class="text-end {{position.day_profit_loss_style|safe}}">{{position.day_profit_loss_percent|safe}}</td>
             <td class="text-end {{position.profit_loss_style|safe}}">{{position.profit_loss|safe}}</td>
