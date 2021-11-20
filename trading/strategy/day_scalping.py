@@ -90,11 +90,12 @@ class DayTradingScalping(StrategyBase):
 
         # check if current candle already surge too much
         prev_candle = bars.iloc[-2]
-        prev_close = prev_candle['close']
-        surge_ratio = (current_price - prev_close) / prev_close
+        prev_candle2 = bars.iloc[-3]
+        prev_min_close = min(prev_candle['close'], prev_candle2['close'])
+        surge_ratio = (current_price - prev_min_close) / prev_min_close
         if surge_ratio >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
             trading_logger.log(
-                f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev close (${prev_close}), no entry!")
+                f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev min close (${prev_min_close}), no entry!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
@@ -225,9 +226,9 @@ class DayTradingScalping(StrategyBase):
         current_candle = bars.iloc[-1]
         current_price = current_candle['close']
         stop_loss = current_candle['low']
-        if (current_price- current_candle['low']) / current_candle['low'] > 0.1:
+        if (current_price - current_candle['low']) / current_candle['low'] > 0.1:
             stop_loss = round(
-                current_candle['low'] + (current_price- current_candle['low']) * 0.4, 2)
+                current_candle['low'] + (current_price - current_candle['low']) * 0.4, 2)
         # if stop loss is too tight
         if current_price * .98 < stop_loss:
             prev_candle = bars.iloc[-2]
