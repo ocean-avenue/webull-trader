@@ -35,6 +35,7 @@ class OrderTracker:
 
     def update_orders(self):
         if len(self.current_orders) > 0:
+            orders = []
             try:
                 orders = webullsdk.get_history_orders(count=50)[::-1]
                 for order_data in orders:
