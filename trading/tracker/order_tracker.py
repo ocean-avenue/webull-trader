@@ -15,7 +15,7 @@ class OrderTracker:
 
     def _order_done(self, status: str) -> bool:
         if status == webullsdk.ORDER_STATUS_CANCELED or status == webullsdk.ORDER_STATUS_FILLED or \
-                status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED or status == webullsdk.ORDER_STATUS_FAILED:
+                status == webullsdk.ORDER_STATUS_PARTIAL_FILLED or status == webullsdk.ORDER_STATUS_FAILED:
             return True
         return False
 

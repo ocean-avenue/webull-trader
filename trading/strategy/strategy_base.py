@@ -343,7 +343,7 @@ class StrategyBase:
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
         order_id = order.order_id
-        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIAL_FILLED:
             position_obj = ticker.get_position_obj()
             if position_obj:
                 # update position obj
@@ -396,7 +396,7 @@ class StrategyBase:
             return
         trading_logger.log(f"Buy order {order_id} - <{symbol}> {order.status}")
         # filled or partially filled
-        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIAL_FILLED:
             self._on_buy_order_filled(
                 ticker, order, stop_tracking_ticker_after_order_filled)
             trading_logger.log(f"Filled price: ${order.avg_price}")
@@ -452,7 +452,7 @@ class StrategyBase:
             tracking_stat = self.trading_tracker.get_stat(symbol)
             tracking_stat.update_by_trade(trade)
         # partially filled
-        elif order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+        elif order.status == webullsdk.ORDER_STATUS_PARTIAL_FILLED:
             position_obj = ticker.get_position_obj()
             # update position object
             position_obj.order_ids = f"{position_obj.order_ids},{order_id}"
@@ -521,7 +521,7 @@ class StrategyBase:
         trading_logger.log(
             f"Sell order {order_id} - <{symbol}> {order.status}")
         # filled or partially filled
-        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+        if order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIAL_FILLED:
             self._on_sell_order_filled(
                 ticker, order, stop_tracking_ticker_after_order_filled)
             trading_logger.log(f"Filled price: ${order.avg_price}")
@@ -571,7 +571,7 @@ class StrategyBase:
             if order.action == ActionType.SELL:
                 self._on_sell_order_failed(
                     ticker, order.status, stop_tracking_ticker_after_order_canceled)
-        elif order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIALLY_FILLED:
+        elif order.status == webullsdk.ORDER_STATUS_FILLED or order.status == webullsdk.ORDER_STATUS_PARTIAL_FILLED:
             # buy order
             if order.action == ActionType.BUY:
                 self._on_buy_order_filled(ticker, order)
