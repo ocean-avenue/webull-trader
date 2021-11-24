@@ -9,7 +9,6 @@ from common.enums import AlgorithmType, TradingHourType
 from common import utils, db, config, sms
 from sdk import webullsdk
 from logger import trading_logger
-from trading.strategy.day_scalping import DayTradingScalping
 from trading.strategy.strategy_base import StrategyBase
 
 
@@ -139,6 +138,7 @@ def start():
     # from trading.day_momo import DayTradingMomoNewHigh
     from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoShareSize, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.strategy.day_redgreen import DayTradingRedGreen
+    from trading.strategy.day_scalping import DayTradingScalping
     from trading.strategy.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
         DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers, DayTradingBreakoutScale, \
         DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, DayTradingBreakoutScalePeriodROC
