@@ -91,11 +91,12 @@ class DayTradingScalping(StrategyBase):
         # check if current candle already surge too much
         prev_candle = bars.iloc[-2]
         prev_candle2 = bars.iloc[-3]
-        prev_min_close = min(prev_candle['close'], prev_candle2['close'])
-        surge_ratio = (current_price - prev_min_close) / prev_min_close
+        prev_min = min(prev_candle['open'], prev_candle['close'],
+                       prev_candle2['open'], prev_candle2['close'])
+        surge_ratio = (current_price - prev_min) / prev_min
         if surge_ratio >= config.MAX_DAY_ENTRY_CANDLE_SURGE_RATIO:
             trading_logger.log(
-                f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev min close (${prev_min_close}), no entry!")
+                f"<{symbol}> current price (${current_price}) already surge {round(surge_ratio * 100, 2)}% than prev min price (${prev_min}), no entry!")
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_updated(bars):
@@ -112,17 +113,17 @@ class DayTradingScalping(StrategyBase):
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
-                not pattern.check_bars_all_green(bars, period=5):
-            # has no relative volume
-            trading_logger.log(
-                "<{}> candle chart has no relative volume, no entry!".format(symbol))
-            return False
+        # if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
+        #         not pattern.check_bars_all_green(bars, period=5):
+        #     # has no relative volume
+        #     trading_logger.log(
+        #         "<{}> candle chart has no relative volume, no entry!".format(symbol))
+        #     return False
 
-        if not pattern.check_bars_has_volume2(bars):
+        if not pattern.check_bars_has_volume2(bars) and not (pattern.check_bars_has_volume3(bars, 0.75) and pattern.check_bars_rel_volume(bars)):
             # has no enough volume
             trading_logger.log(
-                "<{}> candle chart has no enough volume, no entry!".format(symbol))
+                "<{}> candle chart has not enough volume and no relative volume, no entry!".format(symbol))
             return False
 
         if self.is_regular_market_hour() and not pattern.check_bars_volatility(bars):

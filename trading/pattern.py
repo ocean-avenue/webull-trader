@@ -160,6 +160,21 @@ def check_bars_has_volume2(bars: pd.DataFrame) -> bool:
     return False
 
 
+def check_bars_has_volume3(bars: pd.DataFrame, multiplier: float) -> bool:
+    """
+    check if bar chart has enough volume for 2 bars with multiplier
+    """
+    if len(bars) <= 3:
+        return False
+    confirm_volume = _get_avg_confirm_volume() * multiplier
+    current_bar = bars.iloc[-1]
+    prev_bar2 = bars.iloc[-2]
+    prev_bar3 = bars.iloc[-3]
+    if max(current_bar["volume"], prev_bar2["volume"], prev_bar3["volume"]) >= confirm_volume:
+        return True
+    return False
+
+
 def check_bars_has_amount(bars: pd.DataFrame, time_scale: int = 1, period: int = 10) -> bool:
     """
     check if bar chart has enough amount
