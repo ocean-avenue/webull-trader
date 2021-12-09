@@ -1513,7 +1513,7 @@ def get_net_profit_loss_for_render(acc_stat):
         "day_pl_rate": "0.0%",
         "day_pl_rate_style": "badge-soft-dark",
     }
-    if acc_stat:
+    if acc_stat and acc_stat.net_liquidation > 0:
         day_profit_loss["value"] = "${}".format(
             abs(acc_stat.day_profit_loss))
         day_pl_rate = acc_stat.day_profit_loss / \
