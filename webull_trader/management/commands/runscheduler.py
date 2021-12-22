@@ -4,6 +4,7 @@ from django.conf import settings
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
+from django_apscheduler import util
 from django_apscheduler.jobstores import DjangoJobStore
 from sdk import fmpsdk
 from common import utils
@@ -38,6 +39,7 @@ def _check_market_holiday():
     return holiday
 
 
+@util.close_old_connections
 def trading_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -49,6 +51,7 @@ def trading_job():
     print("[{}] Done trading job!".format(utils.get_now()))
 
 
+@util.close_old_connections
 def fetch_account_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -61,6 +64,7 @@ def fetch_account_job():
     print("[{}] Done fetch account job!".format(utils.get_now()))
 
 
+@util.close_old_connections
 def fetch_stock_quote_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -73,6 +77,7 @@ def fetch_stock_quote_job():
     print("[{}] Done fetch quotes job!".format(utils.get_now()))
 
 
+@util.close_old_connections
 def fetch_webull_order_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -95,6 +100,7 @@ def fetch_webull_order_job():
     print("[{}] Done calculate hist data job!".format(utils.get_now()))
 
 
+@util.close_old_connections
 def fetch_stats_data_job():
     holiday = _check_market_holiday()
     if holiday != None:
@@ -131,6 +137,7 @@ def fetch_stats_data_job():
     print("[{}] Done calculate hist data job!".format(utils.get_now()))
 
 
+@util.close_old_connections
 def check_exception_job():
     holiday = _check_market_holiday()
     if holiday != None:

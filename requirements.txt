@@ -14,7 +14,7 @@ contextlib2==0.6.0
 distlib==0.3.0
 distro==1.4.0
 Django==3.1.7
-django-apscheduler==0.5.2
+django-apscheduler==0.6.0
 dnspython==2.1.0
 email-validator==1.1.2
 html5lib==1.0.1
