@@ -16,7 +16,7 @@ WATCHLIST_SYMBOLS = [
     "IWN", "INTC", "IEA", "ISRG",
     "JPM", "JD", "JKS", "JMIA",
     "KO",
-    "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI", "LVMH",
+    "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI", "LVMHF",
     "MA", "MSFT", "MP", "MMM", "MCD", "MTCH", "MU", "META",
     "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK", "NKE",
     "OPEN", "OTLY",
