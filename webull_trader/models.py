@@ -21,6 +21,12 @@ class TradingSettings(models.Model):
     # day free float max size limit (million)
     day_free_float_limit_in_million = models.FloatField(default=-1.0)
     day_turnover_rate_limit_percentage = models.FloatField(default=-1.0)
+    # day market cap min (million)
+    day_market_cap_min_in_million = models.FloatField(default=-1.0)
+    # day market cap max (million)
+    day_market_cap_max_in_million = models.FloatField(default=-1.0)
+    # day entry price min
+    day_entry_price_min = models.FloatField(default=-1.0)
     # day trade sectors limit
     day_sectors_limit = models.CharField(max_length=1024, blank=True)
     # swing buy order limit
@@ -293,7 +299,8 @@ class HistoricalMarketStatistics(models.Model):
 class HistoricalMinuteBar(models.Model):
     symbol = models.CharField(db_index=True, max_length=64)
     date = models.DateField(db_index=True, auto_now=False, auto_now_add=False)
-    time = models.DateTimeField(db_index=True, auto_now=False, auto_now_add=False)
+    time = models.DateTimeField(
+        db_index=True, auto_now=False, auto_now_add=False)
     open = models.FloatField()
     high = models.FloatField()
     low = models.FloatField()

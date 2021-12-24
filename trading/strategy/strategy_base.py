@@ -116,32 +116,12 @@ class StrategyBase:
     def is_extended_market_hour(self) -> bool:
         return self.is_pre_market_hour() or self.is_after_market_hour()
 
-    def check_can_trade_ticker(self, ticker: TrackingTicker):
+    def check_can_trade_ticker(self, ticker: TrackingTicker) -> bool:
         symbol = ticker.get_symbol()
         ticker_id = ticker.get_id()
         settings = db.get_or_create_trading_settings()
-        day_free_float_limit_in_million = settings.day_free_float_limit_in_million
-        day_turnover_rate_limit_percentage = settings.day_turnover_rate_limit_percentage
         tracking_stat = self.trading_tracker.get_stat(symbol)
-        # fetch data if not cached
-        if day_free_float_limit_in_million > 0 or day_turnover_rate_limit_percentage > 0:
-            if tracking_stat.get_free_float() == None or tracking_stat.get_turnover_rate() == None:
-                quote = webullsdk.get_quote(ticker_id=ticker_id)
-                tracking_stat.set_free_float(
-                    utils.get_attr_to_float_or_none(quote, "outstandingShares"))
-                tracking_stat.set_turnover_rate(
-                    utils.get_attr_to_float_or_none(quote, "turnoverRate"))
-        free_float_check = True
-        if day_free_float_limit_in_million > 0:
-            if tracking_stat.get_free_float() == None or \
-                    tracking_stat.get_free_float() > day_free_float_limit_in_million * constants.ONE_MILLION:
-                free_float_check = False
-        turnover_rate_check = True
-        if day_turnover_rate_limit_percentage > 0:
-            if tracking_stat.get_turnover_rate() == None or \
-                    tracking_stat.get_turnover_rate() * constants.ONE_HUNDRED < day_turnover_rate_limit_percentage:
-                turnover_rate_check = False
-        sectors_check = True
+        # check sector limit
         day_sectors_limit = settings.day_sectors_limit
         if len(day_sectors_limit) > 0:
             # fetch sector if not cached
@@ -151,9 +131,44 @@ class StrategyBase:
                     tracking_stat.set_sector(profile["sector"])
             sectors_limit = day_sectors_limit.split(",")
             if tracking_stat.get_sector() == None or tracking_stat.get_sector() not in sectors_limit:
-                sectors_check = False
-
-        return (free_float_check or turnover_rate_check) and sectors_check
+                return False
+        # check statistics value
+        day_free_float_limit_in_million = settings.day_free_float_limit_in_million
+        day_turnover_rate_limit_percentage = settings.day_turnover_rate_limit_percentage
+        day_market_cap_min_in_million = settings.day_market_cap_min_in_million
+        day_market_cap_max_in_million = settings.day_market_cap_max_in_million
+        day_entry_price_min = settings.day_entry_price_min
+        if max(day_free_float_limit_in_million, day_turnover_rate_limit_percentage, day_market_cap_min_in_million, day_market_cap_max_in_million, day_entry_price_min) == -1:
+            return True
+        quote = webullsdk.get_quote(ticker_id=ticker_id)
+        close_price = utils.get_attr_to_float(quote, "close")
+        free_float = utils.get_attr_to_float_or_none(
+            quote, "outstandingShares")
+        tracking_stat.set_free_float(free_float)
+        market_cap = utils.get_attr_to_float_or_none(quote, "marketValue")
+        tracking_stat.set_market_cap(market_cap)
+        turnover_rate = utils.get_attr_to_float_or_none(quote, "turnoverRate")
+        tracking_stat.set_turnover_rate(turnover_rate)
+        # check entry price
+        if day_entry_price_min > 0:
+            if close_price < day_entry_price_min:
+                return False
+        # check free float
+        if day_free_float_limit_in_million > 0:
+            if not free_float or free_float > day_free_float_limit_in_million * constants.ONE_MILLION:
+                return False
+        # check market cap
+        if day_market_cap_min_in_million > 0:
+            if not market_cap or market_cap < day_market_cap_min_in_million * constants.ONE_MILLION:
+                return False
+        if day_market_cap_max_in_million > 0:
+            if not market_cap or market_cap > day_market_cap_max_in_million * constants.ONE_MILLION:
+                return False
+        # check turnover rate
+        if day_turnover_rate_limit_percentage > 0:
+            if not turnover_rate or turnover_rate * constants.ONE_HUNDRED < day_turnover_rate_limit_percentage:
+                return False
+        return True
 
     # submit buy market order, only use for swing trade
     def submit_buy_market_order(self, symbol: str, position: Optional[SwingPosition], unit_weight: int, last_price: float, reason: str):

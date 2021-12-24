@@ -241,6 +241,7 @@ class TrackingStat:
         self.last_high_price: Optional[float] = None
         self.sector: Optional[str] = None
         self.free_float: Optional[float] = None
+        self.market_cap: Optional[float] = None
         self.turnover_rate: Optional[float] = None
         self.last_trade_time: Optional[datetime] = None
 
@@ -288,6 +289,12 @@ class TrackingStat:
 
     def get_free_float(self) -> Optional[float]:
         return self.free_float
+
+    def set_market_cap(self, market_cap: float):
+        self.market_cap = market_cap
+
+    def get_market_cap(self) -> Optional[float]:
+        return self.market_cap
 
     def set_turnover_rate(self, turnover_rate: float):
         self.turnover_rate = turnover_rate
