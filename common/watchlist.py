@@ -3,7 +3,7 @@
 WATCHLIST_SYMBOLS = [
     "AAPL", "ABNB", "AMZN", "AMD", "ASML", "AAL", "APHA", "ARRY", "ASAN",
     "ARKK", "ARKQ", "ARKW", "ARKG", "ARKF", "ARKX", "AQB", "API", "ALF",
-    "ATVI", "ASTS",
+    "ATVI", "ASTS", "AXP",
     "BABA", "BIGC", "BIDU", "BILI", "BAC", "BRK-B", "BA", "BNTX", "BEKE",
     "BYND", "BETZ", "BARK",
     "COIN", "CAN", "CRM", "CAKE", "CHWY", "COST", "CLOV", "CPSR", "CRSR",
@@ -16,7 +16,7 @@ WATCHLIST_SYMBOLS = [
     "IWN", "INTC", "IEA", "ISRG",
     "JPM", "JD", "JKS", "JMIA",
     "KO",
-    "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI",
+    "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI", "LVMH",
     "MA", "MSFT", "MP", "MMM", "MCD", "MTCH", "MU", "META",
     "NVDA", "NIO", "NET", "NFLX", "NIU", "NEE", "NNDM", "NUE", "NAK", "NKE",
     "OPEN", "OTLY",
