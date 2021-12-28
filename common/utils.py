@@ -457,7 +457,7 @@ def get_algo_type() -> enums.AlgorithmType:
     return settings.algo_type
 
 
-def get_order_id_from_response(order_response: dict, paper: bool=True) -> Optional[str]:
+def get_order_id_from_response(order_response: dict, paper: bool = True) -> Optional[str]:
     if paper:
         if 'orderId' in order_response:
             order_id = order_response['orderId']
@@ -672,11 +672,22 @@ def get_entry_price_range_index(p):
 def get_market_cap_range_labels():
     return [
         "0-50M (Nano Cap)",  # 0
-        "50M-300M (Micro Cap)",  # 1
-        "300M-2B (Small Cap)",  # 2
-        "2B-10B (Mid Cap)",  # 3
-        "10B-200B (Large Cap)",  # 4
-        "200B+ (Mega Cap)",  # 5
+        "50M-100M (Micro Cap)",  # 1
+        "100M-150M (Micro Cap)",  # 2
+        "150M-200M (Micro Cap)",  # 3
+        "200M-250M (Micro Cap)",  # 4
+        "250M-300M (Micro Cap)",  # 5
+        "300M-400M (Small Cap)",  # 6
+        "400M-500M (Small Cap)",  # 7
+        "500M-600M (Small Cap)",  # 8
+        "600M-700M (Small Cap)",  # 9
+        "700M-800M (Small Cap)",  # 10
+        "800M-900M (Small Cap)",  # 11
+        "900M-1B (Small Cap)",  # 12
+        "1B-2B (Small Cap)",  # 13
+        "2B-10B (Mid Cap)",  # 14
+        "10B-200B (Large Cap)",  # 15
+        "200B+ (Mega Cap)",  # 16
     ]
 
 
@@ -684,16 +695,38 @@ def get_market_cap_range_index(mktcap):
     index = -1
     if mktcap <= 50000000:
         index = 0
-    elif mktcap <= 300000000:
+    elif mktcap <= 100000000:
         index = 1
-    elif mktcap <= 2000000000:
+    elif mktcap <= 150000000:
         index = 2
-    elif mktcap <= 10000000000:
+    elif mktcap <= 200000000:
         index = 3
-    elif mktcap <= 200000000000:
+    elif mktcap <= 250000000:
         index = 4
-    else:
+    elif mktcap <= 300000000:
         index = 5
+    elif mktcap <= 400000000:
+        index = 6
+    elif mktcap <= 500000000:
+        index = 7
+    elif mktcap <= 600000000:
+        index = 8
+    elif mktcap <= 700000000:
+        index = 9
+    elif mktcap <= 800000000:
+        index = 10
+    elif mktcap <= 900000000:
+        index = 11
+    elif mktcap <= 1000000000:
+        index = 12
+    elif mktcap <= 2000000000:
+        index = 13
+    elif mktcap <= 10000000000:
+        index = 14
+    elif mktcap <= 200000000000:
+        index = 15
+    else:
+        index = 16
     return index
 
 
@@ -701,17 +734,32 @@ def get_free_float_range_labels():
     return [
         "None",  # 0
         "0-1M",  # 1
-        "1M-5M",  # 2
-        "5M-10M",  # 3
-        "10M-15M",  # 4
-        "15M-20M",  # 5
-        "20M-30M",  # 6
-        "30M-50M",  # 7
-        "50M-100M",  # 8
-        "100M-200M",  # 9
-        "200M-500M",  # 10
-        "500M-1B",  # 11
-        "1B+",  # 12
+        "1M-2M",  # 2
+        "2M-3M",  # 3
+        "3M-4M",  # 4
+        "4M-5M",  # 5
+        "5M-6M",  # 6
+        "6M-7M",  # 7
+        "7M-8M",  # 8
+        "8M-9M",  # 9
+        "9M-10M",  # 10
+        "10M-11M",  # 11
+        "11M-12M",  # 12
+        "12M-13M",  # 13
+        "13M-14M",  # 14
+        "14M-15M",  # 15
+        "15M-16M",  # 16
+        "16M-17M",  # 17
+        "17M-18M",  # 18
+        "18M-19M",  # 19
+        "19M-20M",  # 20
+        "20M-30M",  # 21
+        "30M-50M",  # 22
+        "50M-100M",  # 23
+        "100M-200M",  # 24
+        "200M-500M",  # 25
+        "500M-1B",  # 26
+        "1B+",  # 27
     ]
 
 
@@ -721,28 +769,58 @@ def get_free_float_range_index(free_float):
         index = 0
     elif free_float <= 1000000:
         index = 1
-    elif free_float <= 5000000:
+    elif free_float <= 2000000:
         index = 2
-    elif free_float <= 10000000:
+    elif free_float <= 3000000:
         index = 3
-    elif free_float <= 15000000:
+    elif free_float <= 4000000:
         index = 4
-    elif free_float <= 20000000:
+    elif free_float <= 5000000:
         index = 5
-    elif free_float <= 30000000:
+    elif free_float <= 6000000:
         index = 6
-    elif free_float <= 50000000:
+    elif free_float <= 7000000:
         index = 7
-    elif free_float <= 100000000:
+    elif free_float <= 8000000:
         index = 8
-    elif free_float <= 200000000:
+    elif free_float <= 9000000:
         index = 9
-    elif free_float <= 500000000:
+    elif free_float <= 10000000:
         index = 10
-    elif free_float <= 1000000000:
+    elif free_float <= 11000000:
         index = 11
-    else:
+    elif free_float <= 12000000:
         index = 12
+    elif free_float <= 13000000:
+        index = 13
+    elif free_float <= 14000000:
+        index = 14
+    elif free_float <= 15000000:
+        index = 15
+    elif free_float <= 16000000:
+        index = 16
+    elif free_float <= 17000000:
+        index = 17
+    elif free_float <= 18000000:
+        index = 18
+    elif free_float <= 19000000:
+        index = 19
+    elif free_float <= 20000000:
+        index = 20
+    elif free_float <= 30000000:
+        index = 21
+    elif free_float <= 50000000:
+        index = 22
+    elif free_float <= 100000000:
+        index = 23
+    elif free_float <= 200000000:
+        index = 24
+    elif free_float <= 500000000:
+        index = 25
+    elif free_float <= 1000000000:
+        index = 26
+    else:
+        index = 27
     return index
 
 
@@ -984,12 +1062,12 @@ def get_relative_volume_labels():
         "3-5",  # 3
         "5-10",  # 4
         "10-15",  # 5
-        "15-20", # 6
-        "20-30", # 7
-        "30-40", # 8
-        "40-60", # 9
-        "60-100", # 10
-        "100+" # 11
+        "15-20",  # 6
+        "20-30",  # 7
+        "30-40",  # 8
+        "40-60",  # 9
+        "60-100",  # 10
+        "100+"  # 11
     ]
 
 
@@ -1024,7 +1102,7 @@ def get_relative_volume_index(rel_vol):
 
 def get_volume_labels():
     return [
-        "None", # 0
+        "None",  # 0
         "0-20K",  # 1
         "20-50K",  # 2
         "50-100K",  # 3
@@ -1419,8 +1497,10 @@ def get_minute_bars_df(minute_bars: HistoricalMinuteBar) -> pd.DataFrame:
     minute_bars = list(reversed(minute_bars))
     data_list = []
     for minute_bar in minute_bars:
-        data_list.append([minute_bar.time.astimezone(timezone.get_current_timezone()), minute_bar.open, minute_bar.high, minute_bar.low, minute_bar.close, minute_bar.volume, minute_bar.vwap])
-    df = pd.DataFrame(data_list, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume', 'vwap'])
+        data_list.append([minute_bar.time.astimezone(timezone.get_current_timezone()), minute_bar.open,
+                         minute_bar.high, minute_bar.low, minute_bar.close, minute_bar.volume, minute_bar.vwap])
+    df = pd.DataFrame(data_list, columns=[
+                      'timestamp', 'open', 'high', 'low', 'close', 'volume', 'vwap'])
     df.set_index('timestamp', inplace=True)
     return df
 
