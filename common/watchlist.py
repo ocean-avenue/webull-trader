@@ -13,7 +13,7 @@ WATCHLIST_SYMBOLS = [
     "F", "FB", "FCX", "FUTU", "FSLY", "FVRR", "FCEL", "FI", "FLYW", "FSLR",
     "GOOG", "GME", "GOCO", "GM", "GOTU", "GNRC",
     "HD", "HOME", "HOFV", "HOOD",
-    "IWN", "INTC", "IEA", "ISRG",
+    "IWN", "INTC", "IEA", "ISRG", "IVN",
     "JPM", "JD", "JKS", "JMIA",
     "KO",
     "LYFT", "LI", "LMND", "LUV", "LITB", "LEN", "LOW", "LULU", "LOGI", "LVMHF",
