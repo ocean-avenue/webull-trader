@@ -75,6 +75,8 @@ class TimeInForceType:
 # Day trade: [0, 100)
 # Swing trade: [100, 200)
 # Error: [500, 600)
+
+
 class SetupType:
     DAY_FIRST_CANDLE_NEW_HIGH = 0
     DAY_GAP_AND_GO = 1
@@ -162,6 +164,8 @@ class SetupType:
 # Day trade: [0, 100)
 # Swing trade: [100, 200)
 # Hybrid: [200, 300)
+
+
 class AlgorithmType:
     # momentum entry with firt candle new high
     DAY_MOMENTUM = 0
@@ -217,6 +221,8 @@ class AlgorithmType:
     DAY_MOMENTUM_SHARE_SIZE = 30
     # scalping trade entry with 20 candles new high, exit with 2 candles new low
     DAY_SCALPING = 31
+    # scalping trade entry with 20 candles new high, only trade 9:30~10:00, 4:00~5:00
+    DAY_SCALPING_POWER_HOUR = 32
     SWING_TURTLE_20 = 100
     SWING_TURTLE_55 = 101
     DAY_SWING_MOMO_TURTLE = 200
@@ -295,6 +301,8 @@ class AlgorithmType:
             return 'Breakout day trade, entry if price reach 20 candles new high, scale in if reach add check period high for ROC.'
         if val == AlgorithmType.DAY_SCALPING:
             return 'Scalping day trade, entry if price reach 20 candles new high, exit if 2 minutes new low.'
+        if val == AlgorithmType.DAY_SCALPING_POWER_HOUR:
+            return 'Scalping day trade, entry if price reach 20 candles new high, only trade power hour.'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'Swing trade based on turtle trading rules (20 days).'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -377,6 +385,8 @@ class AlgorithmType:
             return 'DAY (BREAKOUT SCALE PERIOD ROC)'
         if val == AlgorithmType.DAY_SCALPING:
             return 'DAY (SCALPING)'
+        if val == AlgorithmType.DAY_SCALPING_POWER_HOUR:
+            return 'DAY (SCALPING POWER HOUR)'
         if val == AlgorithmType.SWING_TURTLE_20:
             return 'SWING (TURTLE 20)'
         if val == AlgorithmType.SWING_TURTLE_55:
@@ -460,6 +470,8 @@ class AlgorithmType:
                 AlgorithmType.DAY_BREAKOUT_SCALE_PERIOD_ROC)),
             (AlgorithmType.DAY_SCALPING, AlgorithmType.totag(
                 AlgorithmType.DAY_SCALPING)),
+            (AlgorithmType.DAY_SCALPING_POWER_HOUR, AlgorithmType.totag(
+                AlgorithmType.DAY_SCALPING_POWER_HOUR)),
             (AlgorithmType.SWING_TURTLE_20, AlgorithmType.totag(
                 AlgorithmType.SWING_TURTLE_20)),
             (AlgorithmType.SWING_TURTLE_55, AlgorithmType.totag(

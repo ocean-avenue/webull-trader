@@ -138,7 +138,7 @@ def start():
     # from trading.day_momo import DayTradingMomoNewHigh
     from trading.strategy.day_momo import DayTradingMomo, DayTradingMomoShareSize, DayTradingMomoReduceSize, DayTradingMomoExtendedHour
     from trading.strategy.day_redgreen import DayTradingRedGreen
-    from trading.strategy.day_scalping import DayTradingScalping
+    from trading.strategy.day_scalping import DayTradingScalping, DayTradingScalpingPowerHour
     from trading.strategy.day_breakout import DayTradingBreakout, DayTradingBreakoutAsk, DayTradingBreakoutDynExit, DayTradingBreakoutEarnings, \
         DayTradingBreakoutNewHigh, DayTradingBreakoutPeriod, DayTradingBreakoutPreLosers, DayTradingBreakoutScale, \
         DayTradingBreakoutScaleStopLossMax, DayTradingBreakoutScaleStopLossATR, DayTradingBreakoutScalePeriodROC
@@ -293,6 +293,10 @@ def start():
     elif algo_type == AlgorithmType.DAY_SCALPING:
         # DAY_SCALPING: scalping trade 20 candles
         strategies.append(DayTradingScalping(
+            paper=paper, trading_hour=trading_hour, entry_period=20))
+    elif algo_type == AlgorithmType.DAY_SCALPING_POWER_HOUR:
+        # DAY_SCALPING_POWER_HOUR: scalping trade 20 candles in power hour
+        strategies.append(DayTradingScalpingPowerHour(
             paper=paper, trading_hour=trading_hour, entry_period=20))
     elif algo_type == AlgorithmType.SWING_TURTLE_20:
         # SWING_TURTLE_20: turtle trade 20 days

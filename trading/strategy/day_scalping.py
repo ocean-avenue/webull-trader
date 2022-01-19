@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from common.enums import SetupType
+from datetime import datetime
 from common import config, constants, utils
 from sdk import webullsdk
 from logger import trading_logger
@@ -420,3 +421,25 @@ class DayTradingScalping(StrategyBase):
 
         # track failed to sell positions
         self.track_rest_positions()
+
+
+class DayTradingScalpingPowerHour(DayTradingScalping):
+
+    import pandas as pd
+
+    def check_entry(self, ticker: TrackingTicker, bars: pd.DataFrame) -> bool:
+
+        now = datetime.now()
+        power_hour = False
+
+        if self.is_regular_market_hour():
+            if now.hour == 9 and now.minute >= 30:
+                power_hour = True
+        elif self.is_pre_market_hour():
+            if now.hour == 4 and now.minute <= 30:
+                power_hour = True
+
+        if power_hour:
+            return super().check_entry(ticker, bars)
+        else:
+            return False
