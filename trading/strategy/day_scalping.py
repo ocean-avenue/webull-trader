@@ -152,11 +152,12 @@ class DayTradingScalping(StrategyBase):
                 "<{}> candle chart has bearish candle, no entry!".format(symbol))
             return False
 
-        ROC = self.get_price_rate_of_change(bars, period=self.entry_period)
+        rate_of_change_period = 4
+        ROC = self.get_price_rate_of_change(bars, period=rate_of_change_period)
         if ROC <= config.DAY_PRICE_RATE_OF_CHANGE:
             # price rate of change is weak
             trading_logger.log(
-                "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, self.entry_period, round(ROC, 2)))
+                "<{}> candle chart price rate of change for {} period ({}) is weak, no entry!".format(symbol, rate_of_change_period, round(ROC, 2)))
             return False
 
         if ticker.is_just_sold():
