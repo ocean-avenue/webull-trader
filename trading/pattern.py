@@ -525,7 +525,7 @@ def check_bars_has_largest_green_candle(bars: pd.DataFrame, period: int = 10) ->
             green_candle_size = row['close'] - row['open']
             if green_candle_size > max_green_candle_size:
                 max_green_candle_size = green_candle_size
-    return max_green_candle_size > max_red_candle_size
+    return max_green_candle_size * 1.2 >= max_red_candle_size
 
 
 def check_bars_has_most_green_candle(bars: pd.DataFrame, period: int = 10) -> bool:
