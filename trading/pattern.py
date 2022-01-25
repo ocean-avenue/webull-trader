@@ -336,8 +336,8 @@ def check_bars_at_peak(bars: pd.DataFrame, long_period: int = 10, short_period: 
     for _, row in bars.iterrows():
         if prev_bar3['close'] < row['close']:
             return False
-    # prev_bar3 should has enough up percentage (5%)
-    if (prev_bar3['close'] - prev_bar3['open']) / prev_bar3['open'] < 0.05:
+    # prev_bar3 should has enough up percentage (15%)
+    if (prev_bar3['close'] - prev_bar3['open']) / prev_bar3['open'] < 0.15:
         return False
     # prev_bar3 vol should > prev_bar2 vol
     # if prev_bar3['volume'] < prev_bar2['volume']:
