@@ -74,7 +74,7 @@ DAY_TARGET_UNITS = 12
 # target units for day trade in extended hour
 DAY_EXTENDED_TARGET_UNITS = 4
 # threshold for check is chart most green candles
-CHART_MOST_GREEN_CANDLES_THRESHOLD = 0.6
+CHART_MOST_GREEN_CANDLES_THRESHOLD = 0.5
 CHART_MORE_GREEN_CANDLES_THRESHOLD = 0.4
 # bearish avg candle body ratio
 BEARISH_AVG_CANDLE_RATIO = 1.4
