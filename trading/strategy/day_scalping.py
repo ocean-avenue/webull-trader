@@ -107,13 +107,6 @@ class DayTradingScalping(StrategyBase):
             self.trading_tracker.stop_tracking(ticker)
             return False
 
-        if self.is_regular_market_hour() and not pattern.check_bars_continue(bars):
-            trading_logger.log(
-                "<{}> candle chart is not continue, stop trading!".format(symbol))
-            # stop tracking
-            self.trading_tracker.stop_tracking(ticker)
-            return False
-
         # if not pattern.check_bars_rel_volume(bars) and not pattern.check_bars_amount_grinding(bars, period=5) and \
         #         not pattern.check_bars_all_green(bars, period=5):
         #     # has no relative volume
