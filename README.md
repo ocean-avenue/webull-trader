@@ -67,7 +67,7 @@ python manage.py shell < backtest/executor.py
 screen -r server
 ```
 ```
-uwsgi --ini uwsgi.ini --touch-reload /tmp/deploy.ini --logto /tmp/uwsgi.log
+uwsgi --ini uwsgi.ini --enable-threads
 ```
 
 2. Run scheduler:
@@ -83,4 +83,7 @@ python manage.py runscheduler
 
 ```
 touch /tmp/deploy.ini
+```
+```
+uwsgi --ini uwsgi.ini --touch-reload /tmp/deploy.ini --logto /tmp/uwsgi.log
 ```
