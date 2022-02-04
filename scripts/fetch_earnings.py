@@ -23,11 +23,11 @@ def start():
         earning_dist[symbol] = {
             "symbol": symbol,
             "earning_date": calendar["date"],
-            "eps": calendar["eps"],
-            "eps_estimated": calendar["epsEstimated"],
+            "eps": calendar["eps"] or 0,
+            "eps_estimated": calendar["epsEstimated"] or 0,
             "earning_time": calendar["time"],
-            "revenue": calendar["revenue"],
-            "revenue_estimated": calendar["revenueEstimated"],
+            "revenue": calendar["revenue"] or 0,
+            "revenue_estimated": calendar["revenueEstimated"] or 0,
         }
 
     earning_quotes = fmpsdk.batch_quotes(symbol_list)
