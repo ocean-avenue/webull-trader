@@ -62,7 +62,7 @@ def start():
         earning.avg_price_200d = quote["priceAvg200"]
         earning.volume = quote["volume"]
         earning.avg_volume = quote["avgVolume"]
-        earning.exchange = quote["exchange"]
+        earning.exchange = quote["exchange"] or ""
         earning.outstanding_shares = quote["sharesOutstanding"]
         earning.save()
 
