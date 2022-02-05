@@ -1,6 +1,6 @@
 # webull-trader
 
-Day/Swing Trading System powered by Webull Platform
+Trading bot for day trade and swing trade powered by Webull platform
 
 ### Strategy:
 
