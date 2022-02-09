@@ -158,6 +158,21 @@ class DayTradingScalping(StrategyBase):
                 "<{}> try buy too soon after last sell, no entry!".format(symbol))
             return False
 
+        quote = webullsdk.get_quote(ticker_id=ticker.get_id())
+        best_bid = webullsdk.get_bid_price_from_quote(quote)
+        best_ask = webullsdk.get_ask_price_from_quote(quote)
+        if not best_bid or not best_ask:
+            trading_logger.log_level2(quote)
+            trading_logger.log(
+                f"<{symbol}> best bid or best ask not available, no entry!")
+            return False
+        spread = (best_ask - best_bid) / best_bid
+        if (best_ask - best_bid) / best_bid > config.MAX_BID_ASK_GAP_RATIO:
+            trading_logger.log_level2(quote)
+            trading_logger.log(
+                f"<{symbol}> best bid and best ask spread percentage {spread} too wide, no entry!")
+            return False
+
         return True
 
     def check_exit(self, ticker: TrackingTicker, bars: pd.DataFrame) -> Tuple[bool, str]:
