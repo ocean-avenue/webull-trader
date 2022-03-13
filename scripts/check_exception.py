@@ -6,7 +6,7 @@ def start():
     from datetime import datetime
     from django_apscheduler.models import DjangoJobExecution
     from webull_trader.models import NotifiedErrorExecution
-    from common import sms
+    from common import feishu
     # from scripts import clear_positions
 
     today = datetime.today()
@@ -24,7 +24,7 @@ def start():
                 # already notified
                 continue
             # notify message
-            sms.notify_message(
+            feishu.send_message(
                 "Job {} execution exception, fix now!".format(execution.job.id))
             # mark already notified
             notified_execution = NotifiedErrorExecution(

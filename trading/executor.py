@@ -6,7 +6,7 @@ import time
 from datetime import datetime, timedelta, date
 from typing import List
 from common.enums import AlgorithmType, TradingHourType
-from common import utils, db, config, sms
+from common import utils, db, config, feishu
 from sdk import webullsdk
 from logger import trading_logger
 from trading.strategy.strategy_base import StrategyBase
@@ -44,7 +44,7 @@ class TradingExecutor:
         if not webullsdk.login(paper=self.paper):
             error_msg = "Webull login failed, quit trading!"
             # send message
-            sms.notify_message(error_msg)
+            feishu.send_message(error_msg)
             trading_logger.log(error_msg)
             return
         trading_logger.log("Webull logged in")
@@ -74,7 +74,7 @@ class TradingExecutor:
                 else:
                     error_msg = "Webull refresh login failed, quit trading!"
                     # send message
-                    sms.notify_message(error_msg)
+                    feishu.send_message(error_msg)
                     trading_logger.log(error_msg)
                     break
 

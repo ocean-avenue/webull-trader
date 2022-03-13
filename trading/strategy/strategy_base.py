@@ -6,7 +6,7 @@ from datetime import datetime
 from django.utils import timezone
 from typing import Optional
 from sdk import webullsdk, fmpsdk
-from common import utils, db, sms, constants, exceptions
+from common import utils, db, feishu, constants, exceptions
 from common.enums import ActionType, SetupType, TradingHourType
 from logger import trading_logger
 from trading.tracker.trading_tracker import TradingTracker
@@ -237,7 +237,7 @@ class StrategyBase:
             trading_logger.log(
                 f"⚠️  Invalid buy order response: {order_response}")
             # send message
-            sms.notify_message(
+            feishu.send_message(
                 f"Failed to sell <{symbol}> swing position, please check now!")
 
     # submit buy limit order, only use for day trade
@@ -510,7 +510,7 @@ class StrategyBase:
                 trading_logger.log(
                     "Failed to sell position <{}>!".format(symbol))
                 # send message
-                sms.notify_message(
+                feishu.send_message(
                     f"Failed to sell <{symbol}> position, please check now!")
                 # stop tracking ticker
                 if stop_tracking_ticker_after_order_done:
@@ -595,7 +595,7 @@ class StrategyBase:
                 self._on_sell_order_filled(ticker, order)
         elif ticker.is_order_timeout():
             if not utils.is_paper_trading():
-                sms.notify_message(
+                feishu.send_message(
                     f"Failed to cancel <{symbol}> order: {order_id}, please check now!")
             raise exceptions.WebullOrderTimeoutError(
                 f"Error cancel order timeout '{order.status}', {order_id} - <{symbol}>")
@@ -753,7 +753,7 @@ class StrategyBase:
                 position_obj.setup = SetupType.ERROR_FAILED_TO_SELL
                 position_obj.save()
                 # send message
-                sms.notify_message(
+                feishu.send_message(
                     f"Failed to clear <{symbol}> position, please check now!")
             # remove from tracking
             self.trading_tracker.stop_tracking(ticker)
