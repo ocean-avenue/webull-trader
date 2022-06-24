@@ -1,0 +1,1 @@
+FMP_API_KEY = "ADD_YOUR_KEY"
